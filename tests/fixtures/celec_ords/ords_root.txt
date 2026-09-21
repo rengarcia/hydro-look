@@ -1,0 +1,318 @@
+<!doctype html>
+<html class="no-js page-1 app-4550" lang="en">
+<head>
+<meta http-equiv="x-ua-compatible" content="IE=edge" />
+<meta charset="UTF-8" />
+<title>Application Express - Sign In</title>
+<link rel="shortcut icon" href="/i/apex_ui/img/favicons/favicon.ico">
+<link rel="icon" sizes="16x16" href="/i/apex_ui/img/favicons/favicon-16x16.png">
+<link rel="icon" sizes="32x32" href="/i/apex_ui/img/favicons/favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/i/apex_ui/img/favicons/favicon-180x180.png">
+<link rel="stylesheet" href="/i/app_ui/css/Core.min.css?v=20.2.0.00.20" type="text/css" />
+<link rel="stylesheet" href="/i/app_ui/css/Theme-Standard.min.css?v=20.2.0.00.20" type="text/css" />
+
+<link rel="stylesheet" href="/i/libraries/oracle-fonts/oraclesans-apex.min.css?v=20.2.0.00.20" type="text/css" />
+
+
+<link rel="stylesheet" href="/i/apex_ui/css/Core.min.css?v=20.2.0.00.20" type="text/css" />
+<link rel="stylesheet" href="/i/apex_ui/css/Theme-Standard.min.css?v=20.2.0.00.20" type="text/css" />
+
+
+
+
+<script src="/i/apex_version.js?v=20.2.0.00.20"></script>
+<script>
+if ( !window.gApexVersion ) {
+  alert( 'There is a problem with your environment because the Application Express files have not been loaded. Please verify that you have copied the images directory to your application server as instructed in the Installation Guide. In addition, please verify that your image prefix path is correct. Your current path is \u002Fi\u002F (it should contain both starting and ending forward slashes, such as the default \u002Fi\u002F). Use the SQL script reset_image_prefix.sql if you need to change it.' );
+} else if ( gApexVersion !== "20.2.0.00.20" ) {
+  alert( 'There is a problem with your environment because the Application Express files are not up-to-date! The files for version #LOADED_VERSION# have been loaded, but 20.2.0.00.20 is expected. Please verify that you have copied the images directory to your application server as instructed in the Installation Guide.'.replace( "#LOADED_VERSION#", gApexVersion ));
+}
+</script>
+<script>
+var apex_img_dir = "/i/", htmldb_Img_Dir = apex_img_dir;
+</script>
+<script src="/i/libraries/apex/minified/desktop_all.min.js?v=20.2.0.00.20"></script>
+<script src="wwv_flow.js_messages?p_app_id=4550&p_lang=en&p_version=20.2.0.00.20-36038842081"></script>
+<script src="/i/libraries/apex/minified/legacy_pre18.min.js?v=20.2.0.00.20"></script>
+<script src="/i/libraries/apex/minified/legacy_18.min.js?v=20.2.0.00.20"></script>
+<script src="/i/apex_ui/js/minified/builder_all.min.js?v=20.2.0.00.20"></script>
+ 
+
+<script type="text/javascript">
+$(function() {
+  $('a[href*="#"]:not([href="#"])').click(function() {
+    if (location.pathname.replace(/^\//,'') == this.pathname.replace(/^\//,'') && location.hostname == this.hostname) {
+      var target = $(this.hash);
+      target = target.length ? target : $('[name=' + this.hash.slice(1) +']');
+      if (target.length) {
+        $('html,body').animate({
+          scrollTop: target.offset().top
+        }, 500);
+        return false;
+      }
+    }
+  });
+});
+</script>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Pragma" content="no-cache" /><meta http-equiv="Expires" content="-1" /><meta http-equiv="Cache-Control" content="no-cache" />
+</head>
+<body class="a-Page--login   apex-theme-standard-auto" >
+<noscript></noscript>
+<form action="wwv_flow.accept" method="post" name="wwv_flow" id="wwvFlowForm" data-oj-binding-provider="none" novalidate  autocomplete="off">
+<input type="hidden" name="p_flow_id" value="4550" id="pFlowId" /><input type="hidden" name="p_flow_step_id" value="1" id="pFlowStepId" /><input type="hidden" name="p_instance" value="11010047384489" id="pInstance" /><input type="hidden" name="p_page_submission_id" value="335270606194006024922370100569529759830" id="pPageSubmissionId" /><input type="hidden" name="p_request" value="" id="pRequest" /><input type="hidden" name="p_reload_on_submit" value="A" id="pReloadOnSubmit" /><input type="hidden" value="335270606194006024922370100569529759830" id="pSalt" />
+
+<div id="R787803699949238365" class="a-Header a-Header--login" ><a href="f?p=4550:1:11010047384489" class="a-Header-logo" title="Oracle Application Express">
+  <span class="a-Header-apexLogo"></span>
+</a></div>
+<div class="u-Layout u-Layout--centerVertically a-Login-slide" id="top">
+  <span id="APEX_SUCCESS_MESSAGE" data-template-id="781636565276262406_S" class="apex-page-success u-hidden"></span><span id="APEX_ERROR_MESSAGE" data-template-id="781636565276262406_E" class="apex-page-error u-hidden"></span>
+  <div class="a-Login-container">
+  <div class="a-Login-region a-Form--stretchInputs a-Form--labelsAbove" id="R30251320176465048" >
+  <div class="a-Login-header">
+    <span class="a-Login-logo gi-icon-apex-logo-icon"></span>
+    <h1 class="a-Login-title">Oracle Application Express</h1>
+  </div>
+  <div class="a-Login-body">
+    <input type="hidden" id="P1_RESET_PASSWORD_LABEL" name="P1_RESET_PASSWORD_LABEL" value="Reset Password"><input type="hidden" data-for="P1_RESET_PASSWORD_LABEL" value="D532j5pfY-z5TrhzwVybdJHmUP2qLfxTb2aFhjV2Gu_urtiFzwvsHjeD8tJM_5X3oQLi2tXL9ppqedrrxzW4Xg"><div class="a-Form-fieldContainer icon-login-workspace apex-item-wrapper apex-item-wrapper--text-field " id="F4550_P1_COMPANY_CONTAINER"><div class="a-Form-inputContainer"><label for="F4550_P1_COMPANY" id="F4550_P1_COMPANY_LABEL" class="a-Icon a-Login-iconLabel">Workspace</label><input type="text"  id="F4550_P1_COMPANY" name="F4550_P1_COMPANY" placeholder="Workspace" class="text_field&#x20;apex-item-text" required value="" size="40" maxlength="2000"  /><span class="a-Login-iconValidation a-Icon icon-check"></span><span id="F4550_P1_COMPANY_error_placeholder" class="a-Form-error" data-template-id="781639159048309153_ET"></span></div></div><div class="a-Form-fieldContainer icon-login-username apex-item-wrapper apex-item-wrapper--text-field " id="F4550_P1_USERNAME_CONTAINER"><div class="a-Form-inputContainer"><label for="F4550_P1_USERNAME" id="F4550_P1_USERNAME_LABEL" class="a-Icon a-Login-iconLabel">Username</label><input type="text"  id="F4550_P1_USERNAME" name="F4550_P1_USERNAME" placeholder="Username" class="text_field&#x20;apex-item-text" required value="" size="40" maxlength="2000"  /><span class="a-Login-iconValidation a-Icon icon-check"></span><span id="F4550_P1_USERNAME_error_placeholder" class="a-Form-error" data-template-id="781639159048309153_ET"></span></div></div><div class="a-Form-fieldContainer icon-login-password apex-item-wrapper apex-item-wrapper--password " id="F4550_P1_PASSWORD_CONTAINER"><div class="a-Form-inputContainer"><label for="F4550_P1_PASSWORD" id="F4550_P1_PASSWORD_LABEL" class="a-Icon a-Login-iconLabel">Password</label><input type="password" name="F4550_P1_PASSWORD" size="40" maxlength="" value=""  id="F4550_P1_PASSWORD" placeholder="Password" class="password&#x20;apex-item-text" autocomplete="off" required  onkeypress="return apex.submit({request:'F4550_P1_PASSWORD',submitIfEnter:event})"  /><span class="a-Login-iconValidation a-Icon icon-check"></span><span id="F4550_P1_PASSWORD_error_placeholder" class="a-Form-error" data-template-id="781639159048309153_ET"></span></div></div><div class="a-Form-fieldContainer a-Form-fieldContainer--hiddenLabel  apex-item-wrapper apex-item-wrapper--checkbox " id="F4550_P1_REMEMBER_CONTAINER"><div class="a-Form-inputContainer"><label for="F4550_P1_REMEMBER" id="F4550_P1_REMEMBER_LABEL" class="a-Icon a-Login-iconLabel a-Login-hiddenLabel u-VisuallyHidden">Remember Workspace and Username</label><div tabindex="-1"  id="F4550_P1_REMEMBER" aria-labelledby="F4550_P1_REMEMBER_LABEL" class="checkbox_group&#x20;apex-item-group&#x20;apex-item-group--rc&#x20;apex-item-checkbox"  role="group">
+<div class="apex-item-option"><input type="checkbox" id="F4550_P1_REMEMBER_0" name="F4550_P1_REMEMBER" value="Y"  ><label class="u-checkbox" for="F4550_P1_REMEMBER_0">Remember workspace and username</label></div>
+</div>
+<span id="F4550_P1_REMEMBER_error_placeholder" class="a-Form-error" data-template-id="176608736253329086_ET"></span><button class="a-Button a-Button--noUI a-Button--helpButton js-itemHelp" data-itemhelp="95189738956614247" title="Help Text: Remember Workspace and Username" tabindex="-1" type="button"><span class="a-Icon icon-help"></span><span class="u-VisuallyHidden">Help Text: Remember Workspace and Username</span></button></div></div><input type="hidden" id="P1_GET_STARTED_URL" name="P1_GET_STARTED_URL" value="https:&#x2F;&#x2F;apex.oracle.com&#x2F;go&#x2F;get_started_apex"><input type="hidden" data-for="P1_GET_STARTED_URL" value="gp-cnBmQNFAF-kavq5v9H1Fju3Qi5mFNe_lzU3SMK1m7puJBaO9F1kLWteSigwVH-ikIPp_kRov4My-AgVI4tg"><input type="hidden" id="P1_NEXT_APP" name="P1_NEXT_APP" value=""><input type="hidden" id="P1_NEXT_PAGE" name="P1_NEXT_PAGE" value=""><input type="hidden" id="P1_NEXT_ITEMS" name="P1_NEXT_ITEMS" value=""><input type="hidden" id="P1_NEXT_VALUES" name="P1_NEXT_VALUES" value="">
+  </div>
+  <div class="a-Login-buttons">
+    <button onclick="apex.submit({request:&#x27;LOGIN_BUTTON&#x27;});" class="a-Button a-Button--hot a-Button--large" type="button"  id="B232005500580944564">Sign In</button>
+  </div>
+  <div class="a-Login-links">
+    <a href="javascript:apex.navigation.redirect(&#x27;f?p=4550:7:11010047384489:::RP::&#x27;);" class=""  id="B698801968369413312">Reset Password</a>
+  </div>
+  
+</div>
+  </div>
+  <div class="a-Login-slideNav a-Login-slideNav--down">
+    <a href="#info" aria-label="Scroll down" title="Scroll down" class="a-Login-slideNavLink"><span class="a-Icon icon-shuttle-down"></span></a>
+  </div>
+</div>
+<div class="u-Layout u-Layout--centerVertically a-Login-slide a-Login-slide--secondary" id="info">
+  <div class="a-Login-secondaryContent">
+  <div class="apex-grid-container">
+<div class="apex-row">
+<div class="apex-col apex-col-4 ">
+<div class="a-Login-infoRegion " id="R28359019857369284" >
+  <div class="a-Login-infoRegion-header">
+    <h2 class="a-Login-infoRegion-title">Getting Started</h2>
+  </div>
+  <div class="a-Login-infoRegion-body">
+  <ul class="a-MediaList a-MediaList--noBadge a-MediaList--noIcons"><li class="a-MediaList-item">
+    <a href="https://apex.oracle.com/learnmore" class="a-MediaList-link" >
+        <div class="a-MediaList-iconWrap">
+            <span class="a-MediaList-icon"><span class="a-Icon " ></span></span>
+        </div>
+        <div class="a-MediaList-body">
+            <h3 class="a-MediaList-title">Learn More</h3>
+            <p class="a-MediaList-desc">A page for those just getting started or wanting to learn more about Oracle Application Express.</p>
+        </div>
+        <div class="a-MediaList-badgeWrap">
+            <span class="a-MediaList-badge"></span>
+        </div>
+    </a>
+</li><li class="a-MediaList-item">
+    <a href="https://apex.oracle.com" class="a-MediaList-link" >
+        <div class="a-MediaList-iconWrap">
+            <span class="a-MediaList-icon"><span class="a-Icon menu/blue_function_16x16.gif" alt=""></span></span>
+        </div>
+        <div class="a-MediaList-body">
+            <h3 class="a-MediaList-title">apex.oracle.com</h3>
+            <p class="a-MediaList-desc">A free, hosted service where you can try out the latest version of Oracle Application Express.</p>
+        </div>
+        <div class="a-MediaList-badgeWrap">
+            <span class="a-MediaList-badge"></span>
+        </div>
+    </a>
+</li><li class="a-MediaList-item">
+    <a href="https://oracle.com/oll" class="a-MediaList-link" >
+        <div class="a-MediaList-iconWrap">
+            <span class="a-MediaList-icon"><span class="a-Icon menu/blue_function_16x16.gif" alt=""></span></span>
+        </div>
+        <div class="a-MediaList-body">
+            <h3 class="a-MediaList-title">Oracle Learning Library</h3>
+            <p class="a-MediaList-desc">Oracle by Examples (OBEs) provide prerequisite files and step-by-step instructions with screen shots that walk you through building various application components.</p>
+        </div>
+        <div class="a-MediaList-badgeWrap">
+            <span class="a-MediaList-badge"></span>
+        </div>
+    </a>
+</li></ul>
+  </div>
+</div>
+</div><div class="apex-col apex-col-4 ">
+<div class="a-Login-infoRegion " id="R28357414269339279" >
+  <div class="a-Login-infoRegion-header">
+    <h2 class="a-Login-infoRegion-title">More Information</h2>
+  </div>
+  <div class="a-Login-infoRegion-body">
+  <ul class="a-MediaList a-MediaList--noBadge a-MediaList--noIcons"><li class="a-MediaList-item">
+    <a href="https://apex.oracle.com/forum" class="a-MediaList-link" target="_blank">
+        <div class="a-MediaList-iconWrap">
+            <span class="a-MediaList-icon"><span class="a-Icon menu/blue_function_16x16.gif"  alt=""></span></span>
+        </div>
+        <div class="a-MediaList-body">
+            <h3 class="a-MediaList-title">Discussion Forum</h3>
+            <p class="a-MediaList-desc">Get free community-driven support for your Application Express questions on the OTN discussion forums. </p>
+        </div>
+        <div class="a-MediaList-badgeWrap">
+            <span class="a-MediaList-badge"></span>
+        </div>
+    </a>
+</li><li class="a-MediaList-item">
+    <a href="https://apex.oracle.com/community" class="a-MediaList-link" target="_blank">
+        <div class="a-MediaList-iconWrap">
+            <span class="a-MediaList-icon"><span class="a-Icon menu/blue_function_16x16.gif" alt=""></span></span>
+        </div>
+        <div class="a-MediaList-body">
+            <h3 class="a-MediaList-title">Application Express Community</h3>
+            <p class="a-MediaList-desc">Review references, applications, consulting companies, hosting companies and more.</p>
+        </div>
+        <div class="a-MediaList-badgeWrap">
+            <span class="a-MediaList-badge"></span>
+        </div>
+    </a>
+</li><li class="a-MediaList-item">
+    <a href="https://apex.oracle.com/shortcuts" class="a-MediaList-link" target="_blank">
+        <div class="a-MediaList-iconWrap">
+            <span class="a-MediaList-icon"><span class="a-Icon menu/blue_function_16x16.gif" alt=""></span></span>
+        </div>
+        <div class="a-MediaList-body">
+            <h3 class="a-MediaList-title">Oracle APEX Shortcuts</h3>
+            <p class="a-MediaList-desc">A collection of short, memorable URLs, that you can use to quickly navigate to commonly used APEX resources.</p>
+        </div>
+        <div class="a-MediaList-badgeWrap">
+            <span class="a-MediaList-badge"></span>
+        </div>
+    </a>
+</li></ul>
+  </div>
+</div>
+</div><div class="apex-col apex-col-4 ">
+<div class="a-Login-infoRegion " id="R5734329754154454" >
+  <div class="a-Login-infoRegion-header">
+    <h2 class="a-Login-infoRegion-title">Tasks</h2>
+  </div>
+  <div class="a-Login-infoRegion-body">
+  <ul class="a-MediaList a-MediaList--noBadge a-MediaList--noIcons"><li class="a-MediaList-item">
+    <a href="f?p=4550:7:11010047384489:::::" class="a-MediaList-link" >
+        <div class="a-MediaList-iconWrap">
+            <span class="a-MediaList-icon"><span class="a-Icon menu/blue_function_16x16.gif" alt=""></span></span>
+        </div>
+        <div class="a-MediaList-body">
+            <h3 class="a-MediaList-title">Reset Password</h3>
+            <p class="a-MediaList-desc">Unable to sign in to your workspace? Try resetting your password here.</p>
+        </div>
+        <div class="a-MediaList-badgeWrap">
+            <span class="a-MediaList-badge"></span>
+        </div>
+    </a>
+</li><li class="a-MediaList-item">
+    <a href="f?p=4550:4:11010047384489:::::" class="a-MediaList-link" >
+        <div class="a-MediaList-iconWrap">
+            <span class="a-MediaList-icon"><span class="a-Icon menu/blue_function_16x16.gif" alt=""></span></span>
+        </div>
+        <div class="a-MediaList-body">
+            <h3 class="a-MediaList-title">Find My Workspace</h3>
+            <p class="a-MediaList-desc">Forgotten which workspaces you are associated with? You can find out here.</p>
+        </div>
+        <div class="a-MediaList-badgeWrap">
+            <span class="a-MediaList-badge"></span>
+        </div>
+    </a>
+</li><li class="a-MediaList-item">
+    <a href="f?p=4550:10:11010047384489:::::" class="a-MediaList-link" >
+        <div class="a-MediaList-iconWrap">
+            <span class="a-MediaList-icon"><span class="a-Icon menu/blue_function_16x16.gif" alt=""></span></span>
+        </div>
+        <div class="a-MediaList-body">
+            <h3 class="a-MediaList-title">Administration</h3>
+            <p class="a-MediaList-desc">Sign in to Administration Services.</p>
+        </div>
+        <div class="a-MediaList-badgeWrap">
+            <span class="a-MediaList-badge"></span>
+        </div>
+    </a>
+</li></ul>
+  </div>
+</div>
+</div>
+</div><div class="apex-row">
+<div class="apex-col apex-col-12 ">
+<div id="R327446700231264735" class="a-Login-social mxw400 margin-auto" ><ul class="a-Login-socialLinks">  <li class="a-Login-socialLinks-item">    <a href="https://apex.oracle.com/twitter" target="_blank" class="a-Login-socialLinks-link">      <span class="a-Icon icon-twitter"></span>      <span class="u-VisuallyHidden">Twitter</span>    </a>  </li>  <li class="a-Login-socialLinks-item">    <a href="https://apex.oracle.com/linkedin" target="_blank" class="a-Login-socialLinks-link">      <span class="a-Icon icon-linkedin"></span>      <span class="u-VisuallyHidden">LinkedIn</span>    </a>  </li>  <li class="a-Login-socialLinks-item">    <a href="https://apex.oracle.com/facebook" target="_blank" class="a-Login-socialLinks-link">      <span class="a-Icon icon-facebook"></span>      <span class="u-VisuallyHidden">Facebook</span>    </a>  </li>  <li class="a-Login-socialLinks-item">    <a href="https://apex.oracle.com/youtube" target="_blank" class="a-Login-socialLinks-link">      <span class="a-Icon icon-youtube"></span>      <span class="u-VisuallyHidden">YouTube</span>    </a>  </li></ul>
+</div>
+</div>
+</div>
+</div>
+  </div>
+  <div class="a-Login-slideNav  a-Login-slideNav--up">
+    <a href="#top" aria-label="Scroll to top" title="Scroll to top" class="a-Login-slideNavLink"><span class="a-Icon icon-shuttle-up"></span></a>
+  </div>
+</div><input type="hidden" id="pPageFormRegionChecksums" value="&#x5B;&#x5D;">
+<input type="hidden" id="pPageItemsRowVersion" value="" /><input type="hidden" id="pPageItemsProtected" value="UDFfUkVTRVRfUEFTU1dPUkRfTEFCRUw6UDFfR0VUX1NUQVJURURfVVJM&#x2F;2WI8LZ7eWRf01-BKOHOXvmEd4RBU-nTjNPIL3BH15RF6YgR_DCRZLSalQNlxg10eKvhvUJNV0KKuxMF-2qeNGw" /></form>
+
+<script type="text/javascript">
+apex.da.initDaEventList = function(){
+apex.da.gEventList = [
+{"triggeringConditionType":"JAVASCRIPT_EXPRESSION","triggeringExpression": function() {
+return ($("#F4550_P1_COMPANY").val().length < 1 && $("#F4550_P1_USERNAME").val().length < 1
+); },"bindEventType":"ready","anyActionsFireOnInit":false,actionList:[{"eventResult":true,"executeOnPageInit":false,"stopExecutionOnError":true,"affectedElementsType":"ITEM","affectedElements":"F4550_P1_COMPANY",javascriptFunction:apex.da.setFocus,"action":"NATIVE_SET_FOCUS"}]},
+{"triggeringConditionType":"JAVASCRIPT_EXPRESSION","triggeringExpression": function() {
+return ($("#F4550_P1_COMPANY").val().length > 0 && $("#F4550_P1_USERNAME").val().length < 1
+); },"bindEventType":"ready","anyActionsFireOnInit":false,actionList:[{"eventResult":true,"executeOnPageInit":false,"stopExecutionOnError":true,"affectedElementsType":"ITEM","affectedElements":"F4550_P1_USERNAME",javascriptFunction:apex.da.setFocus,"action":"NATIVE_SET_FOCUS"}]},
+{"triggeringConditionType":"JAVASCRIPT_EXPRESSION","triggeringExpression": function() {
+return ($("#F4550_P1_COMPANY").val().length > 0 && $("#F4550_P1_USERNAME").val().length > 0
+); },"bindEventType":"ready","anyActionsFireOnInit":false,actionList:[{"eventResult":true,"executeOnPageInit":false,"stopExecutionOnError":true,"affectedElementsType":"ITEM","affectedElements":"F4550_P1_PASSWORD",javascriptFunction:apex.da.setFocus,"action":"NATIVE_SET_FOCUS"}]}];
+}
+</script>
+
+
+
+
+
+
+
+
+<script type="text/javascript">
+apex.jQuery( function() {
+apex.page.init( this, function() {
+apex.jQuery.when.apply( apex.jQuery, apex.page.loadingDeferreds ).done(function() {
+try {
+(function(){
+var lTimeoutField = document.getElementById("apex_login_throttle_sec"),
+    lTimeout      = lTimeoutField ? +lTimeoutField.innerHTML : 0;
+if (lTimeout) {
+    var lTimer = window.setInterval (
+        function() {
+            if (lTimeout > 0) {
+                lTimeoutField.innerHTML = lTimeout;
+                lTimeout--;
+            } else {
+                window.clearInterval(lTimer);
+                var lDiv = document.getElementById("apex_login_throttle_div");
+                if (lDiv) {
+                    lDiv.parentNode.removeChild(lDiv);
+                    return true;
+                }
+            }
+        },
+        1000 );
+}})();
+(function(){apex.widget.checkboxAndRadio("#F4550_P1_REMEMBER","checkbox",{"ajaxIdentifier":"SVRFTSBUWVBFfjUxMjB-OTUxODk3Mzg5NTY2MTQyNDc~\u002Fmmt_mkUl5Rs75_u55dV7wlgr83uBMLQvDjVOsZWy-5bvhT0qynqSaSx4wgU78R3yYVPvy3wBAwPR5c2L1KuTxw","optimizeRefresh":true,"inputName":"F4550_P1_REMEMBER"});})();
+(function(){apex.da.initDaEventList();})();
+(function(){apex.da.init();})();
+
+
+} finally {
+apex.event.trigger(apex.gPageContext$,'apexreadyend');
+}
+});
+});
+});</script>
+
+</body></html>

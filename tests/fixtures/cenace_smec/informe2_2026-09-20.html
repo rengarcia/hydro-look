@@ -1,0 +1,575 @@
+
+
+
+
+
+
+<html>
+
+	<head>
+		<title>SIMEC</title>
+		<link rel="icon" type="image/x-icon" href="img/favicon.ico">
+		<link href="scripts/estilosSMEC.css" rel="stylesheet" type="text/css">
+		<script language="JavaScript" SRC="scripts/stm31.js"></script>
+		<script language="JavaScript" SRC="scripts/trim.js"></script>
+		<script language="JavaScript" SRC="scripts/validaciones.js"></script>
+        <script src="/SMEC/scripts/fechas.js"></script>
+        <script language="JavaScript" src="scripts/CalendarPopup.js"></script>
+        <script language="JavaScript">document.write(getCalendarStyles());</script>
+		<!-- <script language="JavaScript" src="scripts/marque.js"></script> -->
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	
+<script language="JavaScript"> 
+function mueveReloj(){ 
+    momentoActual = new Date() 
+    //hora = momentoActual.getHours() 
+    //minuto = momentoActual.getMinutes() 
+    //segundo = momentoActual.getSeconds()
+	hora = ("0" + (momentoActual.getHours())).slice(-2);
+	minuto = ("0" + (momentoActual.getMinutes())).slice(-2);
+	segundo = ("0" + (momentoActual.getSeconds())).slice(-2);	
+
+    horaImprimible = hora + ":" + minuto + ":" + segundo 
+
+	if (document.getElementById("reloj")!= null) {
+		document.getElementById("reloj").value = horaImprimible 
+	}
+
+    setTimeout("mueveReloj()",1000) 
+} 
+</script>
+	
+	<style type="text/css">
+<!--
+.Estilo1 {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	color: #FFFFFF;
+	font-weight: bold;
+	vertical-align: baseline;
+}
+.Estilo2 {FONT-WEIGHT: bold; FONT-SIZE: 11px; COLOR: #ffffff; FONT-FAMILY: Arial, Helvetica, sans-serif
+}
+
+-->
+    </style>
+	</head>
+
+<script>
+    function ayuda()
+    {
+        if (document.formAyuda)
+        {
+            x = window.open('/SMEC/jsp/grafico.jsp','emergente_ayuda','top=20,left=250,width=450,height=350,menubar=0,toolbar=0,scrollbars=yes');
+            document.formAyuda.target = 'emergente_ayuda';
+            document.formAyuda.submit();
+        }
+    }
+</script>
+
+
+<body leftmargin="0" topmargin="0" marginwidth="0" marginheight="0" onLoad="mueveReloj();" >
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr class="fondoTr2"> 
+   <!-- <td height="100" align="left" valign="top" background="img/f_back02.jpg"><table width="100%" border="0" cellspacing="0" cellpadding="0">-->
+    <td height="100" align="left" valign="top"><table width="100%" border="0" cellspacing="0" cellpadding="0">	
+        <tr align="left" valign="top"> 
+          <td width="75%"><table width="599" border="0" cellspacing="0" cellpadding="0">
+              <tr align="left" valign="top"> 
+                <td width="1183"><img src="img/f_logo.jpg" width="1183" height="107"></td>
+ <!--               <td width="299"><object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"  width="339" height="107">
+                    <param name="movie" value="img/f_banner.swf">
+                    <param name="quality" value="high">
+                    <embed src="img/f_banner.swf" quality="high"  type="application/x-shockwave-flash" width="339" height="107"></embed></object></td> -->
+              </tr>
+            </table></td>
+          <td width="2%" align="right" ></td>
+          <td width="23%" align="right"><div align="right">
+              <table width="160" height="107" border="0" cellpadding="0" cellspacing="0" class="bgTablaAlpha">
+                <tr> 
+                  <td align="left" valign="top"  >
+				  
+				  
+
+
+
+
+
+
+
+
+<script>
+	function iSubmitEnter(oEvento){ 
+	    var iAscii; 
+	     
+	    if (oEvento.keyCode) 
+	        iAscii = oEvento.keyCode; 
+	    else if (oEvento.which) 
+	        iAscii = oEvento.which; 
+	    else 
+	        return false; 
+	         
+	    if (iAscii == 13) sendLoginData(); 
+	
+	    return true; 
+	}
+
+	function sendLoginData(){
+		var frm = document.getElementById("frmLogin");
+
+		frm.user.value = frm.user.value.trim();
+		if(frm.user.value == ""){
+			alert("Tiene que indicar el usuario.");
+			frm.user.focus();
+			return;
+		}
+
+		if(frm.password.value == ""){
+			alert("Tiene que indicar el password.");
+			frm.password.focus();
+			return;
+		}
+
+		frm.action = "Login.do";
+		frm.submit();
+	}
+
+	function logOut(){
+		var frm = document.getElementById("frmLogin");
+
+		frm.action = "Logout.do";
+		frm.submit();
+	}
+</script>
+
+
+
+
+
+ 
+ <form action="Login.do" id="frmLogin" method="post" name="frmLogin">
+	
+	
+	<table width="92%"  border="0"  cellpadding="0" cellspacing="0" align="center">
+      <tr>
+        <td class="textologin">&nbsp;</td>
+        <td class="textologin">&nbsp;</td>
+      </tr>
+      <tr>
+        <td class="textologin">&nbsp;&nbsp;&nbsp;</td>
+        <td class="textologin">
+		
+		Usuario: 
+		 
+		
+		
+		  
+		</td>
+      </tr>
+      <tr>
+        <td class="textologin">&nbsp;</td>
+        <td class="textologin">
+		
+		
+		 
+		 
+		<input name="user" type="text" class="forms2" id="user" size="26" maxlength="26" tabindex="1" value="">
+		
+		</td>
+        </tr>
+      <tr>
+        <td class="textologin">&nbsp;</td>
+        <td class="textologin">
+		
+		Clave:
+		
+		
+		</td>
+        </tr>
+      <tr>
+        <td valign="baseline">&nbsp;</td>
+        <td valign="baseline"><font color="#333333" size="0"><strong><font face="Arial, Helvetica, sans-serif">
+		 
+ 
+ <input name="password" type="password" class="forms2" id="pass" size="17" tabindex="2" onkeypress="iSubmitEnter(event)"/>
+
+</font>
+
+<font color="#333333" size="0"><strong>
+
+<input name="bt_envio_form" type="button" class="forms" value="Entrar" tabindex="3" onClick="sendLoginData()">
+</strong></font><font face="Arial, Helvetica, sans-serif">        </font></strong></font>
+
+</td>
+        </tr>
+      <tr>
+        <td>&nbsp;</td>
+        <td>
+		
+		<a href="RecordarPassword.do" class="textologin">
+		¿Olvidó su clave?
+		
+		</td>
+        </tr>
+    </table>
+</form>
+
+
+
+				  
+				  </td>
+                </tr>
+              </table>
+            </div></td>
+        </tr>
+    </table></td>
+  </tr>
+  <tr> 
+    <td align="left" valign="top"><table width="100%" border="0" cellpadding="0" cellspacing="0">
+        <tr align="left" valign="baseline"> 
+          <!-- <td width="19%" valign="baseline" background="img/f_back01.jpg"><img src="img/f_img02.jpg" width="164" height="24"></td>-->
+          <td width="100%" align="center" background="img/f_back01.jpg"><table width="100%"  border="0" cellspacing="0" cellpadding="0">
+            <tr>
+              <td valign="baseline">
+			  <MARQUEE scrolldelay="250" align="right" style="FONT-WEIGHT: bold; FONT-SIZE: 12px;  COLOR: #ffffff; FONT-FAMILY: Arial, Helvetica, sans-serif;" behavior="scroll" direction="left" width="99%">
+      Balance Energ&eacute;tico actualizado a partir del 31 de mayo de 2016
+      </MARQUEE><span class="Estilo1">&nbsp;</samp>			  </td>
+            </tr>
+            <tr>
+              <td height="1" valign="baseline"><img src="img/blankFecha.gif" width="150" height="1"></td>
+            </tr>
+			<tr>
+              <td height="1" valign="baseline"><img src="img/blankFecha.gif" width="150" height="1"></td>
+            </tr>
+			<tr>
+              <td height="1" valign="baseline"><img src="img/blankFecha.gif" width="150" height="1"></td>
+            </tr>
+			<tr>
+              <td height="1" valign="baseline"><img src="img/blankFecha.gif" width="150" height="1"></td>
+            </tr>
+          </table>		    </td>
+         <td width="25%" align="right" valign="baseline" background="img/f_back01.jpg"><table width="100%"  border="0" cellspacing="0" cellpadding="0">
+              <tr valign="top">
+              <td valign="baseline"><table width="100%"  border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td align="right"> <span class="Estilo1">
+                  
+                  21,  Septiembre de 2026</span></td>
+                </tr>
+                <tr>
+                  <td><img src="img/blankFecha.gif" width="120" height="1"></td>
+                </tr>
+				<tr>
+                  <td><img src="img/blankFecha.gif" width="120" height="1"></td>
+                </tr>
+				<tr>
+                  <td><img src="img/blankFecha.gif" width="120" height="1"></td>
+                </tr>
+				<tr>
+                  <td><img src="img/blankFecha.gif" width="120" height="1"></td>
+                </tr>
+				
+				
+              </table>                <span class="Estilo1"> </span>
+			  
+			  </td>
+              <td valign="baseline">
+                <table width="100%"  border="0" cellspacing="0" cellpadding="0">
+                  <tr>
+                    <td><input id="reloj" name="reloj" type=text class="reloj2" size="4"></td>
+                  </tr>
+                  <tr>
+                    <td height="1"><img src="img/blank.gif" width="1" height="1"></td>
+                  </tr>
+				  <tr>
+                    <td height="1"><img src="img/blank.gif" width="1" height="1"></td>
+                  </tr>
+                </table></td>
+            </tr>
+          </table></td>
+        <!--  <td width="34" align="right" valign="baseline"><img src="img/f_img04.jpg" width="34" height="24"></td>-->
+        </tr>
+        <tr align="left" valign="top"> 
+          <td colspan="3"><table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr> 
+                <td height="234"><table width="100%" border="0" cellspacing="0" cellpadding="0">
+                    <tr align="left" valign="top"> 
+                      <td width="165" height="234" background="img/f_back04.jpg"><table width="165" border="0" cellspacing="0" cellpadding="0">
+                          <tr> 
+                            <td width="165" align="left" valign="top">
+							
+							<img src="img/f_menu01.gif" width="164" height="32"></td>
+                          </tr>
+                          <tr> 
+                            <td align="left" valign="top"><table width="164" border="0" cellspacing="0" cellpadding="0">
+                                <tr align="left" valign="top"> 
+                                  <td width="13"><img src="img/f_menu02.gif" width="13" height="19">
+
+								  </td>
+                                  <td background="img/f_menu0x.gif">
+								   
+
+
+
+
+
+
+
+
+<script>
+	function showMainPage(pageAction,accion){
+		var frm = document.getElementById("frmMenu");
+
+		if(pageAction != ""){
+			frm.action = pageAction;
+			frm.accion.value = accion;
+			frm.submit();
+		}
+	}
+</script>
+
+<form name="frmMenu" method="post" id="frmMenu">
+<input type="hidden" name="accion" value="">
+
+
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" >
+    <tr>
+        <td>
+
+
+<script type="text/javascript" language="JavaScript1.2">
+<!--
+stm_bm(["tubtehr",430,"","img/blank.gif",0,"","",0,0,250,0,1000,1,0,0,"","",0],this);
+stm_bp("p0",[1,4,0,0,0,2,0,7,100,"",-2,"",-2,90,0,0,"#000000","transparent","",3,1,0,"#000000"]);
+stm_ai("p0i0",[0,"Principal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;","","",-1,-1,0,"ShowWelcome.do","_self","","","","",0,0,0,"","",0,0,0,0,1,"#ffffff",1,"#ffffff",1,"img/fondoazul.jpg","img/fondoazul.gif",3,3,0,0,"#003366","#003366","#003366","#ffffff","bold 10px arial","bold 10px arial",0,0]);
+//stm_ai("p0i1",[6,1,"#ffffff","img/lineaseparatoria.gif",-1,-1,0]);
+stm_aix("p0i2","p0i0",[0,"Informes","","",-1,-1,0,"","_self","","","","",0,0,0,"","",7,7]);
+stm_bpx("p1","p0",[1,2,0,0,0,3,0,0]);
+stm_aix("p1i0","p0i0",[0,"Balance Energ&eacute;tico","","",-1,-1,0,"javascript:showMainPage('Informe.do',1)"]);
+stm_ep();
+//stm_aix("p0i3","p0i1",[]);
+stm_ai("p0i1",[6,1,"#ffffff","img/lineaseparatoria.gif",-1,-1,0]);
+stm_ep();
+stm_em();
+//-->
+</script>
+
+		</td></tr>
+	</table>
+</form>
+
+ 								 
+								   <p>&nbsp;</p>
+</td>
+                                  <td width="15" background="img/f_menu03.gif">&nbsp;</td>
+                                </tr>
+                              </table></td>
+                          </tr>
+                          <tr> 
+                            <td align="left" valign="top"><img src="img/f_menu04.gif" width="164" height="13"></td>
+                          </tr>
+                          <tr> 
+                            <td align="left" valign="top" background="img/f_back04.jpg"><img src="img/f_img08.gif" width="164" height="67"></td>
+                          </tr>
+                        </table></td>
+						
+                      <td width="900">
+
+		  <!-- en esta tabla va el contenido.. -->		
+		  
+         							<table width="100%" border="0" cellpadding="0" cellspacing="0">
+		                        <tr>
+		                        	<td>&nbsp; </td>
+		                        </tr>
+								
+								<tr>
+									
+										
+										<td  valign="top">
+											<body leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
+					  <table width="100%" border="0" cellspacing="0" cellpadding="0" >
+                          <tr align="left" valign="top"> 
+                            <td width="250" bordercolor="#E6E6E6"><table width="250" border="1" cellpadding="0" cellspacing="0" bordercolor="#EAEAEA">
+                                <tr> 
+                                  <td align="left" valign="top" background="img/f_franja_azul.jpg"><table width="100%" height="32" border="0" align="left" cellpadding="4" cellspacing="0">
+                                      <tr> 
+                                        <td align="left" valign="middle"><p><font color="#FFFFFF" size="2" face="Arial, Helvetica, sans-serif"><strong>
+										<a href='#' onClick="window.open('jsp/link1.jsp','noticia','top=20,left=250,width=600,height=550,menubar=0,toolbar=0,scrollbars=yes');" >
+										Descripción SIMEC</a>
+										</strong></font></p></td>
+
+
+                                      </tr>
+                                    </table></td>
+                                </tr>
+                                <tr> 
+                                  <td align="left" valign="top"> <table width="100%" border="0" align="left" cellpadding="4" cellspacing="0">
+                                      <tr> 
+                                        <td align="left" valign="top"><font color="#666666" size="2" face="Arial, Helvetica, sans-serif">
+										<div align="justify">El Sistema de Medición Comercial - SIMEC permite gestionar la medición de los registros cuarto horarios de energía y otros parámetros eléctricos, de los sistemas de medición comercial de los Participantes del Sector Eléctrico: generadores, auto generadores, distribuidoras y grandes consumidores que realizan transacciones de electricidad dentro del sector eléctrico.</div>
+										</font></td>
+                                      </tr>
+                                    </table>
+                                    <p align="justify">&nbsp;</p></td>
+                                </tr>
+                                <tr> 
+                                  <td align="left" valign="top" background="img/f_franja_rosa.jpg"><table width="100%" height="32" border="0" align="left" cellpadding="4" cellspacing="0">
+                                      <tr> 
+                                        <td align="left" valign="middle"><font color="#FFFFFF" size="2" face="Arial, Helvetica, sans-serif"><strong>
+										<a href='#' onClick="window.open('jsp/link2.jsp','noticia','top=20,left=250,width=600,height=550,menubar=0,toolbar=0,scrollbars=yes');">Normativa Actual</a>
+										 </strong></font></td>
+                                      </tr>
+                                    </table></td>
+                                </tr>
+                                <tr> 
+                                  <td align="left" valign="top"><table width="100%" border="0" align="left" cellpadding="4" cellspacing="0">
+                                      <tr> 
+                                        <td align="left" valign="top"><font color="#666666" size="2" face="Arial, Helvetica, sans-serif">
+										<div align="justify">Regulación No. Arconel 001/16: Sistema de Medición Comercial del Sector Eléctrico Ecuatoriano.<hr><center><a href="https://smec.cenace.gob.ec/SMEC/img/CONELEC_DE_08_1277_REGULACION_CONELEC_005-08.zip">Regulaci&oacute;n No. CONELEC 005/08</a></center>
+										</font>
+                                        </td>
+                                      </tr>
+                                    </table></td>
+                                </tr>
+                                <tr> 
+                                  <td align="left" valign="top" background="img/f_franja_marron.jpg"><table width="100%" height="32" border="0" align="left" cellpadding="4" cellspacing="0">
+                                      <tr> 
+                                        <td align="left" valign="middle"><font color="#FFFFFF" size="2" face="Arial, Helvetica, sans-serif"><strong>
+                                            <a href='#' onClick="window.open('jsp/link3.jsp','noticia','top=20,left=250,width=600,height=550,menubar=0,toolbar=0,scrollbars=yes');">Protocolos de Comunicación</a>
+											
+											</strong></font></td>
+                                      </tr>
+                                    </table></td>
+                                </tr>
+                                <tr> 
+                                  <td align="left" valign="top"> <table width="100%" border="0" align="left" cellpadding="4" cellspacing="0">
+                                      <tr> 
+                                        <td align="left" valign="top"><font color="#666666" size="2" face="Arial, Helvetica, sans-serif">
+										Para el acceso a los diferentes tipos de medidores (registradores de medidas),  el SIMEC es compatible con los siguientes protocolos de comunicación.
+										</font>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                    <p>&nbsp;</p></td>
+                                </tr>
+                              </table> 
+                              <br>
+                            </td>
+                            <td align="left" bordercolor="#E6E6E6"><div align="left">
+                                <img src="img/f_img09.jpg" width="600" height="400" align="left" hspace="2">
+                              </div></td>							
+                            <td align="right" bordercolor="#E6E6E6"><div align="right">
+                                <img src="img/f_img05c.gif" width="300" height="230" align="right">
+                              </div></td>
+                            <td width="2">&nbsp;</td>
+                          </tr>
+</table>
+						
+										</td>
+										
+											<td align="center">
+												<!-- include file="/jsp/links.htm" -->
+											</td>
+										
+									
+									
+								</tr>
+						</table>
+				
+				<table border="0" align="right">
+				   <tr>
+					<td ></td>
+					<td align="right"><script>if (document.formAyuda) document.write('<a href="#" onclick="javascript:window.ayuda();"><img src="img/help.jpg" width="101" height="25"  border=0></a>&nbsp;&nbsp;&nbsp;');</script>
+</td>
+					<td align="right">&nbsp;</td>
+					<td align="right">
+					
+
+
+<a href="javascript:print()">
+<img src="img/print.jpg" width="101" height="25"  border=0>
+</a>
+
+
+					</td>
+					<td >&nbsp;&nbsp;</td>
+					</tr>
+			</table>
+			<!-- fin del contenido -->
+
+</td>
+                    </tr>
+					
+
+                  </table> 
+				 
+			    </td>
+              </tr>
+            </table></td>
+          <td width="34" align="left" background="img/f_back03.jpg"><table width="34" height="70%" border="0" cellpadding="0" cellspacing="0">
+              <tr> 
+                <td align="left" valign="top" background="img/back03.jpg"><table width="34" border="0" cellspacing="0" cellpadding="0">
+                    <tr> 
+                      <td align="left" valign="top" background="img/f_back03.jpg"> 
+                        <p><img src="img/f_img05.jpg" width="34" height="89" border="0"></p></td>
+                    </tr>
+                    <tr> 
+                      <td align="left" valign="top" background="img/f_back03.jpg"><img src="img/f_img05b.jpg" width="34" height="55" border="0"></td>
+                    </tr>
+                  </table></td>
+              </tr>
+              <tr> 
+                <td align="left" valign="top" background="img/f_back03.jpg">&nbsp;</td>
+              </tr>
+            </table></td>
+        </tr>
+        <tr align="left" valign="top">
+          <td colspan="3"> <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr align="left" valign="top"> 
+                <td width="27%" background="img/f_back05.jpg"><table width="231" border="0" cellspacing="0" cellpadding="0">
+                    <tr align="left" valign="top"> 
+                      <td background="img/f_back05.jpg"><img src="img/f_backfin.jpg" width="164" height="67"><img src="img/f_satelite1.jpg" width="67" height="67"></td>
+                      <td>&nbsp;</td>
+                    </tr>
+                  </table></td>
+                <td background="img/f_back05.jpg">
+				
+                   				<table width="100%" border="0" cellspacing="0" cellpadding="0">
+                    <tr align="left" valign="top"> 
+                      <td valign="bottom" background="img/f_back05.jpg"><table width="100%" border="0" cellspacing="0" cellpadding="12">
+                          <tr> 
+                            <td><font color="#FFFFFF" size="1" face="Arial, Helvetica, sans-serif">
+							Copyright © CENACE 2023 - S1
+							</font></td>
+                          </tr>
+                        </table>
+						
+						</td>
+                      <td width="27%" align="right"><img src="img/f_satelite2.jpg" width="299" height="67"></td>
+                    </tr>
+                  </table>
+				
+
+			    </td>
+              </tr>
+            </table></td>
+          <td width="34" align="left" valign="bottom" background="img/f_back03.jpg"><img src="img/f_img07.jpg" width="34" height="67"></td>
+        </tr>
+      </table></td>
+  </tr>
+</table>
+
+		<script>
+			// mensajes de error
+			
+				alert("La sesión del usuario ha caducado.\n");
+			
+			// sesión caducada
+			
+		</script>
+		
+</body>
+
+</html>
+
+</html>
