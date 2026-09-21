@@ -25,7 +25,7 @@ fixes the exact API contracts, and their published data gives us ready-made vali
 | A2 | Public data only, no credentials. | SIMEM is out. |
 | A3 | Runs on GitHub Actions, publishes on GitHub Pages, data versioned in git (same pattern as both reference projects). | No servers, no database service. |
 | A4 | The Claude Code sandbox cannot reach any `*.gob.ec`, `github.io`, Open-Meteo or NOAA host (verified this session: proxy returns 403 on CONNECT). Only GitHub is reachable. | Endpoint discovery and fixture capture happen on your machine or in Actions; coding sessions develop against recorded fixtures. |
-| A5 | Site and docs in Spanish, code and commit messages in English. | Decide in §9. |
+| A5 | Site and docs in Spanish, code and commit messages in English. | Decided 2026-09-21. |
 
 ---
 
@@ -346,16 +346,15 @@ regime differences between Amazon- and Pacific-slope basins.
 
 ---
 
-## 9. Decisions needed from you
+## 9. Decisions (recorded 2026-09-21)
 
-1. Confirm the goal and target hierarchy in §0 and §7 (or state the original one so this plan tracks it).
-2. Run Phase 0 on your machine when the capture script lands (it is the only step that needs a
-   network path to `*.gob.ec`), or approve running it from a `workflow_dispatch` in Actions.
-3. Site language: Spanish only, or bilingual.
-4. History provenance: backfill everything from the ORDS (recommended) vs seeding from jordanvt18's CSV.
-5. Whether to file the transparency request to CENACE/CELEC for pre-2022 daily series now (template in Phase 7).
-
----
+| # | Question | Decision |
+|---|---|---|
+| 1 | Goal and target hierarchy (§0, §7) | Confirmed as written. |
+| 2 | Where Phase 0 runs | GitHub Actions, `workflow_dispatch` (`.github/workflows/recon.yml`). Runners have open internet and both reference scrapers already run there daily. Fixtures and the report are committed back to the branch by the workflow. Can also be run locally with `python scripts/recon/capture.py`. |
+| 3 | Site language | Spanish. |
+| 4 | History provenance | Backfill everything from the ORDS; community mirrors are used for cross-checks only. |
+| 5 | Transparency request to CENACE/CELEC for pre-2022 series | Deferred; stays optional in Phase 7. |
 
 ## Appendix A · Phase-0 capture checklist (exact targets)
 

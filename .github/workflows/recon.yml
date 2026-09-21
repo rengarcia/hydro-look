@@ -1,0 +1,59 @@
+name: Phase 0 reconnaissance
+
+# One-off discovery run: captures raw responses from every candidate data
+# source into tests/fixtures/ and commits them with a report. Manual only.
+on:
+  workflow_dispatch:
+    inputs:
+      only:
+        description: "Comma-separated sections (tls,ords,celec_web,smec,operativa,covariates,mirrors,open_data); empty = all"
+        required: false
+        default: ""
+
+permissions: {}
+
+concurrency:
+  group: recon
+  cancel-in-progress: false
+
+jobs:
+  recon:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r scripts/recon/requirements.txt
+
+      - name: Capture
+        env:
+          ONLY: ${{ github.event.inputs.only }}
+        run: python scripts/recon/capture.py --capture "$RUNNER_TEMP/recon-capture" --only "$ONLY"
+
+      - name: Upload full capture (including large bundles) as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: recon-capture-${{ github.run_id }}
+          path: ${{ runner.temp }}/recon-capture
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Commit fixtures and report
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests/fixtures scripts/recon/RECON_REPORT.md
+          if git diff --cached --quiet; then
+            echo "No fixture changes."
+          else
+            git commit -m "Phase 0: capture reconnaissance fixtures and report (run ${{ github.run_id }})"
+            git push
+          fi
