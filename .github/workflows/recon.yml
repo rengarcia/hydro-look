@@ -9,6 +9,15 @@ on:
         description: "Comma-separated sections (tls,ords,celec_web,smec,operativa,covariates,mirrors,open_data); empty = all"
         required: false
         default: ""
+  # workflow_dispatch is only registered once the file reaches the default
+  # branch; until then, a push of the recon tooling on this branch runs it.
+  # Commits made by the workflow itself (GITHUB_TOKEN) never retrigger it.
+  push:
+    branches: ["claude/quirky-knuth-u2y8s2"]
+    paths:
+      - ".github/workflows/recon.yml"
+      - "scripts/recon/capture.py"
+      - "scripts/recon/requirements.txt"
 
 permissions: {}
 
