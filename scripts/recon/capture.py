@@ -76,6 +76,24 @@ PLANT_TERMS = [
     "delsitanisagua", "toachi", "baba", "cota", "caudal", "produc", "potencia", "energ",
 ]
 SMEC_INFORME1 = SMEC_BASE + "ResultadoInforme1.do"
+# ORDS modules found in the CELEC-wide bundle (plant code -> module); each has {code}Ener{Dia,Mes,Anio,Anios}
+ORDS_MODULES = {"csr": "sardomcsr", "maz": "sardommaz", "mol": "sardommol", "sop": "sardomsop", "msf": "sardommsf", "ago": "sardomago", "man": "sardomman", "ccs": "sardomccs"}
+# mrids declared by the CELEC-wide dashboard components (see data/reference/mrids.csv)
+NEW_MRIDS = [("Minas San Francisco", "cota", 650919), ("Minas San Francisco", "caudal", 650538), ("Agoyan", "cota", 140031), ("Agoyan", "caudal", 140537), ("Manduriacu", "cota", 110031), ("Manduriacu", "caudal", 110537), ("Coca Codo Sinclair", "cota", 100540), ("Coca Codo Sinclair", "caudal", 100037), ("Paute basin", "caudal_cuenca", 24812), ("Mazar", "unidades", 30503)]
+# API hosts whose robots.txt targets crawlers while their terms of use explicitly allow programmatic
+# access (Open-Meteo: free non-commercial use, attribution CC-BY 4.0, <10k requests/day).
+ROBOTS_EXEMPT_HOSTS = {"api.open-meteo.com", "archive-api.open-meteo.com", "seasonal-api.open-meteo.com"}
+# Request-style variants to explain the all-null ORDS responses of run 1 (the community scrapers get values)
+UA_JORDANVT18 = "cotas-embalses-ecuador/1.0 (monitoreo ciudadano de datos publicos)"
+UA_BROWSER = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36"
+ORDS_VARIANTS = {
+    "ours_legacy_adapter": {"headers": {"User-Agent": UA, "Accept": "*/*"}, "legacy": True},
+    "ours_verified": {"headers": {"User-Agent": UA, "Accept": "*/*"}, "legacy": False},
+    "ours_accept_json": {"headers": {"User-Agent": UA, "Accept": "application/json"}, "legacy": False},
+    "requests_default": {"headers": None, "legacy": False},
+    "jordanvt18": {"headers": {"User-Agent": UA_JORDANVT18, "Accept": "application/json"}, "legacy": False},
+    "browser_like": {"headers": {"User-Agent": UA_BROWSER, "Accept": "application/json, text/plain, */*", "Referer": CELEC_WIDE, "Origin": "https://generacioncsr.celec.gob.ec", "Accept-Language": "es-EC,es;q=0.9"}, "legacy": False},
+}
 OPEN_METEO = {
     "archive": "https://archive-api.open-meteo.com/v1/archive?latitude=-2.6&longitude=-78.6&start_date=2024-01-01&end_date=2024-01-31&daily=precipitation_sum,temperature_2m_mean&timezone=America%2FGuayaquil",
     "forecast": "https://api.open-meteo.com/v1/forecast?latitude=-2.6&longitude=-78.6&daily=precipitation_sum&forecast_days=16&timezone=America%2FGuayaquil",
@@ -92,6 +110,7 @@ MIRRORS = {
 }
 OPEN_DATA = {
     "ckan_cenace": "https://www.datosabiertos.gob.ec/api/3/action/package_search?fq=organization:cenace&rows=100",
+    "ckan_cenace_nowww": "https://datosabiertos.gob.ec/api/3/action/package_search?fq=organization:cenace&rows=100",
     "ckan_bnee": "https://www.datosabiertos.gob.ec/api/3/action/package_search?q=balance%20nacional%20energia%20electrica&rows=20",
     "cenace_dataset_page": "https://www.datosabiertos.gob.ec/dataset/http-portalsimem-cenace-corp",
     "arconel_bnee_1": "https://www.controlrecursosyenergia.gob.ec/balance-nacional-de-energia-electrica/",
@@ -128,13 +147,71 @@ class Recorder:
         self.session.headers.update({"User-Agent": UA, "Accept": "*/*"})
         for prefix in LEGACY_TLS_PREFIXES:
             self.session.mount(prefix, LegacyTLSAdapter())
+        self.legacy_prefixes: tuple = LEGACY_TLS_PREFIXES
         self._robots: dict[str, robotparser.RobotFileParser | None] = {}
         self.robots_verdicts: list[dict] = []
+        self.ca_bundles: dict[str, str] = {}  # host -> path of certifi + AIA-fetched intermediates
 
     # -- helpers -----------------------------------------------------------
-    @staticmethod
-    def _verify(url: str) -> bool:
-        return not url.startswith(LEGACY_TLS_PREFIXES)
+    def _verify(self, url: str):
+        if url.startswith(self.legacy_prefixes):
+            return False
+        host = urlparse(url).hostname or ""
+        return self.ca_bundles.get(host, True)
+
+    def ensure_ca_bundle(self, host: str, port: int = 443) -> dict:
+        """Build certifi + the server's AIA-published intermediates (servers that omit the chain)."""
+        import certifi
+
+        info: dict = {"host": host, "aia_urls": [], "added": 0}
+        try:
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+            with socket.create_connection((host, port), timeout=20) as sock, ctx.wrap_socket(sock, server_hostname=host) as ss:
+                der = ss.getpeercert(binary_form=True)
+            pem = ssl.DER_cert_to_PEM_cert(der)
+            proc = subprocess.run(["openssl", "x509", "-noout", "-ext", "authorityInfoAccess"], input=pem.encode(), capture_output=True, timeout=20)
+            info["aia_urls"] = re.findall(r"CA Issuers - URI:(\S+)", proc.stdout.decode(errors="replace"))
+            pems = []
+            for url in info["aia_urls"]:
+                try:
+                    r = requests.get(url, timeout=30, headers={"User-Agent": UA})
+                    if not r.ok:
+                        continue
+                    body = r.content
+                    if b"BEGIN CERTIFICATE" in body:
+                        pems.append(body.decode(errors="replace"))
+                    else:
+                        conv = subprocess.run(["openssl", "x509", "-inform", "DER", "-outform", "PEM"], input=body, capture_output=True, timeout=20)
+                        if conv.returncode == 0:
+                            pems.append(conv.stdout.decode())
+                except Exception as error:  # noqa: BLE001
+                    info.setdefault("errors", []).append(f"{url}: {type(error).__name__}")
+            if pems:
+                bundle = self.capture / "tls" / f"ca_bundle_{host}.pem"
+                bundle.parent.mkdir(parents=True, exist_ok=True)
+                bundle.write_text(Path(certifi.where()).read_text() + "\n" + "\n".join(pems), encoding="utf-8")
+                self.ca_bundles[host] = str(bundle)
+                info["added"] = len(pems)
+                self._save(f"tls/intermediates_{host}.pem", "\n".join(pems).encode())
+        except Exception as error:  # noqa: BLE001
+            info["error"] = f"{type(error).__name__}: {error}"[:200]
+        print(f"[ca] {host}: {info}", flush=True)
+        return info
+
+    def adopt_variant(self, name: str) -> None:
+        """Switch the shared session to a request style that returned values (see section_ords_matrix)."""
+        cfg = ORDS_VARIANTS[name]
+        self.session = requests.Session()
+        if cfg["headers"]:
+            self.session.headers.update(cfg["headers"])
+        if cfg["legacy"]:
+            for prefix in LEGACY_TLS_PREFIXES:
+                self.session.mount(prefix, LegacyTLSAdapter())
+        else:
+            self.session.mount("https://smec.cenace.gob.ec", LegacyTLSAdapter())
+        self.legacy_prefixes = LEGACY_TLS_PREFIXES if cfg["legacy"] else ("https://smec.cenace.gob.ec",)
 
     def _save(self, rel: str, body: bytes) -> str:
         cap = self.capture / rel
@@ -183,10 +260,13 @@ class Recorder:
         self.robots_verdicts.append({"url": url, "allowed": verdict[0], "detail": verdict[1]})
         return verdict
 
-    def fetch(self, key: str, url: str, *, params: dict | None = None, save_as: str | None = None, timeout: int = 45):
+    def fetch(self, key: str, url: str, *, params: dict | None = None, save_as: str | None = None, timeout: int = 45, headers: dict | None = None, method: str = "GET", json_body=None, session: requests.Session | None = None):
         full = f"{url}?{urlencode(params)}" if params else url
         rec: dict = {"key": key, "url": full, "status": None, "bytes": 0, "elapsed_s": None, "saved": None, "error": None, "content_type": None}
-        if self.respect_robots:
+        host = urlparse(url).hostname or ""
+        if host in ROBOTS_EXEMPT_HOSTS:
+            rec["robots"] = "exempt: API host, usage governed by its terms of service"
+        elif self.respect_robots:
             allowed, why = self.robots_for(url)
             rec["robots"] = why
             if not allowed:
@@ -196,7 +276,8 @@ class Recorder:
                 return rec, None
         t0 = time.monotonic()
         try:
-            r = self.session.get(url, params=params, timeout=timeout, verify=self._verify(url))
+            sess = session or self.session
+            r = sess.request(method, url, params=params, timeout=timeout, verify=self._verify(url), headers=headers, json=json_body)
             rec.update(status=r.status_code, bytes=len(r.content), content_type=r.headers.get("content-type"), elapsed_s=round(time.monotonic() - t0, 2), sha256=hashlib.sha256(r.content).hexdigest(), final_url=r.url)
             if save_as:
                 rec["saved"] = self._save(save_as, r.content)
@@ -425,7 +506,7 @@ def smec_rows(html: str) -> dict:
 def section_smec(rec: Recorder) -> dict:
     now_ec = dt.datetime.now(TZ_EC)
     yesterday = (now_ec - dt.timedelta(days=1)).date()
-    dates = [yesterday, yesterday - dt.timedelta(days=1), dt.date(2024, 10, 15), dt.date(2023, 11, 5), dt.date(2022, 1, 15), dt.date(2021, 6, 15), dt.date(2019, 1, 15)]
+    dates = [now_ec.date(), yesterday, yesterday - dt.timedelta(days=1), dt.date(2024, 10, 15), dt.date(2023, 11, 5), dt.date(2022, 1, 15), dt.date(2021, 6, 15), dt.date(2019, 1, 15), dt.date(2017, 1, 15), dt.date(2016, 6, 1), dt.date(2016, 5, 31), dt.date(2016, 5, 30), dt.date(2016, 5, 1)]
     out: dict = {"informe1": {}, "probes": {}, "menu": {}}
     for d in dates:
         r_, r = rec.fetch(f"smec:informe1:{d}", SMEC_INFORME1, params={"fecha": d.strftime("%Y/%m/%d")}, save_as=f"cenace_smec/informe1_{d}.html")
@@ -453,8 +534,9 @@ def section_smec(rec: Recorder) -> dict:
 def section_operativa(rec: Recorder) -> dict:
     now_ec = dt.datetime.now(TZ_EC)
     stamp = now_ec.strftime("%Y-%m-%dT%H%M")
+    ca = rec.ensure_ca_bundle("www.cenace.gob.ec", 443)
     r_, r = rec.fetch("operativa:page", OPERATIVA, save_as=f"cenace_operativa/InformacionOperativa_{stamp}.html", timeout=90)
-    out: dict = {"captured_local": now_ec.isoformat(timespec="minutes"), "status": r_.get("status"), "error": r_.get("error"), "bytes": r_.get("bytes"), "saved": r_.get("saved")}
+    out: dict = {"captured_local": now_ec.isoformat(timespec="minutes"), "ca_bundle": ca, "status": r_.get("status"), "error": r_.get("error"), "bytes": r_.get("bytes"), "saved": r_.get("saved")}
     if r is None or not r.ok:
         return out
     html = r.text
@@ -667,12 +749,157 @@ def _r_failures(rec, findings, started):
     return "\n".join(lines)
 
 
-REPORT_SECTIONS = [("header", _r_header)] + [("1. Every request", _r_1), ("2. robots.txt verdicts", _r_2), ("3. TLS", _r_4), ("4. CELEC ORDS", _r_5), ("5. CELEC dashboards (Angular bundles)", _r_6), ("6. CENACE SMEC daily balance", _r_7), ("7. CENACE Información Operativa", _r_8), ("8. Covariates", _r_9), ("9. Open-data portals", _r_10), ("10. Community mirrors", _r_11), ("11. Failures and skips", _r_13), ("section errors", _r_failures)]
+
+
+def _nonnull(r: requests.Response | None) -> int | None:
+    if r is None:
+        return None
+    try:
+        items = r.json().get("items", [])
+    except Exception:  # noqa: BLE001
+        return None
+    return sum(i.get("valueedit") is not None for i in items)
+
+
+def section_ords_matrix(rec: Recorder) -> dict:
+    """Same MesH24 call under different request styles; adopts the first style that returns values."""
+    now_ec = dt.datetime.now(TZ_EC)
+    params = month_window(now_ec.year, now_ec.month)
+    out: dict = {"month": f"{now_ec.year}-{now_ec.month:02d}", "variants": {}, "winner": None}
+    for name, cfg in ORDS_VARIANTS.items():
+        sess = requests.Session()
+        if cfg["headers"]:
+            sess.headers.update(cfg["headers"])
+        if cfg["legacy"]:
+            sess.mount("https://generacioncsr.celec.gob.ec:8443", LegacyTLSAdapter())
+        saved_prefixes = rec.legacy_prefixes
+        rec.legacy_prefixes = LEGACY_TLS_PREFIXES if cfg["legacy"] else ("https://smec.cenace.gob.ec",)
+        r_, r = rec.fetch(f"ords:matrix:{name}", f"{ORDS_MODULE}/pointValuesMesH24", params=params, save_as=f"celec_ords/matrix_{name}.json", session=sess)
+        rec.legacy_prefixes = saved_prefixes
+        summary = summarize_items(r)
+        out["variants"][name] = {"status": r_.get("status"), "error": r_.get("error"), "n_items": summary.get("n_items"), "n_nonnull": _nonnull(r), "min": summary.get("min"), "max": summary.get("max"), "sent_headers": dict(sess.headers)}
+        if out["winner"] is None and (_nonnull(r) or 0) > 0:
+            out["winner"] = name
+    # a browser in Ecuador sends local-midnight instants (05:00Z); test that framing too
+    alt = {"fechaInicio": params["fechaInicio"].replace("T00:00", "T05:00"), "fechaFin": params["fechaFin"].replace("T00:00", "T05:00"), "fecha": params["fecha"]}
+    r_, r = rec.fetch("ords:matrix:local_midnight_window", f"{ORDS_MODULE}/pointValuesMesH24", params=alt, save_as="celec_ords/matrix_local_midnight_window.json")
+    out["variants"]["local_midnight_window"] = {"status": r_.get("status"), "error": r_.get("error"), "n_items": summarize_items(r).get("n_items"), "n_nonnull": _nonnull(r)}
+    if out["winner"] is None and (_nonnull(r) or 0) > 0:
+        out["winner"] = "local_midnight_window"
+    if out["winner"] and out["winner"] in ORDS_VARIANTS:
+        rec.adopt_variant(out["winner"])
+        print(f"[matrix] adopted variant {out['winner']}", flush=True)
+    return out
+
+
+def section_ords_catalog(rec: Recorder) -> dict:
+    out: dict = {}
+    for code, module in ORDS_MODULES.items():
+        r_, r = rec.fetch(f"ords:openapi:{module}", f"{ORDS_BASE}/csr/open-api-catalog/{module}/", save_as=f"celec_ords/openapi_{module}.json")
+        info = {"status": r_.get("status"), "error": r_.get("error")}
+        if r is not None and r.ok:
+            try:
+                d = r.json()
+                info["paths"] = {p: {m: [q.get("name") or next(iter(q.keys()), None) for q in op.get("parameters", [])] for m, op in ops.items()} for p, ops in d.get("paths", {}).items()}
+            except Exception as error:  # noqa: BLE001
+                info["parse_error"] = str(error)[:200]
+        out[module] = info
+    return out
+
+
+def section_ords_reports(rec: Recorder) -> dict:
+    """Endpoints that exist in the ORDS module but the dashboard never calls (daily reports), plus per-plant energy."""
+    now_ec = dt.datetime.now(TZ_EC)
+    yesterday = (now_ec - dt.timedelta(days=1)).date()
+    fecha_day = f"{yesterday.strftime('%d/%m/%Y')} 00:00:00"
+    fecha_month = f"01/{yesterday.strftime('%m/%Y')} 00:00:00"
+    out: dict = {}
+
+    def probe(key, url, params=None, method="GET", json_body=None):
+        r_, r = rec.fetch(key, url, params=params, save_as=f"celec_ords/{key.replace(':', '_')}.txt", method=method, json_body=json_body)
+        info = {"status": r_.get("status"), "error": r_.get("error"), "content_type": r_.get("content_type"), "bytes": r_.get("bytes")}
+        if r is not None:
+            try:
+                d = r.json()
+                items = d.get("items", d.get("cv_1", [])) if isinstance(d, dict) else d
+                info["top_keys"] = sorted(d.keys()) if isinstance(d, dict) else type(d).__name__
+                info["n_items"] = len(items) if isinstance(items, list) else None
+                info["item_keys"] = sorted(items[0].keys()) if isinstance(items, list) and items and isinstance(items[0], dict) else None
+                info["sample"] = items[:3] if isinstance(items, list) else None
+            except Exception:  # noqa: BLE001
+                info["head"] = r.text[:300]
+        out[key] = info
+
+    for ep in ("repDiaNivQIng", "repDiaPotQTurb", "repDiaHid12m", "repDiaEner12m", "repDiaEnerAyerHoy", "repDiaRegAyer", "csrEnerDia", "csrEnerMes"):
+        probe(f"ords:rep:{ep}", f"{ORDS_MODULE}/{ep}", params={"fecha": fecha_day if "Mes" not in ep else fecha_month})
+    for ep in ("csrEstUnidades", "csrProdLinea", "csrProdLineaEnerAll", "csrProdLineaEnerDay", "csrProdLineaLast2h"):
+        probe(f"ords:rep:{ep}", f"{ORDS_MODULE}/{ep}")
+    probe("ords:rep:csrCaudCuenMesAvg", f"{ORDS_MODULE}/csrCaudCuenMesAvg", params=month_window(yesterday.year, yesterday.month))
+    probe("ords:rep:repDiaVolAlm_post", f"{ORDS_MODULE}/repDiaVolAlm", method="POST", json_body={"v_loctimestamp": f"{yesterday.isoformat()}T05:00:00Z"})
+    for code, module in ORDS_MODULES.items():
+        if code == "csr":
+            continue
+        probe(f"ords:ener:{code}:dia", f"{ORDS_BASE}/csr/{module}/{code}EnerDia", params={"fecha": fecha_day})
+        probe(f"ords:ener:{code}:mes", f"{ORDS_BASE}/csr/{module}/{code}EnerMes", params={"fecha": fecha_month})
+    return out
+
+
+def section_ords_new_mrids(rec: Recorder) -> dict:
+    now_ec = dt.datetime.now(TZ_EC)
+    out: dict = {}
+    for plant, var, mrid in NEW_MRIDS:
+        r_, r = rec.fetch(f"ords:mesh24:{mrid}:{now_ec.year}-{now_ec.month:02d}", f"{ORDS_MODULE}/pointValuesMesH24", params=month_window(now_ec.year, now_ec.month), save_as=f"celec_ords/mesh24_{mrid}_{now_ec.year}-{now_ec.month:02d}.json")
+        s_ = summarize_items(r)
+        out[f"{plant}/{var}/{mrid}"] = {"status": r_.get("status"), "n_items": s_.get("n_items"), "n_nonnull": _nonnull(r), "min": s_.get("min"), "max": s_.get("max"), "sample": s_.get("sample")}
+    return out
+
+
+def _r_ords_matrix(rec, findings, started):
+    m = _section(findings, "ords_matrix")
+    if not m:
+        return ""
+    lines = ["## 4a. ORDS request-style matrix", "", f"Month: {m.get('month')} · winner: **{m.get('winner')}**", "", md_table(["variant", "status", "items", "non-null", "min", "max", "error"], [[k, v.get("status"), v.get("n_items"), v.get("n_nonnull"), v.get("min"), v.get("max"), v.get("error")] for k, v in m.get("variants", {}).items()]), ""]
+    return "\n".join(lines)
+
+
+def _r_ords_catalog(rec, findings, started):
+    c = _section(findings, "ords_catalog")
+    if not c:
+        return ""
+    rows = []
+    for module, info in c.items():
+        for p, methods in (info.get("paths") or {}).items():
+            for meth, params in methods.items():
+                rows.append([module, meth.upper(), p, ", ".join(str(x) for x in params)])
+        if not info.get("paths"):
+            rows.append([module, "", f"status {info.get('status') or info.get('error')}", ""])
+    return "\n".join(["## 4b. ORDS OpenAPI catalog per module", "", md_table(["module", "method", "path", "params"], rows), ""])
+
+
+def _r_ords_reports(rec, findings, started):
+    c = _section(findings, "ords_reports")
+    if not c:
+        return ""
+    return "\n".join(["## 4c. ORDS report and per-plant energy endpoints", "", md_table(["endpoint", "status", "items", "item keys", "sample / head"], [[k, v.get("status") or v.get("error"), v.get("n_items"), ", ".join(v.get("item_keys") or []), json.dumps(v.get("sample") or v.get("head") or "", ensure_ascii=False, default=str)[:300]] for k, v in c.items()]), ""])
+
+
+def _r_ords_new_mrids(rec, findings, started):
+    c = _section(findings, "ords_new_mrids")
+    if not c:
+        return ""
+    return "\n".join(["## 4d. New mrids from the CELEC-wide bundle (current month, MesH24)", "", md_table(["plant/var/mrid", "status", "items", "non-null", "min", "max"], [[k, v.get("status"), v.get("n_items"), v.get("n_nonnull"), v.get("min"), v.get("max")] for k, v in c.items()]), ""])
+
+
+REPORT_SECTIONS = [("header", _r_header)] + [("1. Every request", _r_1), ("2. robots.txt verdicts", _r_2), ("3. TLS", _r_4), ("4. CELEC ORDS", _r_5), ("4a", _r_ords_matrix), ("4b", _r_ords_catalog), ("4c", _r_ords_reports), ("4d", _r_ords_new_mrids), ("5. CELEC dashboards (Angular bundles)", _r_6), ("6. CENACE SMEC daily balance", _r_7), ("7. CENACE Información Operativa", _r_8), ("8. Covariates", _r_9), ("9. Open-data portals", _r_10), ("10. Community mirrors", _r_11), ("11. Failures and skips", _r_13), ("section errors", _r_failures)]
 
 
 SECTIONS = {
     "tls": section_tls,
+    "ords_matrix": section_ords_matrix,
     "ords": section_ords,
+    "ords_catalog": section_ords_catalog,
+    "ords_reports": section_ords_reports,
+    "ords_new_mrids": section_ords_new_mrids,
     "celec_web": section_celec_web,
     "smec": section_smec,
     "operativa": section_operativa,
