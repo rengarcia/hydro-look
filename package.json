@@ -17,6 +17,7 @@
     "probe:ords": "tsx scripts/probe-ords.ts",
     "probe:basins": "tsx scripts/probe-basins.ts",
     "check": "tsx scripts/check.ts",
+    "publish:api": "tsx scripts/publish.ts",
     "forecast": "tsx scripts/forecast.ts"
   },
   "dependencies": {

@@ -1,0 +1,431 @@
+{
+  "generated_at": "2026-09-22T15:56:10Z",
+  "as_of": "2026-09-22",
+  "disclaimer": "No es una fuente oficial. Cada número es una copia de lo que publicaron CELEC o CENACE, con la respuesta que lo produjo archivada junto a él.",
+  "reservoirs": [
+    {
+      "site": "mazar",
+      "label": "Mazar",
+      "basin": "paute",
+      "level": {
+        "masl": 2138.37,
+        "date": "2026-09-21",
+        "first_reading": "2014-09-20",
+        "days": 4385,
+        "observed_min_masl": 2106.66,
+        "observed_max_masl": 2155.83
+      },
+      "bands": [
+        {
+          "min_masl": 2100,
+          "max_masl": 2153,
+          "declaration": "report endpoint",
+          "source": "ords:repDiaHid12m",
+          "observed_from": "2014-09-20",
+          "observed_to": "2026-09-20",
+          "band_pct": 72.4,
+          "metres_above_min": 38.37
+        },
+        {
+          "min_masl": 2098,
+          "max_masl": 2153,
+          "declaration": "dashboard chart title",
+          "source": "celec dashboard bundle",
+          "observed_from": "2026-09-21",
+          "observed_to": "2026-09-21",
+          "band_pct": 73.4,
+          "metres_above_min": 40.37
+        },
+        {
+          "min_masl": 2100,
+          "max_masl": 2153,
+          "declaration": "report endpoint",
+          "source": "ords:repDiaVolAlm",
+          "observed_from": "2026-09-21",
+          "observed_to": "2026-09-21",
+          "band_pct": 72.4,
+          "metres_above_min": 38.37
+        }
+      ],
+      "slopes_m_per_day": {
+        "d7": -0.2129,
+        "d14": -0.47,
+        "d30": -0.3313
+      },
+      "inflow": {
+        "m3s": 32.14,
+        "date": "2026-09-21",
+        "first_reading": "2010-02-10",
+        "days": 6062,
+        "climatology": {
+          "p10": 24.61,
+          "p50": 41.72,
+          "p90": 92.3,
+          "years": 17,
+          "n": 248,
+          "percentile_today": 29
+        }
+      }
+    },
+    {
+      "site": "amaluza",
+      "label": "Amaluza",
+      "basin": "paute",
+      "level": {
+        "masl": 1985.05,
+        "date": "2026-09-21",
+        "first_reading": "2014-09-20",
+        "days": 4385,
+        "observed_min_masl": 1971.65,
+        "observed_max_masl": 1991.69
+      },
+      "bands": [
+        {
+          "min_masl": 1960,
+          "max_masl": 1991,
+          "declaration": "report endpoint",
+          "source": "ords:repDiaHid12m",
+          "observed_from": "2014-09-20",
+          "observed_to": "2026-09-20",
+          "band_pct": 80.82,
+          "metres_above_min": 25.05
+        },
+        {
+          "min_masl": 1970,
+          "max_masl": 1991,
+          "declaration": "report endpoint",
+          "source": "ords:repDiaVolAlm",
+          "observed_from": "2026-09-21",
+          "observed_to": "2026-09-21",
+          "band_pct": 71.69,
+          "metres_above_min": 15.05
+        },
+        {
+          "min_masl": 1975,
+          "max_masl": 1991,
+          "declaration": "dashboard chart title",
+          "source": "celec dashboard bundle",
+          "observed_from": "2026-09-21",
+          "observed_to": "2026-09-21",
+          "band_pct": 62.84,
+          "metres_above_min": 10.05
+        }
+      ],
+      "slopes_m_per_day": {
+        "d7": 0.0807,
+        "d14": -0.0755,
+        "d30": 0.0221
+      },
+      "inflow": {
+        "m3s": 140.26,
+        "date": "2026-09-21",
+        "first_reading": "2014-09-20",
+        "days": 4385,
+        "climatology": {
+          "p10": 39.5,
+          "p50": 103,
+          "p90": 159,
+          "years": 13,
+          "n": 182,
+          "percentile_today": 79.1
+        }
+      }
+    },
+    {
+      "site": "sopladora",
+      "label": "Sopladora",
+      "basin": "paute",
+      "level": {
+        "masl": 1315.64,
+        "date": "2026-09-21",
+        "first_reading": "2026-05-31",
+        "days": 114,
+        "observed_min_masl": 1313.51,
+        "observed_max_masl": 1317.12
+      },
+      "bands": [
+        {
+          "min_masl": 1312,
+          "max_masl": 1318,
+          "declaration": "dashboard chart title",
+          "source": "celec dashboard bundle",
+          "observed_from": "2026-09-21",
+          "observed_to": "2026-09-21",
+          "band_pct": 60.72,
+          "metres_above_min": 3.64
+        }
+      ],
+      "slopes_m_per_day": {
+        "d7": 0.0265,
+        "d14": 0.0262,
+        "d30": -0.006
+      },
+      "inflow": {
+        "m3s": 147.84,
+        "date": "2026-09-21",
+        "first_reading": "2026-05-31",
+        "days": 114,
+        "climatology": null
+      }
+    },
+    {
+      "site": "minas_san_francisco",
+      "label": "Minas San Francisco",
+      "basin": "jubones",
+      "level": {
+        "masl": 787.64,
+        "date": "2026-09-21",
+        "first_reading": "2018-10-11",
+        "days": 2903,
+        "observed_min_masl": 755,
+        "observed_max_masl": 792.86
+      },
+      "bands": [
+        {
+          "min_masl": 750,
+          "max_masl": 793,
+          "declaration": "report endpoint",
+          "source": "ords:repDiaHid12m",
+          "observed_from": "2018-10-01",
+          "observed_to": "2026-09-20",
+          "band_pct": 87.53,
+          "metres_above_min": 37.64
+        },
+        {
+          "min_masl": 783.33,
+          "max_masl": 792.86,
+          "declaration": "dashboard chart title",
+          "source": "celec dashboard bundle",
+          "observed_from": "2026-09-21",
+          "observed_to": "2026-09-21",
+          "band_pct": 45.23,
+          "metres_above_min": 4.31
+        },
+        {
+          "min_masl": 783.33,
+          "max_masl": 792.86,
+          "declaration": "report endpoint",
+          "source": "ords:repDiaVolAlm",
+          "observed_from": "2026-09-21",
+          "observed_to": "2026-09-21",
+          "band_pct": 45.23,
+          "metres_above_min": 4.31
+        }
+      ],
+      "slopes_m_per_day": {
+        "d7": 0.3629,
+        "d14": -0.0329,
+        "d30": 0.0443
+      },
+      "inflow": {
+        "m3s": 9.78,
+        "date": "2026-09-21",
+        "first_reading": "2018-10-11",
+        "days": 2903,
+        "climatology": {
+          "p10": 7.2,
+          "p50": 14,
+          "p90": 32.8,
+          "years": 8,
+          "n": 113,
+          "percentile_today": 22.1
+        }
+      }
+    },
+    {
+      "site": "delsitanisagua",
+      "label": "Delsitanisagua",
+      "basin": "zamora",
+      "level": {
+        "masl": 1490.72,
+        "date": "2026-09-21",
+        "first_reading": "2018-12-31",
+        "days": 2822,
+        "observed_min_masl": 1469.08,
+        "observed_max_masl": 1492.51
+      },
+      "bands": [
+        {
+          "min_masl": 1469,
+          "max_masl": 1491,
+          "declaration": "report endpoint",
+          "source": "ords:repDiaHid12m",
+          "observed_from": "2018-08-31",
+          "observed_to": "2026-09-20",
+          "band_pct": 98.73,
+          "metres_above_min": 21.72
+        }
+      ],
+      "slopes_m_per_day": {
+        "d7": -0.0314,
+        "d14": -0.0157,
+        "d30": 0.0673
+      },
+      "inflow": {
+        "m3s": 34,
+        "date": "2026-09-21",
+        "first_reading": "2018-08-31",
+        "days": 2944,
+        "climatology": {
+          "p10": 22,
+          "p50": 32,
+          "p90": 50,
+          "years": 9,
+          "n": 128,
+          "percentile_today": 61.7
+        }
+      }
+    },
+    {
+      "site": "agoyan",
+      "label": "Agoyán",
+      "basin": "pastaza",
+      "level": {
+        "masl": 1645.9,
+        "date": "2026-09-21",
+        "first_reading": "2016-07-05",
+        "days": 3726,
+        "observed_min_masl": 1637,
+        "observed_max_masl": 1651
+      },
+      "bands": [],
+      "slopes_m_per_day": {
+        "d7": -0.3271,
+        "d14": -0.0579,
+        "d30": 0.1647
+      },
+      "inflow": {
+        "m3s": 80,
+        "date": "2026-09-21",
+        "first_reading": "2016-07-06",
+        "days": 3716,
+        "climatology": {
+          "p10": 56.4,
+          "p50": 88,
+          "p90": 138.6,
+          "years": 11,
+          "n": 158,
+          "percentile_today": 41.8
+        }
+      }
+    },
+    {
+      "site": "manduriacu",
+      "label": "Manduriacu",
+      "basin": "guayllabamba",
+      "level": {
+        "masl": 492.1,
+        "date": "2026-09-21",
+        "first_reading": "2017-08-01",
+        "days": 3339,
+        "observed_min_masl": 460,
+        "observed_max_masl": 493.1
+      },
+      "bands": [],
+      "slopes_m_per_day": {
+        "d7": 0,
+        "d14": -0.0143,
+        "d30": 0.01
+      },
+      "inflow": {
+        "m3s": 67.7,
+        "date": "2026-09-21",
+        "first_reading": "2017-08-01",
+        "days": 3307,
+        "climatology": {
+          "p10": 51.78,
+          "p50": 71.19,
+          "p90": 109,
+          "years": 10,
+          "n": 141,
+          "percentile_today": 31.9
+        }
+      }
+    },
+    {
+      "site": "coca_codo_sinclair",
+      "label": "Coca Codo Sinclair",
+      "basin": "coca",
+      "level": {
+        "masl": 1219,
+        "date": "2026-09-21",
+        "first_reading": "2016-06-26",
+        "days": 3734,
+        "observed_min_masl": 1198,
+        "observed_max_masl": 1230.5
+      },
+      "bands": [],
+      "slopes_m_per_day": {
+        "d7": -0.0714,
+        "d14": -0.1714,
+        "d30": -0.0167
+      },
+      "inflow": {
+        "m3s": 205,
+        "date": "2026-09-21",
+        "first_reading": "2016-06-21",
+        "days": 3719,
+        "climatology": {
+          "p10": 139,
+          "p50": 222,
+          "p90": 411.68,
+          "years": 11,
+          "n": 158,
+          "percentile_today": 44.3
+        }
+      }
+    }
+  ],
+  "national": {
+    "date": "2026-09-20",
+    "supply_gwh": [
+      {
+        "concept": "generacion_hidraulica",
+        "gwh": 76.809,
+        "pct": 76.64
+      },
+      {
+        "concept": "generacion_motores_bunker",
+        "gwh": 9.174,
+        "pct": 9.15
+      },
+      {
+        "concept": "generacion_vapor_bunker",
+        "gwh": 5.117,
+        "pct": 5.11
+      },
+      {
+        "concept": "generacion_turbinas_diesel",
+        "gwh": 4.437,
+        "pct": 4.43
+      },
+      {
+        "concept": "generacion_turbinas_gas",
+        "gwh": 2.712,
+        "pct": 2.71
+      },
+      {
+        "concept": "generacion_otros_tipos",
+        "gwh": 1.806,
+        "pct": 1.8
+      },
+      {
+        "concept": "total_importacion",
+        "gwh": 0.168,
+        "pct": 0.17
+      }
+    ],
+    "total_generation_gwh": 100.054,
+    "total_import_gwh": 0.168,
+    "total_export_gwh": 0.146,
+    "distribution_demand_gwh": 88.689,
+    "transport_losses_gwh": 0.406,
+    "hydro_share_pct": 76.64,
+    "thermal_share_pct": 21.39,
+    "import_share_pct": 0.17
+  },
+  "see_also": {
+    "forecast": "/api/forecast.json",
+    "status": "/api/status.json"
+  }
+}
