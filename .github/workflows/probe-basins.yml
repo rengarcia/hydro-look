@@ -4,15 +4,11 @@ name: Basin sources probe
 # answers 403 for every host but GitHub, so HydroSHEDS, Wikidata and Overpass can only be asked
 # from a runner. A dozen read-only requests, nothing written under data/. Delete this workflow
 # once basins.csv carries verified rows and the answers are in PLAN.md §2.4.
+# Dispatch-only now that it is on main: a dispatch names the ref it runs, so a probe under
+# development is run from its own branch without a push trigger pinned to a branch name that
+# stops existing the moment it merges.
 on:
   workflow_dispatch:
-  # workflow_dispatch only registers from the default branch; until this merges, a push of the
-  # probe on its own branch is how it gets run.
-  push:
-    branches: ["claude/status-check-plan-awcmmp"]
-    paths:
-      - ".github/workflows/probe-basins.yml"
-      - "scripts/probe-basins.ts"
 
 permissions: {}
 
