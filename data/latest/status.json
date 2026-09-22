@@ -1,14 +1,16 @@
 {
-  "generated_at": "2026-09-22T12:33:31Z",
-  "command": "backfill",
+  "generated_at": "2026-09-22T14:36:46Z",
+  "command": "daily",
   "source": "all",
   "errors": [],
-  "notes": [],
+  "notes": [
+    "smec 2026-09-21: report is incomplete (missing generacion_hidraulica, total_generacion, demanda_distribucion); the running day fills in at D+1, but a stored-as-missing day has come back identical on every retry"
+  ],
   "tables": {
     "observations_daily": {
-      "rows": 87319,
+      "rows": 89122,
       "first_date": "2009-01-01",
-      "last_date": "2026-09-21",
+      "last_date": "2026-09-22",
       "files": 18
     },
     "national_balance_daily": {
@@ -18,15 +20,15 @@
       "files": 11
     },
     "operativa_snapshots": {
-      "rows": 94,
+      "rows": 141,
       "first_date": "2026-09-22",
       "last_date": "2026-09-22",
       "files": 1
     },
     "operating_bands": {
       "rows": 7,
-      "first_date": "2026-09-20",
-      "last_date": "2026-09-21",
+      "first_date": "2026-09-21",
+      "last_date": "2026-09-22",
       "files": 1
     },
     "weather_daily": {

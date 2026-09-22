@@ -468,11 +468,49 @@ could take instead is the scheduled daily ingest — the very thing this criteri
 a cancelled run does not count. The rule is repeated in a comment at the top of `backfill.yml`,
 where someone about to dispatch will actually read it.
 
-Also still open from this phase's acceptance, and cheap: **the true first date of the historian
-series**. The 2026-09-22 walk of mrid 30538 was bounded at 2015-01 by its `--from` and returned
-values in every month down to it, with no run of empty months to stop it — so Mazar's inflow exists
-in the historian before 2015-01, and `repDiaHid12m` reaches only 2014-09-20. One dispatch with an
-earlier `--from` settles how far back the historian actually goes.
+**The true first date of the historian series is settled: 2010-02-10** (2026-09-22, run
+35736531676). The previous walk of mrid 30538 was bounded at 2015-01 by its own `--from` and so
+proved only that the series went deeper. Walking it from 2005-01 let the stopping rule decide
+instead of the bound: it returned values in every month down to 2010-01 and then twelve consecutive
+empty months, halting at 2009-01.
+
+The date the *readings* begin is six weeks later than the date the series does, and that gap is a
+finding rather than a rounding of one. Everything the historian publishes for Mazar before
+2010-02-10 is a zero: January 2010 has nine rows and all nine are zeros, then 2010-02-01 to -09 are
+nine more, and the first number that is a measurement is 73.2 m³/s on 2010-02-10. A historian
+switched on ahead of the gauge it records is the obvious reading, and it is why a walk cannot be
+stopped on "did a value come back" alone. Mazar's inflow now holds **6,062 days, 2010-02-10 →
+2026-09-21** — 1,780 more than the 4,282 it had this morning, and reaching **fifty-five months below
+`repDiaHid12m`'s floor of 2014-09-20**. The other historian series were walked in the same run and
+stopped where their plants begin, so the fleet's histories are now bounded by the data rather than
+by a dispatch parameter.
+
+**That depth cost something to use, and the cost was already being paid.** The years the walk
+reached are not clean, and neither were the years already committed:
+
+- **A spike that is not a flood.** Mazar's historian publishes 23,221.10 m³/s on 2013-11-27, between
+  neighbours of 34.31 and 0.00, against a maximum of 867 in the same series and 1,933 anywhere in
+  this repository's 21,000 inflow readings. That is a third of the Amazon at its mouth on a river
+  averaging 60. The two zeros immediately after it are what a failed gauge looks like from outside.
+- **82 zeros, 60 of which were already here.** 28 for Coca Codo Sinclair, 31 for Manduriacu and 1
+  for Agoyán were committed in Phase 3 and never flagged; 22 more arrived with Mazar's new years.
+  The historian publishes decimals, and in it a 0.00 sits below every one of those series' own
+  non-zero floors: 84.00 m³/s for Coca Codo Sinclair against a 1st percentile of 97, 35.00 for
+  Agoyán, 10.40 for Manduriacu. They cluster the way a fault does and hydrology does not — the
+  eighteen consecutive publishing days before Mazar's first real reading, and two immediately after
+  the spike. A model handed one reads it as the river having stopped, the same false collapse §6's
+  Phase 2 already rejects on the SMEC side.
+- **And the rule nearly went one day too far.** Rejecting every zero inflow would have deleted
+  2024-11-08, where `repDiaHid12m` published 0 for Mazar at the worst of the rationing drought. The
+  reports publish whole m³/s and the historian published **0.142** for that same day, so the
+  report's zero is `round(0.142)` — the truest reading in the series, not a missing one. The rule is
+  therefore asked only of the route whose precision gives it meaning, and the test that asserts a
+  reported zero is kept now carries that day as its case.
+
+83 rows are removed from `observations_daily` (82 historian zeros and the spike); both parsers and
+`npm run check` now reject all three shapes, and every raw response stays archived so anything that
+later acquires a meaning can be reprocessed. `INFLOW_CEILING_M3S` in `src/lib/parse/ords.ts` is
+10,000 — fivefold clear of the largest reading ever seen here.
 
 Original phase text, for reference:
 Package, CLI, raw archive, `reservoir_daily` contract, ORDS client, and loaders for `repDiaHid12m` (levels
@@ -559,7 +597,9 @@ Three things the run proved rather than assumed, all against the live service:
 `npm run crosscheck:caudal`, report in `data/crosschecks/`). §2.1 asked for a month of overlap
 between mrid 30538 and Mazar's `q_ingresado`. There was none, and the reason was ours: the walk
 used the control list as a gate and then walked only the targets, so 30538 was declared and never
-fetched. Walking it produced **4,282 days, 2015-01-01 → 2026-09-21**, and the answer is not close:
+fetched. Walking it produced **4,282 days, 2015-01-01 → 2026-09-21** — a floor since pushed back to
+2010-01-01 and 6,085 days by the walk recorded in Phase 1, which does not disturb the comparison
+below because `repDiaHid12m` reaches only 2014-09-20 either way — and the answer is not close:
 
 - **`mridCaud` is inflow.** Against `repDiaHid12m` the historian matches on **4,281 days at
   offset 0, mean absolute difference 0.2491 m³/s, r = 1.0000**, and that residual is not error —
@@ -652,18 +692,74 @@ the URL taken from HydroSHEDS' own live product page are all 403 — so no diffe
 Actions reaches it, and neither Zenodo nor figshare carries a mirror. What is reachable is ArcGIS
 Online, where Ecuador's Pfafstetter `unidades hidrográficas` are served as anonymous, queryable
 polygons; the hit found is a figure from a personal account rather than an agency publication, so
-it is a lead to a dataset rather than a citable source. The second opinion on the coordinates is
-most of the way done: **five of the seven pour points now agree between Wikidata and OpenStreetMap
-within a kilometre** (Manduriacu to 0.02 km), Minas San Francisco has had no Overpass answer in
-four runs, and Delsitanisagua's two sources name the same plant **8.18 km apart** — almost
-certainly intake versus powerhouse on a run-of-river scheme, which must be settled before either
-point is used, since a catchment is defined at the intake. So the order of work is unchanged but
-better aimed: find the official publication of those units (SENAGUA or MAATE) or a boundary set
-with upstream topology, settle Delsitanisagua and get an answer for Minas San Francisco, then
-delineate, and only then rewrite `basins.csv`. Nothing about the covariate loader changes — it already takes one row per
+it is a lead to a dataset rather than a citable source.
+
+**That lead is now closed, negatively** (2026-09-22, run 35737236907). Asking each of the four
+candidate layers which of its polygons contains each of the seven pour points — a point-in-polygon
+query, which a feature layer answers without serving the dataset — returned **`no polygon contains
+this point` for all twenty-eight pairs**. Three of the four map Mira-Mataje in the far north and
+were expected to say so; the fourth, the `Fig 13_ B_UnidadesHidrográficasN4Pfastetter` layer that
+looked like the national answer, says it too. It is a figure from one paper covering one study
+area, not Ecuador's Pfafstetter units, and no amount of re-asking it will produce a catchment. The
+search for a boundary set with upstream topology starts again from SENAGUA or MAATE directly.
+
+**Delsitanisagua's 8.18 km disagreement was never real.** It was this probe choosing the wrong
+element, and the correction is worth more than the finding it replaces. OSM maps at least two
+Delsitanisagua structures; the matcher took whichever the server listed first and got
+node/2489320895, a `waterway=dam` carrying no QID, 8.18 km from Wikidata and some 500 m above it.
+Ranking name matches by QID instead (run 35739164652) finds **way/690695824, "Central
+Hidroeléctrica Delsitanisagua", `wikidata=Q65196191`, `power=plant`, 180 MW** — the same QID the
+SPARQL query returned — **0.1 km from the Wikidata point and 22 m below it**. The two sources never
+disagreed about anything: they name one entity and place it in the same spot.
+
+**But agreeing about the powerhouse is not the same as knowing the pour point.** What both sources
+confirm is where the *machines* are, and a catchment is defined at the intake. node/2489320895 is
+still the best candidate for that intake — it is tagged `waterway=dam`, it is upstream, and it sits
+about 500 m higher, which on a run-of-river scheme is the right shape — but it carries no QID, no
+operator and a name that is also a locality in that valley, so nothing yet ties it to this scheme
+rather than to something else called Delsitanisagua. It is a lead to confirm, not a coordinate to
+use, and `basins.csv` gets neither point until it is confirmed. (The earlier reading in this
+section, that the 526 m gap proved intake-versus-powerhouse, was sound reasoning resting on a
+premise the fixed matcher removed. The two elevations it compared belong to two structures that
+were never the two sources' rival claims.)
+
+**Three pour points are now confirmed by identity rather than by proximity, and one improved a lot.**
+The QID ranking does not only prevent errors, it finds better elements. Mazar now matches
+**way/311803060, "Presa Mazar", `wikidata=Q1751861`, `waterway=dam`, at 0.04 km and 0 m** — the dam
+itself, where before it matched a `power=plant` node 0.69 km away. Agoyán matches node/8432673468
+by QID at **0.37 km and −9 m**. Coca Codo Sinclair's way/310742588 carries `wikidata=Q19277520` and
+`waterway=dam` and agrees to **0.11 km and 1 m**. Those three are dams or plants identified by the
+same QID two ways, at the same place, at the same height: the pour points this repository may mark
+`verified`.
+
+**The distance bound earned its keep immediately.** Overpass did not answer for Marcel Laniado this
+run, and Nominatim offered "Embalse Daule Peripa" — 16.36 km away and carrying `wikidata=Q23886712`,
+a *different* QID from the Q19381026 the SPARQL query returned. It is the reservoir, not the dam.
+The bound rejected it and said why, where the previous run would have seated it in the table.
+
+**Minas San Francisco has now failed six runs**, and for the first time the failure is informative:
+Nominatim answered both aliases (10 and 9 results) with no name match at all, so this is no longer
+only three busy Overpass servers. Either the dam is unnamed in OSM or it is mapped under a name
+nobody here has guessed, and the next attempt should search the Jubones by geometry rather than by
+string.
+
+So the order of work is: find the official publication of those units (SENAGUA or MAATE) or a
+boundary set with upstream topology — the ArcGIS route having been closed by measurement — get an
+answer for Minas San Francisco, then delineate, and only then rewrite `basins.csv`. Nothing about
+the covariate loader changes — it already takes one row per
 basin and archives what it fetches. What is missing is the table it reads, and
 `scripts/probe-basins.ts` is what re-asks these questions once there is a new candidate to ask
 about.
+
+**Two cautions about the probe itself, both found by the run that produced the answers above.** A
+free-text search answers with whatever carries the string: Nominatim returned an "Agoyan" 131 km
+away at 2,876 m, and the probe seated it in the coordinates table beside the real site's 1,638 m as
+though the pair were comparable. And the name matcher took whichever element the server listed
+first, so Manduriacu — which OSM maps as a plant, a dam and an untagged reservoir outline under two
+spellings of one name — reported 0.02 km on one run and 1.19 km on the next from identical data.
+Both are fixed: a Nominatim hit is accepted only within the thirteen kilometres the bounding boxes
+already use, and name matches are ranked by QID agreement before distance. Any figure in this
+section taken from a run before that fix should be read with those two failure modes in mind.
 
 One setting would reopen the route the plan was built around, and it is not in this repository: the
 block is on the address, and the development sandbox is a different address that refuses these

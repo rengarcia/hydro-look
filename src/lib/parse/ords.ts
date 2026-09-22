@@ -62,20 +62,63 @@ function requireFields(rows: Json[], fields: string[], endpoint: string): void {
 }
 
 /**
- * Inflow the reports publish as a negative number, which is not a low reading but not a reading.
+ * The largest inflow that can be a reading rather than a fault, in m3/s.
  *
- * `q_ingresado` is water entering the reservoir; it has no negative branch. The ORDS emits one
- * on days before a plant's series begins: Minas San Francisco's level is null on 2018-10-01 and
- * 2018-10-10 and its inflow on those two days is -4,999,995 and -3,999,996, against single
- * digits either side and nothing else negative in 14,619 inflow readings. Whatever those
- * magic numbers mean upstream, they are not m3/s, so they are dropped with a note rather than
- * carried into a series someone will fit a model to. The raw response stays archived, so if
- * their meaning is ever established they can be reprocessed.
+ * The historian published 23,221.10 for Mazar on 2013-11-27, between neighbours of 34.31 and 0.00
+ * and against a maximum of 867 in the same series and 1,933 anywhere in this repository's 21,000
+ * inflow readings. A flow that size does not happen on an Ecuadorian river — it is a third of the
+ * Amazon at its mouth — and the two zeros that immediately follow it read like the gauge that
+ * produced it failing. Ten thousand leaves a fivefold margin above the largest reading ever seen
+ * here, so the rule rejects that fault and nothing near a real flood.
  */
-function usableInflow(value: number | null, context: { site: string; date: string; endpoint: string }, notes: string[]): number | null {
-  if (value === null || value >= 0) return value;
-  notes.push(`${context.endpoint} ${context.site} ${context.date}: inflow ${value} is negative, which q_ingresado cannot be; dropped`);
-  return null;
+const INFLOW_CEILING_M3S = 10_000;
+
+/**
+ * Inflow published as a number that is not a reading: negative, zero, or in five figures.
+ *
+ * `q_ingresado` is water entering the reservoir, and all three of these say more about the
+ * instrument than the river.
+ *
+ * **Negative** has no branch at all. The ORDS emits one on days before a plant's series begins:
+ * Minas San Francisco's level is null on 2018-10-01 and 2018-10-10 and its inflow on those two
+ * days is -4,999,995 and -3,999,996, against single digits either side and nothing else negative
+ * in 14,619 inflow readings.
+ *
+ * **Zero** is a sentinel on one route and a real reading on the other, and the difference is
+ * precision. The historian publishes decimals, and there a 0.00 is the service saying nothing:
+ * the smallest non-zero reading is 84.00 m3/s for Coca Codo Sinclair — whose 1st percentile is 97
+ * — 35.00 for Agoyán and 10.40 for Manduriacu, so a zero sits further below those series' own
+ * floors than any real day approaches. They cluster like a fault and not like hydrology: nine
+ * consecutive days in 2010-02, three in 2010-01, two immediately after the spike above, and 20 of
+ * Mazar's 22 inside the first ten months of a series that begins in 2010-01.
+ *
+ * The 12-month reports are the opposite case, and nearly cost this rule its credibility. They
+ * publish whole m3/s — the caudal cross-check found the report is exactly `round(historian)` on
+ * all 4,281 shared days — so a reported 0 is `round(x)` for any x below 0.5. On 2024-11-08, at the
+ * worst of the rationing drought, `repDiaHid12m` published 0 for Mazar and the historian published
+ * 0.142 on the same day. That zero is the most informative reading in the series, not a missing
+ * one, and dropping it would have deleted the day the Paute came closest to stopping. So the rule
+ * is asked only of the route whose precision makes it meaningful.
+ *
+ * What is dropped is dropped with a note rather than carried into a series someone will fit a
+ * model to, and every raw response stays archived, so if the meaning of one is ever established
+ * it can be reprocessed.
+ */
+function usableInflow(
+  value: number | null,
+  context: { site: string; date: string; endpoint: string },
+  notes: string[],
+  opts: { zeroIsMissing?: boolean } = {},
+): number | null {
+  if (value === null) return null;
+  const say = (why: string): null => {
+    notes.push(`${context.endpoint} ${context.site} ${context.date}: inflow ${value} ${why}; dropped`);
+    return null;
+  };
+  if (value < 0) return say("is negative, which q_ingresado cannot be");
+  if (value === 0 && opts.zeroIsMissing) return say("is zero on a route that publishes decimals, so it is a missing reading rather than a stopped river");
+  if (value > INFLOW_CEILING_M3S) return say(`exceeds ${INFLOW_CEILING_M3S} m3/s, which no Ecuadorian intake sees`);
+  return value;
 }
 
 function push(out: Observation[], row: Omit<Observation, "mrid"> & { mrid?: string }): void {
@@ -338,18 +381,25 @@ export function parsePointValues(
   requireFields(rows, ["loctimestamp", "valueedit"], endpoint);
 
   const observations: Observation[] = [];
+  const notes: string[] = [];
   let nulls = 0;
   for (const row of rows) {
-    const value = asNumber(row["valueedit"]);
-    if (value === null) {
+    const raw = asNumber(row["valueedit"]);
+    if (raw === null) {
       nulls++;
       continue;
     }
     const stamp = requireString(row, "loctimestamp", endpoint);
     const date = opts.hourEnding ? localDateOfHourEnding(stamp) : localDateOf(stamp);
+    // The historian is the same quantity by another route — the caudal-semantics cross-check
+    // matched it to `repDiaHid12m` on 4,281 days — so it inherits the same rule. It is the route
+    // that needs it most: the reports start in 2014-09 and the faults cluster in 2010 and 2013,
+    // years only the historian reaches.
+    const value = variable === "caudal_m3s" ? usableInflow(raw, { site, date, endpoint }, notes, { zeroIsMissing: true }) : raw;
+    if (value === null) continue;
     push(observations, { date, site, variable, value, source: endpoint, mrid: String(mrid) });
   }
-  const notes = nulls === rows.length && rows.length > 0 ? [`${endpoint} mrid=${mrid}: all ${nulls} points are null (known open issue)`] : [];
+  if (nulls === rows.length && rows.length > 0) notes.push(`${endpoint} mrid=${mrid}: all ${nulls} points are null (known open issue)`);
   return { observations, notes };
 }
 

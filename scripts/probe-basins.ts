@@ -42,6 +42,33 @@
  * punctuation folded away, and every label the query returned is printed whether it matched or
  * not — an unmatched list is how the next run's aliases get written.
  *
+ * **Three more questions this run adds**, each one something the 2026-09-22 runs left open:
+ *
+ * 3. **What each point *is*.** Delsitanisagua's two sources name the plant 8.18 km apart, which is
+ *    too far to be mapping imprecision, and until it is known whether they name the intake or the
+ *    machines neither point may be used, because a catchment is defined at the intake. The evidence
+ *    was already in hand and thrown away: `out center tags` returns every tag and only the name was
+ *    kept. Tags are now reported, and with them two independent readings. A `wikidata=Q…` tag on the
+ *    OSM element settles it outright — both sources would then name one entity, and one of them
+ *    simply has the coordinate wrong. Failing that, height settles it: water enters a run-of-river
+ *    scheme at the intake and leaves at the powerhouse, so the intake is higher by the gross head,
+ *    and a terrain reading separates the two ends of a headrace by a margin no mapping error
+ *    imitates. Elevations come from the host this repository already fetches its weather from.
+ * 4. **A second route into OpenStreetMap.** Minas San Francisco has now ended five runs `no answer`
+ *    — a 429 and two timeouts in the last one — which says nothing about the map and everything
+ *    about three busy servers. Nominatim reads the same database from different machines, so a site
+ *    Overpass will not answer can still be confirmed, or genuinely not found, which would be the
+ *    first time that phrase meant anything here. It searches by name rather than by box, so it also
+ *    reaches a dam OSM places outside the box drawn around the Wikidata point — the limit the last
+ *    run wrote down and could not fix.
+ * 5. **Whether any boundary candidate contains these dams.** The last run ended with four of them
+ *    and a sentence promising the next would pick one and read it. This is that read, put as a
+ *    point-in-polygon question rather than a download: an ArcGIS feature layer will say which
+ *    polygon a coordinate falls in without serving the dataset at all. What comes back is the
+ *    unit's own attributes — for the Pfafstetter layer a NIVEL_4 code, whose digits carry the
+ *    nesting this exercise needs. Three of the four candidates map Mira-Mataje in the far north and
+ *    should contain none of these dams; that they say so is the test working, not a failure.
+ *
  * Read-only, writes nothing under data/, and every probe is guarded on its own so one dead host
  * does not cost the answers from the others.
  *
@@ -141,6 +168,12 @@ const boundaries: Boundary[] = [];
  */
 let wikidataFound: Record<string, (Point & { matchedBy: string }) | null> = {};
 let overpassFound: Record<string, OsmResult> = {};
+/** Ground height at every candidate point, keyed `site/source`. The intake is the higher end. */
+let elevations: Record<string, number | null> = {};
+/** Every mapped structure between two points that disagree, so the scheme can be read off. */
+const schemes: Record<string, SchemeElement[]> = {};
+/** Which polygon of which candidate boundary set contains each dam. */
+let containment: ContainmentRow[] = [];
 const record = (row: Partial<Row> & { probe: string; url: string }): void => {
   rows.push({ status: null, bytes: null, note: "", error: "", ...row });
 };
@@ -173,6 +206,22 @@ const fold = (s: string): string =>
     .trim();
 
 const bytesOf = (n: number | null): string => (n === null ? "—" : n.toLocaleString("en-US"));
+
+/**
+ * The tags that say which part of a scheme an element is, in the order they answer the question.
+ *
+ * `waterway=dam` and `power=plant` are not two words for one place. On a run-of-river scheme they
+ * sit at opposite ends of a headrace, and a catchment drawn at the wrong one is a catchment with
+ * several kilometres of river in it that the plant never sees. `wikidata` is here because it is the
+ * strongest answer of all: if the OSM element carries the same QID the SPARQL query returned, the
+ * two sources are not describing different structures at all — they are describing one thing, and
+ * the distance between them is somebody's error rather than a headrace.
+ */
+const STRUCTURE_TAGS = ["wikidata", "waterway", "man_made", "power", "plant:source", "generator:source", "plant:output:electricity", "operator", "start_date"];
+const structureOf = (tags: Record<string, string>): string =>
+  STRUCTURE_TAGS.filter((k) => tags[k])
+    .map((k) => `${k}=${tags[k]}`)
+    .join(", ") || "no identifying tags";
 
 /**
  * Words that make a title or a layer name plausibly about drainage boundaries.
@@ -578,7 +627,7 @@ out center tags;`;
 }
 
 /** What came back for a site, so a blank cell cannot be read as a statement about OSM. */
-type OsmHit = Point & { name: string; kmFromWikidata: number; byName: boolean };
+type OsmHit = Point & { name: string; kmFromWikidata: number; byName: boolean; tags: Record<string, string>; via: string };
 interface OsmResult {
   hit: OsmHit | null;
   /** `match`, `nearest-only`, `empty box`, `no answer`, or `no anchor`. */
@@ -654,8 +703,11 @@ out center tags;`;
             id: `${e.type}/${e.id}`,
             lat: e.lat ?? e.center?.lat,
             lon: e.lon ?? e.center?.lon,
+            // Kept, not discarded: which structure of a scheme this element is cannot be read
+            // off a name, and the answer is already in the response the query paid for.
+            tags: e.tags ?? {},
           }))
-          .filter((i): i is { name: string; id: string; lat: number; lon: number } => i.lat !== undefined && i.lon !== undefined);
+          .filter((i): i is { name: string; id: string; lat: number; lon: number; tags: Record<string, string> } => i.lat !== undefined && i.lon !== undefined);
         // Nothing found is only a finding if this instance holds Ecuador at all.
         if (items.length === 0 && control.get(candidate) !== "yes") {
           let verdict = control.get(candidate);
@@ -685,11 +737,21 @@ out center tags;`;
         }
         if (items.length > 0) control.set(candidate, "yes");
         lastGood = candidate;
-        const byName = items.find((i) => plant.aliases.some((a) => fold(i.name).includes(fold(a))));
+        // Several elements can share a name, and `find` took whichever the server happened to list
+        // first. Manduriacu maps its plant, its dam and an untagged reservoir outline under two
+        // spellings of the same string, so one run reported it at 0.02 km and the next at 1.19 —
+        // from identical data. Prefer the element carrying the QID the SPARQL query returned, then
+        // the nearest: a QID match is the two sources naming one entity, which is the whole test.
+        const named = items.filter((i) => plant.aliases.some((a) => fold(i.name).includes(fold(a))));
+        const byName = [...named].sort(
+          (a, b) => Number(b.tags["wikidata"] === plant.qid) - Number(a.tags["wikidata"] === plant.qid) || kmApart(anchor, a) - kmApart(anchor, b),
+        )[0];
         const nearest = items.filter((i) => i.name).sort((a, b) => kmApart(anchor, a) - kmApart(anchor, b))[0];
         const hit = byName ?? nearest;
         found[plant.site] = {
-          hit: hit ? { lat: hit.lat, lon: hit.lon, id: hit.id, name: hit.name || "(unnamed)", kmFromWikidata: kmApart(anchor, hit), byName: Boolean(byName) } : null,
+          hit: hit
+            ? { lat: hit.lat, lon: hit.lon, id: hit.id, name: hit.name || "(unnamed)", kmFromWikidata: kmApart(anchor, hit), byName: Boolean(byName), tags: hit.tags, via: "overpass" }
+            : null,
           outcome: byName ? "match" : nearest ? "nearest-only" : "empty box",
         };
         record({
@@ -697,7 +759,9 @@ out center tags;`;
           url: candidate,
           status: response.status,
           bytes: body.length,
-          note: `${items.length} dams/plants in the box; ${byName ? `name match ${byName.name}` : nearest ? `no name match, nearest named is ${nearest.name}` : "nothing named"}`,
+          note:
+            `${items.length} dams/plants in the box; ` +
+            `${byName ? `name match ${byName.name} [${structureOf(byName.tags)}]` : nearest ? `no name match, nearest named is ${nearest.name}` : "nothing named"}`,
         });
         break;
       } catch (error) {
@@ -712,6 +776,250 @@ out center tags;`;
   return found;
 }
 
+/** One mapped structure found between two points that disagree about where a plant is. */
+interface SchemeElement {
+  id: string;
+  name: string;
+  what: string;
+  lat: number;
+  lon: number;
+  kmFromWikidata: number;
+  kmFromOsm: number;
+}
+
+/** One dam, one candidate boundary layer, and the polygon of it the dam falls in. */
+interface ContainmentRow {
+  site: string;
+  layer: string;
+  url: string;
+  status: number | null;
+  attributes: string;
+  note: string;
+}
+
+/**
+ * Ground height at every candidate point, from the host this repository already fetches weather
+ * from and therefore already knows a runner can reach.
+ *
+ * This is the instrument the earlier runs lacked. When two sources place one plant 8 km apart the
+ * useful question is not which coordinate is *right* — both can be — but which structure each one
+ * names, and on a run-of-river scheme that is a question about height: the intake is above the
+ * machines by the whole gross head, which for a plant of this kind is hundreds of metres. A pair
+ * that comes back within a few metres of each other is the other answer, and a valuable one: it
+ * would mean the disagreement is not intake-versus-powerhouse at all and one source is simply
+ * wrong. One request carries every point, so the whole fleet costs what a single reading costs.
+ */
+async function probeElevation(points: { key: string; lat: number; lon: number }[]): Promise<Record<string, number | null>> {
+  const out: Record<string, number | null> = {};
+  if (points.length === 0) return out;
+  const url =
+    "https://api.open-meteo.com/v1/elevation" +
+    `?latitude=${points.map((p) => p.lat.toFixed(5)).join(",")}` +
+    `&longitude=${points.map((p) => p.lon.toFixed(5)).join(",")}`;
+  try {
+    const response = await get(url, { headers: { accept: "application/json" } });
+    const body = await response.text();
+    const json = response.ok ? (JSON.parse(body) as { elevation?: number[] }) : null;
+    const values = json?.elevation ?? [];
+    points.forEach((p, i) => {
+      out[p.key] = typeof values[i] === "number" ? values[i] : null;
+    });
+    record({
+      probe: "elevation (open-meteo)",
+      url,
+      status: response.status,
+      bytes: body.length,
+      note: values.length
+        ? points.map((p, i) => `${p.key} ${values[i] ?? "?"}`).join("; ")
+        : `no elevations returned: ${body.slice(0, 80).replace(/\s+/g, " ")}`,
+    });
+  } catch (error) {
+    record({ probe: "elevation (open-meteo)", url, error: String(error) });
+  }
+  return out;
+}
+
+/**
+ * Everything mapped between two points that disagree, so the scheme can be read rather than guessed.
+ *
+ * The per-site query asks only for dams and plants, which is why it can report two points 8 km apart
+ * and say nothing about what lies between them. A run-of-river scheme is a chain — intake, headrace
+ * or penstock, powerhouse, tailrace — and the chain is what distinguishes "two sources naming
+ * opposite ends of one plant" from "two sources naming two different plants". This asks for the
+ * whole chain over a box covering both candidates, and reports each element with the tags that say
+ * what it is and its distance from each of the two claims.
+ */
+async function probeScheme(site: string, a: Point, b: Point): Promise<SchemeElement[]> {
+  const pad = 0.03;
+  const bbox =
+    `${(Math.min(a.lat, b.lat) - pad).toFixed(3)},${(Math.min(a.lon, b.lon) - pad).toFixed(3)},` +
+    `${(Math.max(a.lat, b.lat) + pad).toFixed(3)},${(Math.max(a.lon, b.lon) + pad).toFixed(3)}`;
+  const query = `[out:json][timeout:40];
+(
+  nwr["waterway"~"^(dam|weir|canal|penstock|ditch)$"](${bbox});
+  nwr["man_made"~"^(intake|pipeline|water_works|penstock|tunnel)$"](${bbox});
+  nwr["power"~"^(plant|generator)$"](${bbox});
+  nwr["water"="reservoir"](${bbox});
+  nwr["natural"="water"]["name"](${bbox});
+);
+out center tags;`;
+  for (const endpoint of OVERPASS) {
+    try {
+      const response = await get(endpoint, { method: "POST", body: new URLSearchParams({ data: query }) });
+      const body = await response.text();
+      if (!response.ok) {
+        record({ probe: `scheme ${site}`, url: endpoint, status: response.status, note: body.slice(0, 80).replace(/\s+/g, " ") });
+        await sleep(response.status === 429 ? 5000 : 1500);
+        continue;
+      }
+      const json = JSON.parse(body) as {
+        elements: { type: string; id: number; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> }[];
+      };
+      const found = json.elements
+        .map((e) => ({
+          id: `${e.type}/${e.id}`,
+          name: e.tags?.["name"] ?? "",
+          what: structureOf(e.tags ?? {}),
+          lat: e.lat ?? e.center?.lat,
+          lon: e.lon ?? e.center?.lon,
+        }))
+        .filter((e): e is { id: string; name: string; what: string; lat: number; lon: number } => e.lat !== undefined && e.lon !== undefined)
+        .map((e) => ({ ...e, kmFromWikidata: kmApart(a, e), kmFromOsm: kmApart(b, e) }))
+        .sort((x, y) => x.kmFromWikidata - y.kmFromWikidata);
+      record({
+        probe: `scheme ${site}`,
+        url: endpoint,
+        status: response.status,
+        bytes: body.length,
+        note: `${found.length} structures in a box covering both claims`,
+      });
+      return found;
+    } catch (error) {
+      record({ probe: `scheme ${site}`, url: endpoint, error: String(error) });
+      await sleep(1500);
+    }
+  }
+  return [];
+}
+
+/**
+ * OpenStreetMap by a different door, for the sites Overpass would not answer.
+ *
+ * `no answer` is a fact about three busy servers, not about the map, and a site that collects five
+ * of them in a row is still unmeasured rather than unmapped. Nominatim runs on different machines
+ * against the same database, and it searches by name, so it answers a question the bounding boxes
+ * structurally cannot: where OSM puts this dam, including somewhere the box never covered.
+ */
+/**
+ * How far a Nominatim hit may sit from the Wikidata point and still be about the same dam.
+ *
+ * The first run with this route returned "Agoyan" 131 km away, at 2,876 m against the dam's 1,638,
+ * and the name match alone was enough to put it in the coordinates table — where its elevation was
+ * then compared against the real site's as though the pair meant something. A free-text search
+ * answers with whatever carries the string, and Ecuador has more than one Agoyán. Thirteen
+ * kilometres is the radius the bounding boxes already use, so the two routes agree on what
+ * "near this dam" means, and a hit beyond it is recorded as the finding it is rather than adopted.
+ */
+const MAX_NOMINATIM_KM = 13;
+
+async function probeNominatim(plant: (typeof PLANTS)[number], anchor: Point): Promise<OsmHit | null> {
+  for (const alias of plant.aliases) {
+    const url =
+      "https://nominatim.openstreetmap.org/search" +
+      `?format=jsonv2&limit=10&countrycodes=ec&extratags=1&q=${encodeURIComponent(alias)}`;
+    try {
+      const response = await get(url, { headers: { accept: "application/json" } });
+      const body = await response.text();
+      if (!response.ok) {
+        record({ probe: `nominatim ${plant.site}`, url, status: response.status, note: body.slice(0, 80).replace(/\s+/g, " ") });
+        await sleep(2000);
+        continue;
+      }
+      const items = (JSON.parse(body) as { lat: string; lon: string; name?: string; display_name?: string; osm_type?: string; osm_id?: number; category?: string; type?: string; extratags?: Record<string, string> }[])
+        .map((i) => ({
+          lat: Number(i.lat),
+          lon: Number(i.lon),
+          name: i.name || i.display_name?.split(",")[0] || "",
+          id: i.osm_type && i.osm_id ? `${i.osm_type}/${i.osm_id}` : "(no osm id)",
+          tags: { ...(i.extratags ?? {}), ...(i.category ? { [i.category]: i.type ?? "" } : {}) },
+        }))
+        .filter((i) => Number.isFinite(i.lat) && Number.isFinite(i.lon));
+      const byName = items.find((i) => plant.aliases.some((x) => fold(i.name).includes(fold(x))));
+      record({
+        probe: `nominatim ${plant.site}`,
+        url,
+        status: response.status,
+        bytes: body.length,
+        note:
+        `"${alias}": ${items.length} results; ` +
+        (byName
+          ? `name match ${byName.name} at ${kmApart(anchor, byName)} km [${structureOf(byName.tags)}]` +
+            (kmApart(anchor, byName) > MAX_NOMINATIM_KM ? ` — beyond ${MAX_NOMINATIM_KM} km, so this is something else with the same name, not this dam` : "")
+          : `no name match${items.length ? `, first is ${items[0]!.name}` : ""}`),
+      });
+      if (byName && kmApart(anchor, byName) <= MAX_NOMINATIM_KM) {
+        return { lat: byName.lat, lon: byName.lon, id: byName.id, name: byName.name, kmFromWikidata: kmApart(anchor, byName), byName: true, tags: byName.tags, via: "nominatim" };
+      }
+      await sleep(2000);
+    } catch (error) {
+      record({ probe: `nominatim ${plant.site}`, url, error: String(error) });
+      await sleep(2000);
+    }
+  }
+  return null;
+}
+
+/**
+ * Which polygon of each candidate boundary set each dam falls in.
+ *
+ * The promise the last run left was that the next would pick a candidate and read it. This reads
+ * all of them, and as a question rather than a download: a feature layer will answer which of its
+ * polygons contains a coordinate without serving the dataset, which is the difference between a
+ * lead and a usable source. The attributes that come back are the whole point — a Pfafstetter code
+ * carries its nesting in its digits, so a layer that returns one has the upstream topology that
+ * HydroSHEDS was wanted for. A layer that contains none of these dams has answered too: three of
+ * the four candidates map Mira-Mataje in the far north, and their saying so is this test working.
+ */
+async function probeContains(points: { key: string; lat: number; lon: number }[]): Promise<ContainmentRow[]> {
+  const out: ContainmentRow[] = [];
+  const layers = boundaries.filter((b) => b.source === "arcgis");
+  for (const layer of layers) {
+    for (const point of points) {
+      const url = new URL(layer.url);
+      url.searchParams.set("f", "json");
+      url.searchParams.set("geometry", `${point.lon},${point.lat}`);
+      url.searchParams.set("geometryType", "esriGeometryPoint");
+      url.searchParams.set("inSR", "4326");
+      url.searchParams.set("spatialRel", "esriSpatialRelIntersects");
+      url.searchParams.set("returnGeometry", "false");
+      url.searchParams.set("outFields", "*");
+      try {
+        const response = await get(url.toString(), { headers: { accept: "application/json" } });
+        const body = await response.text();
+        const json = response.ok ? (JSON.parse(body) as { features?: { attributes?: Record<string, unknown> }[]; error?: { message?: string } }) : null;
+        const feature = json?.features?.[0]?.attributes;
+        out.push({
+          site: point.key,
+          layer: layer.title,
+          url: url.toString(),
+          status: response.status,
+          attributes: feature
+            ? Object.entries(feature)
+                .filter(([k]) => !/^(OBJECTID|FID|GlobalID)/i.test(k))
+                .map(([k, v]) => `${k}=${String(v)}`)
+                .join(", ")
+            : "",
+          note: json?.error?.message ? `error: ${json.error.message}` : feature ? "contained" : "no polygon contains this point",
+        });
+      } catch (error) {
+        out.push({ site: point.key, layer: layer.title, url: url.toString(), status: null, attributes: "", note: String(error) });
+      }
+      await sleep(1000);
+    }
+  }
+  return out;
+}
+
 /** Great-circle distance, to say whether two sources describe the same dam or two places. */
 function kmApart(a: { lat: number; lon: number }, b: { lat: number; lon: number }): number {
   const toRad = (d: number) => (d * Math.PI) / 180;
@@ -719,6 +1027,36 @@ function kmApart(a: { lat: number; lon: number }, b: { lat: number; lon: number 
   const dLon = toRad(b.lon - a.lon);
   const h = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLon / 2) ** 2;
   return Math.round(6371 * 2 * Math.asin(Math.sqrt(h)) * 100) / 100;
+}
+
+/**
+ * The structures between two claims, printed only for the sites that have two claims to reconcile.
+ *
+ * A site whose sources agree needs no such section, and an empty heading in a report is a question
+ * nobody asked being mistaken for a question with no answer.
+ */
+function schemeSection(): string[] {
+  const sites = Object.keys(schemes);
+  if (sites.length === 0) return [];
+  const lines: string[] = ["## What lies between two claims that disagree", ""];
+  for (const site of sites) {
+    const found = schemes[site] ?? [];
+    lines.push(
+      `**${site}** — every dam, weir, intake, penstock, powerhouse and named water body in a box`,
+      "covering both candidate points, nearest to the Wikidata claim first. On a run-of-river scheme",
+      "the intake and the machines sit at opposite ends of a headrace of roughly this length, so a",
+      "chain of structures running between the two claims is the reading; two unrelated clusters is",
+      "the other one.",
+      "",
+      "| element | name | what it is | km from Wikidata | km from OSM |",
+      "|---|---|---|---|---|",
+      ...(found.length
+        ? found.slice(0, 30).map((e) => `| ${e.id} | ${e.name || "(unnamed)"} | ${e.what} | ${e.kmFromWikidata} | ${e.kmFromOsm} |`)
+        : ["| — | nothing answered | — | — | — |"]),
+      "",
+    );
+  }
+  return lines;
 }
 
 /** The report as it stands right now, from whatever has been answered so far. */
@@ -734,6 +1072,8 @@ function buildReport(startedAt: string): { report: string; coordinates: unknown[
       outcome: overpassFound[plant.site]?.outcome ?? "not asked",
       km_apart: a && b ? kmApart(a, b) : null,
       agrees: Boolean(a && b && b.byName && kmApart(a, b) <= 1),
+      wikidata_m: elevations[`${plant.site}/wikidata`] ?? null,
+      osm_m: elevations[`${plant.site}/osm`] ?? null,
     };
   });
 
@@ -776,12 +1116,13 @@ function buildReport(startedAt: string): { report: string; coordinates: unknown[
     "",
     "## Dam coordinates, from two sources that do not share editors",
     "",
-    "| site | basin | Wikidata | OSM | km apart | outcome | agrees |",
-    "|---|---|---|---|---|---|---|",
+    "| site | basin | Wikidata | OSM | km apart | Wikidata m | OSM m | Δm | outcome | agrees |",
+    "|---|---|---|---|---|---|---|---|---|---|",
     ...coordinates.map(
       (c) =>
         `| ${c.site} | ${c.basin} | ${c.wikidata ? `${c.wikidata.lat}, ${c.wikidata.lon} (${c.wikidata.id}, by ${c.wikidata.matchedBy})` : "—"} | ` +
-        `${c.osm ? `${c.osm.lat}, ${c.osm.lon} (${c.osm.id}, ${c.osm.name})` : "—"} | ${c.km_apart ?? "—"} | ${c.outcome} | ${c.agrees ? "yes" : "no"} |`,
+        `${c.osm ? `${c.osm.lat}, ${c.osm.lon} (${c.osm.id}, ${c.osm.name}${c.osm.via === "nominatim" ? ", via nominatim" : ""})` : "—"} | ${c.km_apart ?? "—"} | ` +
+        `${c.wikidata_m ?? "—"} | ${c.osm_m ?? "—"} | ${c.wikidata_m !== null && c.osm_m !== null ? Math.round(c.wikidata_m - c.osm_m) : "—"} | ${c.outcome} | ${c.agrees ? "yes" : "no"} |`,
     ),
     "",
     `**${agreed} of ${PLANTS.length} sites** have two sources that name the same dam within a kilometre. Only those`,
@@ -799,6 +1140,36 @@ function buildReport(startedAt: string): { report: string; coordinates: unknown[
     `answer\` says nothing about OSM at all: every instance refused. **${unanswered} site${unanswered === 1 ? "" : "s"}** ended`,
     "that way this run.",
     "",
+    "## What OSM says each matched point is",
+    "",
+    "A catchment is defined at the intake, so the structure behind a coordinate decides whether the",
+    "coordinate may be used. A `wikidata=` tag here is the strongest reading available: it means OSM",
+    "and Wikidata name one entity, so any distance between them is an error in one of them rather",
+    "than the two ends of a scheme.",
+    "",
+    "| site | element | identifying tags |",
+    "|---|---|---|",
+    ...coordinates.map((c) => `| ${c.site} | ${c.osm ? `${c.osm.id} (${c.osm.name})` : "—"} | ${c.osm ? structureOf(c.osm.tags) : "not answered"} |`),
+    "",
+    ...schemeSection(),
+    "## Which mapped unit contains each dam",
+    "",
+    containment.length
+      ? [
+          "Each candidate boundary layer, asked which of its polygons contains each pour point. A layer",
+          "that contains none of them has answered the question too — most of these map one region of the",
+          "country — and a layer that returns a Pfafstetter code has the nesting HydroSHEDS was wanted for.",
+        ].join(" ")
+      : "No candidate layer was asked: none of this run's boundary candidates was a queryable feature layer.",
+    "",
+    ...(containment.length
+      ? [
+          "| site | layer | status | attributes | note |",
+          "|---|---|---|---|---|",
+          ...containment.map((r) => `| ${r.site} | ${r.layer.slice(0, 46)} | ${r.status ?? "—"} | ${r.attributes || "—"} | ${r.note} |`),
+          "",
+        ]
+      : []),
   ].join("\n");
 
   return { report, coordinates };
@@ -836,6 +1207,50 @@ async function main(): Promise<void> {
   flush();
   await sleep(1000);
   overpassFound = await probeOverpass(wikidataFound, flush);
+  flush();
+
+  // A second door into the same database, for the sites three Overpass instances would not open.
+  for (const plant of PLANTS) {
+    const anchor = wikidataFound[plant.site];
+    const result = overpassFound[plant.site];
+    if (!anchor || result?.hit) continue;
+    await sleep(1500);
+    const hit = await probeNominatim(plant, anchor);
+    if (hit) overpassFound[plant.site] = { hit, outcome: `${result?.outcome ?? "no answer"} → nominatim match` };
+    flush();
+  }
+
+  // Height at every point that has one, in a single request: the discriminator for the sites whose
+  // two sources name a plant kilometres apart, and cheap enough to take for all of them.
+  const points = PLANTS.flatMap((plant) => {
+    const a = wikidataFound[plant.site];
+    const b = overpassFound[plant.site]?.hit ?? null;
+    return [
+      ...(a ? [{ key: `${plant.site}/wikidata`, lat: a.lat, lon: a.lon }] : []),
+      ...(b ? [{ key: `${plant.site}/osm`, lat: b.lat, lon: b.lon }] : []),
+    ];
+  });
+  elevations = await probeElevation(points);
+  flush();
+
+  // Then the full chain, but only where there is a disagreement to explain.
+  for (const plant of PLANTS) {
+    const a = wikidataFound[plant.site];
+    const b = overpassFound[plant.site]?.hit ?? null;
+    if (!a || !b || kmApart(a, b) <= 1) continue;
+    await sleep(1500);
+    schemes[plant.site] = await probeScheme(plant.site, a, b);
+    flush();
+  }
+
+  // And the read the last run promised: which polygon of which candidate contains each dam.
+  await sleep(1000);
+  containment = await probeContains(
+    PLANTS.flatMap((plant) => {
+      const a = wikidataFound[plant.site];
+      return a ? [{ key: plant.site, lat: a.lat, lon: a.lon }] : [];
+    }),
+  );
 
   const { report } = buildReport(startedAt);
   console.log(report);

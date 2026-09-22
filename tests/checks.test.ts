@@ -84,6 +84,30 @@ describe("bands and ranges", () => {
     expect(findings[0]!.message).toMatch(/is negative/);
   });
 
+  it("rejects a five-figure inflow, whichever route carries it", () => {
+    const bands = widestBands(thresholds);
+    for (const source of ["ords:pointValues", "ords:repDiaHid12m"]) {
+      const findings = checkObservationRanges([observation({ variable: "caudal_m3s", value: "23221.102017", source })], bands);
+      expect(findings[0]!.level).toBe("fail");
+      expect(findings[0]!.message).toMatch(/above the 10000 m3\/s/);
+    }
+    // The largest reading this repository holds is 1,933, so the ceiling clears it fivefold.
+    expect(checkObservationRanges([observation({ variable: "caudal_m3s", value: "1933", source: "ords:pointValues" })], bands)).toEqual([]);
+  });
+
+  it("rejects a zero inflow from the historian and keeps one from the reports", () => {
+    const bands = widestBands(thresholds);
+    // The historian publishes decimals, so its 0.00 is the service saying nothing.
+    const historian = checkObservationRanges([observation({ variable: "caudal_m3s", value: "0", source: "ords:pointValues" })], bands);
+    expect(historian[0]!.level).toBe("fail");
+    expect(historian[0]!.message).toMatch(/publishes decimals/);
+    // The reports publish whole m3/s, so their 0 is round(x) for x under 0.5 — which is what
+    // repDiaHid12m really sent for Mazar on 2024-11-08, the day the historian recorded 0.142.
+    expect(
+      checkObservationRanges([observation({ date: "2024-11-08", variable: "caudal_m3s", value: "0", source: "ords:repDiaHid12m" })], bands),
+    ).toEqual([]);
+  });
+
   it("reports a percentage just over 100 and fails one that cannot be a percentage at all", () => {
     const bands = widestBands(thresholds);
     // A reservoir above its declared maximum, which is a fact about the reservoir.
