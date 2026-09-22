@@ -82,13 +82,26 @@ const HYBAS_SA = "https://data.hydrosheds.org/file/hydrobasins/standard/hybas_sa
 const BROWSER_UA =
   "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36";
 
-/** Overpass instances, tried in order; the first that answers is used for every site. */
+/**
+ * Overpass instances, tried in order, and every one of them carrying the whole planet.
+ *
+ * `overpass.osm.ch` was in this list on 2026-09-22 and had to come out. It serves Switzerland
+ * only, so an Ecuadorian bounding box is not an error to it — it is a question with no answer,
+ * and it returns **200 with an empty element list**, 272 bytes, indistinguishable from a box
+ * with nothing in it. Agoyán's three 504s fell through to it, the run pinned itself to the
+ * instance that had just "worked", and five sites were reported as `empty box` — including
+ * Agoyán and Daule-Peripa, which the previous run had found at 0.56 and 0.46 km. A regional
+ * mirror answering 200 is the most expensive kind of wrong answer, because nothing about it
+ * looks like a failure.
+ */
 const OVERPASS = [
   "https://overpass-api.de/api/interpreter",
   "https://overpass.kumi.systems/api/interpreter",
   "https://overpass.private.coffee/api/interpreter",
-  "https://overpass.osm.ch/api/interpreter",
 ];
+
+/** A box with nine mapped features in it, used to ask an instance whether it holds Ecuador. */
+const EC_CONTROL_BBOX = "-2.715,-78.742,-2.475,-78.502";
 
 interface Row {
   probe: string;
@@ -285,7 +298,7 @@ async function probeMirrors(): Promise<void> {
       const hits = json.hits.hits ?? [];
       // The title has to name the thing searched for, or it is a coincidence, not a mirror.
       const needle = fold(q.replace(/"/g, ""));
-      for (const hit of hits.filter((h) => fold(h.title).includes(needle) || hydroScore(h.title) > 0).slice(0, 3)) {
+      for (const hit of hits.filter((h) => fold(h.title).includes(needle)).slice(0, 3)) {
         const biggest = (hit.files ?? []).sort((a, b) => b.size - a.size)[0];
         if (biggest?.links?.self) {
           boundaries.push({
@@ -323,20 +336,17 @@ async function probeMirrors(): Promise<void> {
       return;
     }
     const articles = JSON.parse(body) as { id: number; title: string; url_public_html?: string }[];
+    // Only an article whose own title names it is worth opening; the 2026-09-22 run opened a
+    // PLOS figure of the Cauca River because it was simply first.
+    const first = articles.find((a) => hydroScore(a.title) > 0);
     record({
       probe: "figshare HydroATLAS",
       url: search,
       status: response.status,
       bytes: body.length,
-      note: `${articles.length} articles; top: ${articles.slice(0, 3).map((a) => `${a.id} ${a.title.slice(0, 40)}`).join(" / ") || "none"}`,
+      note: `${articles.length} articles; ${first ? `opening ${first.id} ${first.title.slice(0, 40)}` : "none whose title names a drainage dataset"}`,
     });
-    // Only an article whose own title names it is worth opening; the 2026-09-22 run opened a
-    // PLOS figure of the Cauca River because it was simply first.
-    const first = articles.find((a) => hydroScore(a.title) > 0);
-    if (!first) {
-      record({ probe: "figshare HydroATLAS", url: search, status: response.status, bytes: body.length, note: `${articles.length} articles, none whose title names a drainage dataset` });
-      return;
-    }
+    if (!first) return;
     await sleep(1000);
     const detail = `https://api.figshare.com/v2/articles/${first.id}`;
     const dresponse = await get(detail, { headers: { accept: "application/json" } });
@@ -524,6 +534,29 @@ async function probeWikidata(): Promise<Record<string, (Point & { matchedBy: str
   return found;
 }
 
+/**
+ * Does this instance hold Ecuador? Asked only when one answers an Ecuadorian box with nothing,
+ * because that is the one answer a regional mirror and a genuinely empty box give identically.
+ * Tri-state on purpose: a 504 on the control says nothing about coverage, and must not condemn
+ * an instance that was merely busy.
+ */
+async function overpassHoldsEcuador(endpoint: string): Promise<"yes" | "no" | "unknown"> {
+  const query = `[out:json][timeout:25];
+(
+  nwr["waterway"="dam"](${EC_CONTROL_BBOX});
+  nwr["power"="plant"](${EC_CONTROL_BBOX});
+);
+out center tags;`;
+  try {
+    const response = await get(endpoint, { method: "POST", body: new URLSearchParams({ data: query }) });
+    if (!response.ok) return "unknown";
+    const json = JSON.parse(await response.text()) as { elements?: unknown[] };
+    return (json.elements ?? []).length > 0 ? "yes" : "no";
+  } catch {
+    return "unknown";
+  }
+}
+
 /** What came back for a site, so a blank cell cannot be read as a statement about OSM. */
 type OsmHit = Point & { name: string; kmFromWikidata: number; byName: boolean };
 interface OsmResult {
@@ -550,6 +583,9 @@ async function probeOverpass(
 ): Promise<Record<string, OsmResult>> {
   const found: Record<string, OsmResult> = {};
   let lastGood: string | null = null;
+  /** Instances proven to hold Ecuador, and instances proven not to. */
+  const covers = new Map<string, boolean>();
+  const dead = new Set<string>();
 
   for (const plant of PLANTS) {
     const anchor = wikidata[plant.site];
@@ -568,8 +604,10 @@ async function probeOverpass(
 );
 out center tags;`;
 
-    // Start with whichever instance last answered, then fall through to the others.
-    const attempts: string[] = lastGood ? [lastGood, ...OVERPASS.filter((o) => o !== lastGood)] : [...OVERPASS];
+    // Start with whichever instance last answered, then fall through to the others, skipping
+    // any that has already proven it does not hold this country.
+    const live = OVERPASS.filter((o) => !dead.has(o));
+    const attempts: string[] = lastGood && !dead.has(lastGood) ? [lastGood, ...live.filter((o) => o !== lastGood)] : live;
     found[plant.site] = { hit: null, outcome: "no answer" };
     for (const candidate of attempts) {
       try {
@@ -582,7 +620,6 @@ out center tags;`;
           await sleep(response.status === 429 ? 5000 : 1500);
           continue;
         }
-        lastGood = candidate;
         const json = JSON.parse(body) as {
           elements: { type: string; id: number; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> }[];
         };
@@ -594,6 +631,33 @@ out center tags;`;
             lon: e.lon ?? e.center?.lon,
           }))
           .filter((i): i is { name: string; id: string; lat: number; lon: number } => i.lat !== undefined && i.lon !== undefined);
+        // Nothing found is only a finding if this instance holds Ecuador at all.
+        if (items.length === 0 && covers.get(candidate) !== true) {
+          await sleep(1500);
+          const verdict = await overpassHoldsEcuador(candidate);
+          const host = new URL(candidate).host;
+          if (verdict === "yes") covers.set(candidate, true);
+          record({
+            probe: `overpass control ${host}`,
+            url: candidate,
+            status: response.status,
+            note:
+              verdict === "yes"
+                ? "answers the Mazar control box, so its empty answers are real"
+                : verdict === "no"
+                  ? "returns nothing for the Mazar control box: this mirror does not hold Ecuador, and its answers are discarded"
+                  : "could not answer the Mazar control box, so this empty answer proves nothing",
+          });
+          if (verdict !== "yes") {
+            if (verdict === "no") dead.add(candidate);
+            if (lastGood === candidate) lastGood = null;
+            found[plant.site] = { hit: null, outcome: "empty, unconfirmed" };
+            await sleep(1500);
+            continue;
+          }
+        }
+        if (items.length > 0) covers.set(candidate, true);
+        lastGood = candidate;
         const byName = items.find((i) => plant.aliases.some((a) => fold(i.name).includes(fold(a))));
         const nearest = items.filter((i) => i.name).sort((a, b) => kmApart(anchor, a) - kmApart(anchor, b))[0];
         const hit = byName ?? nearest;
@@ -717,8 +781,11 @@ async function main(): Promise<void> {
     "than a confirmation. `empty box` is the only one that says something about OSM: nothing mapped",
     "within 13 km of where Wikidata puts the dam, and since the box is drawn around the Wikidata point,",
     "even that cannot rule on a dam OSM places somewhere else entirely — the country-wide query is the",
-    `only way to settle that. \`no answer\` says nothing about OSM at all: every instance refused, and`,
-    `**${unanswered} site${unanswered === 1 ? "" : "s"}** ended that way this run.`,
+    "only way to settle that. `empty, unconfirmed` is an empty answer from an instance that could not",
+    "then show it holds Ecuador — a regional mirror returns 200 and nothing for a box it has no data",
+    "for, which reads exactly like an empty box, so those are discarded rather than believed. `no",
+    `answer\` says nothing about OSM at all: every instance refused. **${unanswered} site${unanswered === 1 ? "" : "s"}** ended`,
+    "that way this run.",
     "",
   ].join("\n");
 
