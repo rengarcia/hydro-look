@@ -895,9 +895,34 @@ were satisfied by the very outliers they were meant to remove; it now trims by r
 29 February origin would have compared against the wrong day once every four years.
 `isCalendarDate` now guards it.
 
-**Not done, and not pretended otherwise.** M4 (LightGBM quantile regression) is deferred: there
-is no gradient-boosting library in a TypeScript-only stack (decision 6) and M3 has not yet been
-beaten by anything simpler. Target 1 (probabilistic Mazar cota) and target 2 (days to threshold)
+**M4 was run after all (2026-09-22), and it earns seven days only.** There is no
+gradient-boosting library in a TypeScript-only stack, so one was written: `src/lib/models/gbm.ts`,
+dependency-free — histogram splits, depth-3 trees, shrinkage, subsampling, pinball loss, seeded.
+Three designs were scored on the same 105 origins, harness, band calibration and crisis check as
+M0–M3: the level change directly, directly with M3's forecast as a feature, and M3's residual.
+Every feature is read as a forecaster could have had it — ONI two months stale, ERA5 at the one
+provisional Paute point lagged five days, M3 recomputed as it would have been made on each
+training day (identical to the shipped M3 at all 105 origins).
+
+| MAE, m (skill vs M0) | h=7 | h=14 | h=30 | h=60 | h=90 |
+|---|---|---|---|---|---|
+| M3 water balance | 2.29 (−0.1%) | 3.62 (−1.2%) | 5.85 (+0.1%) | 7.25 (+24.5%) | 7.30 (+34.8%) |
+| M4 direct | 2.02 (+11.9%) | 3.32 (+7.0%) | 5.49 (+6.3%) | 8.16 (+15.0%) | 8.75 (+21.9%) |
+| M4 M3-residual | 2.03 (+11.2%) | 3.46 (+3.1%) | 5.81 (+0.8%) | 8.28 (+13.8%) | 8.34 (+25.6%) |
+
+At seven days every design beats M3 — the first rung on this ladder to beat persistence at a
+week — and for two of them the paired 90% interval on the error difference lies wholly below
+zero. At 14 and 30 days the gains are within noise or come with a worse band; at 60 and 90 every
+design is 0.8–1.6 m worse than M3, with an interval wholly above zero, and its own quantiles cover
+only 36–50%. On the crisis check no median called either 2024 crossing; the direct designs' p10
+called April ten days out from 1.7 m above the line, which M3 missed at every quantile, and one of
+them then missed October; each design raised one false alarm (2023-11-01). Under the ladder's
+rule M4 is kept for seven days only, **as a proposal**: `forecast.json` still publishes M3 at
+every horizon. Switching the 7-day median to the residual design costs ~315 boosted fits a day
+and leaves the scenarios and days-to-threshold on M3, which alone simulates a daily path. The
+backtest takes ~6.5 minutes, so it is its own command (`npm run backtest:m4`), and the daily
+forecast renders its committed snapshot into `data/reports/backtest.md`, marking it stale once
+the ladder gains an origin the snapshot lacks. Target 1 (probabilistic Mazar cota) and target 2 (days to threshold)
 ship here; target 3 shipped in Phase 6c, and target 4 — national hydro generation a week out —
 ships as that model's hydro term at seven days, which since 2026-09-22 carries a calibrated
 p10–p90 of its own (`hydro_p10`/`hydro_p90` in `adequacy.json`). It beats a trailing 28-day mean
@@ -1158,8 +1183,9 @@ because a reservoir level is an operating decision rather than a seasonal signal
 60 and 90 days but loses to M3 everywhere. M3 as specified here — release held where it recently
 was — is the worst rung on the ladder (−69% at 90 days); it only works once release is fitted as
 a **rule curve against level** and read back on every simulated day, which is the one substantive
-departure from this section. M4 is deferred: no gradient-boosting library exists in a
-TypeScript-only stack (decision 6), and nothing simpler has beaten M3 yet. The P50 crisis metric
+departure from this section. M4 was later run on a boosted-tree learner written for
+this repository: it beats M3 at seven days and loses at sixty and ninety (Phase 5 has the table),
+so it is proposed for the 7-day median only and M3 still ships everywhere. The P50 crisis metric
 this section specifies turned out to be the wrong statistic for the question — it called neither
 2024 crossing, while the ensemble's dry tail called October seven days out — so the forecast
 publishes the full censored crossing distribution rather than the median alone. Full numbers,
