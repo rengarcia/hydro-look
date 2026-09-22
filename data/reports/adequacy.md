@@ -1,6 +1,6 @@
 # Energy adequacy — what the model is, and what it was measured at
 
-Generated 2026-09-22T18:30:21Z from 3724 usable national-balance days, 2016-05-01 → 2026-09-21. Origin 2026-09-21.
+Generated 2026-09-22T19:52:33Z from 3724 usable national-balance days, 2016-05-01 → 2026-09-21. Origin 2026-09-21.
 
 This is section 7's target 3: expected deficit in GWh per day over the horizon, and the risk
 tiers read off it. It is the number the site's adequacy tile shows, and the `risk_tier` the
@@ -221,6 +221,23 @@ same time, which is what a shared drought does to a shared interconnection. Ever
 therefore publishes a stressed deficit beside the central one, and a reader who believes the
 interconnection is firm is invited to look at the stressed column before believing it.
 
+### When the central case stops assuming the interconnection
+
+At this origin the interconnection is treated as **cut**: imports averaged 0.14 GWh/day over the last 14 usable days while thermal ran at 21.73, so the central case assumes 0.14 GWh/day of imports.
+
+The rule: a fortnight of imports below 1 GWh/day *while* thermal runs at 70% or more of its ceiling means the imports are not arriving rather than
+not wanted, and the central case then uses what is arriving, held for the horizon. Low imports
+alone would not do: they preceded 68 of the 99 monthly origins since 2018, mostly in wet months
+when Ecuador had no use for them. With the thermal condition the rule picks out four — 2024-05,
+2024-11 inside the Colombian cutoff, 2026-04 and 2026-05 — and the same four at any share from
+60% to 75%. It leaves the tier record above untouched: no new false alarm, no new call.
+
+The rule was added on 2026-09-22, when imports had been stopped since 2026-09-07. Colombia's own
+figures (XM) say that stop was not Colombian scarcity — storage at 79% and a spot price well under
+the scarcity threshold — so the cause is something this data cannot see: a line out, a contract,
+a dispatch decision. Holding the cut for ninety days is the honest default rather than a
+forecast: the 2019 stretch lasted 398 days and the 2024 one about seven weeks.
+
 ## Crisis check
 
 A deficit is a counterfactual: it is the energy that would have been short had nobody
@@ -259,10 +276,10 @@ dispatch and starts being visible to consumers.
 
 | Tier at a 30-day horizon | Origins | Rationing began or ran within 30 days |
 |---|---:|---:|
-| `holgado` | 96 | 6 |
-| `vigilancia` | 0 | 0 |
-| `ajustado` | 1 | 1 |
-| `deficit` | 2 | 2 |
+| `holgado` | 95 | 5 |
+| `vigilancia` | 1 | 1 |
+| `ajustado` | 0 | 0 |
+| `deficit` | 3 | 3 |
 
 Over 99 monthly origins, 9 were followed by rationing inside thirty days and 3 were flagged `ajustado` or `deficit`. 3 of those 3 were followed by rationing —
 so of the origins this model flagged, 100% preceded cuts, and of the origins that preceded cuts it flagged 33%. It does not cry wolf and it misses most

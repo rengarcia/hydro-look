@@ -128,6 +128,11 @@ function main(): void {
     return;
   }
 
+  console.log(
+    `imports: ${forecast.imports.state}` +
+      (forecast.imports.trailingGwhDay === null ? "" : `, ${forecast.imports.trailingGwhDay.toFixed(2)} GWh/day over the last ${forecast.imports.days} usable days`) +
+      `; central case assumes ${forecast.imports.centralGwhDay.toFixed(2)}`,
+  );
   const crisis = crisisCheck(balance.days, episodes, ceilings, backtest);
   for (const episode of crisis.episodes) {
     console.log(

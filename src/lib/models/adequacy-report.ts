@@ -14,7 +14,7 @@ import type {
   CrisisCheck,
   HorizonScore,
 } from "./adequacy.ts";
-import { TIGHT_GWH_DAY } from "./adequacy.ts";
+import { IMPORT_CUTOFF_GWH_DAY, IMPORT_CUTOFF_THERMAL_SHARE, TIGHT_GWH_DAY } from "./adequacy.ts";
 import type { RejectedDay } from "../features/balance.ts";
 import type { IsoDate } from "../util/dates.ts";
 
@@ -271,6 +271,27 @@ export function renderAdequacyReport(inputs: ReportInputs): string {
     "same time, which is what a shared drought does to a shared interconnection. Every horizon",
     "therefore publishes a stressed deficit beside the central one, and a reader who believes the",
     "interconnection is firm is invited to look at the stressed column before believing it.",
+    "",
+    "### When the central case stops assuming the interconnection",
+    "",
+    `At this origin the interconnection is treated as **${forecast.imports.state === "cutoff" ? "cut" : "available"}**: ` +
+      `imports averaged ${fixed(forecast.imports.trailingGwhDay ?? Number.NaN)} GWh/day over the last ` +
+      `${forecast.imports.days} usable days while thermal ran at ${fixed(forecast.imports.trailingThermalGwhDay ?? Number.NaN)}, ` +
+      `so the central case assumes ${fixed(forecast.imports.centralGwhDay)} GWh/day of imports.`,
+    "",
+    `The rule: a fortnight of imports below ${IMPORT_CUTOFF_GWH_DAY} GWh/day *while* thermal runs at ` +
+      `${IMPORT_CUTOFF_THERMAL_SHARE * 100}% or more of its ceiling means the imports are not arriving rather than`,
+    "not wanted, and the central case then uses what is arriving, held for the horizon. Low imports",
+    "alone would not do: they preceded 68 of the 99 monthly origins since 2018, mostly in wet months",
+    "when Ecuador had no use for them. With the thermal condition the rule picks out four — 2024-05,",
+    "2024-11 inside the Colombian cutoff, 2026-04 and 2026-05 — and the same four at any share from",
+    "60% to 75%. It leaves the tier record above untouched: no new false alarm, no new call.",
+    "",
+    "The rule was added on 2026-09-22, when imports had been stopped since 2026-09-07. Colombia's own",
+    "figures (XM) say that stop was not Colombian scarcity — storage at 79% and a spot price well under",
+    "the scarcity threshold — so the cause is something this data cannot see: a line out, a contract,",
+    "a dispatch decision. Holding the cut for ninety days is the honest default rather than a",
+    "forecast: the 2019 stretch lasted 398 days and the 2024 one about seven weeks.",
     "",
     "## Crisis check",
     "",

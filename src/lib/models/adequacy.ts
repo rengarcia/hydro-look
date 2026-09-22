@@ -393,6 +393,66 @@ export function demonstratedCeilings(days: readonly BalanceDay[], asOf: IsoDate,
 }
 
 /**
+ * Whether the interconnection is *available*, read from the fortnight to the origin.
+ *
+ * The demonstrated ceiling answers "what can imports deliver when Colombia has power to spare";
+ * it is the wrong central case in the weeks when imports plainly are not coming. But low flow
+ * alone does not say that: imports ran below 1 GWh/day before 68 of the 99 monthly origins since
+ * 2018, mostly in wet months when Ecuador simply had no use for them. What separates "not
+ * available" from "not needed" is Ecuador's own thermal fleet — a system that is burning fuel at
+ * most of its demonstrated capacity and still importing nothing is not declining imports by
+ * choice. Low imports *and* thermal at 70% or more of its ceiling picks out 4 origins in that
+ * history (2024-05, 2024-11 inside the Colombian cutoff, 2026-04, 2026-05), the same 4 anywhere
+ * from 60% to 75%, so the line is not a tuned one. It picks out 2026-09-07 onward too: imports at
+ * 0.14 GWh/day while thermal ran 21–22 GWh/day and Colombia, with 79% storage and a spot price
+ * under its scarcity threshold, had power to sell — a stop for a reason this data cannot see,
+ * but a stop.
+ *
+ * In a cutoff the central case uses what is actually arriving and holds it for the horizon; the
+ * stressed case is left as it was. Read at each origin from that origin's own history, so the
+ * backtest and the tier history see the rule exactly as the live run does.
+ */
+export const IMPORT_CUTOFF_GWH_DAY = 1;
+export const IMPORT_CUTOFF_THERMAL_SHARE = 0.7;
+export const IMPORT_REGIME_WINDOW_DAYS = 14;
+
+export interface ImportRegime {
+  state: "normal" | "cutoff";
+  /** Mean import over the usable days in the window, GWh/day; null when too few were usable. */
+  trailingGwhDay: number | null;
+  /** Mean thermal generation over the same days, GWh/day. */
+  trailingThermalGwhDay: number | null;
+  days: number;
+  /** What the central case assumes: the demonstrated ceiling, or the trailing mean in a cutoff. */
+  centralGwhDay: number;
+}
+
+export function importRegime(days: readonly BalanceDay[], origin: IsoDate, ceilings: Ceilings): ImportRegime {
+  const from = addDays(origin, -(IMPORT_REGIME_WINDOW_DAYS - 1));
+  const window = days.filter((d) => d.date >= from && d.date <= origin);
+  // Half the window at least, so a fortnight of rejected pages cannot declare a cutoff from two days.
+  if (window.length < IMPORT_REGIME_WINDOW_DAYS / 2) {
+    return {
+      state: "normal",
+      trailingGwhDay: null,
+      trailingThermalGwhDay: null,
+      days: window.length,
+      centralGwhDay: ceilings.importGwhDay,
+    };
+  }
+  const trailing = window.reduce((a, d) => a + d.importGwh, 0) / window.length;
+  const thermal = window.reduce((a, d) => a + d.thermalGwh, 0) / window.length;
+  const cutoff = trailing < IMPORT_CUTOFF_GWH_DAY && thermal >= IMPORT_CUTOFF_THERMAL_SHARE * ceilings.thermalGwhDay;
+  return {
+    state: cutoff ? "cutoff" : "normal",
+    trailingGwhDay: trailing,
+    trailingThermalGwhDay: thermal,
+    days: window.length,
+    centralGwhDay: cutoff ? trailing : ceilings.importGwhDay,
+  };
+}
+
+/**
  * An assumptions table overrides whichever rows it carries; the rest stay as demonstrated.
  *
  * The resulting `basis` names the source of every term, because a reader who wants to argue
@@ -515,6 +575,8 @@ export interface AdequacyInputs {
   hydroCalibration?: RequirementCalibration;
   demandOptions?: DemandOptions;
   hydroOptions?: HydroOptions;
+  /** Hold the central case at the demonstrated ceiling whatever imports are doing (for comparison). */
+  ignoreImportRegime?: boolean;
 }
 
 export interface AdequacyForecast {
@@ -523,6 +585,7 @@ export interface AdequacyForecast {
   hydro: HydroFit;
   horizons: AdequacyHorizon[];
   ceilings: Ceilings;
+  imports: ImportRegime;
 }
 
 /** Mean of a fitted quantity over the `h` days after the origin, which is what a horizon is here. */
@@ -545,6 +608,15 @@ export function forecastAdequacy(inputs: AdequacyInputs): AdequacyForecast | nul
   if (!hydro) return null;
 
   const supplyFloor = inputs.ceilings.thermalGwhDay + inputs.ceilings.otherGwhDay;
+  const regime = inputs.ignoreImportRegime
+    ? {
+        state: "normal" as const,
+        trailingGwhDay: null,
+        trailingThermalGwhDay: null,
+        days: 0,
+        centralGwhDay: inputs.ceilings.importGwhDay,
+      }
+    : importRegime(history, inputs.origin, inputs.ceilings);
   const horizons: AdequacyHorizon[] = [];
 
   for (const days of horizonDays) {
@@ -563,7 +635,7 @@ export function forecastAdequacy(inputs: AdequacyInputs): AdequacyForecast | nul
     const hydroP10 = hydroResiduals ? Math.min(hydroGwh + hydroResiduals.q10, hydroGwh) : null;
     const hydroP90 = hydroResiduals ? Math.max(hydroGwh + hydroResiduals.q90, hydroGwh) : null;
 
-    const supply = supplyFloor + inputs.ceilings.importGwhDay;
+    const supply = supplyFloor + regime.centralGwhDay;
     const deficit = requirement - supply;
     const deficitP10 = requirementP10 === null ? null : requirementP10 - supply;
     const deficitP90 = requirementP90 === null ? null : requirementP90 - supply;
@@ -587,7 +659,9 @@ export function forecastAdequacy(inputs: AdequacyInputs): AdequacyForecast | nul
     });
   }
 
-  return horizons.length === 0 ? null : { origin: inputs.origin, demand, hydro, horizons, ceilings: inputs.ceilings };
+  return horizons.length === 0
+    ? null
+    : { origin: inputs.origin, demand, hydro, horizons, ceilings: inputs.ceilings, imports: regime };
 }
 
 /* --------------------------------------------------------------- backtest */
@@ -978,6 +1052,7 @@ export function buildAdequacyDocument(inputs: DocumentInputs): AdequacyDocument 
     hydroAnomaly: forecast.hydro.anomaly,
     thermal: forecast.ceilings.thermalGwhDay,
     imports: forecast.ceilings.importGwhDay,
+    centralImports: forecast.imports.centralGwhDay,
     stressedImports: forecast.ceilings.stressedImportGwhDay,
     other: forecast.ceilings.otherGwhDay,
     horizons: forecast.horizons.map((h) => h.horizonDays),
@@ -1021,6 +1096,22 @@ export function buildAdequacyDocument(inputs: DocumentInputs): AdequacyDocument 
       stressed_import_gwh_day: roundTo(forecast.ceilings.stressedImportGwhDay, 3),
       other_gwh_day: roundTo(forecast.ceilings.otherGwhDay, 3),
       basis: forecast.ceilings.basis,
+      import_regime: {
+        state: forecast.imports.state,
+        central_import_gwh_day: roundTo(forecast.imports.centralGwhDay, 3),
+        trailing_gwh_day: roundOrNull(forecast.imports.trailingGwhDay, 3),
+        trailing_thermal_gwh_day: roundOrNull(forecast.imports.trailingThermalGwhDay, 3),
+        window_days: IMPORT_REGIME_WINDOW_DAYS,
+        cutoff_below_gwh_day: IMPORT_CUTOFF_GWH_DAY,
+        cutoff_thermal_share: IMPORT_CUTOFF_THERMAL_SHARE,
+        note:
+          forecast.imports.state === "cutoff"
+            ? `Las importaciones desde Colombia promediaron ${roundTo(forecast.imports.trailingGwhDay ?? 0, 2)} GWh/día ` +
+              `en los últimos ${IMPORT_REGIME_WINDOW_DAYS} días mientras la térmica generaba ` +
+              `${roundTo(forecast.imports.trailingThermalGwhDay ?? 0, 1)} GWh/día: no llegan aunque se necesitan. ` +
+              "El caso central usa lo que está llegando, no el máximo demostrado, y lo mantiene durante el horizonte."
+            : "La interconexión se trata como disponible: el caso central usa el máximo demostrado.",
+      },
       editable_at: "data/reference/adequacy_assumptions.csv",
     },
     current: {
