@@ -1,6 +1,14 @@
 /** What one ingestion run accumulates before anything is written. */
 
-import type { EnsoRow, NationalBalanceRow, ObservationRow, OperativaRow, WeatherRow } from "../contracts/tables.ts";
+import type {
+  EnsoRow,
+  NationalBalanceRow,
+  ObservationRow,
+  OperativaRow,
+  WeatherRow,
+  XmExchangeRow,
+  XmSystemRow,
+} from "../contracts/tables.ts";
 import type { BandReading } from "../parse/types.ts";
 
 export interface IngestBatch {
@@ -10,10 +18,12 @@ export interface IngestBatch {
   operativa: OperativaRow[];
   weather: WeatherRow[];
   enso: EnsoRow[];
+  xmExchange: XmExchangeRow[];
+  xmSystem: XmSystemRow[];
   notes: string[];
   errors: string[];
 }
 
 export function emptyBatch(): IngestBatch {
-  return { observations: [], bands: [], national: [], operativa: [], weather: [], enso: [], notes: [], errors: [] };
+  return { observations: [], bands: [], national: [], operativa: [], weather: [], enso: [], xmExchange: [], xmSystem: [], notes: [], errors: [] };
 }

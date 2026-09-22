@@ -6,6 +6,7 @@
 import { z } from "zod";
 import { SITES, VARIABLES } from "../registry.ts";
 import { SMEC_CONCEPTS } from "../parse/smec.ts";
+import { XM_LINKS, XM_SYSTEM_METRICS, type XmSystemMetric } from "../parse/xm.ts";
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "expected YYYY-MM-DD");
 const isoTimestamp = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/, "expected an ISO UTC timestamp");
@@ -95,6 +96,37 @@ export const ensoRow = z.object({
   raw_ref: z.string().min(1),
 });
 export type EnsoRow = z.infer<typeof ensoRow>;
+
+/**
+ * One Ecuador circuit on one day, from XM's side of the border. Both directions sit on one row
+ * because a blank hour in one direction is flow in the other (see parse/xm.ts), so the two are
+ * only meaningful read together. `raw_ref` lists both archived answers the row was built from.
+ */
+export const xmExchangeRow = z.object({
+  date: isoDate,
+  link: z.enum(XM_LINKS),
+  export_kwh: z.number().finite().nonnegative(),
+  import_kwh: z.number().finite().nonnegative(),
+  export_hours: z.number().int().min(0).max(24),
+  import_hours: z.number().int().min(0).max(24),
+  source: z.literal("xm:servapibi"),
+  fetched_at: isoTimestamp,
+  raw_ref: z.string().min(1),
+}).refine((r) => r.export_hours + r.import_hours <= 24, { message: "an hour cannot flow both ways" })
+  .refine((r) => r.export_hours + r.import_hours > 0, { message: "a stored link-day has at least one published hour" });
+export type XmExchangeRow = z.infer<typeof xmExchangeRow>;
+
+/** Colombian system state, one metric per row, so each series keeps its own publication lag. */
+export const xmSystemRow = z.object({
+  date: isoDate,
+  metric: z.enum(Object.keys(XM_SYSTEM_METRICS) as [XmSystemMetric, ...XmSystemMetric[]]),
+  value: z.number().finite().nonnegative(),
+  unit: z.enum(["fraction", "kWh", "COP/kWh"]),
+  source: z.literal("xm:servapibi"),
+  fetched_at: isoTimestamp,
+  raw_ref: z.string().min(1),
+}).refine((r) => XM_SYSTEM_METRICS[r.metric].unit === r.unit, { message: "metric and unit must agree" });
+export type XmSystemRow = z.infer<typeof xmSystemRow>;
 
 /**
  * A forecast run: one origin, one target, one model, with enough of the fit recorded that the
@@ -217,6 +249,22 @@ export const ENSO_MONTHLY: TableSpec<EnsoRow> = {
   key: ["month", "source"],
   partitionBy: "month",
   schema: ensoRow,
+};
+
+export const XM_EXCHANGE_DAILY: TableSpec<XmExchangeRow> = {
+  name: "xm_exchange_daily",
+  columns: ["date", "link", "export_kwh", "import_kwh", "export_hours", "import_hours", "source", "fetched_at", "raw_ref"],
+  key: ["date", "link"],
+  partitionBy: "date",
+  schema: xmExchangeRow,
+};
+
+export const XM_SYSTEM_DAILY: TableSpec<XmSystemRow> = {
+  name: "xm_system_daily",
+  columns: ["date", "metric", "value", "unit", "source", "fetched_at", "raw_ref"],
+  key: ["date", "metric"],
+  partitionBy: "date",
+  schema: xmSystemRow,
 };
 
 /** Validates every row, reporting all failures at once rather than only the first. */
