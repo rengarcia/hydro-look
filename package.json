@@ -22,7 +22,8 @@
     "publish:api": "tsx scripts/publish.ts",
     "forecast": "tsx scripts/forecast.ts",
     "adequacy": "tsx scripts/adequacy.ts",
-    "narrative": "tsx scripts/narrative.ts"
+    "narrative": "tsx scripts/narrative.ts",
+    "backtest:m4": "tsx scripts/backtest-m4.ts"
   },
   "dependencies": {
     "ai": "^7.0.111",
