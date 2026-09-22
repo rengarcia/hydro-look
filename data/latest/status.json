@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-22T01:19:08Z",
-  "command": "daily",
+  "generated_at": "2026-09-22T01:19:56Z",
+  "command": "backfill",
   "source": "all",
   "errors": [],
   "notes": [],
