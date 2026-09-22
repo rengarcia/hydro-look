@@ -1,0 +1,26 @@
+{
+  "_note": "SHA-256 fingerprints of the leaf certificates, captured by scripts/recon/capture.py. mode=enforce means a mismatch aborts the run (the host's certificate cannot be validated any other way); mode=advisory means normal CA validation is authoritative and the pin is only logged, because the certificate is a real one that will rotate.",
+  "hosts": {
+    "generacioncsr.celec.gob.ec:8443": {
+      "sha256": "8a3c3b97aed3a406b64ebb905b7638dfad5fb77b83e2438da348d376ce2c03bb",
+      "mode": "advisory",
+      "captured_on": "2026-09-21",
+      "subject": "CN=*.celec.gob.ec, O=Corporacion Electrica del Ecuador Celec EP",
+      "issuer": "Sectigo Public Server Authentication CA OV R36",
+      "not_after": "2027-04-03",
+      "notes": "Valid Sectigo certificate since 2026-09-17; normal verification works, so no rejectUnauthorized override anywhere in the codebase."
+    },
+    "smec.cenace.gob.ec:443": {
+      "sha256": "3ac3888f3f80a593857607bcb50e000847fb5c6bfa0b36ff32bba0e1ea21761d",
+      "mode": "enforce",
+      "captured_on": "2026-09-21",
+      "notes": "Self-signed, expired in 2009, and only negotiates with DEFAULT@SECLEVEL=1. Chain validation is impossible, so the pin is the only identity check and a mismatch must fail the run."
+    },
+    "www.cenace.gob.ec:443": {
+      "sha256": "524c72c1b6ae5e3299e8cb4c15ee387da8544fbd2438d48ce59b69dc13c56956",
+      "mode": "advisory",
+      "captured_on": "2026-09-21",
+      "notes": "Valid leaf, but the server omits its intermediate; data/reference/tls/intermediates_www.cenace.gob.ec.pem (published in the leaf's AIA field) is appended to the trust store so normal verification succeeds."
+    }
+  }
+}

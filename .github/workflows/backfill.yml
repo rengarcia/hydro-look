@@ -1,0 +1,109 @@
+name: Backfill
+
+# Manual, chunked and resumable. Every command skips days already in the store, so a long
+# history is filled by dispatching the same inputs repeatedly until the run reports no new
+# rows. --max-requests keeps a run inside the job timeout at one request per second.
+on:
+  # Until this branch merges, a push that touches this file runs the backfill with the input
+  # defaults below, because workflow_dispatch is only registered from the default branch.
+  push:
+    branches: ["claude/gallant-ptolemy-oz9owd"]
+    paths:
+      - ".github/workflows/backfill.yml"
+  workflow_dispatch:
+    inputs:
+      source:
+        description: "Which backfill to run"
+        type: choice
+        required: true
+        default: ords-levels
+        options:
+          - ords-levels
+          - ords-energy
+          - ords-daily
+          - ords-plant-energy
+          - ords-basin
+          - smec
+          - all
+      from:
+        description: "First day, YYYY-MM-DD (levels go back to 2015-09-20, SMEC to 2016-05-01)"
+        required: true
+      to:
+        description: "Last day, YYYY-MM-DD (default: yesterday)"
+        required: false
+        default: ""
+      max_requests:
+        description: "Request budget for this run (1/s; 10000 ≈ 2h50m)"
+        required: false
+        default: "10000"
+      plants:
+        description: "Plant codes for ords-plant-energy (default ago,man,ccs)"
+        required: false
+        default: "ago,man,ccs"
+      dry_run:
+        description: "Parse and validate without writing"
+        type: boolean
+        required: false
+        default: false
+
+permissions: {}
+
+concurrency:
+  group: ingest
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+
+      - name: Backfill
+        env:
+          SOURCE: ${{ github.event.inputs.source || 'ords-levels' }}
+          FROM: ${{ github.event.inputs.from || '2015-09-20' }}
+          TO: ${{ github.event.inputs.to }}
+          MAX_REQUESTS: ${{ github.event.inputs.max_requests || '10000' }}
+          PLANTS: ${{ github.event.inputs.plants || 'ago,man,ccs' }}
+          DRY_RUN: ${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}
+        run: |
+          npm run ingest -- backfill \
+            --source "$SOURCE" \
+            --from "$FROM" \
+            ${TO:+--to "$TO"} \
+            --max-requests "$MAX_REQUESTS" \
+            --plants "$PLANTS" \
+            $DRY_RUN 2>&1 | tee "$RUNNER_TEMP/backfill.log"
+
+      - name: Commit data
+        if: always() && github.event.inputs.dry_run != 'true'
+        env:
+          SOURCE: ${{ github.event.inputs.source || 'ords-levels' }}
+          FROM: ${{ github.event.inputs.from || '2015-09-20' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          if git diff --cached --quiet; then
+            echo "No data changes; this backfill is complete."
+          else
+            git commit -m "Backfill $SOURCE from $FROM (run ${{ github.run_id }})"
+            git pull --rebase origin "${{ github.ref_name }}"
+            git push origin "HEAD:${{ github.ref_name }}"
+          fi
+
+      - name: Upload run log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backfill-log-${{ github.run_id }}
+          path: ${{ runner.temp }}/backfill.log
+          retention-days: 30

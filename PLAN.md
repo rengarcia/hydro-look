@@ -70,7 +70,7 @@ check). An OpenAPI catalog is public at `open-api-catalog/<module>/` for eight m
 | `repDiaPotQTurb?fecha=` | one day | power, units online, turbined flow per plant (Minas SF, Mazar, Molino, Sopladora) | per day |
 | `repDiaEnerAyerHoy?fecha=` | one day | yesterday's energy and today's planned energy per plant **and for the SNI** (national total, 104,862 MWh on 2026-09-19) | per day |
 | `repDiaRegAyer?fecha=` | one day | annual accumulated GWh, spilled volume (hm³), spilled energy, plant factor per plant | per day |
-| `repDiaVolAlm` (POST `{"v_loctimestamp": …}`) | one instant | level, band, **% useful volume stored** for Minas SF, Mazar, Amaluza | per day |
+| `repDiaVolAlm` (POST `{"v_loctimestamp": …}`) | one day | level and declared band for Minas SF, Mazar, Amaluza, plus `volutilalm` — which is **not a volume**: it is exactly `(cota − volembmin) / (volembmax − volembmin)`, verified to 10 decimals on all three reservoirs on 2026-09-20. Ingest it as `nivel_pct_banda` and never read it as storage. | **verified for 2024-10-15**, so one request per day |
 | `csrEstUnidades` | now | unit status per plant (22 units) | no |
 | `csrProdLineaLast2h` | now | live values: daily energy so far, reservoir level, inflow per plant, Paute basin flow | no |
 | `sardom{maz,mol,sop,msf,ago,man,ccs}/{code}EnerDia?fecha=` | hourly, 24 rows for the local day | energy per hour (MWh) for each of the seven plants, Coca Codo Sinclair included; **verified for 2019-06-15, 2022-01-15 and 2024-10-15 on all seven** | per plant-day. Needed mainly for Coca Codo Sinclair, Agoyán and Manduriacu (the other four come from `repDiaEner12m`): 3 plants × ~2,650 days from mid-2019 ≈ 8,000 requests ≈ 2.5 h at 1/s, in chunked dispatch runs; fewer if `EnerMes` returns values in a later run |
@@ -215,31 +215,39 @@ All dates are local (`America/Guayaquil`, UTC−5, no DST); every row carries `f
 | `enso_monthly` | month | `oni` |
 | `forecast_runs`, `forecast_values` | run × target × horizon | quantiles p10/p50/p90, model id, features hash |
 
-Storage: `data/raw/<source>/YYYY/MM/<id>.json.gz|html.gz` (archive), `data/curated/*.csv`
-(git-diffable, small) plus a DuckDB file built on the fly for analysis (not committed).
+Storage: git is the database. Raw responses are archived as one gzipped NDJSON bundle per
+source-month (`data/raw/<source>/YYYY/MM/<endpoint>.ndjson.gz`, one record per request, deduped by
+key) so a parser bug is fixed by reprocessing; curated tables are CSV partitioned by year
+(`data/curated/<table>/<YYYY>.csv`) so a daily commit rewrites only the current year's file
+instead of a multi-megabyte blob. The site reads those files at build time; no database.
 
 ---
 
 ## 5. Architecture
 
-- **Language/tooling:** Python 3.12, `uv` + `pyproject.toml`, `ruff`, `pytest`. Libraries:
-  `httpx` (with a custom SSL context per host), `beautifulsoup4`+`lxml`, `pandas`, `pyarrow`,
-  `duckdb`, `pandera` for table contracts, `statsmodels`/`lightgbm` for models, `typer` for the CLI.
+- **Language/tooling (decided 2026-09-22, see §9):** TypeScript on Node 22, one package for both
+  the ingestion scripts and the site. `tsx` to run the CLI, `vitest` for fixture tests, `tsc
+  --noEmit` plus `eslint` in CI. Libraries: `undici` (per-host TLS agents), `cheerio` for the CENACE
+  HTML, `zod` for table contracts. The frontend is Next.js (App Router) on Vercel, reading the
+  committed data files; there is no database and no server-side ingestion.
 - **Layout**
 
 ```
-hydro_look/
-  sources/      celec_ords.py  cenace_smec.py  cenace_operativa.py  open_meteo.py  noaa_oni.py  mirrors.py
-  ingest/       cli.py (daily | backfill --from | latest)   archive.py (raw store)
-  quality/      contracts.py (pandera)  checks.py (ranges, freshness, unit reconciliation)
-  features/     calendar.py  hydrology.py (water balance, cota↔volume)
-  models/       baselines.py  water_balance.py  gbm_quantile.py  backtest.py
-  publish/      site.py  api.py (docs/api/*.json)
+src/lib/
+  http/         client.ts (rate limit, retries)  tls.ts (scoped agents, fingerprint pins)
+  sources/      celec-ords.ts  cenace-smec.ts  cenace-operativa.ts  open-meteo.ts  noaa-oni.ts  mirrors.ts
+  parse/        one pure parser per endpoint, input = raw text, output = typed rows
+  store/        curated.ts (year-partitioned CSV upsert)  archive.ts (gzipped NDJSON per source-month)
+  contracts/    tables.ts (zod schemas; a failed parse writes nothing)
+  features/     hydrology.ts (water balance, cota↔volume)   calendar.ts
+  models/       baselines.ts  water-balance.ts  backtest.ts
+src/app/        Next.js App Router pages, server components reading data/curated + public/api
+scripts/        ingest.ts (daily | backfill --from --source | latest | --dry-run)
+                recon/capture.py (Phase-0 discovery, kept as-is)
 data/  raw/  curated/  reference/
-docs/  (GitHub Pages: index.html, api/latest.json, api/forecast.json, datos/*.csv)
-scripts/recon/  (Phase-0 discovery scripts, run locally)
-tests/  fixtures/<source>/*.json|html  (recorded responses)
-.github/workflows/  daily.yml  backfill.yml  ci.yml
+public/api/     latest.json  forecast.json  status.json  (served by Vercel, stable public URLs)
+tests/  fixtures/<source>/*  (recorded Phase-0 responses)  *.test.ts
+.github/workflows/  daily.yml  backfill.yml  ci.yml  recon.yml
 ```
 
 - **Scheduling (UTC crons, Ecuador = UTC−5):** ORDS daily close at 12:15 UTC (07:15 local, after
@@ -387,6 +395,10 @@ regime differences between Amazon- and Pacific-slope basins.
 | 3 | Site language | Spanish. |
 | 4 | History provenance | Backfill everything from the ORDS; community mirrors are used for cross-checks only. |
 | 5 | Transparency request to CENACE/CELEC for pre-2022 series | Deferred; stays optional in Phase 7. |
+| 6 | Stack (revisited 2026-09-22 against a Next.js/Vercel/Postgres proposal) | **TypeScript ingestion in GitHub Actions, git as the store, Next.js on Vercel as a pure frontend.** No database: the data is daily-grain (~70k rows across every table), year-partitioned CSV keeps commits small, and a DB would be a second place for the numbers to drift. Secrets stay in Actions; Vercel gets no credentials. |
+| 7 | Ingestion scope for the first build | **Full ingest**, not the three-reservoir MVP subset: every verified ORDS report endpoint, per-plant hourly energy for all seven plants, SMEC back to its earliest date, and the Información Operativa snapshot. |
+| 8 | AI narrative panel (from the same proposal) | Accepted as a later phase, with the constraint that the model never extrapolates the series: slopes, days-to-threshold and analog years are computed in code, the model only writes the narrative over that payload, one call per ingestion run, cost logged with the snapshot. |
+| 9 | `pointValues*` / mrid route | Demoted to a fallback for Coca Codo Sinclair, Agoyán and Manduriacu only (Phase 3). The report endpoints carry every other reservoir and go back to 2015-09-20; the mrid route returned all-null in all three Phase-0 runs. |
 
 ## Appendix A · Phase-0 capture checklist (exact targets; executed by `scripts/recon/capture.py`, results in `scripts/recon/RECON_REPORT.md`)
 

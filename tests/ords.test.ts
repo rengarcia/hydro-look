@@ -1,0 +1,175 @@
+import { describe, expect, it } from "vitest";
+import {
+  parseCaudCuenAniosAvg,
+  parseEnerDia,
+  parseEstUnidades,
+  parsePointValues,
+  parseProdLineaLast2h,
+  parseRepDiaEner12m,
+  parseRepDiaEnerAyerHoy,
+  parseRepDiaHid12m,
+  parseRepDiaNivQIng,
+  parseRepDiaPotQTurb,
+  parseRepDiaRegAyer,
+  parseRepDiaVolAlm,
+} from "../src/lib/parse/ords.ts";
+import type { Observation } from "../src/lib/parse/types.ts";
+import { fixture } from "./helpers.ts";
+
+const ords = (name: string) => fixture("celec_ords", name);
+const find = (rows: Observation[], date: string, site: string, variable: string) =>
+  rows.find((r) => r.date === date && r.site === site && r.variable === variable);
+
+describe("repDiaHid12m", () => {
+  const result = parseRepDiaHid12m(ords("ords_rep_repDiaHid12m.txt"));
+
+  it("returns a year of levels and inflows for four reservoirs", () => {
+    expect(result.observations).toHaveLength(365 * 4 * 2);
+    expect(find(result.observations, "2025-09-20", "mazar", "cota_masl")?.value).toBe(2152.21);
+    expect(find(result.observations, "2025-09-20", "mazar", "caudal_m3s")?.value).toBe(55);
+  });
+
+  it("maps the `mol` columns to the Amaluza reservoir, not the Molino plant", () => {
+    expect(find(result.observations, "2025-09-20", "amaluza", "cota_masl")?.value).toBe(1989.27);
+    expect(result.observations.some((r) => r.site === "molino")).toBe(false);
+  });
+
+  it("separates the declared band from the readings", () => {
+    const band = result.bands?.find((b) => b.date === "2025-09-20" && b.site === "mazar");
+    expect(band).toMatchObject({ cota_min: 2100, cota_max: 2153, qmax_m3s: 800 });
+    expect(result.observations.some((r) => r.variable.startsWith("lim"))).toBe(false);
+  });
+
+  it("skips the nulls of years before a plant existed", () => {
+    const early = parseRepDiaHid12m(ords("ords_hist_repDiaHid12m_2016.txt"));
+    expect(early.observations.some((r) => r.site === "minas_san_francisco")).toBe(false);
+    expect(find(early.observations, "2015-09-20", "mazar", "cota_masl")?.value).toBe(2149.3);
+  });
+});
+
+describe("repDiaEner12m", () => {
+  it("reads daily energy per CELEC Sur plant and drops the chart's axis limits", () => {
+    const result = parseRepDiaEner12m(ords("ords_rep_repDiaEner12m.txt"));
+    expect(find(result.observations, "2026-03-20", "mazar", "produccion_mwh")?.value).toBe(2895.226364);
+    expect(find(result.observations, "2026-03-20", "molino", "produccion_mwh")?.value).toBe(19471.644158);
+    expect(result.observations.every((r) => r.value < 100_000)).toBe(true);
+  });
+
+  it("omits plants that were not yet reporting", () => {
+    const result = parseRepDiaEner12m(ords("ords_hist_repDiaEner12m_2021-03.txt"));
+    expect(find(result.observations, "2020-09-20", "delsitanisagua", "produccion_mwh")).toBeUndefined();
+    expect(find(result.observations, "2020-09-20", "minas_san_francisco", "produccion_mwh")?.value).toBe(2095.12);
+  });
+});
+
+describe("the one-day reports", () => {
+  it("reads levels and inflows, including the Sopladora intake chamber", () => {
+    const result = parseRepDiaNivQIng(ords("ords_rep_repDiaNivQIng.txt"));
+    expect(find(result.observations, "2026-09-20", "mazar", "cota_masl")?.value).toBe(2139.1);
+    expect(find(result.observations, "2026-09-20", "sopladora", "cota_masl")?.value).toBe(1315.440064);
+  });
+
+  it("reads power, turbined flow and units online", () => {
+    const result = parseRepDiaPotQTurb(ords("ords_rep_repDiaPotQTurb.txt"));
+    expect(find(result.observations, "2026-09-20", "minas_san_francisco", "potencia_mw")?.value).toBe(202.28);
+    expect(find(result.observations, "2026-09-20", "minas_san_francisco", "unidades_linea")?.value).toBe(3);
+  });
+
+  it("dates produced energy from the row and the plan from the requested day", () => {
+    const result = parseRepDiaEnerAyerHoy(ords("ords_rep_repDiaEnerAyerHoy.txt"), "2026-09-20");
+    expect(find(result.observations, "2026-09-19", "sni", "produccion_mwh")?.value).toBe(104862.229584);
+    expect(find(result.observations, "2026-09-20", "mazar", "energia_plan_mwh")?.value).toBe(1040);
+  });
+
+  it("notes a response that mixes dates instead of guessing", () => {
+    const result = parseRepDiaEnerAyerHoy(ords("ords_hist_repDiaEnerAyerHoy_15-06-2016.txt"), "2016-06-15");
+    expect(result.notes?.[0]).toMatch(/mixes the dates 2016-06-14, 2016-06-15/);
+  });
+
+  it("reads the annual registry rows", () => {
+    const result = parseRepDiaRegAyer(ords("ords_rep_repDiaRegAyer.txt"));
+    expect(find(result.observations, "2026-09-20", "molino", "energia_anual_acum_gwh")?.value).toBe(4062);
+    expect(find(result.observations, "2026-09-20", "sopladora", "volumen_vertido_hm3")?.value).toBe(0.187129);
+  });
+});
+
+describe("repDiaVolAlm", () => {
+  const result = parseRepDiaVolAlm(ords("ords_rep_repDiaVolAlm_post.txt"), "2026-09-20");
+
+  it("stores volutilalm as a band position, not a volume", () => {
+    expect(find(result.observations, "2026-09-20", "mazar", "nivel_pct_banda")?.value).toBe(73.849057);
+    expect(result.observations.some((r) => r.variable.includes("volumen_util"))).toBe(false);
+  });
+
+  it("confirms the band-linear identity holds, so nothing is flagged", () => {
+    // (2139.14 - 2100) / (2153 - 2100) = 73.849 %
+    expect(result.notes).toEqual([]);
+  });
+
+  it("flags a row where the identity stops holding", () => {
+    const doctored = ords("ords_rep_repDiaVolAlm_post.txt").replace("73.84905660377358490566037735849056603774", "61.5");
+    const flagged = parseRepDiaVolAlm(doctored, "2026-09-20");
+    expect(flagged.notes?.[0]).toMatch(/no longer band-linear/);
+  });
+});
+
+describe("per-plant hourly energy", () => {
+  it("sums 24 hours into one daily total", () => {
+    const result = parseEnerDia(ords("ords_hist_ccsEnerDia_15-10-2024.txt"), "coca_codo_sinclair", "ccs", "2024-10-15");
+    expect(result.observations).toHaveLength(1);
+    expect(result.observations[0]).toMatchObject({ date: "2024-10-15", variable: "produccion_mwh" });
+    expect(result.observations[0]!.value).toBeCloseTo(15118.691, 3);
+  });
+
+  it("writes nothing for a partial day", () => {
+    const partial = JSON.stringify({
+      items: [{ loctimestamp: "2024-10-15T06:00:00Z", valueedit: 100 }, { loctimestamp: "2024-10-15T07:00:00Z", valueedit: null }],
+    });
+    const result = parseEnerDia(partial, "mazar", "maz", "2024-10-15");
+    expect(result.observations).toEqual([]);
+    expect(result.notes?.join(" ")).toMatch(/only 1\/24 hours/);
+  });
+});
+
+describe("the historian and live endpoints", () => {
+  it("treats an all-null pointValues response as a note, not a failure", () => {
+    const result = parsePointValues(ords("pointvalues_30538_2026-09-20.json"), "mazar", "caudal_m3s", 30538);
+    expect(result.observations).toEqual([]);
+    expect(result.notes?.[0]).toMatch(/all 24 points are null/);
+  });
+
+  it("reads the yearly basin flow, including the 2024 drought", () => {
+    const result = parseCaudCuenAniosAvg(ords("ords_hist_csrCaudCuenAniosAvg.txt"));
+    expect(find(result.observations, "2024-01-01", "paute_cuenca", "caudal_cuenca_m3s")?.value).toBeCloseTo(74.57, 2);
+    expect(find(result.observations, "2025-01-01", "paute_cuenca", "caudal_cuenca_m3s")?.value).toBeCloseTo(163.58, 2);
+  });
+
+  it("names each live block from its flow row", () => {
+    const live = parseProdLineaLast2h(ords("ords_rep_csrProdLineaLast2h.txt"));
+    const mazarLevel = live.find((r) => r.site === "mazar" && r.magnitude === "Nivel Embalse" && r.hour === 1);
+    expect(mazarLevel?.value).toBe(2138.66);
+    expect(live.some((r) => r.site === "paute_cuenca")).toBe(true);
+  });
+
+  it("reads unit status", () => {
+    const units = parseEstUnidades(ords("ords_rep_csrEstUnidades.txt"));
+    expect(units).toHaveLength(22);
+    expect(units[0]).toEqual({ site: "molino", unit: "U01", status: "En línea" });
+  });
+});
+
+describe("schema drift", () => {
+  it("refuses a renamed plant instead of dropping it", () => {
+    const renamed = JSON.stringify({ items: [{ fecha: "2026-09-20T05:00:00Z", embalse: "Mazar II", nivel: 1, q_ingresado: 1 }] });
+    expect(() => parseRepDiaNivQIng(renamed)).toThrow(/unknown site label/);
+  });
+
+  it("refuses a response that lost a field", () => {
+    const trimmed = JSON.stringify({ items: [{ loctimestamp: "2026-09-20T05:00:00Z", nivelmaz: 2139 }] });
+    expect(() => parseRepDiaHid12m(trimmed)).toThrow(/lost the fields/);
+  });
+
+  it("refuses a response that is not JSON at all", () => {
+    expect(() => parseRepDiaHid12m("<html>login</html>")).toThrow(/not JSON/);
+  });
+});
