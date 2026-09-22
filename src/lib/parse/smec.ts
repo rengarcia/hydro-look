@@ -176,7 +176,11 @@ export function parseSmecInforme1(html: string, requestedDate: IsoDate): SmecRep
       : missing.length > 0
         ? `missing ${missing.join(", ")}`
         : "total generación is 0";
-    notes.push(`smec ${date}: report is incomplete (${why}); CENACE publishes the running day this way until D+1`);
+    // The running day really does look like this until D+1. An archived day does not recover,
+    // though, and saying it might would keep a permanent gap on the list of things to retry:
+    // the fifteen days missing from 2016-05-01 onwards were re-fetched on 2026-09-22 (run
+    // 35726456802), one of them six years after the fact, and every page came back identical.
+    notes.push(`smec ${date}: report is incomplete (${why}); the running day fills in at D+1, but a stored-as-missing day has come back identical on every retry`);
   }
   return { date, tipo_dia, tipo_dia_anio_anterior, rows, complete, notes };
 }
