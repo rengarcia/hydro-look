@@ -737,7 +737,15 @@ out center tags;`;
         }
         if (items.length > 0) control.set(candidate, "yes");
         lastGood = candidate;
-        const byName = items.find((i) => plant.aliases.some((a) => fold(i.name).includes(fold(a))));
+        // Several elements can share a name, and `find` took whichever the server happened to list
+        // first. Manduriacu maps its plant, its dam and an untagged reservoir outline under two
+        // spellings of the same string, so one run reported it at 0.02 km and the next at 1.19 —
+        // from identical data. Prefer the element carrying the QID the SPARQL query returned, then
+        // the nearest: a QID match is the two sources naming one entity, which is the whole test.
+        const named = items.filter((i) => plant.aliases.some((a) => fold(i.name).includes(fold(a))));
+        const byName = [...named].sort(
+          (a, b) => Number(b.tags["wikidata"] === plant.qid) - Number(a.tags["wikidata"] === plant.qid) || kmApart(anchor, a) - kmApart(anchor, b),
+        )[0];
         const nearest = items.filter((i) => i.name).sort((a, b) => kmApart(anchor, a) - kmApart(anchor, b))[0];
         const hit = byName ?? nearest;
         found[plant.site] = {
@@ -902,6 +910,18 @@ out center tags;`;
  * against the same database, and it searches by name, so it answers a question the bounding boxes
  * structurally cannot: where OSM puts this dam, including somewhere the box never covered.
  */
+/**
+ * How far a Nominatim hit may sit from the Wikidata point and still be about the same dam.
+ *
+ * The first run with this route returned "Agoyan" 131 km away, at 2,876 m against the dam's 1,638,
+ * and the name match alone was enough to put it in the coordinates table — where its elevation was
+ * then compared against the real site's as though the pair meant something. A free-text search
+ * answers with whatever carries the string, and Ecuador has more than one Agoyán. Thirteen
+ * kilometres is the radius the bounding boxes already use, so the two routes agree on what
+ * "near this dam" means, and a hit beyond it is recorded as the finding it is rather than adopted.
+ */
+const MAX_NOMINATIM_KM = 13;
+
 async function probeNominatim(plant: (typeof PLANTS)[number], anchor: Point): Promise<OsmHit | null> {
   for (const alias of plant.aliases) {
     const url =
@@ -930,9 +950,14 @@ async function probeNominatim(plant: (typeof PLANTS)[number], anchor: Point): Pr
         url,
         status: response.status,
         bytes: body.length,
-        note: `"${alias}": ${items.length} results; ${byName ? `name match ${byName.name} at ${kmApart(anchor, byName)} km [${structureOf(byName.tags)}]` : `no name match${items.length ? `, first is ${items[0]!.name}` : ""}`}`,
+        note:
+        `"${alias}": ${items.length} results; ` +
+        (byName
+          ? `name match ${byName.name} at ${kmApart(anchor, byName)} km [${structureOf(byName.tags)}]` +
+            (kmApart(anchor, byName) > MAX_NOMINATIM_KM ? ` — beyond ${MAX_NOMINATIM_KM} km, so this is something else with the same name, not this dam` : "")
+          : `no name match${items.length ? `, first is ${items[0]!.name}` : ""}`),
       });
-      if (byName) {
+      if (byName && kmApart(anchor, byName) <= MAX_NOMINATIM_KM) {
         return { lat: byName.lat, lon: byName.lon, id: byName.id, name: byName.name, kmFromWikidata: kmApart(anchor, byName), byName: true, tags: byName.tags, via: "nominatim" };
       }
       await sleep(2000);
