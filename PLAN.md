@@ -707,10 +707,19 @@ search for a boundary set with upstream topology starts again from SENAGUA or MA
 agree and neither is a judgement call. OSM tags node/2489320895 `waterway=dam`, while the Wikidata
 coordinate carries no structure at all; and the two sit **526 m apart vertically** — 1,495 m against
 969 m — across the 8.18 km between them. Water enters a run-of-river scheme at the intake and
-leaves at the machines, so the higher end is the intake, and 526 m of fall over 8 km is the gross
-head of a high-head plant rather than the noise of two editors disagreeing. The catchment for the
-`zamora` basin is therefore delineated at **-3.9803332, -79.0172129**, not at the Wikidata point,
-which is the powerhouse and would have added several kilometres of river the plant never sees.
+leaves at the machines, so the higher end is the intake. The catchment for the `zamora` basin is
+therefore delineated at **-3.9803332, -79.0172129**, not at the Wikidata point, which is the
+powerhouse and would have added several kilometres of river the plant never sees.
+
+What carries that conclusion is the *direction*, and it is worth being exact about why, because the
+magnitude does not carry it. These are terrain readings from a DEM, not water levels: they say what
+the ground does at two coordinates, and a powerhouse on a scheme like this can be partly
+underground. So 526 m is not this plant's gross head and should not be quoted as one — it is far
+larger than any figure a headrace of 8 km on the Zamora would imply, which is what a valley wall
+between two river points looks like to a DEM. The argument needs none of that: the structure tag
+says one point is a dam, the height says that point is upstream, and an intake is what a dam
+upstream of a powerhouse is. Half a kilometre of relief is simply too much to be either source's
+error, which is the only thing the size is asked to show.
 
 **Two more pour points are now confirmed by identity rather than by proximity.** The OSM elements
 for Coca Codo Sinclair (way/310742588) and Marcel Laniado (way/550243261) carry
