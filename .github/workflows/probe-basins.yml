@@ -16,7 +16,11 @@ permissions: {}
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # Ten was not enough: run 35732611773 was killed at the limit mid-walk. Overpass is the
+    # slow part and the least predictable, since a busy instance answers late or not at all.
+    # The probe now writes its report after every phase, so a run that still hits this ceiling
+    # leaves the answers it had; the ceiling is here to stop a hung request costing an hour.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

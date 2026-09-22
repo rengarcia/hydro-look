@@ -133,14 +133,34 @@ interface Point {
 
 const rows: Row[] = [];
 const boundaries: Boundary[] = [];
+/**
+ * Held here rather than in `main` so the report can be assembled from whatever has been
+ * answered so far. Run 35732611773 spent ten minutes asking and was killed at the job limit
+ * with nothing written, because the report was built once, at the end. It is now flushed at
+ * every phase boundary, so a run that dies still leaves the answers it had already got.
+ */
+let wikidataFound: Record<string, (Point & { matchedBy: string }) | null> = {};
+let overpassFound: Record<string, OsmResult> = {};
 const record = (row: Partial<Row> & { probe: string; url: string }): void => {
   rows.push({ status: null, bytes: null, note: "", error: "", ...row });
 };
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/**
+ * Every request carries a deadline. `fetch` has none by default, and a probe without one does
+ * not fail, it hangs: the 2026-09-22 run 35732611773 was killed at the job's ten-minute limit
+ * with its report unwritten, because a busy Overpass instance can hold a connection open far
+ * longer than the 25 seconds its own query header asks for.
+ */
+const DEADLINE_MS = 40_000;
+
 async function get(url: string, init: RequestInit = {}): Promise<Response> {
-  return fetch(url, { ...init, headers: { "user-agent": USER_AGENT, ...(init.headers ?? {}) } });
+  return fetch(url, {
+    signal: AbortSignal.timeout(DEADLINE_MS),
+    ...init,
+    headers: { "user-agent": USER_AGENT, ...(init.headers ?? {}) },
+  });
 }
 
 /** Accents, case and punctuation folded away, so "Agoyán" and "Daule-Peripa" match plain text. */
@@ -580,11 +600,16 @@ interface OsmResult {
  */
 async function probeOverpass(
   wikidata: Record<string, (Point & { matchedBy: string }) | null>,
+  flush: () => void,
 ): Promise<Record<string, OsmResult>> {
   const found: Record<string, OsmResult> = {};
   let lastGood: string | null = null;
-  /** Instances proven to hold Ecuador, and instances proven not to. */
-  const covers = new Map<string, boolean>();
+  /**
+   * The control verdict per instance, asked at most once each. Whether a server holds Ecuador
+   * is a fact about the server, so re-asking it for every site spends the run's whole budget on
+   * a question already answered.
+   */
+  const control = new Map<string, "yes" | "no" | "unknown">();
   const dead = new Set<string>();
 
   for (const plant of PLANTS) {
@@ -632,31 +657,33 @@ out center tags;`;
           }))
           .filter((i): i is { name: string; id: string; lat: number; lon: number } => i.lat !== undefined && i.lon !== undefined);
         // Nothing found is only a finding if this instance holds Ecuador at all.
-        if (items.length === 0 && covers.get(candidate) !== true) {
-          await sleep(1500);
-          const verdict = await overpassHoldsEcuador(candidate);
-          const host = new URL(candidate).host;
-          if (verdict === "yes") covers.set(candidate, true);
-          record({
-            probe: `overpass control ${host}`,
-            url: candidate,
-            status: response.status,
-            note:
-              verdict === "yes"
-                ? "answers the Mazar control box, so its empty answers are real"
-                : verdict === "no"
-                  ? "returns nothing for the Mazar control box: this mirror does not hold Ecuador, and its answers are discarded"
-                  : "could not answer the Mazar control box, so this empty answer proves nothing",
-          });
+        if (items.length === 0 && control.get(candidate) !== "yes") {
+          let verdict = control.get(candidate);
+          if (!verdict) {
+            await sleep(1500);
+            verdict = await overpassHoldsEcuador(candidate);
+            control.set(candidate, verdict);
+            record({
+              probe: `overpass control ${new URL(candidate).host}`,
+              url: candidate,
+              status: response.status,
+              note:
+                verdict === "yes"
+                  ? "answers the Mazar control box, so its empty answers are real"
+                  : verdict === "no"
+                    ? "returns nothing for the Mazar control box: this mirror does not hold Ecuador, and its answers are discarded"
+                    : "could not answer the Mazar control box, so its empty answers prove nothing",
+            });
+          }
           if (verdict !== "yes") {
             if (verdict === "no") dead.add(candidate);
             if (lastGood === candidate) lastGood = null;
             found[plant.site] = { hit: null, outcome: "empty, unconfirmed" };
-            await sleep(1500);
+            await sleep(1000);
             continue;
           }
         }
-        if (items.length > 0) covers.set(candidate, true);
+        if (items.length > 0) control.set(candidate, "yes");
         lastGood = candidate;
         const byName = items.find((i) => plant.aliases.some((a) => fold(i.name).includes(fold(a))));
         const nearest = items.filter((i) => i.name).sort((a, b) => kmApart(anchor, a) - kmApart(anchor, b))[0];
@@ -678,6 +705,8 @@ out center tags;`;
         await sleep(1500);
       }
     }
+    overpassFound = found;
+    flush();
     await sleep(1000);
   }
   return found;
@@ -692,34 +721,17 @@ function kmApart(a: { lat: number; lon: number }, b: { lat: number; lon: number 
   return Math.round(6371 * 2 * Math.asin(Math.sqrt(h)) * 100) / 100;
 }
 
-async function main(): Promise<void> {
-  const outIndex = process.argv.indexOf("--out");
-  const outDir = outIndex >= 0 ? process.argv[outIndex + 1] : undefined;
-  const startedAt = nowUtc();
-
-  // Is the 403 the address, the client or the path? Then: who else serves this data?
-  await probeHydroshedsBlock();
-  await probeMirrors();
-  await probeArcgis();
-
-  for (const host of ["data.hydrosheds.org", "zenodo.org", "api.figshare.com", "www.arcgis.com", "query.wikidata.org", "overpass-api.de"]) {
-    await probeRobots(host);
-    await sleep(1000);
-  }
-
-  const wikidata = await probeWikidata();
-  await sleep(1000);
-  const overpass = await probeOverpass(wikidata);
-
+/** The report as it stands right now, from whatever has been answered so far. */
+function buildReport(startedAt: string): { report: string; coordinates: unknown[] } {
   const coordinates = PLANTS.map((plant) => {
-    const a = wikidata[plant.site];
-    const b = overpass[plant.site]?.hit ?? null;
+    const a = wikidataFound[plant.site] ?? null;
+    const b = overpassFound[plant.site]?.hit ?? null;
     return {
       site: plant.site,
       basin: plant.basin,
       wikidata: a,
       osm: b,
-      outcome: overpass[plant.site]?.outcome ?? "not asked",
+      outcome: overpassFound[plant.site]?.outcome ?? "not asked",
       km_apart: a && b ? kmApart(a, b) : null,
       agrees: Boolean(a && b && b.byName && kmApart(a, b) <= 1),
     };
@@ -789,12 +801,45 @@ async function main(): Promise<void> {
     "",
   ].join("\n");
 
-  console.log(report);
-  if (outDir) {
+  return { report, coordinates };
+}
+
+async function main(): Promise<void> {
+  const outIndex = process.argv.indexOf("--out");
+  const outDir = outIndex >= 0 ? process.argv[outIndex + 1] : undefined;
+  const startedAt = nowUtc();
+
+  /** Write what is known so far. Cheap, local, and the only thing a killed job leaves behind. */
+  const flush = (): void => {
+    if (!outDir) return;
+    const { report, coordinates } = buildReport(startedAt);
     mkdirSync(outDir, { recursive: true });
     writeFileSync(join(outDir, "probe-basins.md"), `${report}\n`);
-    writeFileSync(join(outDir, "probe-basins.json"), `${JSON.stringify({ startedAt, finishedAt, rows, boundaries, coordinates }, null, 1)}\n`);
+    writeFileSync(join(outDir, "probe-basins.json"), `${JSON.stringify({ startedAt, finishedAt: nowUtc(), rows, boundaries, coordinates }, null, 1)}\n`);
+  };
+
+  // Is the 403 the address, the client or the path? Then: who else serves this data?
+  await probeHydroshedsBlock();
+  flush();
+  await probeMirrors();
+  flush();
+  await probeArcgis();
+  flush();
+
+  for (const host of ["data.hydrosheds.org", "zenodo.org", "api.figshare.com", "www.arcgis.com", "query.wikidata.org", "overpass-api.de"]) {
+    await probeRobots(host);
+    await sleep(1000);
   }
+  flush();
+
+  wikidataFound = await probeWikidata();
+  flush();
+  await sleep(1000);
+  overpassFound = await probeOverpass(wikidataFound, flush);
+
+  const { report } = buildReport(startedAt);
+  console.log(report);
+  flush();
 }
 
 main().catch((error) => {
