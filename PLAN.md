@@ -183,8 +183,34 @@ checked against ARCONEL's effective-power table.
 | Delsitanisagua | CELEC Gensur | 180 | small | Zamora / Amazon | verify |
 | Toachi-Pilatón, Baba, private plants | various | ~300+ | — | Pacific | no |
 
-The seven dashboard plants total ≈3,750 MW, roughly three quarters of Ecuador's hydro capacity;
-CCS alone was 46–48% of hydro output this year (press, citing CELEC).
+The seven dashboard plants total ≈3,750 MW, roughly three quarters of Ecuador's hydro capacity.
+
+**Measured 2026-09-22, superseding the press figure that stood here.** This note used to say "CCS
+alone was 46–48% of hydro output this year (press, citing CELEC)". With the per-plant energy
+backfill complete, 3,720 days of our output against SMEC's national `generacion_hidraulica` say
+otherwise, and consistently across ten years. Median share of national hydro, by year:
+
+| year | CCS | Molino | Sopladora | Mazar | Minas SF | Agoyán | Delsita. | Manduriacu | Alazán | all |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 2017 | 28.6% | 23.9% | 11.6% | 3.4% | — | 4.8% | — | 1.0% | — | 71.8% |
+| 2019 | 26.1% | 23.2% | 10.2% | 3.3% | 4.1% | 4.3% | — | 1.4% | — | 71.9% |
+| 2021 | 11.8% | 22.0% | 10.3% | 2.9% | 4.7% | 4.4% | — | 1.6% | — | 59.0% |
+| 2023 | 28.2% | 17.4% | 9.0% | 2.1% | 3.0% | 3.8% | — | 1.3% | — | 66.0% |
+| 2024 | 26.2% | 15.6% | 8.4% | 1.9% | 1.9% | 3.9% | 0.2% | 1.3% | — | 61.2% |
+| 2026 | 25.6% | 18.8% | 9.8% | 2.5% | 3.4% | 3.3% | 4.0% | 1.3% | 0.1% | 67.3% |
+
+So **CCS is 25–29% of national hydro in a normal year, not 46–48%**, and the seven dashboard
+plants together are **≈69%** (median 68.7% over all 3,720 days), leaving ~31% to Marcel Laniado,
+San Francisco, Pucará, Toachi-Pilatón, Baba and the private fleet — which is plausible for the
+1,000+ MW they represent. The press figure most likely described CCS's share of *CELEC's* output
+or of capacity, not of national generation; either way it is not what the meters say, so it is no
+longer used as a sanity anchor. The per-plant shares sum to the aggregate within a point
+(2026: 68.8% summed vs 67.3% aggregate median), so there is no unit error hiding in the per-plant
+series.
+
+Two things in that table are signal rather than noise, and should not be smoothed away: **CCS
+falls to 11.8% in 2021 and 17.5% in 2025**, and **Molino declines steadily from 27% to 16%** as
+Amaluza silts and the newer plants take load.
 
 **`thresholds.csv`** — declared operating bands per reservoir with the source and the date read, so a change
 of rules is a commit. Phase 0 found three overlapping declarations: the dashboard chart titles (Mazar
@@ -375,10 +401,21 @@ they matter:
 - **Two days report generación far above any real day**: 2025-07-17 (247,391 MWh) and 2025-07-18 (203,988)
   against a median of 76,622 and a genuine maximum near 115,771. Also flagged rather than dropped.
 
-The **CELEC plants we carry account for a median 43.9% of SMEC national hydro** (mean 44.9%, by year 40–46%),
-over 2,107 comparable days. That is the expected shape with Coca Codo Sinclair still missing: CCS alone is
-reported at 46–48% of national hydro, so the two together come to ~90% and the remainder belongs to other
-operators. Once the CCS backfill lands this ratio becomes a real unit check rather than a plausibility one.
+**The per-plant energy backfill is complete and the reconciliation now closes.** Coca Codo Sinclair has
+3,736 days (2016-06-24 →) and Manduriacu 3,340 (run 35691743229), so the plant sum can be compared against
+SMEC on 3,720 days. Our seven dashboard plants are a **median 68.7% of SMEC national hydro**, broken down
+per plant and per year in §3, which also records that this measurement replaced the 46–48% press figure for
+CCS: the meters say 25–29%.
+
+The prediction going in was ~90%, from that press figure, and the gap was worth chasing rather than
+accepting. It is not a unit error: the per-plant shares sum to the aggregate within a point, and the
+remaining ~31% belongs to the non-CELEC fleet (Marcel Laniado, San Francisco, Pucará, Toachi-Pilatón, Baba
+and private plants), which is the right order of magnitude for their 1,000+ MW.
+
+Thirteen days still show our sum exceeding national hydro by more than 2%. **All thirteen are 2016 days
+with only four plants reporting**, which is the same era and the same direction as the 34 of 245 days in
+2016 where SMEC's distribution demand exceeds its own generation — that is, 2016 generation is
+under-reported upstream, not over-counted by us. No day after 2016 exceeds the national total.
 
 Original phase text, for reference:
 Parser for the 15/16 rows × 7 columns, contract, binary search for the earliest available date, backfill
