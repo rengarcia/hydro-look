@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-22T19:31:12Z",
+  "generated_at": "2026-09-22T19:44:48Z",
   "as_of": "2026-09-22",
   "ok": true,
   "status": "warn",
@@ -85,7 +85,7 @@
       "rows": 7
     },
     "weather_daily": {
-      "rows": 13440
+      "rows": 13456
     },
     "enso_monthly": {
       "rows": 919
@@ -106,7 +106,7 @@
       "rows": 0
     },
     "xm_exchange_daily": {
-      "rows": 3391
+      "rows": 4002
     },
     "xm_system_daily": {
       "rows": 33154
