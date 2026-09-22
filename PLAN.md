@@ -952,7 +952,9 @@ gate is one-sided: it catches a page whose *demand* has not landed and passes on
 demand — a 94% collapse of exactly the shape this project exists to detect — and sails through,
 because 62.72/4.19 is 15. The symmetric test is arithmetic: served load is distribution demand
 plus losses plus unregulated demand, both positive, so a day whose generation plus net imports
-falls below its own distribution demand is a page caught mid-render. 55 of 3,780 days. The same
+falls below its own distribution demand is a page caught mid-render. 55 days, about 1.5% of the
+record — the denominator grows every morning, so the live count lives in the regenerated
+`data/reports/adequacy.md` rather than here. The same
 ratio catches the opposite fault at the top — 2025-07-17 and -18, where CENACE published
 `generación de otros tipos` at 153.62 and 113.19 GWh against a fortnight's median of 2.2, flagged
 in its own `pct_dia` column at +6,284%. Both are now counted by `checkNationalBalance` and

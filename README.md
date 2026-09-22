@@ -61,7 +61,8 @@ Six things worth knowing before using any of it:
   *generation* has not: 2018-01-05 carries 4.19 GWh of national generation against 62.72 GWh of
   demand and sails through, because 62.72/4.19 is 15. Served load is distribution demand plus
   transmission losses plus unregulated demand, both positive, so a day whose generation plus net
-  imports falls below its own distribution demand is a page caught mid-render — 55 of 3,780. The
+  imports falls below its own distribution demand is a page caught mid-render — 55 days, about
+  1.5% of the record; the live count is in `data/reports/adequacy.md`, which regenerates daily. The
   same ratio catches the opposite fault: on 2025-07-17 and -18 CENACE published `generación de
   otros tipos` at 153.62 and 113.19 GWh against a fortnight's median of 2.2, flagged in its own
   `pct_dia` column at +6,284%, lifting national generation to 247 GWh on a 91 GWh day. All 57 are
