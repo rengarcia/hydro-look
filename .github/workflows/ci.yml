@@ -35,3 +35,12 @@ jobs:
       # the ladder still fits and scores on the actual history, which is what would break first
       # when a source changes shape. About twenty seconds, and no network.
       - run: npm run forecast -- --dry-run
+      # The public current-state document, built and discarded. It is what the site's tiles read,
+      # so a change that leaves a reservoir without a level should be red here and not on the page.
+      - run: npm run publish:api -- --dry-run
+      # The site itself. It renders at build time from data/curated and public/api, which means a
+      # column renamed in a table is a broken build rather than a page that quietly prints a dash
+      # for a week. No network: every number it needs is in the checkout.
+      - run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"

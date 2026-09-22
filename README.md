@@ -17,7 +17,8 @@ with the response that produced it archived alongside it.
 | 3 · Additional reservoir levels | **done 2026-09-22** — 21,541 historian rows: daily level and inflow for Coca Codo Sinclair (2016-03-07→), Agoyán (2016-07-05→) and Manduriacu (2017-08-01→). The Mazar control month matches `repDiaHid12m` on all 31 days to 0.0000 m, and the caudal semantics are now settled on 4,281 days rather than assumed: `mridCaud` is inflow, not turbined flow (`data/crosschecks/caudal-semantics.md`) |
 | 4 · Covariates and quality | reference tables (`plants`, `thresholds`, `rationing_episodes`) and the `npm run check` gates done, `public/api/status.json` published; ONI 1950-01 → 2026-07 and ERA5 1990-01-01 → 2026-09-16 ingested. Outstanding: verified basin centroids — the 36 years of ERA5 cover the one provisional Paute point, not the fleet. Five probes on 2026-09-22 established that HydroSHEDS refuses the runner's address rather than its client or a stale path, and that neither Zenodo nor figshare mirrors it. The ArcGIS lead is now closed negatively: asked which of their polygons contains each dam, all four candidate layers — including the one whose title names Ecuador's Pfafstetter units — answered *none*, for all seven, so that layer is one paper's study area and not a national boundary set. Delsitanisagua's reported 8.18 km disagreement turned out to be the probe picking whichever element the server listed first: ranking name matches by QID finds `way/690695824` (`power=plant`, 180 MW, the same QID Wikidata returned) **0.1 km away and 22 m below**, so the two sources never disagreed. They agree about the powerhouse, though, and a catchment is defined at the intake — a `waterway=dam` node 8.18 km upstream is the candidate for that, but it carries no QID and is not yet tied to this scheme. Mazar, Coca Codo Sinclair and Agoyán are confirmed by identity (same QID, both sources) at 0.04, 0.11 and 0.37 km. Minas San Francisco has failed seven runs and Nominatim finds no name match either. See `PLAN.md` §2.4 |
 | 5 · Modelling v1 | **done 2026-09-22** — `public/api/forecast.json` carries p10/p50/p90 Mazar level at 7/14/30/60/90 days and days-to-threshold under three named analogue years, with the whole censored crossing distribution beside them. The shipped model is a water balance closed around the operator: the reservoir's area-elevation curve and its turbine's m³/s-per-MW are fitted from this repository's own readings, and release is a rule curve read back off the level every simulated day. Over 105 monthly origins from 2018-01 it is **24.5% better than persistence at 60 days and 34.8% at 90**, and indistinguishable from it under a month, which the document says rather than hides. §7's climatological-drift rung loses at every horizon and the open-loop water balance §7 specified loses by 69% at 90 days; both are kept in `data/reports/backtest.md` as recorded negatives. The crisis check is the unflattering one: of Mazar's two 2024 spells below 2115, the P50 called neither in advance, though the ensemble's dry tail put the October crossing 8.5 days out against an actual 7 |
-| 6–7 · Site, extensions | planned — see `PLAN.md` |
+| 6 · Site and JSON API | **built 2026-09-22, not yet deployed** — `public/api/latest.json` joins `status.json` and `forecast.json`, and the Spanish page is a Next.js static export rendered from `data/curated` at build time: reservoir gauges against their declared bands, Mazar's forecast fan over six months of recorded cota, a year of inflow against its own climatology, six months of the national mix, feed freshness, downloads and the method notes. It ships no client JavaScript; every chart is inline SVG from tested pure functions. Two things §6 asks for are deliberately absent and said to be absent on the page itself: the **adequacy tile**, which needs §7's target 3 (expected deficit GWh/day and risk tiers) and that has not been built, and the **6b narrative panel**. The remaining step is connecting a Vercel project to this repository, which cannot be done from a sandbox |
+| 7 · Extensions | planned — see `PLAN.md` |
 
 ## Where the data comes from
 
@@ -95,7 +96,20 @@ npm run forecast -- --no-variant           # skip the ENSO comparison (about a t
 npm run check                              # shape, ranges, reference integrity; no clock, no network
 npm run check -- --freshness               # also fail when a feed has stopped arriving
 npm run check -- --out public/api/status.json
+
+npm run publish:api                        # write public/api/latest.json from the committed tables
+npm run publish:api -- --dry-run           # build it and print a summary; touch no file
+
+npm run dev                                # the site, against whatever is in data/ right now
+npm run build                              # the static export, into out/
 ```
+
+The site is a build-time render of files already in this repository: `next build` reads
+`data/curated` and `public/api`, writes `out/`, and the page ships no client JavaScript. There
+is no request path and no server, which is decision 6 made literal — Vercel holds no
+credentials, runs no ingestion and queries nothing. A number changes on the site when a number
+changes in this repository, and not otherwise. `out/` is servable by anything static, so
+`npx serve out` is a faithful preview.
 
 `npm run check` runs in CI on every push and again after every ingest. The split is deliberate:
 shape and range checks are a function of the files alone, so they hold for as long as the commit
@@ -136,6 +150,10 @@ src/lib/contracts/  zod table schemas; a drifted response writes nothing
 src/lib/quality/    checks over what is on disk, which the row-by-row contracts cannot see
 src/lib/features/   series assembly, the fitted reservoir curve, ONI read at its true lag
 src/lib/models/     the M0–M3 ladder, the rolling-origin backtest, the forecast and its report
+src/lib/publish/    the current-state document the site's tiles read
+src/lib/chart/      scales, ticks and SVG path geometry; pure and unit-tested
+src/lib/site/       what the page reads at build time, and Spanish formatting
+src/app/            the Next.js App Router page and its server-rendered SVG charts
 scripts/ingest.ts   the CLI
 scripts/check.ts    the quality gates and the public status document
 scripts/forecast.ts the backtest and the published forecast
@@ -143,7 +161,8 @@ data/curated/       the tables, CSV, partitioned by year
 data/raw/           every response as fetched, one gzipped bundle per source-month-endpoint
 data/reference/     plants, thresholds, rationing episodes, basins, mrids, TLS pins
 data/reports/       backtest.md, regenerated with every forecast
-public/api/         status.json and forecast.json, the documents the site reads
+public/api/         latest.json, status.json and forecast.json — the documents the site reads
+                    and the stable public URLs a third party can fetch
 tests/fixtures/     the Phase 0 responses the parsers are tested against
 ```
 
