@@ -4,12 +4,6 @@ name: Backfill
 # history is filled by dispatching the same inputs repeatedly until the run reports no new
 # rows. --max-requests keeps a run inside the job timeout at one request per second.
 on:
-  # Until this branch merges, a push that touches this file runs the backfill with the input
-  # defaults below, because workflow_dispatch is only registered from the default branch.
-  push:
-    branches: ["claude/gallant-ptolemy-oz9owd"]
-    paths:
-      - ".github/workflows/backfill.yml"
   workflow_dispatch:
     inputs:
       source:
@@ -68,12 +62,12 @@ jobs:
 
       - name: Backfill
         env:
-          SOURCE: ${{ github.event.inputs.source || 'all' }}
-          FROM: ${{ github.event.inputs.from || '2016-05-01' }}
-          TO: ${{ github.event.inputs.to }}
-          MAX_REQUESTS: ${{ github.event.inputs.max_requests || '10000' }}
-          PLANTS: ${{ github.event.inputs.plants || 'ago,man,ccs' }}
-          DRY_RUN: ${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}
+          SOURCE: ${{ inputs.source }}
+          FROM: ${{ inputs.from }}
+          TO: ${{ inputs.to }}
+          MAX_REQUESTS: ${{ inputs.max_requests }}
+          PLANTS: ${{ inputs.plants }}
+          DRY_RUN: ${{ inputs.dry_run && '--dry-run' || '' }}
         run: |
           npm run ingest -- backfill \
             --source "$SOURCE" \
@@ -85,10 +79,10 @@ jobs:
             $DRY_RUN 2>&1 | tee "$RUNNER_TEMP/backfill.log"
 
       - name: Apply and commit
-        if: always() && github.event.inputs.dry_run != 'true'
+        if: always() && !inputs.dry_run
         env:
-          SOURCE: ${{ github.event.inputs.source || 'all' }}
-          FROM: ${{ github.event.inputs.from || '2016-05-01' }}
+          SOURCE: ${{ inputs.source }}
+          FROM: ${{ inputs.from }}
           BRANCH: ${{ github.ref_name }}
           BATCH_DIR: ${{ runner.temp }}/batch
         run: bash .github/scripts/apply-and-push.sh "Backfill $SOURCE from $FROM (run ${{ github.run_id }})"

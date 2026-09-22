@@ -45,7 +45,7 @@ npm run lint
 
 npm run ingest -- daily                    # yesterday from every source
 npm run ingest -- daily --dry-run          # parse and validate, write nothing
-npm run ingest -- backfill --source ords-levels --from 2015-09-20
+npm run ingest -- backfill --source ords-levels --from 2014-09-20
 npm run ingest -- backfill --source smec --from 2016-05-01 --max-requests 10000
 npm run ingest -- latest                   # live tiles only
 npm run ingest -- smec-earliest            # binary search for SMEC's oldest report
