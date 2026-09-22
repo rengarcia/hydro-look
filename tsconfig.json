@@ -1,10 +1,19 @@
 {
   "compilerOptions": {
     "target": "ES2023",
-    "lib": ["ES2023"],
+    // DOM is here for @types/react, not because anything runs in a browser: the site is
+    // server-rendered to static HTML and ships no client JavaScript. The ingestion CLI shares
+    // this config, so treat a `document` or a `window` in src/lib as a mistake the compiler
+    // will not catch for you.
+    "lib": [
+      "ES2023",
+      "DOM"
+    ],
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
@@ -15,7 +24,33 @@
     "allowImportingTsExtensions": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    // Required by Next: SWC needs esModuleInterop, and the App Router uses React's automatic
+    // JSX runtime. `allowJs` and `incremental` are Next's suggestions, kept so that a
+    // `next build` stops rewriting this file on every run.
+    "allowJs": true,
+    "incremental": true,
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
-  "include": ["src/**/*.ts", "scripts/**/*.ts", "tests/**/*.ts", "vitest.config.ts"]
+  "include": [
+    "next-env.d.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "scripts/**/*.ts",
+    "tests/**/*.ts",
+    "vitest.config.ts",
+    "next.config.ts",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "out"
+  ]
 }

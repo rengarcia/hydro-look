@@ -23,24 +23,12 @@
  * name itself resists the misreading.
  */
 
-import { dayOfYear, dayOfYearDistance, quantile } from "../util/stats.ts";
 import { roundOrNull, roundTo } from "../util/numbers.ts";
-import { addDays, yearOf, type IsoDate } from "../util/dates.ts";
+import { addDays, type IsoDate } from "../util/dates.ts";
 import { SITES, type SiteId } from "../registry.ts";
+import { bandForDayOfYear, binByDayOfYear, sampleForDate } from "../features/climatology.ts";
+import { dayOfYear } from "../util/stats.ts";
 import type { DailySeries, SeriesSet } from "../features/series.ts";
-
-/** Days either side of the target day-of-year that a climatology quantile is pooled over. */
-const CLIMATOLOGY_HALF_WINDOW_DAYS = 7;
-
-/**
- * Below this many distinct years the band is not published at all.
- *
- * Three years of a ±7-day window is around forty values, which will produce a p10 and a p90
- * quite happily and mean almost nothing: an El Niño and a La Niña year in a sample of three
- * put the "normal" range wherever the third year fell. Publishing `null` is the honest answer
- * for the plants whose history is short, and the site says so rather than drawing an empty band.
- */
-const CLIMATOLOGY_MIN_YEARS = 5;
 
 export interface ThresholdRow {
   site: string;
@@ -160,38 +148,22 @@ export function percentileOf(sample: readonly number[], value: number): number |
 }
 
 /**
- * The p10/p50/p90 of a series on the calendar day `date` falls on, pooled over every year in
- * the series and a window either side.
+ * The band for the day `date` falls on, with today's reading placed inside it.
  *
- * The window is circular — 2 January pools with 28 December — because `dayOfYearDistance`
- * measures it that way, and a band that broke at the year boundary would put a step in the
- * middle of the wet season. The current year is included: excluding it would be defensible for
- * a forecast (leakage) and is wrong here, where the band is a description of what this river
- * does and not a prediction of what it will do.
+ * The pooling itself lives in `features/climatology.ts` so that this tile and the ribbon the
+ * site draws behind a year of readings are the same computation; see that module for why the
+ * window is circular and why the current year is in it.
  */
 export function climatologyFor(series: DailySeries, date: IsoDate, today: number | null): Climatology | null {
-  const target = dayOfYear(date);
-  const sample: number[] = [];
-  const years = new Set<number>();
-  for (const [day, value] of series) {
-    if (dayOfYearDistance(dayOfYear(day), target) > CLIMATOLOGY_HALF_WINDOW_DAYS) continue;
-    sample.push(value);
-    years.add(yearOf(day));
-  }
-  if (years.size < CLIMATOLOGY_MIN_YEARS) return null;
-
-  const p10 = quantile(sample, 0.1);
-  const p50 = quantile(sample, 0.5);
-  const p90 = quantile(sample, 0.9);
-  if (p10 === null || p50 === null || p90 === null) return null;
-
+  const band = bandForDayOfYear(binByDayOfYear(series), dayOfYear(date));
+  if (band === null) return null;
   return {
-    p10: roundTo(p10, 2),
-    p50: roundTo(p50, 2),
-    p90: roundTo(p90, 2),
-    years: years.size,
-    n: sample.length,
-    percentile_today: today === null ? null : roundOrNull(percentileOf(sample, today), 1),
+    p10: roundTo(band.p10, 2),
+    p50: roundTo(band.p50, 2),
+    p90: roundTo(band.p90, 2),
+    years: band.years,
+    n: band.n,
+    percentile_today: today === null ? null : roundOrNull(percentileOf(sampleForDate(series, date), today), 1),
   };
 }
 

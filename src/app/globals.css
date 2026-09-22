@@ -1,0 +1,382 @@
+/*
+ * Tokens first, everything else against them, so light and dark are one set of rules with two
+ * sets of values. Dark mode is declared twice on purpose: the media query follows the reader's
+ * operating system, and the `data-theme` scope would let a toggle win over it. There is no
+ * toggle yet; the scope is here so adding one is a button and not a refactor.
+ *
+ * The categorical slots are the validated order — blue, orange, aqua, yellow, magenta, green,
+ * violet — and they are assigned to concepts by position in a fixed list, never by the size of
+ * the day's values. Three of the light steps sit below 3:1 against the surface, so every chart
+ * that uses them carries visible labels and a table underneath it.
+ */
+
+:root {
+  color-scheme: light;
+
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #898781;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --border: rgba(11, 11, 11, 0.1);
+
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e87ba4;
+  --series-6: #008300;
+  --series-7: #4a3aa7;
+
+  --good: #0ca30c;
+  --warning: #fab219;
+  --serious: #ec835a;
+  --critical: #d03b3b;
+
+  --measure: 68rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --muted: #898781;
+    --grid: #2c2c2a;
+    --axis: #383835;
+    --border: rgba(255, 255, 255, 0.1);
+
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --series-4: #c98500;
+    --series-5: #d55181;
+    --series-6: #008300;
+    --series-7: #9085e9;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d;
+  --surface: #1a1a19;
+  --ink: #ffffff;
+  --ink-2: #c3c2b7;
+  --muted: #898781;
+  --grid: #2c2c2a;
+  --axis: #383835;
+  --border: rgba(255, 255, 255, 0.1);
+
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+  --series-6: #008300;
+  --series-7: #9085e9;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.wrap {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+a {
+  color: var(--series-1);
+}
+
+/* ---- page furniture ---------------------------------------------------- */
+
+.masthead {
+  border-bottom: 1px solid var(--border);
+  padding: 40px 0 24px;
+}
+
+.masthead h1 {
+  margin: 0;
+  font-size: clamp(1.75rem, 1.2rem + 2.4vw, 2.6rem);
+  letter-spacing: -0.02em;
+}
+
+.masthead p {
+  margin: 8px 0 0;
+  color: var(--ink-2);
+  max-width: 46rem;
+}
+
+.notice {
+  margin-top: 20px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--warning);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 0.9rem;
+}
+
+.notice strong {
+  color: var(--ink);
+}
+
+section {
+  padding: 40px 0 8px;
+  border-top: 1px solid var(--border);
+}
+
+section:first-of-type {
+  border-top: 0;
+}
+
+h2 {
+  margin: 0 0 4px;
+  font-size: 1.35rem;
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+}
+
+.lede {
+  margin: 0 0 24px;
+  color: var(--ink-2);
+  max-width: 46rem;
+}
+
+.note {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  max-width: 46rem;
+}
+
+/* ---- cards ------------------------------------------------------------- */
+
+.cards {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.card > h3 {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.card .basin {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 400;
+  text-transform: lowercase;
+}
+
+.figure {
+  font-size: 1.9rem;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.figure .unit {
+  font-size: 0.9rem;
+  color: var(--ink-2);
+  letter-spacing: 0;
+}
+
+.sub {
+  color: var(--ink-2);
+  font-size: 0.85rem;
+}
+
+.pairs {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 12px;
+  margin: 12px 0 0;
+  font-size: 0.85rem;
+}
+
+.pairs dt {
+  color: var(--muted);
+}
+
+.pairs dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- charts ------------------------------------------------------------ */
+
+.chart {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+  font-size: 0.82rem;
+  color: var(--ink-2);
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.swatch {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  flex: none;
+}
+
+.swatch.line {
+  height: 2px;
+  border-radius: 1px;
+}
+
+/* ---- tables ------------------------------------------------------------ */
+
+.scroll {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+caption {
+  text-align: left;
+  color: var(--muted);
+  font-size: 0.85rem;
+  padding-bottom: 8px;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 7px 10px 7px 0;
+  border-bottom: 1px solid var(--grid);
+  white-space: nowrap;
+}
+
+th {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+td.num,
+th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* ---- state pills ------------------------------------------------------- */
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.dot.good { background: var(--good); }
+.dot.warning { background: var(--warning); }
+.dot.serious { background: var(--serious); }
+.dot.critical { background: var(--critical); }
+
+/* ---- lists ------------------------------------------------------------- */
+
+.stack {
+  display: grid;
+  gap: 16px;
+}
+
+.links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+.links code {
+  font-size: 0.82rem;
+  color: var(--ink-2);
+}
+
+footer {
+  border-top: 1px solid var(--border);
+  margin-top: 40px;
+  padding: 24px 0 56px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 480px) {
+  .figure {
+    font-size: 1.6rem;
+  }
+}
