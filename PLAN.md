@@ -351,9 +351,11 @@ days in a row.
 
 **Phase 2 · CENACE SMEC ingestion + backfill — backfill complete 2026-09-22 (run 35675850138)**
 `national_balance_daily` now holds **3,780 days, 2016-05-01 → 2026-09-20**, in 11 year files. Coverage is
-**0.18% missing** (7 days, all isolated singles in 2019–2020: 2019-03-21, 2019-03-28, 2020-04-07, 2020-04-08,
-2020-06-20, 2020-06-27, 2020-11-28), against an acceptance bar of < 1%. A later dispatch retries them for
-free, since the backfill skips only days already stored.
+**0.40% missing** — 15 days of the 3,795-day span, against an acceptance bar of < 1%. Seven are days the
+backfill never obtained (2019-03-21, 2019-03-28, 2020-04-07, 2020-04-08, 2020-06-20, 2020-06-27,
+2020-11-28); the other eight are the partially-metered pages rejected below. A later dispatch retries all
+fifteen for free, since the backfill skips only days already stored — and the eight are stored only if the
+page now passes the demand check.
 
 Reconciling that against the ORDS per-plant energy produced three findings, in descending order of how much
 they matter:
