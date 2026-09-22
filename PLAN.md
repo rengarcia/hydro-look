@@ -64,8 +64,8 @@ check). An OpenAPI catalog is public at `open-api-catalog/<module>/` for eight m
 
 | Endpoint (module `sardomcsr` unless noted) | Grain | What it returns | Backfill |
 |---|---|---|---|
-| `repDiaHid12m?fecha=` | daily, 365 rows ending the day before `fecha` | level, inflow (`q_ingresado`), operating limit, min, max flow for Mazar, Molino/Amaluza, Minas San Francisco, Delsitanisagua | one request per year, paging back with `fecha` (depth being probed in run 3) |
-| `repDiaEner12m?fecha=` | daily, 184 rows | daily energy (MWh) for Minas SF, Mazar, Molino, Sopladora, Delsitanisagua, Alazán | one request per 6 months |
+| `repDiaHid12m?fecha=` | daily, 365 rows ending the day before `fecha` | level, inflow (`q_ingresado`), operating limit, min, max flow for Mazar, Molino/Amaluza, Minas San Francisco, Delsitanisagua | **verified back to 2015-09-20** (run 3): Mazar and Amaluza complete with zero nulls over 3,288 days sampled; Minas SF and Delsitanisagua from 2019-09-20. One request per year → the whole history in ~12 requests |
+| `repDiaEner12m?fecha=` | daily, ~182 rows ending the day before `fecha` | daily energy (MWh) for Minas SF, Mazar, Molino, Sopladora (from 2020-09-20), Delsitanisagua and Alazán (from 2025-01-01) | one request per 6 months, ~13 requests for 2020→ |
 | `repDiaNivQIng?fecha=` | one day | level and inflow for Minas SF, Mazar, Amaluza, Sopladora intake chamber | per day |
 | `repDiaPotQTurb?fecha=` | one day | power, units online, turbined flow per plant (Minas SF, Mazar, Molino, Sopladora) | per day |
 | `repDiaEnerAyerHoy?fecha=` | one day | yesterday's energy and today's planned energy per plant **and for the SNI** (national total, 104,862 MWh on 2026-09-19) | per day |
@@ -73,7 +73,8 @@ check). An OpenAPI catalog is public at `open-api-catalog/<module>/` for eight m
 | `repDiaVolAlm` (POST `{"v_loctimestamp": …}`) | one instant | level, band, **% useful volume stored** for Minas SF, Mazar, Amaluza | per day |
 | `csrEstUnidades` | now | unit status per plant (22 units) | no |
 | `csrProdLineaLast2h` | now | live values: daily energy so far, reservoir level, inflow per plant, Paute basin flow | no |
-| `sardom{maz,mol,sop,msf,ago,man,ccs}/{code}EnerDia?fecha=` | hourly, 24 rows for the local day | energy per hour (MWh) for each of the seven plants, Coca Codo Sinclair included | per plant-day (7 × ~1,700 requests for 2022→, or fewer if `EnerMes` comes back) |
+| `sardom{maz,mol,sop,msf,ago,man,ccs}/{code}EnerDia?fecha=` | hourly, 24 rows for the local day | energy per hour (MWh) for each of the seven plants, Coca Codo Sinclair included; **verified for 2019-06-15, 2022-01-15 and 2024-10-15 on all seven** | per plant-day. Needed mainly for Coca Codo Sinclair, Agoyán and Manduriacu (the other four come from `repDiaEner12m`): 3 plants × ~2,650 days from mid-2019 ≈ 8,000 requests ≈ 2.5 h at 1/s, in chunked dispatch runs; fewer if `EnerMes` returns values in a later run |
+| `csrCaudCuenAniosAvg?fechaInicio=&fechaFin=` | yearly | Paute basin mean flow per year, **2010→2026** (2024: 74.6 m³/s, the drought; 2025: 163.6) | one request |
 | `csrEnerDia?fecha=` | hourly | CELEC Sur total (= Mazar + Molino + Sopladora + Minas SF) | per day |
 
 Values seen on 2026-09-20: Mazar 2,139.1 masl with 75 m³/s inflow and 73.8% useful volume; Minas SF 790.3 masl
@@ -85,8 +86,9 @@ and every `*Mes*`/`*Anio*` aggregation, including `{code}EnerMes` and `csrCaudCu
 (our headers, requests defaults, the two community scrapers' headers, browser-like headers, local-midnight
 windows, with and without the legacy TLS adapter) all got the timestamp skeleton with `valueedit: null`, for
 2026-09 as well as for January 2015–2022. The community scrapers got values from the same endpoints at 18:08 and
-23:10 UTC that day; our runs were at 23:37 and 23:56 UTC. Working hypothesis: an evening window in which the
-historian's aggregated/edited values are unavailable. Run 3 and a later re-run will settle it. The mrid map is
+23:10 UTC that day; our runs were at 23:37, 23:56 and 00:09 UTC (run 3, still null). Working hypothesis: an
+evening window in which the historian's aggregated/edited values are unavailable. A scheduled re-run after the
+community scrapers' 05:15 UTC job will settle it. The mrid map is
 nevertheless complete (`data/reference/mrids.csv`): the CELEC-wide bundle declares `mridCota`, `mridCaud`
 and `mridUnid` for all seven plants plus the Paute basin flow (24812). These mrids are the only route to
 **levels and inflows of Coca Codo Sinclair, Agoyán and Manduriacu**; the report endpoints cover the other four
@@ -285,9 +287,11 @@ and inflows, four reservoirs, paged back a year per request), `repDiaEner12m`, `
 `repDiaVolAlm`, `repDiaRegAyer`, `repDiaEnerAyerHoy` (SNI daily total) and `{code}EnerDia` for the seven
 plants; `daily.yml` and `ci.yml`. The `pointValues` client is written too but only for the three plants the
 reports do not cover, and it must tolerate all-null responses.
-Acceptance: levels and inflows for Mazar, Amaluza, Minas SF and Delsitanisagua from the earliest date the
-reports serve; daily energy for all seven plants from 2022-01-01; cross-check against jordanvt18's
-2022→2026 Mazar/Amaluza/Sopladora levels with differences listed; daily workflow green three days in a row.
+Acceptance: levels and inflows for Mazar and Amaluza from 2015-09-20 and for Minas SF and Delsitanisagua
+from 2019-09-20 (find the true first date by paging until the rows are all null); daily energy for the four
+CELEC Sur plants from 2020-09-20 and for the other three from 2019-06 via `EnerDia`; cross-check against
+jordanvt18's 2022→2026 Mazar/Amaluza/Sopladora levels with differences listed; daily workflow green three
+days in a row.
 
 **Phase 2 · CENACE SMEC ingestion + backfill (1–2 S)**
 Parser for the 15/16 rows × 7 columns, contract, binary search for the earliest available date, backfill
@@ -347,7 +351,8 @@ CENACE/CELEC for the pre-2022 daily series; optional web.archive.org with keys.
 - M4 LightGBM quantile regression on lags of cota, caudal, production, basin precipitation (ERA5 and
   forecast), ONI, day-of-year, with rolling-origin CV.
 
-**Evaluation:** rolling-origin backtests with monthly origins from 2023-06; metrics MAE and pinball
+**Evaluation:** rolling-origin backtests with monthly origins from 2018-01 (the Mazar series now starts in
+September 2015 and contains the 2016, 2018, 2020, 2022, 2023 and 2024 lows); metrics MAE and pinball
 loss per horizon, coverage of the p10–p90 band, and a crisis-specific check: lead time at which the
 model's P50 first predicted a critical crossing before 2024-10. Report skill relative to M0.
 
