@@ -374,10 +374,24 @@ Two things the first Actions runs settled:
 That backfill ([run 35675850138](https://github.com/rengarcia/hydro-look/actions/runs/35675850138/job/106582137605))
 is long finished and reconciled; §6's Phase 2 and Phase 3 entries record what it and its successors
 found. **What is left of Phase 1 is one acceptance criterion and a clock: three consecutive green
-*scheduled* daily runs.** The schedule's first firing was due 2026-09-22 12:15 UTC and had not
-appeared by 12:29, which is ordinary — GitHub delays scheduled workflows under load — but it does
-mean the earliest this can close is the third calendar day after the first run that actually fires,
-not after the first that was due.
+*scheduled* daily runs.** The schedule's first firing was due 2026-09-22 12:15 UTC and **had still
+not appeared at 13:07**, with nothing queued. That is not a registration problem — `daily.yml` has
+been on `main` since 2026-09-22 01:26 UTC and in its final form since 01:34, so the schedule had
+over ten hours to register before the slot. It is GitHub's scheduler, and this repository now has
+a measurement of it rather than an expectation: **the only scheduled run in its life, `probe-ords`
+at the 06:05 slot on 2026-09-22, started at 11:27 — five hours and twenty-two minutes late.** One
+observation is not a rate, but it is the only one there is, and it says the criterion cannot be
+read off a calendar. The earliest it can close is the third calendar day after the first run that
+actually fires, not after the first that was due.
+
+That delay has a second edge worth naming, because it reaches the same hazard as the backfill rule
+below without anyone dispatching anything. A firing delayed by more than about four and a quarter
+hours arrives after the *next* slot is due, so both scheduled runs are in the `ingest` group at
+once. Two runs there are safe while one of them is running — the second simply waits. What is not
+safe is either of them sitting **pending**: GitHub keeps one pending run per group, so whichever
+is waiting when a third enters is cancelled, and a cancelled run does not count toward this
+criterion. The mitigation already exists and needs no change — each run re-reads a trailing year,
+so a lost run repairs itself — but a lost run still costs a day of the three.
 
 **Do not dispatch a backfill in the minutes around 12:15 or 16:30 UTC.** `backfill.yml` and
 `daily.yml` share the `ingest` concurrency group, and `cancel-in-progress: false` does not mean
