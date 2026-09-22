@@ -390,13 +390,39 @@ tefaceli's MW). Información Operativa parser for the header key/value list with
 Acceptance: `national_balance_daily` complete from the earliest date with < 1% missing days; SMEC vs
 Información Operativa closed-day totals agree within 2% on ≥ 20 days.
 
-**Phase 3 · Coca Codo Sinclair, Agoyán, Manduriacu levels and inflows (1 S, unblocked 2026-09-22)**
-Their mrids are known (`data/reference/mrids.csv`) and `pointValuesMesH24` returned values for all six in the
-2026-09-22 probe (§2.1), so this phase can start: page the monthly aggregation back by month with overlap (the
-window's last local day comes back null), find each plant's first non-null month, and add the six mrids to the
-daily run at an hour the probe schedule shows to be safe. Backfill them and confirm the caudal semantics with a month of overlap between mrid 30538 and
-`q_ingresado` for Mazar. If the aggregation endpoints stay null, fall back to hourly `pointValues` sampled
-once a day at a time of day that works, and record the working window.
+**Phase 3 · Coca Codo Sinclair, Agoyán, Manduriacu levels and inflows — code complete 2026-09-22, awaiting its first run**
+Delivered: the `ords-historian` backfill source, `src/lib/sources/historian.ts`, the six target mrids plus the
+two Mazar control mrids in `registry.ts`, month arithmetic in `util/dates.ts`, and the historian month in the
+daily run. 13 new tests, no network. Three things the implementation settled:
+
+- **The truncated last day was an exclusive window end, and it is fixed rather than worked around.** The
+  aggregation buckets by local day while `fechaFin` is an exclusive UTC instant, so a month's last local day —
+  which does not end until 05:00Z the following day — was still open when the window closed, and came back
+  null. That is precisely the 30-of-31 the August control probe saw. `pointValuesMesH24` now reaches one day
+  past the boundary; the extra day's own row is the incomplete one, and nulls are skipped, so nothing is
+  written twice. The archive key stays the month, so widening the window did not orphan earlier responses.
+- **An empty month is ambiguous, so one request per run resolves it before any other is believed.** Phase 0 got
+  nulls from these mrids and the 2026-09-22 probe got values from the same ones, so "empty" means either the
+  blank window of §2.1 or a plant that did not exist yet. Mazar settles it: `repDiaHid12m` publishes its level
+  for every month in range, so a blank control is the endpoint talking about itself. The walk spends its first
+  request there and abandons the run if it comes back empty. This matters more here than anywhere else in the
+  pipeline — these three plants have no second source, so a false "no data" against them is not something a
+  later cross-check could catch.
+- **The presence index could not tell the series apart.** All historian rows carry one source id
+  (`ords:pointValues`) and differ only by mrid, so the `date|source` pair the other backfills skip on would
+  have reported Agoyán's level as fetched the moment Mazar's was. The index now carries the mrid-qualified
+  form alongside it.
+
+`mrids.csv` gains `sample_value`, `sample_date` and `validated_by` for the seven readings §2.1 attributes to a
+named date and run. Mazar's caudal row is deliberately left empty: the probe reported 37.62 and 38.22 but the
+record does not say which day each belongs to, and a guessed sample in a reference file is worse than none.
+
+**Still to happen: the data.** The daily run now asks for the running month on every pass, so the three plants
+begin accumulating from the next scheduled run without any dispatch; the history needs one
+`backfill --source ords-historian --from <date>`. Until one of those has run this phase is code, not data, and
+the acceptance criterion below is unmet. The caudal semantics check has its overlap built in — Mazar rides the
+daily run as the control, so mrid 30538 accumulates against `q_ingresado` day by day. The fallback to hourly
+`pointValues` stays unused: the monthly aggregation answers, and one request a month beats one a day.
 Acceptance: daily level and inflow for the three plants; a documented semantics note per variable.
 
 **Phase 4 · Covariates, reference tables, quality gates (1 S)**

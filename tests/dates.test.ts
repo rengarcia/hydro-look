@@ -3,11 +3,18 @@ import {
   addDays,
   daysBetween,
   eachDay,
+  eachMonth,
   localDateOf,
   localDateOfHourEnding,
   localHourEnding,
+  monthEnd,
+  monthLabel,
+  monthOfDate,
+  monthStart,
+  nextMonth,
   ordsFecha,
   ordsMidnightZ,
+  previousMonth,
   smecFecha,
   todayEc,
 } from "../src/lib/util/dates.ts";
@@ -37,6 +44,32 @@ describe("Ecuadorian local days", () => {
     expect(addDays("2026-01-01", -1)).toBe("2025-12-31");
     expect(daysBetween("2026-01-01", "2026-12-31")).toBe(364);
     expect(eachDay("2026-09-19", "2026-09-21")).toEqual(["2026-09-19", "2026-09-20", "2026-09-21"]);
+  });
+
+  it("enumerates the months a range touches, inclusive of both ends", () => {
+    expect(eachMonth("2026-01-15", "2026-03-02")).toEqual([
+      { year: 2026, month: 1 },
+      { year: 2026, month: 2 },
+      { year: 2026, month: 3 },
+    ]);
+    expect(eachMonth("2025-12-31", "2026-01-01")).toEqual([
+      { year: 2025, month: 12 },
+      { year: 2026, month: 1 },
+    ]);
+    // A month paged to its own start is one month, and a backwards range is none.
+    expect(eachMonth("2026-05-01", "2026-05-01")).toEqual([{ year: 2026, month: 5 }]);
+    expect(eachMonth("2026-05-01", "2026-04-30")).toEqual([]);
+  });
+
+  it("bounds a month and steps over year ends", () => {
+    expect(monthStart({ year: 2026, month: 2 })).toBe("2026-02-01");
+    expect(monthEnd({ year: 2026, month: 2 })).toBe("2026-02-28");
+    expect(monthEnd({ year: 2024, month: 2 })).toBe("2024-02-29");
+    expect(monthEnd({ year: 2026, month: 12 })).toBe("2026-12-31");
+    expect(nextMonth({ year: 2026, month: 12 })).toEqual({ year: 2027, month: 1 });
+    expect(previousMonth({ year: 2026, month: 1 })).toEqual({ year: 2025, month: 12 });
+    expect(monthOfDate("2026-09-22")).toEqual({ year: 2026, month: 9 });
+    expect(monthLabel({ year: 2026, month: 9 })).toBe("2026-09");
   });
 
   it("puts the Ecuadorian day five hours behind UTC", () => {

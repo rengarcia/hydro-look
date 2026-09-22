@@ -26,7 +26,17 @@ import {
 } from "../parse/ords.ts";
 import type { ParseResult } from "../parse/types.ts";
 import { ENERGY_MODULES, type EnergyPlantCode } from "../registry.ts";
-import { monthOf, ordsFecha, ordsMidnightZ, yearOf, type IsoDate } from "../util/dates.ts";
+import {
+  addDays,
+  monthOf,
+  monthStart,
+  nextMonth,
+  ordsFecha,
+  ordsMidnightZ,
+  yearOf,
+  type IsoDate,
+  type YearMonth,
+} from "../util/dates.ts";
 import type { IngestBatch } from "./batch.ts";
 
 export const ORDS_BASE = "https://generacioncsr.celec.gob.ec:8443/ords/csr";
@@ -216,19 +226,28 @@ export class CelecOrds {
     site: Parameters<typeof parsePointValues>[1],
     variable: Parameters<typeof parsePointValues>[2],
     mrid: number,
-    year: number,
-    month: number,
+    ym: YearMonth,
+    opts: { overlapDays?: number } = {},
   ): Promise<void> {
-    const start = `${year}-${String(month).padStart(2, "0")}-01`;
-    const nextMonth = month === 12 ? `${year + 1}-01-01` : `${year}-${String(month + 1).padStart(2, "0")}-01`;
+    const start = monthStart(ym);
+    const next = monthStart(nextMonth(ym));
+    // The endpoint buckets by local day and treats `fechaFin` as an exclusive UTC instant. A
+    // month's last local day does not end until 05:00Z the following day, so a window stopping
+    // at the first of the next month leaves that day incomplete and it comes back null — which
+    // is exactly what the 2026-08 control probe saw, 30 values for 31 days. Reaching past the
+    // boundary closes it. The extra day's own row is then the incomplete one, and nulls are
+    // skipped by the parser, so nothing is written twice.
+    const end = addDays(next, opts.overlapDays ?? 1);
     await this.collect(batch, {
       endpoint: "pointValuesMesH24",
+      // Keyed on the month, not the window, so widening the overlap does not orphan the
+      // responses an earlier run archived for the same month.
       key: `pointValuesMesH24:${mrid}:${start}`,
       url: `${ORDS_MODULE_CSR}/pointValuesMesH24`,
       params: {
         mrid: String(mrid),
         fechaInicio: `${start}T00:00:00.000Z`,
-        fechaFin: `${nextMonth}T00:00:00.000Z`,
+        fechaFin: `${end}T00:00:00.000Z`,
         fecha: ordsFecha(start),
       },
       dataDate: start,
