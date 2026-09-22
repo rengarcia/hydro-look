@@ -30,3 +30,8 @@ jobs:
       # red once the data aged a few days, which only teaches people to ignore a red build.
       # The ingest job checks freshness instead, where a stopped feed is news.
       - run: npm run check
+      # The forecast end to end against the real committed tables, writing nothing. The unit
+      # tests drive the model on synthetic reservoirs, which proves the arithmetic; this proves
+      # the ladder still fits and scores on the actual history, which is what would break first
+      # when a source changes shape. About twenty seconds, and no network.
+      - run: npm run forecast -- --dry-run

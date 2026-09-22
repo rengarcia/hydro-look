@@ -772,9 +772,94 @@ Open-Meteo ERA5 daily precipitation per basin from 2022 (and 1990→ for climato
 forecast daily, ONI monthly; `plants.csv`, `thresholds.csv`, `rationing_episodes.csv`,
 `basins.csv` verified; freshness and range checks in CI; `api/status.json`.
 
-**Phase 5 · Modelling v1 (2–3 S)**
-See §7. Deliverable: `forecast.json` with p10/p50/p90 Mazar cota at 7/14/30/60/90 days, a
-days-to-critical estimate under three inflow scenarios, and a backtest report (2023-09→2024-12).
+**Phase 5 · Modelling v1 — done 2026-09-22**
+Delivered: `src/lib/features/{series,hydrology,enso}.ts`, `src/lib/models/{baselines,water-balance,backtest,forecast,report}.ts`,
+`scripts/forecast.ts` (`npm run forecast`), the `forecast_runs` / `forecast_values` tables,
+`public/api/forecast.json`, `data/reports/backtest.md`, and 126 new tests. The forecast runs in
+CI on every push (`--dry-run`, ~20 s, no network) and after each daily ingest, on the day that
+has just landed rather than yesterday's.
+
+**§7's method ladder was run as written, and it does not say what §7 expected.** 105 monthly
+origins from 2018-01, every model refitted from scratch at each one, all scored on the origins
+they all reached. MAE in metres, and skill against persistence:
+
+| | h=7 | h=14 | h=30 | h=60 | h=90 |
+|---|---|---|---|---|---|
+| M0 persistence | 2.29 | 3.57 | 5.86 | 9.60 | 11.21 |
+| M1 climatological drift | 2.35 (−2.4%) | 3.78 (−5.8%) | 6.21 (−6.1%) | 9.63 (−0.3%) | 11.22 (−0.1%) |
+| M2 seasonal anomaly decay | 2.52 (−10.0%) | 4.08 (−14.1%) | 6.19 (−5.8%) | 7.45 (+22.4%) | 7.56 (+32.5%) |
+| M3 water balance | 2.29 (−0.1%) | 3.62 (−1.2%) | 5.85 (+0.1%) | 7.25 (**+24.5%**) | 7.30 (**+34.8%**) |
+
+- **M1 loses at every horizon**, which is the ladder's first real finding. §7 assumed day-of-year
+  drift would improve on persistence; it does not, because a reservoir level is the running total
+  of an operating decision and last week's decision predicts next week's better than the average
+  of six Septembers does. Not kept.
+- **M2 is kept in the report, not shipped.** It beats persistence at 60 and 90 days but loses to
+  M3 at all five horizons.
+- **M3 as §7 specified it is the *worst* rung on the ladder** — turbined flow from generation,
+  release otherwise held where it recently was. Open-loop it scores −25% at a week and −69% at
+  ninety days, because a simulated reservoir that never reacts either fills until it spills or
+  empties until it is dry. The fix is to model the operator: the implied release climbs from
+  about 12 m³/s near 2110 to about 106 m³/s near the crest, so release is fitted as a rule curve
+  against level and read back on every simulated day. That single change is the whole difference
+  between the worst rung and the only one worth shipping.
+
+**The reservoir's physics were recovered from this repository's own data, because nobody
+publishes them.** `A(level) = a·(level − datum)^b` and the turbine's m³/s-per-MW are fitted
+together off the daily balance, weighted so the residual is in metres rather than cubic metres.
+`datum` and `b` are not separately identified — across datums 1906→2096 and exponents 0.5→6 the
+fit residual moves by 0.001 m — but the *curve* is: area 2.2 km² at 2110 rising to 6.6 km² at
+2150, and 208 hm³ between 2100 and 2153. Two independent checks. `repDiaPotQTurb`'s 113 days of
+turbined flow max out near 129 m³/s against the fitted 114 m³/s at 170 MW, which agrees. The
+unverified 410 hm³ in `plants.csv` does not, and cannot be adopted: `a` and `k` are fitted
+jointly, so doubling the area drives the flow-per-MW through zero — a turbine consuming no
+water. The balance closes at one scale.
+
+**The published band is not the ensemble, and the gap is the point.** The analogue-inflow
+ensemble covers only 51–61% of outcomes inside its own p10–p90 against a nominal 80%, because it
+knows what the weather might do and nothing about the rule curve being an average of several
+operating regimes. Widening by the model's own out-of-sample residuals at each horizon brings
+coverage to 72–80%. Calibration is expanding-window: each origin's band uses only origins
+strictly before it, and the first twelve carry no band at all rather than borrowing one from
+the future.
+
+**The crisis check is the deliverable's least flattering number and is published as it stands.**
+Mazar fell to or below the plan's 2115 in two 2024 spells, from 2024-04-11 and from 2024-10-08.
+On the P50 §7 asks about, **the model called neither in advance.** April is a clean miss at every
+quantile — not one analogue year reached the level, because April is reliably wet in the Paute
+and April 2024 was not, and an analogue method cannot draw a year it has never seen. October is
+different and more useful: seven days out, the *dry tail* of the ensemble put the crossing 8.5
+days away against an actual 7, while the median put it 52 days late. The information was in the
+forecast and reading only the P50 discarded it, so `forecast.json` publishes the whole censored
+crossing distribution — how many analogue years cross and at which quantiles — alongside the
+three named scenarios. False alarms are reported too (1 in 105 origins at the P50); a lead time
+without that number is meaningless.
+
+**Three things were measured and rejected rather than argued about.** Conditioning the analogue
+years on ENSO phase (using the phase a forecaster could actually have read, two months stale) is
+worse at every horizon and can only forecast at 60 of 105 origins, because narrowing a pool of
+a dozen members starves it. Correcting the median by its own trailing residual is worse at every
+horizon — the bias is a handful of 2024 origins, not a stable offset. And the quiet-day area
+estimate, which looked like a clean direct measurement, is high by about 1.7× because Mazar
+releases substantially even when generating little: it regulates for Molino downstream.
+
+**Two defects the tests found, both in code written this phase.** `trimReleases` computed its
+cut from value-based quantiles of the same sample, so at a hundred readings the p1/p99 bounds
+were satisfied by the very outliers they were meant to remove; it now trims by rank. And
+`analogPaths` built an analogue date as `${year}-${monthDay}` without checking it exists —
+`Date.parse("2021-02-29T00:00:00Z")` does not fail, it silently returns 1 March — so a
+29 February origin would have compared against the wrong day once every four years.
+`isCalendarDate` now guards it.
+
+**Not done, and not pretended otherwise.** M4 (LightGBM quantile regression) is deferred: there
+is no gradient-boosting library in a TypeScript-only stack (decision 6) and M3 has not yet been
+beaten by anything simpler. Targets 3 and 4 of §7 — energy adequacy and 7-day national hydro
+generation — are untouched; only target 1 (probabilistic Mazar cota) and target 2 (days to
+threshold) ship. The backtest window is 2018-01 onward as §7 specifies, which is wider than the
+2023-09→2024-12 this phase entry originally asked for. **2115 is this project's own number**:
+`thresholds.csv` carries 2098 from the dashboard chart title and 2100 from both report
+endpoints, and no upstream source publishes 2115 at all. It is forecast against because §7 asks
+for it and labelled `unverified` everywhere it appears.
 
 **Phase 6 · Site and JSON API (1–2 S)**
 Static page: reservoir gauges vs bands, inflow vs climatology band, national mix stacked area,
@@ -844,6 +929,19 @@ CENACE/CELEC for the pre-2022 daily series; optional web.archive.org with keys.
 September 2015 and contains the 2016, 2018, 2020, 2022, 2023 and 2024 lows); metrics MAE and pinball
 loss per horizon, coverage of the p10–p90 band, and a crisis-specific check: lead time at which the
 model's P50 first predicted a critical crossing before 2024-10. Report skill relative to M0.
+
+**Run on 2026-09-22 (Phase 5); the ladder above is kept as written, and what follows is what it
+measured.** M1 loses to M0 at every horizon — day-of-year drift is *worse* than doing nothing,
+because a reservoir level is an operating decision rather than a seasonal signal. M2 beats M0 at
+60 and 90 days but loses to M3 everywhere. M3 as specified here — release held where it recently
+was — is the worst rung on the ladder (−69% at 90 days); it only works once release is fitted as
+a **rule curve against level** and read back on every simulated day, which is the one substantive
+departure from this section. M4 is deferred: no gradient-boosting library exists in a
+TypeScript-only stack (decision 6), and nothing simpler has beaten M3 yet. The P50 crisis metric
+this section specifies turned out to be the wrong statistic for the question — it called neither
+2024 crossing, while the ensemble's dry tail called October seven days out — so the forecast
+publishes the full censored crossing distribution rather than the median alone. Full numbers,
+including the false-alarm rate a lead time is meaningless without, are in `data/reports/backtest.md`.
 
 **Known pitfalls:** suppressed demand during rationing (D10); levels above the declared max (the
 band is operational, not physical); Amaluza siltation (volume curve drifts); caudal semantics (D5);

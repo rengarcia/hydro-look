@@ -96,6 +96,57 @@ export const ensoRow = z.object({
 });
 export type EnsoRow = z.infer<typeof ensoRow>;
 
+/**
+ * A forecast run: one origin, one target, one model, with enough of the fit recorded that the
+ * run can be argued with later. The curve and the rule curve are refitted from the data every
+ * time, so without these columns a forecast committed today could not be reproduced once the
+ * history behind it has grown another year.
+ */
+export const forecastRunRow = z.object({
+  run_id: z.string().min(1),
+  generated_at: isoTimestamp,
+  origin_date: isoDate,
+  site: siteId,
+  variable: variableId,
+  model_id: z.string().min(1),
+  model_version: z.string().min(1),
+  /** Hash of the inputs; an unchanged hash means a rerun would write the same numbers. */
+  features_hash: z.string().min(1),
+  origin_level_masl: z.number().finite(),
+  train_days: z.number().int().nonnegative(),
+  balance_days: z.number().int().nonnegative(),
+  analog_years: z.number().int().nonnegative(),
+  backtest_origins: z.number().int().nonnegative(),
+  curve_datum_m: z.number().finite(),
+  curve_area_coefficient: z.number().finite(),
+  curve_area_exponent: z.number().finite(),
+  curve_rmse_level_m: z.number().finite().nonnegative(),
+  turbine_m3s_per_mw: z.number().finite(),
+  release_stance_m3s: z.number().finite(),
+  crest_masl: z.number().finite(),
+});
+export type ForecastRunRow = z.infer<typeof forecastRunRow>;
+
+/**
+ * One quantile triple per horizon. The ensemble bounds are kept beside the published ones
+ * because they are not the same thing and the difference is worth being able to see: the
+ * ensemble spans what the analogue inflow years do, the published band is that widened by the
+ * model's own backtest error.
+ */
+export const forecastValueRow = z.object({
+  run_id: z.string().min(1),
+  origin_date: isoDate,
+  horizon_days: z.number().int().positive(),
+  target_date: isoDate,
+  p10: z.number().finite(),
+  p50: z.number().finite(),
+  p90: z.number().finite(),
+  ensemble_p10: nullableNumber,
+  ensemble_p90: nullableNumber,
+  ensemble_n: z.number().int().nonnegative(),
+}).refine((r) => r.p10 <= r.p50 && r.p50 <= r.p90, { message: "quantiles must not cross" });
+export type ForecastValueRow = z.infer<typeof forecastValueRow>;
+
 export interface TableSpec<T> {
   name: string;
   columns: readonly (keyof T & string)[];
@@ -182,3 +233,40 @@ export function validateRows<T>(spec: TableSpec<T>, rows: unknown[]): T[] {
   }
   return valid;
 }
+
+export const FORECAST_RUNS: TableSpec<ForecastRunRow> = {
+  name: "forecast_runs",
+  columns: [
+    "run_id",
+    "generated_at",
+    "origin_date",
+    "site",
+    "variable",
+    "model_id",
+    "model_version",
+    "features_hash",
+    "origin_level_masl",
+    "train_days",
+    "balance_days",
+    "analog_years",
+    "backtest_origins",
+    "curve_datum_m",
+    "curve_area_coefficient",
+    "curve_area_exponent",
+    "curve_rmse_level_m",
+    "turbine_m3s_per_mw",
+    "release_stance_m3s",
+    "crest_masl",
+  ],
+  key: ["run_id"],
+  partitionBy: "origin_date",
+  schema: forecastRunRow,
+};
+
+export const FORECAST_VALUES: TableSpec<ForecastValueRow> = {
+  name: "forecast_values",
+  columns: ["run_id", "origin_date", "horizon_days", "target_date", "p10", "p50", "p90", "ensemble_p10", "ensemble_p90", "ensemble_n"],
+  key: ["run_id", "horizon_days"],
+  partitionBy: "origin_date",
+  schema: forecastValueRow,
+};

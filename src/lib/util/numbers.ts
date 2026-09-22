@@ -31,3 +31,18 @@ export function asNumber(value: unknown): number | null {
   }
   return null;
 }
+
+/**
+ * Rounds for publication. A forecast document is rewritten and committed every day, so a level
+ * carried to sixteen digits turns every run into a diff nobody can read; and `0.01 m` is the
+ * precision the levels arrive at in the first place, so the digits past it were never real.
+ */
+export function roundTo(value: number, digits: number): number {
+  const scale = 10 ** digits;
+  return Math.round(value * scale) / scale;
+}
+
+/** `roundTo` that passes null through, for the many optional numbers in the forecast document. */
+export function roundOrNull(value: number | null | undefined, digits: number): number | null {
+  return value === null || value === undefined || !Number.isFinite(value) ? null : roundTo(value, digits);
+}
