@@ -95,6 +95,7 @@ describe("pointValuesMesH24 window", () => {
 });
 
 const MAZAR: HistorianSeries = { site: "mazar", variable: "cota_masl", mrid: 30031, control: true };
+const MAZAR_CAUDAL: HistorianSeries = { site: "mazar", variable: "caudal_m3s", mrid: 30538, control: true };
 const CCS: HistorianSeries = { site: "coca_codo_sinclair", variable: "cota_masl", mrid: 100540 };
 const AGOYAN: HistorianSeries = { site: "agoyan", variable: "cota_masl", mrid: 140031 };
 
@@ -191,6 +192,47 @@ describe("historian walk", () => {
     // nothing about Agoyán, and nothing about the months it never reached.
     expect(walk.ranges).toEqual({});
     expect(walk.notes).toEqual([]);
+  });
+
+  it("walks the controls that are not the gate, and walks them before the targets", async () => {
+    const { fetchMonth, asked } = fetcher(() => 30);
+    const walk = await walkHistorian({
+      months: eachMonth("2026-07-01", "2026-09-22"),
+      today: TODAY,
+      isDone: never,
+      fetchMonth,
+      controls: [MAZAR, MAZAR_CAUDAL],
+      targets: [CCS],
+    });
+
+    // One request for the gate, on the closed month; then the second control's own walk,
+    // which is what gives the caudal mrids a history to be checked against repDiaHid12m.
+    expect(asked).toEqual([
+      "30031:2026-08",
+      "30538:2026-09",
+      "30538:2026-08",
+      "30538:2026-07",
+      "100540:2026-09",
+      "100540:2026-08",
+      "100540:2026-07",
+    ]);
+    expect(walk.ranges["mazar/caudal_m3s"]).toBe("2026-07 .. 2026-09");
+  });
+
+  it("does not walk the gate itself beyond its one control month", async () => {
+    const { fetchMonth, asked } = fetcher(() => 30);
+    await walkHistorian({
+      months: eachMonth("2026-07-01", "2026-09-22"),
+      today: TODAY,
+      isDone: never,
+      fetchMonth,
+      controls: [MAZAR],
+      targets: [CCS],
+    });
+
+    // The reports publish Mazar's level for every month here and it already matches to the
+    // digit, so paging it back would buy nothing the store does not hold twice over.
+    expect(asked.filter((a) => a.startsWith("30031"))).toEqual(["30031:2026-08"]);
   });
 
   it("does nothing when the range holds no months", async () => {

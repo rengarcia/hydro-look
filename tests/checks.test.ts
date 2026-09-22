@@ -84,9 +84,17 @@ describe("bands and ranges", () => {
     expect(findings[0]!.message).toMatch(/is negative/);
   });
 
-  it("rejects a percentage outside 0..100 and a value that is not a number at all", () => {
+  it("reports a percentage just over 100 and fails one that cannot be a percentage at all", () => {
     const bands = widestBands(thresholds);
-    expect(checkObservationRanges([observation({ variable: "nivel_pct_banda", value: "140" })], bands)[0]!.level).toBe("fail");
+    // A reservoir above its declared maximum, which is a fact about the reservoir.
+    const over = checkObservationRanges([observation({ variable: "nivel_pct_banda", value: "101.57" })], bands);
+    expect(over[0]!.level).toBe("warn");
+    expect(over[0]!.message).toMatch(/above its declared band/);
+    // Still within the slack, so still only reported.
+    expect(checkObservationRanges([observation({ variable: "factor_planta_pct", value: "140" })], bands)[0]!.level).toBe("warn");
+    // A level that landed in the percentage column is not a percentage.
+    expect(checkObservationRanges([observation({ variable: "nivel_pct_banda", value: "2153" })], bands)[0]!.level).toBe("fail");
+    expect(checkObservationRanges([observation({ variable: "nivel_pct_banda", value: "-80" })], bands)[0]!.level).toBe("fail");
     expect(checkObservationRanges([observation({ value: "n/a" })], bands)[0]!.message).toMatch(/non-numeric/);
   });
 });

@@ -65,8 +65,31 @@ describe("repDiaEner12m", () => {
 describe("the one-day reports", () => {
   it("reads levels and inflows, including the Sopladora intake chamber", () => {
     const result = parseRepDiaNivQIng(ords("ords_rep_repDiaNivQIng.txt"));
-    expect(find(result.observations, "2026-09-20", "mazar", "cota_masl")?.value).toBe(2139.1);
-    expect(find(result.observations, "2026-09-20", "sopladora", "cota_masl")?.value).toBe(1315.440064);
+    // The response stamps every item 2026-09-20; the rows land on 2026-09-19, because that is
+    // the day the numbers describe. See DATA_DATE_OFFSET_DAYS.
+    expect(find(result.observations, "2026-09-19", "mazar", "cota_masl")?.value).toBe(2139.1);
+    expect(find(result.observations, "2026-09-19", "sopladora", "cota_masl")?.value).toBe(1315.440064);
+    expect(find(result.observations, "2026-09-20", "mazar", "cota_masl")).toBeUndefined();
+  });
+
+  /**
+   * The evidence for that shift, from the fixtures rather than from a claim in a comment. Each
+   * of these `repDiaNivQIng` captures is stamped with its own date; the value it carries is the
+   * one `repDiaHid12m` publishes for the day before, and the inflows settle it because they
+   * move far too much day to day to match by luck. The pairs below are read off the committed
+   * repDiaHid12m history (`data/curated/observations_daily/`), rounded as that report rounds.
+   */
+  it.each([
+    ["ords_hist_repDiaNivQIng_15-06-2016.txt", "2016-06-14", "mazar", 183.817285, 184],
+    ["ords_hist_repDiaNivQIng_15-06-2019.txt", "2019-06-14", "mazar", 167.382279, 167],
+    ["ords_hist_repDiaNivQIng_15-01-2022.txt", "2022-01-14", "amaluza", 115.7, 116],
+    ["ords_hist_repDiaNivQIng_15-10-2024.txt", "2024-10-14", "amaluza", 23.395722, 23],
+    ["ords_rep_repDiaNivQIng.txt", "2026-09-19", "mazar", 75.263828, 75],
+  ])("dates %s to %s, where the 12-month report puts the same inflow", (fixture, date, site, value, rounded) => {
+    const result = parseRepDiaNivQIng(ords(fixture as string));
+    const row = find(result.observations, date as string, site as string, "caudal_m3s");
+    expect(row?.value).toBe(value);
+    expect(Math.round(row!.value)).toBe(rounded);
   });
 
   it("reads power, turbined flow and units online", () => {

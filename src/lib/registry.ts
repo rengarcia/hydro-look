@@ -102,6 +102,16 @@ export const ENERGY_BACKFILL_ONLY_CODES: EnergyPlantCode[] = ["ago", "man", "ccs
  * "the historian is answering null right now" from "this plant has no data that far back".
  * Without that distinction a run made inside the blank window of §2.1 would record a false
  * "no data" for exactly the three plants we have no second source for.
+ *
+ * A control earns its place twice over, and the order below says which job comes first. The
+ * first one is the run's **gate**: one request, on a closed month, and a blank answer ends the
+ * run. The rest are walked like targets, because the same property that makes a control usable
+ * as a gate — the reports publish it too — is what makes its history the only way to settle
+ * what a series *means*. Mazar's inflow mrid is here for that second job: the report endpoints
+ * publish Mazar's inflow as `q_ingresado` and its turbined flow through `repDiaPotQTurb`, and
+ * only a run of days against both says which one `mridCaud` is. The three plants with no
+ * second source inherit the answer, since their mrids are declared the same way in the same
+ * dashboard component.
  */
 export interface HistorianSeries {
   site: SiteId;
@@ -112,6 +122,7 @@ export interface HistorianSeries {
 }
 
 export const HISTORIAN_SERIES: readonly HistorianSeries[] = [
+  // The gate first: level, the one series proven identical to the reports day for day.
   { site: "mazar", variable: "cota_masl", mrid: 30031, control: true },
   { site: "mazar", variable: "caudal_m3s", mrid: 30538, control: true },
   { site: "coca_codo_sinclair", variable: "cota_masl", mrid: 100540 },
@@ -160,6 +171,33 @@ export function siteFromLabel(label: string): SiteId {
   if (!site) throw new Error(`unknown site label from upstream: ${JSON.stringify(label)}`);
   return site;
 }
+
+/**
+ * Endpoints whose rows describe a different day from the one they are stamped with.
+ *
+ * `repDiaNivQIng?fecha=D` answers with `"fecha":"D T05:00:00Z"` — local midnight of D, the date
+ * asked for — and values that belong to **D−1**. It is not a rounding difference or a partial
+ * day: the numbers are `repDiaHid12m`'s previous-day numbers exactly, to every decimal the
+ * report publishes. Measured on 113 consecutive days of 2026 for level and inflow at Mazar,
+ * Amaluza and Minas San Francisco (level 113/113 identical at D−1 against 0/113 at D), and on
+ * the Phase 0 fixtures for 2016-06-15, 2019-06-15, 2022-01-15, 2024-10-15 and 2026-09-20, so it
+ * is a decade-long property of the endpoint rather than something recent.
+ *
+ * Which side is wrong is not a judgement call either. `repDiaHid12m`'s dating is confirmed
+ * twice over: against jordanvt18's independent scrape of the historian on 1,668 days, and
+ * against our own historian walk on 4,281. Two routes with explicit local-midnight timestamps
+ * agree; `repDiaNivQIng` is the one out of step, so its rows are stored under the day they
+ * describe and the raw response keeps its own `fecha` in the archive.
+ *
+ * The family does not share the habit, which is why this is a list and not a rule:
+ * `repDiaVolAlm` (level, 112/112 at offset 0) and `repDiaEnerAyerHoy` (energy against
+ * `repDiaEner12m`, 112/112) are dated correctly despite the "Ayer" in that one's name.
+ * `repDiaPotQTurb` and `repDiaRegAyer` publish nothing a second source covers, so they are
+ * untested and assumed correct — stated here so the assumption is visible.
+ */
+export const DATA_DATE_OFFSET_DAYS: Record<string, number> = {
+  "ords:repDiaNivQIng": -1,
+};
 
 /** `repDiaRegAyer` reports four plants as columns rather than rows. */
 export const REG_AYER_COLUMN_TO_SITE: Record<string, SiteId> = {

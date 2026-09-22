@@ -55,6 +55,12 @@ on:
 
 permissions: {}
 
+# One ingest at a time, and a queued run waits rather than replacing the one fetching. Note what
+# GitHub does with the *second* queued run, though: only one run per group may be pending, so
+# dispatching a backfill while another is already waiting cancels the waiting one. That is a
+# footgun aimed straight at daily.yml, which shares this group and whose three consecutive green
+# scheduled runs are Phase 1's last acceptance criterion. Do not dispatch a backfill in the
+# minutes around 12:15 or 16:30 UTC, and check the queue is empty before dispatching a second.
 concurrency:
   group: ingest
   cancel-in-progress: false

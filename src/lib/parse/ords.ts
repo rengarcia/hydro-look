@@ -8,6 +8,7 @@
  */
 
 import {
+  DATA_DATE_OFFSET_DAYS,
   ENER12M_SUFFIX_TO_SITE,
   HID12M_SUFFIX_TO_SITE,
   REG_AYER_COLUMN_TO_SITE,
@@ -144,7 +145,9 @@ export function parseRepDiaNivQIng(body: string): ParseResult {
   const observations: Observation[] = [];
   const notes: string[] = [];
   for (const row of rows) {
-    const date = localDateOf(requireString(row, "fecha", endpoint));
+    // The stamp is the report's date; the reading is the day before it. See
+    // DATA_DATE_OFFSET_DAYS for how that was measured and why this endpoint is the odd one.
+    const date = addDays(localDateOf(requireString(row, "fecha", endpoint)), DATA_DATE_OFFSET_DAYS[endpoint] ?? 0);
     const site = siteFromLabel(requireString(row, "embalse", endpoint));
     const cota = asNumber(row["nivel"]);
     // The same quantity as repDiaHid12m's q_ingresado, so the same rule applies to it.

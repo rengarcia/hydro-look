@@ -106,6 +106,8 @@ export function checkObservationRanges(observations: Rows, bands: Map<string, Ba
   const check = "range:observations_daily";
   let offBand = 0;
   let firstOffBand = "";
+  let offBook = 0;
+  let firstOffBook = "";
 
   for (const row of observations) {
     const variable = row["variable"] ?? "";
@@ -137,8 +139,21 @@ export function checkObservationRanges(observations: Rows, bands: Map<string, Ba
       value < 0
     ) {
       out.push({ check, level: "fail", message: `${site}/${variable} on ${row["date"]} is negative (${value})` });
-    } else if ((variable === "nivel_pct_banda" || variable === "factor_planta_pct") && (value < 0 || value > 100)) {
-      out.push({ check, level: "fail", message: `${site}/${variable} on ${row["date"]} is ${value}, outside 0..100` });
+    } else if (variable === "nivel_pct_banda" || variable === "factor_planta_pct") {
+      // These percentages are the same reading as the level above, divided by a declared band,
+      // so they inherit its looseness and this rule has to match the one for cota. Mazar sat
+      // above its declared 2153 maximum on 25 days of June and July 2026, peaking at 2154.05 —
+      // 102% of a band it is perfectly entitled to exceed — and Minas San Francisco ran at
+      // 100.8% of a nominal capacity that is a press figure. Failing on those taught nothing
+      // except to stop reading the gate. Beyond half a band width either way there is no
+      // reading left to explain, only a parser in the wrong column or a fraction stored as a
+      // percent, and that still fails.
+      if (value < -50 || value > 150) {
+        out.push({ check, level: "fail", message: `${site}/${variable} on ${row["date"]} is ${value}, outside -50..150` });
+      } else if (value < 0 || value > 100) {
+        offBook++;
+        firstOffBook ||= `${site}/${variable} ${row["date"]} ${value}`;
+      }
     }
   }
 
@@ -147,6 +162,13 @@ export function checkObservationRanges(observations: Rows, bands: Map<string, Ba
       check,
       level: "fail",
       message: `${offBand} level reading(s) sit more than half a band width outside the declared band; first: ${firstOffBand}`,
+    });
+  }
+  if (offBook > 0) {
+    out.push({
+      check,
+      level: "warn",
+      message: `${offBook} percentage(s) sit outside 0..100 — a reservoir above its declared band or a plant above nominal capacity, not an error; first: ${firstOffBook}`,
     });
   }
   return out;

@@ -66,7 +66,7 @@ check). An OpenAPI catalog is public at `open-api-catalog/<module>/` for eight m
 |---|---|---|---|
 | `repDiaHid12m?fecha=` | daily, 365 rows ending the day before `fecha` | level, inflow (`q_ingresado`), operating limit, min, max flow for Mazar, Molino/Amaluza, Minas San Francisco, Delsitanisagua | **verified back to 2015-09-20** (run 3): Mazar and Amaluza complete with zero nulls over 3,288 days sampled; Minas SF and Delsitanisagua from 2019-09-20. One request per year → the whole history in ~12 requests |
 | `repDiaEner12m?fecha=` | daily, ~182 rows ending the day before `fecha` | daily energy (MWh) for Minas SF, Mazar, Molino, Sopladora (from 2020-09-20), Delsitanisagua and Alazán (from 2025-01-01) | one request per 6 months, ~13 requests for 2020→ |
-| `repDiaNivQIng?fecha=` | one day | level and inflow for Minas SF, Mazar, Amaluza, Sopladora intake chamber | per day |
+| `repDiaNivQIng?fecha=` | one day | level and inflow for Minas SF, Mazar, Amaluza, Sopladora intake chamber — **answers with the previous day's values**, see below | per day |
 | `repDiaPotQTurb?fecha=` | one day | power, units online, turbined flow per plant (Minas SF, Mazar, Molino, Sopladora) | per day |
 | `repDiaEnerAyerHoy?fecha=` | one day | yesterday's energy and today's planned energy per plant **and for the SNI** (national total, 104,862 MWh on 2026-09-19) | per day |
 | `repDiaRegAyer?fecha=` | one day | annual accumulated GWh, spilled volume (hm³), spilled energy, plant factor per plant | per day |
@@ -107,8 +107,14 @@ and `mridUnid` for all seven plants plus the Paute basin flow (24812). These mri
 reservoirs plus Delsitanisagua.
 
 Semantics: `csrProdLineaLast2h` lists "Q Mazar" next to "Nivel Embalse" with the same value the caudal mrid
-30538 returns, and `repDiaNivQIng` calls the daily figure `q_ingresado` (inflow). Treat the caudal mrids as
-inflow, confirm with a month of overlap in Phase 3.
+30538 returns, and `repDiaNivQIng` calls the daily figure `q_ingresado` (inflow). **Confirmed 2026-09-22 on
+4,281 days rather than the month this asked for** — the historian's mrid 30538 is `repDiaHid12m`'s
+`q_ingresado` to the digit the report rounds to, and nothing like the turbined flow published beside it. The
+measurement, including what it says about the three plants with no second source, is under Phase 3 in §6.
+
+One caveat on `repDiaNivQIng`, found by the same comparison and detailed in §6 Phase 3: asked for date D it
+answers with values belonging to **D−1**, stamped D. Its rows are stored under the day they describe; the
+other per-day reports are not shifted, and `DATA_DATE_OFFSET_DAYS` carries the list.
 
 ### 2.2 CENACE SMEC daily energy balance — verified, complete, deep history
 
@@ -144,6 +150,37 @@ ensemble members (`precipitation_sum_member01…`) all answered for a Paute-basi
 disallows crawlers; API use is governed by their terms (free non-commercial, attribution), so the scraper
 treats those hosts as exempt and documents it. NOAA ONI is available from PSL (`oni.data`) and CPC
 (`oni.ascii.txt`), 1950→.
+
+**Catchment geometry — probed 2026-09-22 (run 35727122874), and the obvious route is closed.**
+§3 asks for a centroid and an area per catchment, and neither can be looked up: both are
+properties of a catchment boundary, which is a property of a dam location and a flow network.
+The plan for it was HydroSHEDS' HydroBASINS, whose `NEXT_DOWN` topology turns "the catchment
+above this dam" into "the sub-basins that drain into it" and whose `SUB_AREA` gives the area
+with no geometry work. `data.hydrosheds.org/file/hydrobasins/standard/hybas_sa_lev{06,08,10,12}_v1c.zip`
+**answers 403 with a 5,767-byte HTML page** for every level, to a plain GET and a ranged one
+alike, so that route needs either a different host or a registration step that a workflow cannot
+do unattended. Finding another source for the boundaries is now the first task of the basins
+work, not a detail of it.
+
+The pour points themselves are in better shape. **Wikidata's SPARQL endpoint answered** with 23
+Ecuadorian dams and plants carrying coordinates, six of the seven matched by label:
+
+| site | basin | Wikidata | coordinates |
+|---|---|---|---|
+| mazar | paute | Q1751861 | −2.5953091, −78.6218378 |
+| coca_codo_sinclair | coca | Q19277520 | −0.1979037, −77.6849914 |
+| agoyan | pastaza | Q5760779 | −1.39852778, −78.37755556 |
+| minas_san_francisco | jubones | Q65196242 | −3.3221588, −79.6016026 |
+| manduriacu | guayllabamba | Q65196233 | 0.21480556, −78.91233333 |
+| delsitanisagua | zamora | Q65196191 | −4.04588889, −78.98377778 |
+
+Marcel Laniado (Daule-Peripa) matched nothing, because the probe searches on the first word of
+its query string and the label is not "Daule-Peripa". These are **one source, so they are not yet
+verified coordinates**: the second opinion was to be OpenStreetMap, and Overpass answered **504**
+to the Ecuador-wide query. A lighter query, or one of the other Overpass instances, is the next
+attempt. Both hosts disallow crawlers in `robots.txt` (`Disallow: /sparql`, `Disallow: /api/`)
+and both publish API terms instead, which is the same situation as Open-Meteo above and is
+handled the same way.
 
 ### 2.5 Open-data portals
 
@@ -334,8 +371,27 @@ Two things the first Actions runs settled:
   the report lists it explicitly as "not enough overlap to judge" rather than letting a one-day
   comparison masquerade as a date-convention finding.
 
-Current full backfill: [Actions run 35675850138](https://github.com/rengarcia/hydro-look/actions/runs/35675850138/job/106582137605),
-reported in progress by the user on 2026-09-21. Completion and reconciliation remain to be checked.
+That backfill ([run 35675850138](https://github.com/rengarcia/hydro-look/actions/runs/35675850138/job/106582137605))
+is long finished and reconciled; §6's Phase 2 and Phase 3 entries record what it and its successors
+found. **What is left of Phase 1 is one acceptance criterion and a clock: three consecutive green
+*scheduled* daily runs.** The schedule's first firing was due 2026-09-22 12:15 UTC and had not
+appeared by 12:29, which is ordinary — GitHub delays scheduled workflows under load — but it does
+mean the earliest this can close is the third calendar day after the first run that actually fires,
+not after the first that was due.
+
+**Do not dispatch a backfill in the minutes around 12:15 or 16:30 UTC.** `backfill.yml` and
+`daily.yml` share the `ingest` concurrency group, and `cancel-in-progress: false` does not mean
+nothing is cancelled: GitHub keeps one pending run per group, so queueing a second run while one is
+already waiting cancels the one that was waiting. Run 8 was lost that way on 2026-09-22. The run it
+could take instead is the scheduled daily ingest — the very thing this criterion is counting — and
+a cancelled run does not count. The rule is repeated in a comment at the top of `backfill.yml`,
+where someone about to dispatch will actually read it.
+
+Also still open from this phase's acceptance, and cheap: **the true first date of the historian
+series**. The 2026-09-22 walk of mrid 30538 was bounded at 2015-01 by its `--from` and returned
+values in every month down to it, with no run of empty months to stop it — so Mazar's inflow exists
+in the historian before 2015-01, and `repDiaHid12m` reaches only 2014-09-20. One dispatch with an
+earlier `--from` settles how far back the historian actually goes.
 
 Original phase text, for reference:
 Package, CLI, raw archive, `reservoir_daily` contract, ORDS client, and loaders for `repDiaHid12m` (levels
@@ -353,9 +409,12 @@ days in a row.
 `national_balance_daily` now holds **3,780 days, 2016-05-01 → 2026-09-20**, in 11 year files. Coverage is
 **0.40% missing** — 15 days of the 3,795-day span, against an acceptance bar of < 1%. Seven are days the
 backfill never obtained (2019-03-21, 2019-03-28, 2020-04-07, 2020-04-08, 2020-06-20, 2020-06-27,
-2020-11-28); the other eight are the partially-metered pages rejected below. A later dispatch retries all
-fifteen for free, since the backfill skips only days already stored — and the eight are stored only if the
-page now passes the demand check.
+2020-11-28); the other eight are the partially-metered pages rejected below. **That retry has now been run
+(2026-09-22, run 35726456802) and none of the fifteen recovered**: four days are still missing rows
+outright, one still reports zero generación, and the eight still show distribution demand at
+0.85–4.66% of generación — including days from 2019 and 2020, re-asked six years after the fact. A
+day SMEC published incomplete stays incomplete, so 0.40% is this source's floor rather than an open
+work item, and the parser note no longer promises that waiting fixes it.
 
 Reconciling that against the ORDS per-plant energy produced three findings, in descending order of how much
 they matter:
@@ -415,14 +474,47 @@ Three things the run proved rather than assumed, all against the live service:
   therefore available at 02:14 and at 03:31 local-evening/early-morning alike; the three
   Phase 0 runs between 23:37 and 00:09 UTC remain the only window seen blank.
 
-**What is not yet proven: the caudal semantics.** §2.1 asks for a month of overlap between mrid
-30538 and the report's `q_ingresado` for Mazar. The backfill spends its control request on cota
-(30031), so 30538 has no history yet; the daily run fetches all eight series, so the overlap
-accumulates from the next scheduled pass. What this run does establish is that the *cota* mrid and
-the report agree exactly, and `mridCota` and `mridCaud` are declared together in the same dashboard
-component — which makes the inflow reading very likely correct, but likely is not measured.
+**The caudal semantics, settled 2026-09-22** (runs 35726093961 and 35726708470,
+`npm run crosscheck:caudal`, report in `data/crosschecks/`). §2.1 asked for a month of overlap
+between mrid 30538 and Mazar's `q_ingresado`. There was none, and the reason was ours: the walk
+used the control list as a gate and then walked only the targets, so 30538 was declared and never
+fetched. Walking it produced **4,282 days, 2015-01-01 → 2026-09-21**, and the answer is not close:
+
+- **`mridCaud` is inflow.** Against `repDiaHid12m` the historian matches on **4,281 days at
+  offset 0, mean absolute difference 0.2491 m³/s, r = 1.0000**, and that residual is not error —
+  the report publishes whole m³/s and the historian publishes decimals, so on **all 4,281 days
+  the report is exactly `round(historian)`**, never once off by more than half. Against
+  `repDiaPotQTurb`'s turbined flow the same series is 50–57 m³/s out at every offset and
+  **correlates at r = −0.06**. A one-day shift of the winning comparison costs 37 m³/s, so the
+  dating is measured here too, not assumed.
+- **The three uncovered plants are not left on inheritance alone.** Turbined flow is bounded by
+  the machines and inflow is not, and that shows without any design-flow figure: Mazar's turbined
+  series has p99 128.98 against a maximum of 129.18 and spends 1.77% of its days within 1% of it,
+  while Coca Codo Sinclair, Agoyán and Manduriacu run p99 1025/490/563 against maxima of
+  1933/1065/834 and sit on their ceiling 0.03% of days — the long right tail of something that
+  arrives with the rain. CCS's median alone, 245 m³/s, is above the design flow its press figures
+  claim.
+- **A third reading was tried and came back too weak to use, which is worth recording.** Turbined
+  flow should track the plant's own generation almost exactly; Mazar's turbined series manages
+  r ≈ 0.45. `repDiaPotQTurb`'s `potencia_mw × 24` also fails to match daily energy at any offset,
+  by ~1,000 MWh on a ~2,000 MWh day, so that endpoint looks like an **instantaneous reading rather
+  than a daily mean**. Until that is established the generation reading has no anchored top end,
+  and the report says so rather than quietly leaning on it.
+
+**And the same comparison found a defect of ours.** Lining the historian up against
+`repDiaNivQIng` showed a perfect match one day off. `repDiaNivQIng?fecha=D` answers with
+`"fecha":"D T05:00:00Z"` and **values belonging to D−1** — measured on 113 consecutive days of
+2026 across three reservoirs, and on the Phase 0 fixtures for 2016, 2019, 2022, 2024 and 2026, so
+it is a decade-long property of the endpoint. `repDiaHid12m`'s dating is the confirmed one (1,668
+days against jordanvt18, 4,281 against our own historian), so the parser now stores those rows
+under the day they describe, the 904 already-stored rows were moved, and the raw responses keep
+their own `fecha` in the archive. The family does not share the habit: `repDiaVolAlm` and
+`repDiaEnerAyerHoy` are dated correctly on 112 of 112 days, and `repDiaPotQTurb` and
+`repDiaRegAyer` publish nothing a second source covers, so they are untested and assumed correct.
+`DATA_DATE_OFFSET_DAYS` in `src/lib/registry.ts` is where that list lives.
 
 Acceptance: daily level and inflow for the three plants; a documented semantics note per variable.
+Both met.
 
 **Phase 4 · Covariates, reference tables, quality gates — reference tables and gates done 2026-09-22; covariate history outstanding**
 Implemented earlier: `ingest covariates`, Open-Meteo ERA5 (explicit model selection; six-day
@@ -472,6 +564,16 @@ outstanding — `basins.csv` drives one Open-Meteo request per row, so a placeho
 harmless. Seasonal ensembles remain deferred. ONI is a centred three-month average and
 the latest revised series; backtests must not assume its value was available at the beginning of its
 labelled month.
+
+**What the 2026-09-22 probe (run 35727122874) established about closing that**, in full in §2.4:
+six of the seven pour points are available from Wikidata with QIDs, from one source rather than the
+two this repository asks for, because Overpass answered 504; and the catchment boundaries have no
+route at all yet, because HydroSHEDS answers 403 to every HydroBASINS download. So the order of work
+is now: find a reachable source of sub-basin boundaries with upstream topology, get the second
+opinion on the coordinates, then delineate, and only then rewrite `basins.csv`. Nothing about the
+covariate loader changes — it already takes one row per basin and archives what it fetches. What is
+missing is the table it reads, and `scripts/probe-basins.ts` is what re-asks these questions once
+there is a new candidate to ask about.
 
 
 Original phase scope:

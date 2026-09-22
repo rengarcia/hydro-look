@@ -1,15 +1,12 @@
 {
-  "generated_at": "2026-09-22T08:49:56Z",
-  "command": "covariates",
+  "generated_at": "2026-09-22T12:33:31Z",
+  "command": "backfill",
   "source": "all",
   "errors": [],
-  "notes": [
-    "paute: provisional sampling point, not a verified basin centroid",
-    "era5:paute:-2.6:-78.6:2026-01-01:2026-09-16: 1 days have missing weather values"
-  ],
+  "notes": [],
   "tables": {
     "observations_daily": {
-      "rows": 77336,
+      "rows": 87319,
       "first_date": "2009-01-01",
       "last_date": "2026-09-21",
       "files": 18
