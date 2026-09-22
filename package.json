@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "crosscheck": "tsx scripts/crosscheck.ts",
+    "crosscheck:caudal": "tsx scripts/caudal-semantics.ts",
     "probe:ords": "tsx scripts/probe-ords.ts",
     "check": "tsx scripts/check.ts"
   },
