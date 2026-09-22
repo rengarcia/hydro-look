@@ -692,18 +692,57 @@ the URL taken from HydroSHEDS' own live product page are all 403 — so no diffe
 Actions reaches it, and neither Zenodo nor figshare carries a mirror. What is reachable is ArcGIS
 Online, where Ecuador's Pfafstetter `unidades hidrográficas` are served as anonymous, queryable
 polygons; the hit found is a figure from a personal account rather than an agency publication, so
-it is a lead to a dataset rather than a citable source. The second opinion on the coordinates is
-most of the way done: **five of the seven pour points now agree between Wikidata and OpenStreetMap
-within a kilometre** (Manduriacu to 0.02 km), Minas San Francisco has had no Overpass answer in
-four runs, and Delsitanisagua's two sources name the same plant **8.18 km apart** — almost
-certainly intake versus powerhouse on a run-of-river scheme, which must be settled before either
-point is used, since a catchment is defined at the intake. So the order of work is unchanged but
-better aimed: find the official publication of those units (SENAGUA or MAATE) or a boundary set
-with upstream topology, settle Delsitanisagua and get an answer for Minas San Francisco, then
-delineate, and only then rewrite `basins.csv`. Nothing about the covariate loader changes — it already takes one row per
+it is a lead to a dataset rather than a citable source.
+
+**That lead is now closed, negatively** (2026-09-22, run 35737236907). Asking each of the four
+candidate layers which of its polygons contains each of the seven pour points — a point-in-polygon
+query, which a feature layer answers without serving the dataset — returned **`no polygon contains
+this point` for all twenty-eight pairs**. Three of the four map Mira-Mataje in the far north and
+were expected to say so; the fourth, the `Fig 13_ B_UnidadesHidrográficasN4Pfastetter` layer that
+looked like the national answer, says it too. It is a figure from one paper covering one study
+area, not Ecuador's Pfafstetter units, and no amount of re-asking it will produce a catchment. The
+search for a boundary set with upstream topology starts again from SENAGUA or MAATE directly.
+
+**Delsitanisagua is settled: the OSM point is the intake, and it is the one to use.** Two readings
+agree and neither is a judgement call. OSM tags node/2489320895 `waterway=dam`, while the Wikidata
+coordinate carries no structure at all; and the two sit **526 m apart vertically** — 1,495 m against
+969 m — across the 8.18 km between them. Water enters a run-of-river scheme at the intake and
+leaves at the machines, so the higher end is the intake, and 526 m of fall over 8 km is the gross
+head of a high-head plant rather than the noise of two editors disagreeing. The catchment for the
+`zamora` basin is therefore delineated at **-3.9803332, -79.0172129**, not at the Wikidata point,
+which is the powerhouse and would have added several kilometres of river the plant never sees.
+
+**Two more pour points are now confirmed by identity rather than by proximity.** The OSM elements
+for Coca Codo Sinclair (way/310742588) and Marcel Laniado (way/550243261) carry
+`wikidata=Q19277520` and `wikidata=Q19381026` — the same QIDs the SPARQL query returned — so the
+two sources are not two opinions that happen to agree, they are one entity described twice. Coca
+Codo Sinclair's pair agrees to **0.11 km and 1 m of elevation**, and its element is tagged
+`waterway=dam`: the best pour point in the set. Mazar's element carries its QID too, but is tagged
+`power=plant`, so its 0.69 km is plant-to-dam on a reservoir scheme rather than a disagreement.
+
+**Minas San Francisco has now failed six runs**, and for the first time the failure is informative:
+Nominatim answered both aliases (10 and 9 results) with no name match at all, so this is no longer
+only three busy Overpass servers. Either the dam is unnamed in OSM or it is mapped under a name
+nobody here has guessed, and the next attempt should search the Jubones by geometry rather than by
+string.
+
+So the order of work is: find the official publication of those units (SENAGUA or MAATE) or a
+boundary set with upstream topology — the ArcGIS route having been closed by measurement — get an
+answer for Minas San Francisco, then delineate, and only then rewrite `basins.csv`. Nothing about
+the covariate loader changes — it already takes one row per
 basin and archives what it fetches. What is missing is the table it reads, and
 `scripts/probe-basins.ts` is what re-asks these questions once there is a new candidate to ask
 about.
+
+**Two cautions about the probe itself, both found by the run that produced the answers above.** A
+free-text search answers with whatever carries the string: Nominatim returned an "Agoyan" 131 km
+away at 2,876 m, and the probe seated it in the coordinates table beside the real site's 1,638 m as
+though the pair were comparable. And the name matcher took whichever element the server listed
+first, so Manduriacu — which OSM maps as a plant, a dam and an untagged reservoir outline under two
+spellings of one name — reported 0.02 km on one run and 1.19 km on the next from identical data.
+Both are fixed: a Nominatim hit is accepted only within the thirteen kilometres the bounding boxes
+already use, and name matches are ranked by QID agreement before distance. Any figure in this
+section taken from a run before that fix should be read with those two failure modes in mind.
 
 One setting would reopen the route the plan was built around, and it is not in this repository: the
 block is on the address, and the development sandbox is a different address that refuses these
