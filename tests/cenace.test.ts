@@ -109,3 +109,38 @@ describe("cross-source reconciliation on 2026-09-19", () => {
     expect(spread).toBeGreaterThan(0.01);
   });
 });
+
+describe("SMEC partially-metered pages", () => {
+  const complete = smec("informe1_2026-09-20.html");
+
+  /** The day's distribution demand, as the fixture publishes it. */
+  const DEMAND_CELL = "88,689,170.903";
+
+  /** Shrinks distribution demand, standing in for a page rendered before metering arrived. */
+  const withTinyDemand = (html: string) => {
+    if (!html.includes(DEMAND_CELL)) throw new Error("fixture no longer holds the expected demand value");
+    return html.replace(DEMAND_CELL, "59,000.000");
+  };
+
+  it("keeps a real day, where demand is most of generation", () => {
+    const report = parseSmecInforme1(complete, "2026-09-20");
+    expect(report.complete).toBe(true);
+    const share = dayKwh(report, "demanda_distribucion")! / dayKwh(report, "total_generacion")!;
+    expect(share).toBeGreaterThan(0.8);
+  });
+
+  it("rejects a page whose demand is a rounding error against its generation", () => {
+    // The shape of 2020-06-18 and seven other days: every row present, total generación a
+    // fraction of a normal day, distribution demand near zero. Writing those as real days put
+    // phantom 90% collapses into the history.
+    const report = parseSmecInforme1(withTinyDemand(complete), "2026-09-20");
+    expect(report.complete).toBe(false);
+    expect(report.notes.join(" ")).toMatch(/rendered before the metering arrived/);
+  });
+
+  it("still names the ordinary incomplete case by its own cause", () => {
+    const running = parseSmecInforme1(smec("informe1_2026-09-21.html"), "2026-09-21");
+    expect(running.complete).toBe(false);
+    expect(running.notes.join(" ")).toMatch(/missing generacion_hidraulica/);
+  });
+});
