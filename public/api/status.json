@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-22T08:48:43Z",
+  "generated_at": "2026-09-22T08:49:59Z",
   "as_of": "2026-09-22",
   "ok": true,
   "status": "info",
@@ -36,7 +36,7 @@
     },
     {
       "feed": "Open-Meteo ERA5",
-      "latest": "2026-09-15",
+      "latest": "2026-09-16",
       "limit_days": 10,
       "state": "current"
     },
@@ -61,7 +61,7 @@
       "rows": 7
     },
     "weather_daily": {
-      "rows": 46
+      "rows": 13424
     },
     "enso_monthly": {
       "rows": 919

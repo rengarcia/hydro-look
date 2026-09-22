@@ -1,39 +1,11 @@
 {
-  "generated_at": "2026-09-22T08:48:40Z",
-  "command": "backfill",
+  "generated_at": "2026-09-22T08:49:56Z",
+  "command": "covariates",
   "source": "all",
   "errors": [],
   "notes": [
-    "ords:pointValues mrid=100540: all 31 points are null (known open issue)",
-    "ords:pointValues mrid=100540: all 30 points are null (known open issue)",
-    "ords:pointValues mrid=100540: all 29 points are null (known open issue)",
-    "ords:pointValues mrid=100037: all 31 points are null (known open issue)",
-    "ords:pointValues mrid=100037: all 30 points are null (known open issue)",
-    "ords:pointValues mrid=100037: all 29 points are null (known open issue)",
-    "ords:pointValues mrid=140031: all 30 points are null (known open issue)",
-    "ords:pointValues mrid=140031: all 31 points are null (known open issue)",
-    "ords:pointValues mrid=140031: all 29 points are null (known open issue)",
-    "ords:pointValues mrid=140537: all 30 points are null (known open issue)",
-    "ords:pointValues mrid=140537: all 31 points are null (known open issue)",
-    "ords:pointValues mrid=140537: all 29 points are null (known open issue)",
-    "ords:pointValues mrid=110031: all 31 points are null (known open issue)",
-    "ords:pointValues mrid=110031: all 30 points are null (known open issue)",
-    "ords:pointValues mrid=110031: all 28 points are null (known open issue)",
-    "ords:pointValues mrid=110537: all 31 points are null (known open issue)",
-    "ords:pointValues mrid=110537: all 30 points are null (known open issue)",
-    "ords:pointValues mrid=110537: all 28 points are null (known open issue)",
-    "ords-historian coca_codo_sinclair/cota_masl (mrid 100540): walk stopped at 2015-06 after 12 months with no values; dispatch with an earlier --from to look further back",
-    "ords-historian coca_codo_sinclair/cota_masl (mrid 100540): 2016-06 .. 2026-09",
-    "ords-historian coca_codo_sinclair/caudal_m3s (mrid 100037): walk stopped at 2015-03 after 12 months with no values; dispatch with an earlier --from to look further back",
-    "ords-historian coca_codo_sinclair/caudal_m3s (mrid 100037): 2016-03 .. 2026-09",
-    "ords-historian agoyan/cota_masl (mrid 140031): walk stopped at 2015-07 after 12 months with no values; dispatch with an earlier --from to look further back",
-    "ords-historian agoyan/cota_masl (mrid 140031): 2016-07 .. 2026-09",
-    "ords-historian agoyan/caudal_m3s (mrid 140537): walk stopped at 2015-07 after 12 months with no values; dispatch with an earlier --from to look further back",
-    "ords-historian agoyan/caudal_m3s (mrid 140537): 2016-07 .. 2026-09",
-    "ords-historian manduriacu/cota_masl (mrid 110031): walk stopped at 2016-08 after 12 months with no values; dispatch with an earlier --from to look further back",
-    "ords-historian manduriacu/cota_masl (mrid 110031): 2017-08 .. 2026-09",
-    "ords-historian manduriacu/caudal_m3s (mrid 110537): walk stopped at 2016-08 after 12 months with no values; dispatch with an earlier --from to look further back",
-    "ords-historian manduriacu/caudal_m3s (mrid 110537): 2017-08 .. 2026-09"
+    "paute: provisional sampling point, not a verified basin centroid",
+    "era5:paute:-2.6:-78.6:2026-01-01:2026-09-16: 1 days have missing weather values"
   ],
   "tables": {
     "observations_daily": {
@@ -61,10 +33,10 @@
       "files": 1
     },
     "weather_daily": {
-      "rows": 46,
-      "first_date": "2026-08-17",
+      "rows": 13424,
+      "first_date": "1990-01-01",
       "last_date": "2026-10-06",
-      "files": 1
+      "files": 37
     },
     "enso_monthly": {
       "rows": 919,
