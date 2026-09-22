@@ -16,6 +16,20 @@ export type IsoDate = string;
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
+/**
+ * Whether `value` is a day that exists. The shape test is not enough and the difference bites
+ * exactly once every four years: `Date.parse("2021-02-29T00:00:00Z")` does not fail, it quietly
+ * returns 1 March. Anything that *builds* a date string from parts — an analogue year taken
+ * from the same calendar day of an earlier year, say — has to check the result before using it,
+ * or it will silently compare against the wrong day.
+ */
+export function isCalendarDate(value: string): boolean {
+  if (!ISO_DATE.test(value)) return false;
+  const [year, month, day] = value.split("-").map(Number) as [number, number, number];
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+  return parsed.getUTCFullYear() === year && parsed.getUTCMonth() === month - 1 && parsed.getUTCDate() === day;
+}
+
 export function assertIsoDate(value: string): IsoDate {
   if (!ISO_DATE.test(value)) throw new Error(`not an ISO date (YYYY-MM-DD): ${value}`);
   return value;

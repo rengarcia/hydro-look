@@ -16,7 +16,8 @@ with the response that produced it archived alongside it.
 | 2 · CENACE history and reconciliation | SMEC backfilled 2016-05-01 → 2026-09-20 (3,780 days, 0.40% missing) and reconciled against the ORDS per-plant energy. The fifteen missing days were re-asked on 2026-09-22 and none recovered, so 0.40% is this source's floor. Outstanding: the Información Operativa cross-check needs ≥ 20 snapshot days and has 1 |
 | 3 · Additional reservoir levels | **done 2026-09-22** — 21,541 historian rows: daily level and inflow for Coca Codo Sinclair (2016-03-07→), Agoyán (2016-07-05→) and Manduriacu (2017-08-01→). The Mazar control month matches `repDiaHid12m` on all 31 days to 0.0000 m, and the caudal semantics are now settled on 4,281 days rather than assumed: `mridCaud` is inflow, not turbined flow (`data/crosschecks/caudal-semantics.md`) |
 | 4 · Covariates and quality | reference tables (`plants`, `thresholds`, `rationing_episodes`) and the `npm run check` gates done, `public/api/status.json` published; ONI 1950-01 → 2026-07 and ERA5 1990-01-01 → 2026-09-16 ingested. Outstanding: verified basin centroids — the 36 years of ERA5 cover the one provisional Paute point, not the fleet. Five probes on 2026-09-22 established that HydroSHEDS refuses the runner's address rather than its client or a stale path, and that neither Zenodo nor figshare mirrors it. The ArcGIS lead is now closed negatively: asked which of their polygons contains each dam, all four candidate layers — including the one whose title names Ecuador's Pfafstetter units — answered *none*, for all seven, so that layer is one paper's study area and not a national boundary set. Delsitanisagua's reported 8.18 km disagreement turned out to be the probe picking whichever element the server listed first: ranking name matches by QID finds `way/690695824` (`power=plant`, 180 MW, the same QID Wikidata returned) **0.1 km away and 22 m below**, so the two sources never disagreed. They agree about the powerhouse, though, and a catchment is defined at the intake — a `waterway=dam` node 8.18 km upstream is the candidate for that, but it carries no QID and is not yet tied to this scheme. Mazar, Coca Codo Sinclair and Agoyán are confirmed by identity (same QID, both sources) at 0.04, 0.11 and 0.37 km. Minas San Francisco has failed seven runs and Nominatim finds no name match either. See `PLAN.md` §2.4 |
-| 5–7 · Modelling, site, extensions | planned — see `PLAN.md` |
+| 5 · Modelling v1 | **done 2026-09-22** — `public/api/forecast.json` carries p10/p50/p90 Mazar level at 7/14/30/60/90 days and days-to-threshold under three named analogue years, with the whole censored crossing distribution beside them. The shipped model is a water balance closed around the operator: the reservoir's area-elevation curve and its turbine's m³/s-per-MW are fitted from this repository's own readings, and release is a rule curve read back off the level every simulated day. Over 105 monthly origins from 2018-01 it is **24.5% better than persistence at 60 days and 34.8% at 90**, and indistinguishable from it under a month, which the document says rather than hides. §7's climatological-drift rung loses at every horizon and the open-loop water balance §7 specified loses by 69% at 90 days; both are kept in `data/reports/backtest.md` as recorded negatives. The crisis check is the unflattering one: of Mazar's two 2024 spells below 2115, the P50 called neither in advance, though the ensemble's dry tail put the October crossing 8.5 days out against an actual 7 |
+| 6–7 · Site, extensions | planned — see `PLAN.md` |
 
 ## Where the data comes from
 
@@ -87,6 +88,10 @@ npm run ingest -- covariates --from 1990-01-01 --max-requests 100  # resumable c
 
 npm run ingest -- backfill --source ords-historian --from 2016-01-01   # a month per request
 
+npm run forecast                           # backtest the ladder, then write forecast.json and the report
+npm run forecast -- --dry-run              # compute and print; touch no file
+npm run forecast -- --no-variant           # skip the ENSO comparison (about a third of the runtime)
+
 npm run check                              # shape, ranges, reference integrity; no clock, no network
 npm run check -- --freshness               # also fail when a feed has stopped arriving
 npm run check -- --out public/api/status.json
@@ -129,12 +134,16 @@ src/lib/sources/    fetch + archive + parse for each upstream system
 src/lib/store/      year-partitioned CSV upsert, gzipped NDJSON raw archive
 src/lib/contracts/  zod table schemas; a drifted response writes nothing
 src/lib/quality/    checks over what is on disk, which the row-by-row contracts cannot see
+src/lib/features/   series assembly, the fitted reservoir curve, ONI read at its true lag
+src/lib/models/     the M0–M3 ladder, the rolling-origin backtest, the forecast and its report
 scripts/ingest.ts   the CLI
 scripts/check.ts    the quality gates and the public status document
+scripts/forecast.ts the backtest and the published forecast
 data/curated/       the tables, CSV, partitioned by year
 data/raw/           every response as fetched, one gzipped bundle per source-month-endpoint
 data/reference/     plants, thresholds, rationing episodes, basins, mrids, TLS pins
-public/api/         status.json, the freshness and quality document the site reads
+data/reports/       backtest.md, regenerated with every forecast
+public/api/         status.json and forecast.json, the documents the site reads
 tests/fixtures/     the Phase 0 responses the parsers are tested against
 ```
 
@@ -155,9 +164,20 @@ disagree: Mazar's floor is 2098 by the dashboard chart title and 2100 by both re
 | `operating_bands` | one row per distinct declared band, with the span it was observed over |
 | `weather_daily` | date × basin × coordinates × kind × collection vintage; mm and °C, nulls preserved |
 | `enso_monthly` | centre month × source, ONI anomaly in °C |
+| `forecast_runs` | one row per forecast, with the fitted curve and rule behind it |
+| `forecast_values` | run × horizon — p10/p50/p90, and the raw ensemble bounds beside them |
 
 The same reading from two endpoints is kept as two rows with different `source` values rather
-than silently preferring one, so disagreements between CELEC's own reports stay visible.
+than silently preferring one, so disagreements between CELEC's own reports stay visible. The
+models need one number per day, so `src/lib/features/series.ts` resolves them by a declared
+source order — which decides coverage rather than truth, since the levels cross-check found the
+report endpoints and the historian carrying the same series on 100% of 1,668 overlapping days.
+
+`forecast_runs` records enough of each fit — the area-elevation coefficients, the flow-per-MW,
+the release stance, the crest — to reproduce a forecast after the history behind it has grown
+another year. `forecast_values` keeps the model's raw ensemble bounds next to the published
+band because they are not the same thing: the ensemble spans what the analogue inflow years do,
+and the published band is that widened by the model's own out-of-sample error.
 
 ## TLS
 

@@ -1,0 +1,503 @@
+{
+  "generated_at": "2026-09-22T15:37:39Z",
+  "run_id": "2026-09-21-mazar-1-1c43d784",
+  "origin_date": "2026-09-21",
+  "site": "mazar",
+  "variable": "cota_masl",
+  "units": "metres above sea level",
+  "disclaimer": "No es una fuente oficial. Pronóstico estadístico generado a partir de datos públicos de CELEC y CENACE; no representa la posición de ninguna institución.",
+  "model": {
+    "id": "M3-water-balance",
+    "label": "Water balance with a fitted release rule and analogue inflow years",
+    "version": "1",
+    "features_hash": "1c43d7840613ac80",
+    "backtest_origins": 105
+  },
+  "current": {
+    "level_masl": 2138.37,
+    "observed_on": "2026-09-21",
+    "sources": [
+      "ords:repDiaHid12m",
+      "ords:repDiaNivQIng"
+    ],
+    "storage_above_lowest_threshold_hm3": 121.89,
+    "surface_area_km2": 5.056,
+    "slope_7d_m_per_day": -0.2129,
+    "slope_14d_m_per_day": -0.47,
+    "slope_30d_m_per_day": -0.3313,
+    "release_stance_m3s": 19.42
+  },
+  "thresholds": [
+    {
+      "name": "critical (plan)",
+      "level_masl": 2115,
+      "source": "PLAN.md section 7",
+      "status": "unverified",
+      "note": "No upstream source publishes this level; it is this project's own critical marker.",
+      "metres_above": 23.37
+    },
+    {
+      "name": "declared minimum (report endpoint)",
+      "level_masl": 2100,
+      "source": "ords:repDiaHid12m",
+      "status": "published",
+      "note": "Observed 2014-09-20 → 2026-09-20.",
+      "metres_above": 38.37
+    },
+    {
+      "name": "declared minimum (dashboard chart title)",
+      "level_masl": 2098,
+      "source": "celec dashboard bundle",
+      "status": "published",
+      "note": "Observed 2026-09-21 → 2026-09-21.",
+      "metres_above": 40.37
+    }
+  ],
+  "forecast": [
+    {
+      "horizon_days": 7,
+      "target_date": "2026-09-28",
+      "p10": 2130.9,
+      "p50": 2135.2,
+      "p90": 2137.55,
+      "ensemble": {
+        "p10": 2131.8,
+        "p90": 2144.64,
+        "n": 16,
+        "years": [
+          2010,
+          2011,
+          2012,
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ]
+      },
+      "median_backtest_residual_m": 0.13
+    },
+    {
+      "horizon_days": 14,
+      "target_date": "2026-10-05",
+      "p10": 2123.11,
+      "p50": 2130.95,
+      "p90": 2134.25,
+      "ensemble": {
+        "p10": 2125.64,
+        "p90": 2144.9,
+        "n": 16,
+        "years": [
+          2010,
+          2011,
+          2012,
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ]
+      },
+      "median_backtest_residual_m": -0.19
+    },
+    {
+      "horizon_days": 30,
+      "target_date": "2026-10-21",
+      "p10": 2120.44,
+      "p50": 2133.28,
+      "p90": 2137.96,
+      "ensemble": {
+        "p10": 2119.08,
+        "p90": 2146.98,
+        "n": 15,
+        "years": [
+          2011,
+          2012,
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ]
+      },
+      "median_backtest_residual_m": 0.19
+    },
+    {
+      "horizon_days": 60,
+      "target_date": "2026-11-20",
+      "p10": 2109.39,
+      "p50": 2127.54,
+      "p90": 2132.77,
+      "ensemble": {
+        "p10": 2115.45,
+        "p90": 2150.17,
+        "n": 15,
+        "years": [
+          2011,
+          2012,
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ]
+      },
+      "median_backtest_residual_m": 0
+    },
+    {
+      "horizon_days": 90,
+      "target_date": "2026-12-20",
+      "p10": 2106.39,
+      "p50": 2126.47,
+      "p90": 2132.85,
+      "ensemble": {
+        "p10": 2116.61,
+        "p90": 2152.56,
+        "n": 14,
+        "years": [
+          2011,
+          2012,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ]
+      },
+      "median_backtest_residual_m": 0.16
+    }
+  ],
+  "days_to_threshold": {
+    "horizon_days": 365,
+    "note": "Each scenario is one real analogue year of inflow — the driest, median and wettest of the years on record for this calendar window — run through the same release rule.",
+    "thresholds": [
+      {
+        "threshold": "critical (plan)",
+        "level_masl": 2115,
+        "source": "PLAN.md section 7",
+        "status": "unverified",
+        "note": "No upstream source publishes this level; it is this project's own critical marker.",
+        "across_all_analogue_years": {
+          "analogue_years": 14,
+          "years_that_cross": 5,
+          "p10_days": 42,
+          "p50_days": null,
+          "p90_days": null
+        },
+        "scenarios": [
+          {
+            "scenario": "dry",
+            "analogYear": 2022,
+            "inflowMeanM3s": 63.71,
+            "inflowTotalHm3": 2009.1,
+            "crossesOn": "2027-01-05",
+            "days": 106,
+            "minimumLevelMasl": 2114.09
+          },
+          {
+            "scenario": "median",
+            "analogYear": 2019,
+            "inflowMeanM3s": 90.18,
+            "inflowTotalHm3": 2843.9,
+            "crossesOn": null,
+            "days": null,
+            "minimumLevelMasl": 2131.13
+          },
+          {
+            "scenario": "wet",
+            "analogYear": 2011,
+            "inflowMeanM3s": 103.37,
+            "inflowTotalHm3": 3259.9,
+            "crossesOn": null,
+            "days": null,
+            "minimumLevelMasl": 2137.35
+          }
+        ]
+      },
+      {
+        "threshold": "declared minimum (report endpoint)",
+        "level_masl": 2100,
+        "source": "ords:repDiaHid12m",
+        "status": "published",
+        "note": "Observed 2014-09-20 → 2026-09-20.",
+        "across_all_analogue_years": {
+          "analogue_years": 14,
+          "years_that_cross": 0,
+          "p10_days": null,
+          "p50_days": null,
+          "p90_days": null
+        },
+        "scenarios": [
+          {
+            "scenario": "dry",
+            "analogYear": 2022,
+            "inflowMeanM3s": 63.71,
+            "inflowTotalHm3": 2009.1,
+            "crossesOn": null,
+            "days": null,
+            "minimumLevelMasl": 2114.09
+          },
+          {
+            "scenario": "median",
+            "analogYear": 2019,
+            "inflowMeanM3s": 90.18,
+            "inflowTotalHm3": 2843.9,
+            "crossesOn": null,
+            "days": null,
+            "minimumLevelMasl": 2131.13
+          },
+          {
+            "scenario": "wet",
+            "analogYear": 2011,
+            "inflowMeanM3s": 103.37,
+            "inflowTotalHm3": 3259.9,
+            "crossesOn": null,
+            "days": null,
+            "minimumLevelMasl": 2137.35
+          }
+        ]
+      },
+      {
+        "threshold": "declared minimum (dashboard chart title)",
+        "level_masl": 2098,
+        "source": "celec dashboard bundle",
+        "status": "published",
+        "note": "Observed 2026-09-21 → 2026-09-21.",
+        "across_all_analogue_years": {
+          "analogue_years": 14,
+          "years_that_cross": 0,
+          "p10_days": null,
+          "p50_days": null,
+          "p90_days": null
+        },
+        "scenarios": [
+          {
+            "scenario": "dry",
+            "analogYear": 2022,
+            "inflowMeanM3s": 63.71,
+            "inflowTotalHm3": 2009.1,
+            "crossesOn": null,
+            "days": null,
+            "minimumLevelMasl": 2114.09
+          },
+          {
+            "scenario": "median",
+            "analogYear": 2019,
+            "inflowMeanM3s": 90.18,
+            "inflowTotalHm3": 2843.9,
+            "crossesOn": null,
+            "days": null,
+            "minimumLevelMasl": 2131.13
+          },
+          {
+            "scenario": "wet",
+            "analogYear": 2011,
+            "inflowMeanM3s": 103.37,
+            "inflowTotalHm3": 3259.9,
+            "crossesOn": null,
+            "days": null,
+            "minimumLevelMasl": 2137.35
+          }
+        ]
+      }
+    ]
+  },
+  "reservoir": {
+    "crest_masl": 2155.83,
+    "crest_basis": "highest level in the record; the declared maximum is operational, not physical",
+    "area_elevation": {
+      "form": "A(level) = coefficient * (level - datum)^exponent, m2",
+      "coefficient": 48.458321,
+      "exponent": 2.5,
+      "datum_m": 2036.66,
+      "fit_rmse_level_m": 0.689341,
+      "fit_days": 1997
+    },
+    "turbine_m3s_per_mw": 0.670779,
+    "release_rule_m3s": [
+      {
+        "level_masl": 2110,
+        "release_m3s": 10.46
+      },
+      {
+        "level_masl": 2112.5,
+        "release_m3s": 15.06
+      },
+      {
+        "level_masl": 2115,
+        "release_m3s": 29.8
+      },
+      {
+        "level_masl": 2117.5,
+        "release_m3s": 27.85
+      },
+      {
+        "level_masl": 2120,
+        "release_m3s": 36.21
+      },
+      {
+        "level_masl": 2122.5,
+        "release_m3s": 34.97
+      },
+      {
+        "level_masl": 2125,
+        "release_m3s": 35.72
+      },
+      {
+        "level_masl": 2127.5,
+        "release_m3s": 47.09
+      },
+      {
+        "level_masl": 2130,
+        "release_m3s": 55.68
+      },
+      {
+        "level_masl": 2132.5,
+        "release_m3s": 61.9
+      },
+      {
+        "level_masl": 2135,
+        "release_m3s": 69.41
+      },
+      {
+        "level_masl": 2137.5,
+        "release_m3s": 53.23
+      },
+      {
+        "level_masl": 2140,
+        "release_m3s": 53.59
+      },
+      {
+        "level_masl": 2142.5,
+        "release_m3s": 54.21
+      },
+      {
+        "level_masl": 2145,
+        "release_m3s": 57.96
+      },
+      {
+        "level_masl": 2147.5,
+        "release_m3s": 60.01
+      },
+      {
+        "level_masl": 2150,
+        "release_m3s": 60.79
+      },
+      {
+        "level_masl": 2152.5,
+        "release_m3s": 85.25
+      },
+      {
+        "level_masl": 2155,
+        "release_m3s": 223.17
+      }
+    ],
+    "release_rule_days": 4298
+  },
+  "backtest": {
+    "report": "data/reports/backtest.md",
+    "horizons": [
+      {
+        "horizon_days": 7,
+        "n": 105,
+        "mae_m": 2.292,
+        "skill_vs_persistence": -0.0005,
+        "coverage_p10_p90": 0.7419,
+        "ensemble_coverage_p10_p90": 0.6095
+      },
+      {
+        "horizon_days": 14,
+        "n": 105,
+        "mae_m": 3.616,
+        "skill_vs_persistence": -0.0122,
+        "coverage_p10_p90": 0.7742,
+        "ensemble_coverage_p10_p90": 0.6
+      },
+      {
+        "horizon_days": 30,
+        "n": 104,
+        "mae_m": 5.851,
+        "skill_vs_persistence": 0.001,
+        "coverage_p10_p90": 0.8043,
+        "ensemble_coverage_p10_p90": 0.5096
+      },
+      {
+        "horizon_days": 60,
+        "n": 103,
+        "mae_m": 7.253,
+        "skill_vs_persistence": 0.2445,
+        "coverage_p10_p90": 0.7363,
+        "ensemble_coverage_p10_p90": 0.534
+      },
+      {
+        "horizon_days": 90,
+        "n": 102,
+        "mae_m": 7.305,
+        "skill_vs_persistence": 0.3482,
+        "coverage_p10_p90": 0.7222,
+        "ensemble_coverage_p10_p90": 0.5294
+      }
+    ]
+  },
+  "crisis_check": {
+    "threshold_masl": 2115,
+    "threshold_source": "PLAN.md section 7; no upstream source publishes it",
+    "origins_considered": 105,
+    "false_alarms_p50": 1,
+    "episodes": [
+      {
+        "crossed_on": "2024-04-11",
+        "p50_called_from": null,
+        "p50_lead_time_days": null,
+        "p10_called_from": null,
+        "p10_lead_time_days": null
+      },
+      {
+        "crossed_on": "2024-10-08",
+        "p50_called_from": null,
+        "p50_lead_time_days": null,
+        "p10_called_from": "2024-10-01",
+        "p10_lead_time_days": 7
+      }
+    ]
+  }
+}

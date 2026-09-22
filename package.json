@@ -16,7 +16,8 @@
     "crosscheck:caudal": "tsx scripts/caudal-semantics.ts",
     "probe:ords": "tsx scripts/probe-ords.ts",
     "probe:basins": "tsx scripts/probe-basins.ts",
-    "check": "tsx scripts/check.ts"
+    "check": "tsx scripts/check.ts",
+    "forecast": "tsx scripts/forecast.ts"
   },
   "dependencies": {
     "cheerio": "^1.0.0",
