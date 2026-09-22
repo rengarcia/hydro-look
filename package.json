@@ -20,7 +20,8 @@
     "probe:basins": "tsx scripts/probe-basins.ts",
     "check": "tsx scripts/check.ts",
     "publish:api": "tsx scripts/publish.ts",
-    "forecast": "tsx scripts/forecast.ts"
+    "forecast": "tsx scripts/forecast.ts",
+    "backtest:m4": "tsx scripts/backtest-m4.ts"
   },
   "dependencies": {
     "cheerio": "^1.0.0",

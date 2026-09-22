@@ -8,6 +8,9 @@
  *   npm run forecast -- --report <path>  where the backtest report goes
  *   npm run forecast -- --no-variant     skip the ENSO comparison (about a third of the runtime)
  *
+ * M4, the boosted-tree rung, is not run here: it takes minutes, so `npm run backtest:m4` runs it
+ * and commits `data/reports/m4-backtest.json`, which this command renders into the report.
+ *
  * The backtest always runs, because the published band *is* the backtest: the p10 and p90 are
  * the model's own out-of-sample residual quantiles at that horizon. There is no mode that
  * forecasts without measuring, which is deliberate — a band with nothing behind it would be
@@ -42,6 +45,7 @@ import {
   type ThresholdRef,
 } from "../src/lib/models/forecast.ts";
 import { renderBacktestReport, type CrisisReport } from "../src/lib/models/report.ts";
+import { readM4Snapshot } from "../src/lib/models/m4-scoring.ts";
 import { CuratedStore } from "../src/lib/store/curated.ts";
 import { FORECAST_RUNS, FORECAST_VALUES } from "../src/lib/contracts/tables.ts";
 import { parseCsv } from "../src/lib/store/csv.ts";
@@ -208,6 +212,14 @@ function main(): void {
   }
   console.log(`false alarms at P50: ${crisis.falseAlarms} of ${crisis.originsConsidered} origins`);
 
+  // M4 is too slow for this path (`npm run backtest:m4`); its committed snapshot is rendered
+  // into the report, and it never touches what forecast.json publishes.
+  const m4 = readM4Snapshot();
+  if (m4) {
+    const aligned = m4.origins.length === ladder.origins.length && m4.origins.every((o, i) => o === ladder.origins[i]);
+    console.log(`M4 snapshot ${m4.generatedAt}: ${m4.origins.length} origins, ${aligned ? "aligned with" : "stale against"} the ladder`);
+  }
+
   const report = renderBacktestReport({
     generatedAt: nowUtc(),
     site: SITE,
@@ -219,6 +231,7 @@ function main(): void {
     fit: forecast.fit,
     crestM,
     levelRange: { first: dates[0]!, last: dates.at(-1)!, days: levels.size },
+    m4: m4 ? { snapshot: m4, ladderOrigins: ladder.origins } : null,
   });
 
   const document = {
