@@ -11,7 +11,7 @@
  */
 
 import { gunzipSync, gzipSync } from "node:zlib";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { DATA_RAW } from "../util/paths.ts";
 
@@ -90,4 +90,39 @@ export class RawArchive {
     this.touched.clear();
     return written;
   }
+
+  /**
+   * Folds bundles staged by an earlier run (a run writes to a staging root, then applies)
+   * into this archive, record by record so a staged bundle never clobbers a month that
+   * another run filled in the meantime. Staged records win on a key collision.
+   */
+  mergeFrom(stagedRoot: string): number {
+    let merged = 0;
+    for (const relative of listBundles(stagedRoot)) {
+      const staged = new RawArchive(stagedRoot).bundle(join(stagedRoot, relative));
+      const target = join(this.root, relative);
+      const bundle = this.bundle(target);
+      for (const [key, record] of staged) {
+        bundle.set(key, record);
+        merged++;
+      }
+      this.touched.add(target);
+    }
+    return merged;
+  }
+}
+
+/** Every `*.ndjson.gz` under `root`, as paths relative to it. */
+function listBundles(root: string): string[] {
+  if (!existsSync(root)) return [];
+  const out: string[] = [];
+  const walk = (directory: string, prefix: string): void => {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      const next = join(prefix, entry.name);
+      if (entry.isDirectory()) walk(join(directory, entry.name), next);
+      else if (entry.name.endsWith(".ndjson.gz")) out.push(next);
+    }
+  };
+  walk(root, "");
+  return out;
 }

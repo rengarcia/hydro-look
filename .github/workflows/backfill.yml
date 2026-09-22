@@ -81,24 +81,17 @@ jobs:
             ${TO:+--to "$TO"} \
             --max-requests "$MAX_REQUESTS" \
             --plants "$PLANTS" \
+            --out "$RUNNER_TEMP/batch" \
             $DRY_RUN 2>&1 | tee "$RUNNER_TEMP/backfill.log"
 
-      - name: Commit data
+      - name: Apply and commit
         if: always() && github.event.inputs.dry_run != 'true'
         env:
           SOURCE: ${{ github.event.inputs.source || 'ords-levels' }}
           FROM: ${{ github.event.inputs.from || '2015-09-20' }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data
-          if git diff --cached --quiet; then
-            echo "No data changes; this backfill is complete."
-          else
-            git commit -m "Backfill $SOURCE from $FROM (run ${{ github.run_id }})"
-            git pull --rebase origin "${{ github.ref_name }}"
-            git push origin "HEAD:${{ github.ref_name }}"
-          fi
+          BRANCH: ${{ github.ref_name }}
+          BATCH_DIR: ${{ runner.temp }}/batch
+        run: bash .github/scripts/apply-and-push.sh "Backfill $SOURCE from $FROM (run ${{ github.run_id }})"
 
       - name: Upload run log
         if: always()

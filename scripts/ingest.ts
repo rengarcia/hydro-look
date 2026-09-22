@@ -10,9 +10,18 @@
  * Global flags: --dry-run (parse and validate, write nothing), --rate-ms, --max-requests,
  * --to, --plants. Every command is resumable: a backfill skips days already in the store, so
  * a long history is filled by repeated dispatches of the same command.
+ *
+ * In CI the fetch and the write are separated, because two runs finishing at once would
+ * otherwise collide in a rebase over generated CSV:
+ *
+ *   npm run ingest -- daily --out "$RUNNER_TEMP/batch"    fetch and stage, touching no data
+ *   npm run ingest -- apply --in "$RUNNER_TEMP/batch"     merge onto the current branch tip
+ *
+ * `apply` is idempotent, so a rejected push is retried by resetting to the tip and applying
+ * again rather than by resolving conflicts in files nobody wrote by hand.
  */
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
 import { HttpClient } from "../src/lib/http/client.ts";
@@ -64,6 +73,10 @@ interface Options {
   days: number;
   source: BackfillSource;
   plants: EnergyPlantCode[];
+  /** Stage the run's output here instead of writing the store (see `apply`). */
+  out?: string;
+  /** Directory a staged run wrote, to be merged into the store. */
+  in?: string;
 }
 
 function parseOptions(argv: string[]): Options {
@@ -80,6 +93,8 @@ function parseOptions(argv: string[]): Options {
       days: { type: "string" },
       source: { type: "string" },
       plants: { type: "string" },
+      out: { type: "string" },
+      in: { type: "string" },
     },
   });
 
@@ -106,6 +121,8 @@ function parseOptions(argv: string[]): Options {
     days: Number(values.days ?? 1),
     source,
     plants,
+    out: values.out,
+    in: values.in,
   };
 }
 
@@ -124,9 +141,17 @@ async function verifyPins(hosts: [string, number][]): Promise<void> {
 
 async function main(): Promise<void> {
   const options = parseOptions(process.argv.slice(2));
-  const archive = new RawArchive();
+  // With --out, the run writes nothing into data/: it stages its rows and raw bundles so that
+  // `apply` can merge them onto whatever the branch holds at that moment. Two runs finishing
+  // at once then queue instead of colliding in a rebase over generated files.
+  const archive = new RawArchive(options.out ? join(options.out, "raw") : undefined);
   const store = new CuratedStore(DATA_CURATED, options.dryRun);
   const batch = emptyBatch();
+
+  if (options.command === "apply") {
+    applyStaged(options);
+    return;
+  }
 
   const http = new HttpClient({
     minIntervalMs: options.rateMs,
@@ -287,12 +312,51 @@ async function main(): Promise<void> {
     }
 
     default:
-      throw new Error(`unknown command "${options.command}"; try daily, backfill, latest or smec-earliest`);
+      throw new Error(`unknown command "${options.command}"; try daily, backfill, apply, latest or smec-earliest`);
   }
 
-  writeBatch(store, archive, batch, options);
+  if (options.out) stageBatch(archive, batch, options);
+  else writeBatch(store, archive, batch, options);
   await closeAgents();
   process.exitCode = batch.errors.length > 0 ? 1 : 0;
+}
+
+/**
+ * Writes the run's result to a staging directory: the rows as JSON, the raw responses as the
+ * same bundles they will become in data/raw/. Nothing under data/ is touched.
+ */
+function stageBatch(archive: RawArchive, batch: IngestBatch, options: Options): void {
+  const directory = options.out!;
+  mkdirSync(directory, { recursive: true });
+  const bundles = archive.flush();
+  writeFileSync(
+    join(directory, "batch.json"),
+    `${JSON.stringify({ generated_at: nowUtc(), command: options.command, source: options.source, ...batch }, null, 1)}\n`,
+  );
+  log(`staged ${batch.observations.length + batch.national.length + batch.operativa.length} rows and ${bundles.length} raw bundles in ${directory}`);
+  for (const note of dedupe(batch.notes).slice(0, 40)) log(`note: ${note}`);
+  for (const error of batch.errors.slice(0, 40)) log(`ERROR ${error}`);
+}
+
+/**
+ * Merges a staged run into the store. Run this after resetting the checkout to the branch tip,
+ * so the rows land on the newest data rather than on whatever the run started from; if the
+ * push is still rejected, reset and apply again — the merge is idempotent.
+ */
+function applyStaged(options: Options): void {
+  const directory = options.in;
+  if (!directory) throw new Error("apply needs --in <directory written by a staged run>");
+  const staged = JSON.parse(readFileSync(join(directory, "batch.json"), "utf8")) as IngestBatch & {
+    command?: string;
+    source?: BackfillSource;
+  };
+
+  const archive = new RawArchive();
+  const merged = archive.mergeFrom(join(directory, "raw"));
+  const store = new CuratedStore(DATA_CURATED, options.dryRun);
+  writeBatch(store, archive, staged, { ...options, command: staged.command ?? options.command });
+  log(`applied ${merged} archived responses`);
+  process.exitCode = staged.errors.length > 0 ? 1 : 0;
 }
 
 /** `date|source` pairs already in observations_daily, used to skip finished work. */

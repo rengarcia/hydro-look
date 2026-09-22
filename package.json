@@ -4,12 +4,15 @@
   "private": true,
   "type": "module",
   "description": "Open pipeline for Ecuador's hydro fleet: reservoirs, national balance and forecasts",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "ingest": "tsx scripts/ingest.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "crosscheck": "tsx scripts/crosscheck.ts"
   },
   "dependencies": {
     "cheerio": "^1.0.0",
