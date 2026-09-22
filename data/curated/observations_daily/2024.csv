@@ -20,7 +20,7 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2024-01-01,minas_san_francisco,cota_masl,790.54,ords:repDiaHid12m,,2026-09-22T01:28:26Z,celec_ords/2024/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2024-09-20
 2024-01-01,minas_san_francisco,produccion_mwh,6384.25,ords:repDiaEner12m,,2026-09-22T01:28:54Z,celec_ords/2024/03/repDiaEner12m.ndjson.gz#repDiaEner12m:2024-03-20
 2024-01-01,molino,produccion_mwh,4591.505644,ords:repDiaEner12m,,2026-09-22T01:28:54Z,celec_ords/2024/03/repDiaEner12m.ndjson.gz#repDiaEner12m:2024-03-20
-2024-01-01,paute_cuenca,caudal_cuenca_m3s,74.567854,ords:csrCaudCuenAniosAvg,,2026-09-22T16:58:55Z,celec_ords/2027/01/csrCaudCuenAniosAvg.ndjson.gz#csrCaudCuenAniosAvg:2010-01-01:2027-01-01
+2024-01-01,paute_cuenca,caudal_cuenca_m3s,74.567854,ords:csrCaudCuenAniosAvg,,2026-09-22T19:48:11Z,celec_ords/2027/01/csrCaudCuenAniosAvg.ndjson.gz#csrCaudCuenAniosAvg:2010-01-01:2027-01-01
 2024-01-01,sopladora,produccion_mwh,2699.851986,ords:repDiaEner12m,,2026-09-22T01:28:54Z,celec_ords/2024/03/repDiaEner12m.ndjson.gz#repDiaEner12m:2024-03-20
 2024-01-02,agoyan,caudal_m3s,100,ords:pointValues,140537,2026-09-22T08:41:06Z,celec_ords/2024/01/pointValuesMesH24.ndjson.gz#pointValuesMesH24:140537:2024-01-01
 2024-01-02,agoyan,cota_masl,1646.97,ords:pointValues,140031,2026-09-22T08:38:13Z,celec_ords/2024/01/pointValuesMesH24.ndjson.gz#pointValuesMesH24:140031:2024-01-01

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-22T17:23:10Z",
+  "generated_at": "2026-09-22T19:48:36Z",
   "as_of": "2026-09-22",
   "ok": true,
   "status": "warn",
@@ -67,7 +67,7 @@
       "rows": 58114
     },
     "operativa_snapshots": {
-      "rows": 188
+      "rows": 235
     },
     "operating_bands": {
       "rows": 7
