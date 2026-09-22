@@ -165,9 +165,15 @@ export function combineExchange(
 
   // The one-direction-per-hour reading is what makes the sums totals. Check it on every day
   // rather than trusting the recon: an hour published both ways would mean the rule is wrong.
+  // Only on the Ecuador circuits: the Venezuela link (CUATRICENTENARIO 1) does publish both
+  // ways within an hour in 2016–2018, and it is neither stored nor what the rule is about —
+  // checking it rejected twenty months of Ecuador data in the first backfill.
   const hoursByKey = new Map<string, { export?: (number | null)[]; import?: (number | null)[] }>();
-  for (const day of exports) hoursByKey.set(`${day.date}|${day.code}`, { export: day.hours });
+  for (const day of exports) {
+    if (known.has(day.code)) hoursByKey.set(`${day.date}|${day.code}`, { export: day.hours });
+  }
   for (const day of imports) {
+    if (!known.has(day.code)) continue;
     const key = `${day.date}|${day.code}`;
     hoursByKey.set(key, { ...hoursByKey.get(key), import: day.hours });
   }

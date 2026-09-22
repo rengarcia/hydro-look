@@ -41,6 +41,20 @@ describe("xm parsers", () => {
     }
   });
 
+  it("checks the one-direction rule on the Ecuador circuits only, not on the Venezuela link", () => {
+    // March 2017 carries CUATRICENTENARIO 1, which does publish hours both ways. The first
+    // backfill checked it anyway and threw away twenty months of Ecuador rows with it.
+    const notes: string[] = [];
+    const rows = combineExchange(
+      parseXmHourly(xm("ExpoEner_Enlace_2017-03")),
+      parseXmHourly(xm("ImpoEner_Enlace_2017-03")),
+      notes,
+    );
+    expect(rows.filter((r) => r.link === "ECUADOR 230")).toHaveLength(31);
+    expect(rows.every((r) => r.link === "ECUADOR 230" || r.link === "ECUADOR 138")).toBe(true);
+    expect(notes.some((n) => n.includes("CUATRICENTENARIO 1"))).toBe(true);
+  });
+
   it("keeps a day of import-only flow instead of dropping it for missing exports", () => {
     // 2019-07-08 is in ImpoEner and absent from ExpoEner: Ecuador was the exporter all day.
     const day = exchangeFor("2019-07").find((r) => r.date === "2019-07-08" && r.link === "ECUADOR 230")!;
