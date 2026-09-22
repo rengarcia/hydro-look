@@ -270,3 +270,101 @@ export const FORECAST_VALUES: TableSpec<ForecastValueRow> = {
   partitionBy: "origin_date",
   schema: forecastValueRow,
 };
+
+/**
+ * One adequacy run. The ceilings are columns rather than a reference to the assumptions file
+ * because the file is editable: a run committed today has to say which numbers it was standing
+ * on, or a later edit would silently rewrite the past.
+ */
+export const adequacyRunRow = z.object({
+  run_id: z.string().min(1),
+  generated_at: isoTimestamp,
+  origin_date: isoDate,
+  model_id: z.string().min(1),
+  model_version: z.string().min(1),
+  features_hash: z.string().min(1),
+  usable_days: z.number().int().nonnegative(),
+  rejected_days: z.number().int().nonnegative(),
+  demand_fit_days: z.number().int().nonnegative(),
+  demand_growth_pct_per_year: z.number().finite(),
+  hydro_fit_days: z.number().int().nonnegative(),
+  hydro_anomaly: z.number().finite().positive(),
+  thermal_gwh_day: z.number().finite().nonnegative(),
+  import_gwh_day: z.number().finite().nonnegative(),
+  stressed_import_gwh_day: z.number().finite().nonnegative(),
+  other_gwh_day: z.number().finite().nonnegative(),
+  backtest_origins: z.number().int().nonnegative(),
+});
+export type AdequacyRunRow = z.infer<typeof adequacyRunRow>;
+
+export const adequacyValueRow = z.object({
+  run_id: z.string().min(1),
+  origin_date: isoDate,
+  horizon_days: z.number().int().positive(),
+  target_date: isoDate,
+  demand_gwh_day: z.number().finite().positive(),
+  hydro_gwh_day: z.number().finite(),
+  requirement_gwh_day: z.number().finite(),
+  requirement_p10: nullableNumber,
+  requirement_p90: nullableNumber,
+  deficit_gwh_day: z.number().finite(),
+  deficit_p10: nullableNumber,
+  deficit_p90: nullableNumber,
+  stressed_deficit_gwh_day: z.number().finite(),
+  margin_pct: z.number().finite(),
+  tier: z.enum(["holgado", "vigilancia", "ajustado", "deficit"]),
+}).refine(
+  (r) => r.requirement_p10 === null || r.requirement_p90 === null || r.requirement_p10 <= r.requirement_p90,
+  { message: "requirement quantiles must not cross" },
+);
+export type AdequacyValueRow = z.infer<typeof adequacyValueRow>;
+
+export const ADEQUACY_RUNS: TableSpec<AdequacyRunRow> = {
+  name: "adequacy_runs",
+  columns: [
+    "run_id",
+    "generated_at",
+    "origin_date",
+    "model_id",
+    "model_version",
+    "features_hash",
+    "usable_days",
+    "rejected_days",
+    "demand_fit_days",
+    "demand_growth_pct_per_year",
+    "hydro_fit_days",
+    "hydro_anomaly",
+    "thermal_gwh_day",
+    "import_gwh_day",
+    "stressed_import_gwh_day",
+    "other_gwh_day",
+    "backtest_origins",
+  ],
+  key: ["run_id"],
+  partitionBy: "origin_date",
+  schema: adequacyRunRow,
+};
+
+export const ADEQUACY_VALUES: TableSpec<AdequacyValueRow> = {
+  name: "adequacy_values",
+  columns: [
+    "run_id",
+    "origin_date",
+    "horizon_days",
+    "target_date",
+    "demand_gwh_day",
+    "hydro_gwh_day",
+    "requirement_gwh_day",
+    "requirement_p10",
+    "requirement_p90",
+    "deficit_gwh_day",
+    "deficit_p10",
+    "deficit_p90",
+    "stressed_deficit_gwh_day",
+    "margin_pct",
+    "tier",
+  ],
+  key: ["run_id", "horizon_days"],
+  partitionBy: "origin_date",
+  schema: adequacyValueRow,
+};

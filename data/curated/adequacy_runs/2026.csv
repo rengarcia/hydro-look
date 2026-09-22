@@ -1,0 +1,2 @@
+run_id,generated_at,origin_date,model_id,model_version,features_hash,usable_days,rejected_days,demand_fit_days,demand_growth_pct_per_year,hydro_fit_days,hydro_anomaly,thermal_gwh_day,import_gwh_day,stressed_import_gwh_day,other_gwh_day,backtest_origins
+2026-09-20-adequacy-1-a7f87a2c,2026-09-22T17:03:51Z,2026-09-20,adequacy-v1,1,a7f87a2cb30e49e8,3723,57,1202,6.5972,3723,0.966009,25.831,10.779,0.122,1.132,99

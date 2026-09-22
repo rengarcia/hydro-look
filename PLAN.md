@@ -896,16 +896,92 @@ Four decisions came out of drawing it, and each is a case where the data disagre
   evidence and not about correctness: `repDiaHid12m` restated its band on 4,384 days, the chart
   title says its own once.
 
-**Not built, and said so on the page rather than faked:** the adequacy tile. It needs §7's
-target 3 — expected fleet hydro energy plus available thermal plus import capacity minus
-unsuppressed demand, and risk tiers derived from it — and Phase 5 delivered targets 1 and 2 only.
-What the balance section shows instead is the observed split of the closed day's supply, labelled
-as description rather than forecast. A traffic light with no model behind it would be the single
-most misleading thing this site could carry, so there is none.
+**The adequacy tile was the one thing §6 asked for and Phase 6 did not build, and it is built
+now — see Phase 6c below.** What the balance section shows remains the observed split of the
+closed day's supply, labelled as description rather than forecast; the forecast is the section
+after it, and it carries its own skill scores and its own negatives.
 
 The remaining step is connecting a Vercel project to this repository; it cannot be done from a
 sandbox. `npm run build` produces `out/`, which any static host serves, so nothing about the
 deployment target is load-bearing.
+
+**Phase 6c · Energy adequacy — §7 target 3 — done 2026-09-22**
+The identity is one line and every term in it is either forecast with a backtest below it or an
+explicit input in `data/reference/adequacy_assumptions.csv`:
+
+```
+deficit(h) = unsuppressed demand(h) − hydro(h) − thermal − imports − other
+```
+
+`npm run adequacy` writes `public/api/adequacy.json` and `data/reports/adequacy.md`, commits
+`adequacy_runs` and `adequacy_values`, and the site's tile reads the first. `latest.json` copies
+the tier rather than recomputing it, so the page's headline and the document can never disagree.
+The risk tier is now available as the *input* Phase 6b's decision 8 requires the narrative model
+to be handed rather than allowed to choose.
+
+Four things in it are decisions, and three are cases where the obvious quantity is wrong:
+
+- **Demand is served load, not `demanda_distribucion`.** The distribution utilities' metering is
+  89–97% of what generators plus interconnections delivered, the gap being transmission losses
+  and consumers buying outside them — 3 to 11 GWh a day, more than the whole Colombian
+  interconnection. Asking whether supply covers `demanda_distribucion` is asking the wrong
+  question by about one Colombia.
+- **Demand is unsuppressed.** Fitted on days outside the episodes in `rationing_episodes.csv`
+  plus a fortnight's recovery tail, and anchored to the last fourteen of them. Without the
+  anchor a four-year trend sits two or three GWh from where demand is today and loses to a
+  trailing mean by 70%; with it, the two are level.
+- **Hydro is normalised by the fitted demand trend, not by measured load.** Normalising by
+  measured load fixes the growth and breaks the crisis — during rationing hydro and load fall
+  together, so the ratio holds up and projecting it against unsuppressed demand would have
+  claimed 48 GWh of hydro for November 2024 against the 34 that was generated. The fitted trend
+  knows nothing about the drought, so it removes the growth and leaves the drought in.
+- **§7's inflow link is a recorded negative.** The section specifies fleet hydro energy "from
+  levels, inflows and plant limits". National hydro energy against the sum of this repository's
+  measured inflows is r = 0.27 daily and r = 0.47 on 30-day means, and the implied conversion
+  drifts from 0.090 GWh per m³/s in 2016 to 0.165 in 2026. The measured basins are all Amazon
+  slope; Daule-Peripa, Pucará, San Francisco, Toachi-Pilatón and the private fleet are not
+  measured here, and the Pacific slope runs in the opposite phase. Five hydro rungs built on
+  analogue inflow years or on raw climatology all lost to a trailing 28-day mean, by 65% to
+  158%, every one of them biased 5 to 13 GWh/day low on fleet growth. Including the rung that
+  matched analogue years on Mazar's level — the one that would have tied this to Phase 5.
+
+**The data-quality finding that came out of building it.** `parse/smec.ts` rejects a page served
+before its metering arrived by requiring distribution demand to be ≥ 20% of generation, and that
+gate is one-sided: it catches a page whose *demand* has not landed and passes one whose
+*generation* has not. 2018-01-05 carries 4.19 GWh of national generation against 62.72 GWh of
+demand — a 94% collapse of exactly the shape this project exists to detect — and sails through,
+because 62.72/4.19 is 15. The symmetric test is arithmetic: served load is distribution demand
+plus losses plus unregulated demand, both positive, so a day whose generation plus net imports
+falls below its own distribution demand is a page caught mid-render. 55 of 3,780 days. The same
+ratio catches the opposite fault at the top — 2025-07-17 and -18, where CENACE published
+`generación de otros tipos` at 153.62 and 113.19 GWh against a fortnight's median of 2.2, flagged
+in its own `pct_dia` column at +6,284%. Both are now counted by `checkNationalBalance` and
+excluded by `features/balance.ts`; neither row is deleted.
+
+**What it was measured at.** 99 monthly origins from 2018-07. The net requirement (demand minus
+hydro), which is the quantity the band is calibrated on and the one the deficit is a fixed shift
+of, beats a trailing 28-day mean by 12.4% at 7 days, 6.5% at 30 and 11.4% at 90. The hydro term
+alone is 9% at 7 days and level at 30 — the weak term, and the report says so. Band coverage is
+60–67% against a nominal 80%, so the p10–p90 is documented as roughly a two-thirds interval.
+
+**The check that makes it worth publishing.** A deficit is a counterfactual and no meter records
+it, but during an episode it has an observable shadow: the gap between the demand the model says
+the country wanted and the load the meters recorded. Over the 89 days of the 2024-09-23 →
+2024-12-20 episode that gap is 20.3 GWh/day and the computed deficit is 17.0 — two numbers from
+different sides of the identity, agreeing within 3.3. The two short 2023 and April-2024 episodes
+do *not* agree: the model sees no deficit where there were cuts, and both of those episodes have
+end dates recorded to the month, from press reporting, in a table marked `unverified`.
+
+Applied to every monthly origin at a 30-day horizon, the tiers flag 3 of 99 and all three precede
+cuts; 6 of the 9 origins that precede cuts go unflagged. It does not cry wolf and it misses most
+of the wolves, which is the shape to expect when the weakest term is the one deciding how much
+water there is. Three episodes is not a sample a threshold can be fitted to, and none was.
+
+**Imports are the fragile assumption, and not hypothetically.** Between 2024-10-01 and
+2024-11-10, with Ecuador rationing 14 h/day, imports from Colombia ran at 0.12 GWh/day against
+the 10.78 they had reached that August, because Colombia was short of water at the same time.
+Imports were also below 1 GWh/day for 398 consecutive days from 2019-07-06. Every horizon
+therefore publishes a stressed deficit beside the central one.
 
 **Phase 6b · AI narrative panel via Vercel AI Gateway (1 S, after Phase 5 and 6)**
 Implements decision 8. The model interprets; it never forecasts.
@@ -939,8 +1015,10 @@ not present in the payload; monthly gateway spend visible from the snapshots tab
 
 **Phase 7 · Hardening and extensions (ongoing)**
 ML v2 if it beats v1 in backtests; ARCONEL BNEE monthly loader; CENACE Datos Abiertos per-plant
-validation; Colombia export availability via XM's open API; public-records request template to
-CENACE/CELEC for the pre-2022 daily series; optional web.archive.org with keys.
+validation; Colombia export availability via XM's open API — which Phase 6c has now made the
+highest-value item on this list, because the import ceiling is the adequacy model's most fragile
+term and XM publishes the other side of it; public-records request template to CENACE/CELEC for
+the pre-2022 daily series; optional web.archive.org with keys.
 
 ---
 
@@ -954,6 +1032,14 @@ CENACE/CELEC for the pre-2022 daily series; optional web.archive.org with keys.
 3. Energy adequacy: expected fleet hydro energy (from levels, inflows and plant limits) + available
    thermal + import capacity − unsuppressed demand → expected deficit GWh/day over the horizon; risk
    tiers derived from it. Thermal availability and import limits are explicit, editable inputs.
+   **Done 2026-09-22 (Phase 6c), with one departure recorded rather than quietly made:** the hydro
+   term is not built from levels and inflows, because the link is not in the data — national hydro
+   energy correlates with this repository's measured inflows at r = 0.47 on 30-day means and the
+   implied GWh per m³/s drifts 83% across the record, the measured basins all being Amazon slope
+   while Daule-Peripa and the Pacific fleet are not measured at all. Five rungs built that way lost
+   to a trailing 28-day mean. What ships instead is hydro normalised by the fitted unsuppressed
+   demand trend, with a seasonal climatology and a mean-reverting anomaly. See
+   `data/reports/adequacy.md`.
 4. Nice-to-have: 7-day national hydro generation.
 
 **Method ladder** (each step must beat the previous on the same backtest to be kept)

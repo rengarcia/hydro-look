@@ -1,0 +1,5 @@
+quantity,gwh_day,basis,source,verified_on
+thermal,25.831,"largest thermal day in the 1081 usable balance days from 2023-09-21 to 2026-09-20; a demonstrated maximum, not an availability declaration — no source this project reaches publishes planned outages",data/curated/national_balance_daily,2026-09-22
+import,10.779,"largest import day in the same window (2024-08-15). About 449 MW sustained, consistent with the Colombian interconnection's usual limit",data/curated/national_balance_daily,2026-09-22
+import_stressed,0.122,"median daily import 2024-10-01 to 2024-11-10, while Ecuador rationed 14 h/day and Colombia was short of water at the same time. Not an outlier: imports ran below 1 GWh/day for 398 consecutive days from 2019-07-06",data/curated/national_balance_daily,2026-09-22
+other,1.132,"median of generación de otros tipos over the same window. Solar, wind and biomass are not dispatchable, so the median is used rather than the maximum",data/curated/national_balance_daily,2026-09-22

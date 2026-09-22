@@ -75,5 +75,6 @@ export function feedLabel(feed: string): string {
     .replace("CENACE Información Operativa", "CENACE: Información Operativa")
     .replace("Open-Meteo ERA5", "Open-Meteo ERA5")
     .replace("NOAA ONI", "NOAA ONI")
-    .replace("Mazar level forecast", "Pronóstico de cota de Mazar");
+    .replace("Mazar level forecast", "Pronóstico de cota de Mazar")
+    .replace("National adequacy", "Suficiencia nacional");
 }

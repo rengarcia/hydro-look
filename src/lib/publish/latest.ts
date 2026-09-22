@@ -114,12 +114,33 @@ export interface NationalSnapshot {
   import_share_pct: number | null;
 }
 
+/**
+ * The adequacy headline, copied from `adequacy.json` rather than recomputed.
+ *
+ * Copied, because two documents computing the same tier from the same tables would eventually
+ * disagree — after a model change, or a half-finished run — and a site showing two risk signals
+ * at once is worse than one showing none. `adequacy.json` owns the number; this carries it and
+ * says where it came from.
+ */
+export interface AdequacySummary {
+  origin_date: IsoDate;
+  /** Tier at the shortest published horizon. */
+  tier: string;
+  /** The worst tier across all horizons, and where it falls. */
+  worst_tier: string;
+  worst_tier_horizon_days: number;
+  /** GWh/day, censored at zero: a surplus is not a negative deficit. */
+  worst_deficit_gwh_day: number;
+  run_id: string;
+}
+
 export interface LatestDocument {
   generated_at: string;
   as_of: IsoDate;
   disclaimer: string;
   reservoirs: ReservoirSnapshot[];
   national: NationalSnapshot | null;
+  adequacy: AdequacySummary | null;
   see_also: Record<string, string>;
 }
 
@@ -364,6 +385,34 @@ export const DISCLAIMER_ES =
   "No es una fuente oficial. Cada número es una copia de lo que publicaron CELEC o CENACE, " +
   "con la respuesta que lo produjo archivada junto a él.";
 
+/**
+ * The adequacy document as it arrives from disk. Only the fields this summary needs are named,
+ * and every one of them is checked rather than trusted: a half-written `adequacy.json` should
+ * leave the tile absent, which the site already knows how to render, not put a `undefined` tier
+ * on the page.
+ */
+export function adequacySummary(document: unknown): AdequacySummary | null {
+  if (typeof document !== "object" || document === null) return null;
+  const doc = document as Record<string, unknown>;
+  const current = doc["current"];
+  if (typeof current !== "object" || current === null) return null;
+  const now = current as Record<string, unknown>;
+  const tier = now["tier"];
+  const worst = now["worst_tier"];
+  const horizon = now["worst_tier_horizon_days"];
+  const deficit = now["worst_deficit_gwh_day"];
+  if (typeof tier !== "string" || typeof worst !== "string") return null;
+  if (typeof horizon !== "number" || typeof deficit !== "number") return null;
+  return {
+    origin_date: typeof doc["origin_date"] === "string" ? doc["origin_date"] : "",
+    tier,
+    worst_tier: worst,
+    worst_tier_horizon_days: horizon,
+    worst_deficit_gwh_day: roundTo(deficit, 3),
+    run_id: typeof doc["run_id"] === "string" ? doc["run_id"] : "",
+  };
+}
+
 export interface LatestInputs {
   series: SeriesSet;
   thresholds: readonly ThresholdRow[];
@@ -371,6 +420,8 @@ export interface LatestInputs {
   sites: readonly SiteId[];
   generatedAt: string;
   asOf: IsoDate;
+  /** Parsed `public/api/adequacy.json`, or null before it has ever been generated. */
+  adequacy?: unknown;
 }
 
 export function buildLatest(inputs: LatestInputs): LatestDocument {
@@ -380,9 +431,11 @@ export function buildLatest(inputs: LatestInputs): LatestDocument {
     disclaimer: DISCLAIMER_ES,
     reservoirs: inputs.sites.map((site) => reservoirSnapshot(inputs.series, site, inputs.thresholds)),
     national: nationalSnapshot(balanceByDay(inputs.balance)),
+    adequacy: adequacySummary(inputs.adequacy),
     see_also: {
       forecast: "/api/forecast.json",
       status: "/api/status.json",
+      adequacy: "/api/adequacy.json",
     },
   };
 }

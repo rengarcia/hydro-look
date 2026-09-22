@@ -12,8 +12,8 @@ import { FanChart } from "./components/FanChart.tsx";
 import { InflowChart } from "./components/InflowChart.tsx";
 import { MixChart, MIX_SERIES } from "./components/MixChart.tsx";
 import { apiDocument, latest, mix, ribbon, series, window as windowOf } from "../lib/site/data.ts";
-import type { ForecastDocument, StatusDocument } from "../lib/site/documents.ts";
-import { conceptLabel, feedLabel, longDate, num, pct } from "../lib/site/format.ts";
+import type { AdequacyDocument, ForecastDocument, RiskTier, StatusDocument } from "../lib/site/documents.ts";
+import { conceptLabel, feedLabel, longDate, num, pct, signed } from "../lib/site/format.ts";
 import { eachDay } from "../lib/util/dates.ts";
 
 const REPO = "https://github.com/rengarcia/hydro-look";
@@ -26,6 +26,7 @@ const MIX_DAYS = 180;
 export default function Page() {
   const now = latest();
   const forecast = apiDocument<ForecastDocument>("forecast.json");
+  const adequacy = apiDocument<AdequacyDocument>("adequacy.json");
   const status = apiDocument<StatusDocument>("status.json");
 
   return (
@@ -51,6 +52,7 @@ export default function Page() {
         <Mazar forecast={forecast} />
         <Inflow />
         <National now={now} />
+        <Adequacy adequacy={adequacy} />
         <Freshness status={status} />
         <Downloads />
         <Method />
@@ -342,9 +344,231 @@ function National({ now }: { now: ReturnType<typeof latest> }) {
       <p className="note">
         Ese día el agua cubrió {pct(national.hydro_share_pct, 1)} del suministro, la quema{" "}
         {pct(national.thermal_share_pct, 1)} y la importación {pct(national.import_share_pct, 1)}. Es una
-        descripción de lo ocurrido, no una previsión de suficiencia: el cálculo de déficit esperado en GWh/día y los
-        niveles de riesgo que plantea el §7 del plan todavía no están construidos, y este sitio no los insinúa con
-        un semáforo que no respalda ningún modelo.
+        descripción de lo ocurrido, no una previsión: lo que viene después es la previsión, y lleva su propio
+        respaldo al lado.
+      </p>
+    </section>
+  );
+}
+
+/* ---------------------------------------------------------------- adequacy */
+
+const TIER_STYLE: Record<RiskTier, { label: string; dot: string; gloss: string }> = {
+  holgado: {
+    label: "Holgado",
+    dot: "good",
+    gloss: "incluso el caso p90 queda cubierto",
+  },
+  vigilancia: {
+    label: "Vigilancia",
+    dot: "warning",
+    gloss: "el caso p90 queda corto; el central, no",
+  },
+  ajustado: {
+    label: "Ajustado",
+    dot: "serious",
+    gloss: "el caso central queda corto en menos de 5 GWh/día",
+  },
+  deficit: {
+    label: "Déficit",
+    dot: "critical",
+    gloss: "el caso central queda corto en 5 GWh/día o más",
+  },
+};
+
+function Adequacy({ adequacy }: { adequacy: AdequacyDocument | null }) {
+  if (adequacy === null) return null;
+  const tier = TIER_STYLE[adequacy.current.worst_tier] ?? TIER_STYLE.vigilancia;
+  const first = adequacy.horizons[0];
+  const episode = adequacy.crisis_check.episodes.find((e) => e.measured_suppression_gwh_day > 10);
+  const ninety = adequacy.horizons.find((h) => h.horizon_days === 90);
+
+  return (
+    <section id="suficiencia">
+      <h2>¿Alcanza la energía?</h2>
+      <p className="lede">
+        Una sola identidad: demanda no suprimida menos hidroeléctrica menos el techo térmico menos la importación.
+        Lo que queda es el superávit; si es negativo, es el déficit esperado en GWh/día. La demanda se ajusta
+        excluyendo los días de racionamiento, porque durante un corte lo que miden los contadores es la demanda que
+        se permitió, no la que había.
+      </p>
+
+      <div className="cards">
+        <article className="card">
+          <h3>
+            Peor nivel hasta los {adequacy.horizons.at(-1)?.horizon_days ?? 90} días
+            <span className="basin">{adequacy.origin_date}</span>
+          </h3>
+          <p className="figure">
+            <span className="pill" style={{ fontSize: "inherit" }}>
+              <span className={`dot ${tier.dot}`} aria-hidden="true" />
+              {tier.label}
+            </span>
+          </p>
+          <p className="sub">
+            {tier.gloss}; el peor cae a los {adequacy.current.worst_tier_horizon_days} días.
+          </p>
+          <dl className="pairs">
+            <dt>Margen a 7 días</dt>
+            <dd>{first ? pct(first.margin_pct, 1) : "—"}</dd>
+            <dt>Margen a 90 días</dt>
+            <dd>{ninety ? pct(ninety.margin_pct, 1) : "—"}</dd>
+            <dt>Quincena hídrica</dt>
+            <dd>{num(adequacy.data.hydro_anomaly, 2)} × su climatología</dd>
+          </dl>
+        </article>
+
+        <article className="card">
+          <h3>
+            Techos supuestos<span className="basin">GWh/día</span>
+          </h3>
+          <dl className="pairs">
+            <dt>Térmica</dt>
+            <dd>{num(adequacy.assumptions.thermal_gwh_day, 2)}</dd>
+            <dt>Importación</dt>
+            <dd>{num(adequacy.assumptions.import_gwh_day, 2)}</dd>
+            <dt>Importación en crisis</dt>
+            <dd>{num(adequacy.assumptions.stressed_import_gwh_day, 2)}</dd>
+            <dt>Otros tipos</dt>
+            <dd>{num(adequacy.assumptions.other_gwh_day, 2)}</dd>
+          </dl>
+          <p className="sub" style={{ marginTop: 12 }}>
+            Son máximos demostrados en los últimos tres años, no declaraciones de disponibilidad: ninguna fuente
+            que alcance este proyecto publica los mantenimientos programados. Se editan en{" "}
+            <code>{adequacy.assumptions.editable_at}</code>.
+          </p>
+        </article>
+      </div>
+
+      <div className="scroll" style={{ marginTop: 20 }}>
+        <table>
+          <caption>
+            Todo en GWh/día. «Requerimiento» es demanda menos hidroeléctrica: lo que tienen que cubrir la térmica,
+            la importación y el resto. «Superávit» es lo que sobra después de cubrirlo; en negativo sería déficit.
+            La columna «con importación en crisis» repite la cuenta con la importación que hubo realmente entre el
+            1 de octubre y el 10 de noviembre de 2024.
+          </caption>
+          <thead>
+            <tr>
+              <th>Horizonte</th>
+              <th className="num">Demanda</th>
+              <th className="num">Hidroeléctrica</th>
+              <th className="num">Requerimiento</th>
+              <th className="num">Superávit</th>
+              <th className="num">Con importación en crisis</th>
+              <th>Nivel</th>
+            </tr>
+          </thead>
+          <tbody>
+            {adequacy.horizons.map((h) => (
+              <tr key={h.horizon_days}>
+                <th scope="row">{h.horizon_days} días</th>
+                <td className="num">{num(h.demand_gwh_day, 1)}</td>
+                <td className="num">{num(h.hydro_gwh_day, 1)}</td>
+                <td className="num">{num(h.requirement_gwh_day, 1)}</td>
+                <td className="num">{signed(-h.deficit_gwh_day, 1)}</td>
+                <td className="num">{signed(-h.stressed_deficit_gwh_day, 1)}</td>
+                <td>
+                  <span className="pill">
+                    <span className={`dot ${TIER_STYLE[h.tier]?.dot ?? "warning"}`} aria-hidden="true" />
+                    {TIER_STYLE[h.tier]?.label ?? h.tier}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <p className="note">
+        La importación es el supuesto más frágil de la tabla, y no en abstracto. Entre el 1 de octubre y el 10 de
+        noviembre de 2024, con el país racionando catorce horas al día, la importación desde Colombia corrió a{" "}
+        {num(adequacy.assumptions.stressed_import_gwh_day, 2)} GWh/día frente a los{" "}
+        {num(adequacy.assumptions.import_gwh_day, 2)} que había alcanzado ese agosto, porque Colombia estaba seca al
+        mismo tiempo. Un interconector no es firme cuando la sequía es compartida.
+      </p>
+
+      {episode ? (
+        <>
+          <div className="scroll" style={{ marginTop: 20 }}>
+            <table>
+              <caption>
+                La comprobación. Un déficit es un contrafactual y no se puede medir, pero durante un racionamiento
+                deja una sombra observable: la diferencia entre la demanda que el modelo dice que hubo y la que
+                registraron los contadores. Si la identidad es correcta, esa diferencia y el déficit calculado
+                deben tener el mismo tamaño.
+              </caption>
+              <thead>
+                <tr>
+                  <th>Episodio</th>
+                  <th className="num">Días</th>
+                  <th className="num">Demanda modelada</th>
+                  <th className="num">Carga medida</th>
+                  <th className="num">Supresión observada</th>
+                  <th className="num">Déficit calculado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {adequacy.crisis_check.episodes.map((e) => (
+                  <tr key={e.start}>
+                    <th scope="row">
+                      {longDate(e.start)} → {longDate(e.end)}
+                    </th>
+                    <td className="num">{e.days}</td>
+                    <td className="num">{num(e.modelled_demand_gwh_day, 1)}</td>
+                    <td className="num">{num(e.measured_load_gwh_day, 1)}</td>
+                    <td className="num">{num(e.measured_suppression_gwh_day, 1)}</td>
+                    <td className="num">{num(e.implied_deficit_gwh_day, 1)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <p className="note">
+            En el episodio largo de 2024 las dos últimas columnas —{" "}
+            {num(episode.measured_suppression_gwh_day, 1)} y {num(episode.implied_deficit_gwh_day, 1)} GWh/día —
+            se calculan desde lados distintos de la identidad y coinciden dentro de{" "}
+            {num(Math.abs(episode.measured_suppression_gwh_day - episode.implied_deficit_gwh_day), 1)} GWh/día. En
+            los dos episodios cortos no coinciden: el modelo no ve déficit donde sí hubo cortes. Las fechas de esos
+            dos episodios están registradas al mes, no al día, y son de prensa, no de una fuente oficial.
+          </p>
+        </>
+      ) : null}
+
+      <p className="note">
+        Lo que el respaldo mide: sobre {adequacy.model.backtest_origins} orígenes mensuales, el requerimiento le
+        gana a suponer que el último mes se repite{" "}
+        {first?.backtest.requirement_skill_vs_persistence !== null && first !== undefined ? (
+          <>
+            por {pct(first.backtest.requirement_skill_vs_persistence! * 100, 1)} a 7 días
+            {ninety?.backtest.requirement_skill_vs_persistence !== null && ninety !== undefined ? (
+              <> y {pct(ninety.backtest.requirement_skill_vs_persistence! * 100, 1)} a 90</>
+            ) : null}
+          </>
+        ) : null}
+        , y su banda p10–p90 cubre entre el 60 % y el 67 % de los casos frente al 80 % nominal, así que conviene
+        leerla como dos tercios y no como cuatro quintos. El término hidroeléctrico es el débil: a 30 días no le
+        gana a suponer que el último mes se repite. Los números completos, negativos incluidos, están en{" "}
+        <a href={`${REPO}/blob/main/data/reports/adequacy.md`}>data/reports/adequacy.md</a>.
+      </p>
+
+      <p className="note">
+        Y lo que dijeron estos niveles cuando se aplicaron a cada mes del registro: sobre{" "}
+        {adequacy.tier_history.origins} orígenes mensuales, {adequacy.tier_history.origins_followed_by_rationing}{" "}
+        fueron seguidos de racionamiento dentro de treinta días y {adequacy.tier_history.origins_flagged} se marcaron
+        «ajustado» o «déficit». De los marcados,{" "}
+        {pct((adequacy.tier_history.share_of_flagged_that_preceded_cuts ?? 0) * 100, 0)} precedieron cortes; de los
+        que precedieron cortes, se marcó{" "}
+        {pct((adequacy.tier_history.share_of_cuts_that_were_flagged ?? 0) * 100, 0)}. No grita lobo y se le escapan
+        casi todos los lobos, que es la forma que cabe esperar de un modelo cuyo término más débil es el que decide
+        cuánta agua hay. Tres episodios no son una muestra con la que ajustar un umbral, y ninguno de estos se
+        ajustó a ellos.
+      </p>
+
+      <p className="note">
+        Nada de esto modela la red. Un déficit en GWh/día dice que la energía no está; no dice si podría entregarse
+        donde hacía falta, que es otro fallo y el que causó el apagón de junio de 2024.
       </p>
     </section>
   );
@@ -418,8 +642,8 @@ function Downloads() {
     <section id="descargas">
       <h2>Descargas</h2>
       <p className="lede">
-        Los tres documentos JSON son pequeños y estables; las tablas completas están en CSV particionado por año, y
-        cada respuesta original queda archivada comprimida junto a la fila que produjo.
+        Los cuatro documentos JSON son pequeños y estables; las tablas completas están en CSV particionado por año,
+        y cada respuesta original queda archivada comprimida junto a la fila que produjo.
       </p>
       <ul className="links">
         <li>
@@ -427,6 +651,10 @@ function Downloads() {
         </li>
         <li>
           <a href="/api/forecast.json">forecast.json</a> — <code>pronóstico de Mazar con su respaldo</code>
+        </li>
+        <li>
+          <a href="/api/adequacy.json">adequacy.json</a> —{" "}
+          <code>déficit esperado en GWh/día y nivel de riesgo</code>
         </li>
         <li>
           <a href="/api/status.json">status.json</a> — <code>frescura por fuente y control de calidad</code>
@@ -439,7 +667,11 @@ function Downloads() {
         </li>
         <li>
           <a href={`${REPO}/blob/main/data/reports/backtest.md`}>backtest.md</a> —{" "}
-          <code>el respaldo del modelo, incluidos los negativos</code>
+          <code>el respaldo del pronóstico de cota, incluidos los negativos</code>
+        </li>
+        <li>
+          <a href={`${REPO}/blob/main/data/reports/adequacy.md`}>adequacy.md</a> —{" "}
+          <code>el respaldo del cálculo de suficiencia</code>
         </li>
       </ul>
     </section>

@@ -272,13 +272,16 @@ export function checkNationalBalance(national: Rows): Finding[] {
   }
 
   let demandOverSupply = 0;
-  for (const [, concepts] of byDate) {
+  const overTwice: string[] = [];
+  for (const [date, concepts] of byDate) {
     const generation = concepts.get("total_generacion");
     const demand = concepts.get("demanda_distribucion");
     const imports = concepts.get("total_importacion") ?? 0;
     const exports = concepts.get("total_exportacion") ?? 0;
-    if (generation === undefined || demand === undefined) continue;
-    if (demand > generation + imports - exports) demandOverSupply++;
+    if (generation === undefined || demand === undefined || demand <= 0) continue;
+    const load = generation + imports - exports;
+    if (demand > load) demandOverSupply++;
+    if (load >= 2 * demand) overTwice.push(date);
   }
 
   return [
@@ -288,7 +291,23 @@ export function checkNationalBalance(national: Rows): Finding[] {
       level: "info",
       message:
         `${demandOverSupply} day(s) report distribution demand above generación + importación − exportación ` +
-        `(documented in §6 Phase 2 as flagged, not dropped; any model should exclude them)`,
+        `(documented in §6 Phase 2 as flagged, not dropped; any model should exclude them — ` +
+        `\`features/balance.ts\` does)`,
+    },
+    {
+      // The opposite fault, and it is not symmetric with the one above: that one is a page
+      // rendered before its generation metering arrived, this one is a page whose generation is
+      // present and wrong. 2025-07-17 and -18 are the only two in the record — CENACE published
+      // "generación de otros tipos" at 153.62 and 113.19 GWh against a fortnight's median of
+      // 2.2, flagging it in its own pct_dia column at +6,284% — and they lift national
+      // generation to 247 GWh on a 91 GWh day. Counted rather than dropped, for the same reason
+      // as the others: a change in the count should be visible.
+      check: "smec:anomalies",
+      level: overTwice.length > 2 ? "warn" : "info",
+      message:
+        `${overTwice.length} day(s) report generación + importación − exportación at twice distribution ` +
+        `demand or more${overTwice.length > 0 ? ` (${overTwice.slice(0, 5).join(", ")})` : ""}; ` +
+        `excluded by \`features/balance.ts\``,
     },
   ];
 }

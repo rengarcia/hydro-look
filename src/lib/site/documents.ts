@@ -84,6 +84,67 @@ export interface ForecastDocument {
   };
 }
 
+export type RiskTier = "holgado" | "vigilancia" | "ajustado" | "deficit";
+
+export interface AdequacyHorizon {
+  horizon_days: number;
+  target_date: string;
+  demand_gwh_day: number;
+  hydro_gwh_day: number;
+  requirement_gwh_day: number;
+  deficit_gwh_day: number;
+  deficit_p10: number | null;
+  deficit_p90: number | null;
+  stressed_deficit_gwh_day: number;
+  margin_pct: number;
+  tier: RiskTier;
+  backtest: {
+    requirement_mae_gwh_day: number | null;
+    requirement_skill_vs_persistence: number | null;
+    requirement_coverage_p10_p90: number | null;
+    hydro_skill_vs_persistence: number | null;
+    n: number;
+  };
+}
+
+export interface AdequacyEpisode {
+  start: string;
+  end: string;
+  days: number;
+  modelled_demand_gwh_day: number;
+  measured_load_gwh_day: number;
+  measured_suppression_gwh_day: number;
+  measured_hydro_gwh_day: number;
+  measured_import_gwh_day: number;
+  implied_deficit_gwh_day: number;
+}
+
+export interface AdequacyDocument {
+  generated_at: string;
+  run_id: string;
+  origin_date: string;
+  model: { id: string; label: string; backtest_origins: number };
+  data: { usable_days: number; rejected_days: number; hydro_anomaly: number; demand_growth_pct_per_year: number };
+  assumptions: {
+    thermal_gwh_day: number;
+    import_gwh_day: number;
+    stressed_import_gwh_day: number;
+    other_gwh_day: number;
+    editable_at: string;
+  };
+  current: { tier: RiskTier; worst_tier: RiskTier; worst_tier_horizon_days: number; worst_deficit_gwh_day: number };
+  horizons: AdequacyHorizon[];
+  tier_history: {
+    horizon_days: number;
+    origins: number;
+    origins_followed_by_rationing: number;
+    origins_flagged: number;
+    share_of_flagged_that_preceded_cuts: number | null;
+    share_of_cuts_that_were_flagged: number | null;
+  };
+  crisis_check: { episodes: AdequacyEpisode[] };
+}
+
 export interface StatusFeed {
   feed: string;
   latest: string | null;
