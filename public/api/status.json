@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-09-22T12:21:11Z",
+  "generated_at": "2026-09-22T12:33:35Z",
   "as_of": "2026-09-22",
-  "ok": true,
-  "status": "info",
+  "ok": false,
+  "status": "fail",
   "feeds": [
     {
       "feed": "ORDS levels and inflows (repDiaHid12m)",
@@ -49,7 +49,7 @@
   ],
   "tables": {
     "observations_daily": {
-      "rows": 81618
+      "rows": 87319
     },
     "national_balance_daily": {
       "rows": 58099
@@ -67,8 +67,145 @@
       "rows": 919
     }
   },
-  "findings": [],
+  "findings": [
+    {
+      "check": "range:observations_daily",
+      "level": "fail",
+      "message": "mazar/nivel_pct_banda on 2026-06-02 is 100.792453, outside 0..100"
+    },
+    {
+      "check": "range:observations_daily",
+      "level": "fail",
+      "message": "mazar/nivel_pct_banda on 2026-06-03 is 101.566038, outside 0..100"
+    },
+    {
+      "check": "range:observations_daily",
+      "level": "fail",
+      "message": "mazar/nivel_pct_banda on 2026-06-04 is 101.207547, outside 0..100"
+    },
+    {
+      "check": "range:observations_daily",
+      "level": "fail",
+      "message": "mazar/nivel_pct_banda on 2026-06-05 is 101.150943, outside 0..100"
+    },
+    {
+      "check": "range:observations_daily",
+      "level": "fail",
+      "message": "mazar/nivel_pct_banda on 2026-06-06 is 100.886792, outside 0..100"
+    },
+    {
+      "check": "range:observations_daily",
+      "level": "fail",
+      "message": "mazar/nivel_pct_banda on 2026-06-07 is 100.849057, outside 0..100"
+    },
+    {
+      "check": "range:observations_daily",
+      "level": "fail",
+      "message": "mazar/nivel_pct_banda on 2026-06-08 is 100.188679, outside 0..100"
+    },
+    {
+      "check": "range:observations_daily",
+      "level": "fail",
+      "message": "mazar/nivel_pct_banda on 2026-06-09 is 100.811321, outside 0..100"
+    },
+    {
+      "check": "range:observations_daily",
+      "level": "fail",
+      "message": "mazar/nivel_pct_banda on 2026-06-10 is 100.773585, outside 0..100"
+    },
+    {
+      "check": "range:observations_daily",
+      "level": "fail",
+      "message": "mazar/nivel_pct_banda on 2026-07-03 is 101.056604, outside 0..100"
+    },
+    {
+      "check": "range:observations_daily",
+      "level": "fail",
+      "message": "minas_san_francisco/factor_planta_pct on 2026-07-03 is 100.787037, outside 0..100"
+    },
+    {
+      "check": "range:observations_daily",
+      "level": "fail",
+      "message": "mazar/nivel_pct_banda on 2026-07-04 is 101.811321, outside 0..100"
+    },
+    {
+      "check": "range:observations_daily",
+      "level": "fail",
+      "message": "minas_san_francisco/factor_planta_pct on 2026-07-04 is 100.632099, outside 0..100"
+    },
+    {
+      "check": "range:observations_daily",
+      "level": "fail",
+      "message": "mazar/nivel_pct_banda on 2026-07-05 is 101.358491, outside 0..100"
+    },
+    {
+      "check": "range:observations_daily",
+      "level": "fail",
+      "message": "mazar/nivel_pct_banda on 2026-07-06 is 100.169811, outside 0..100"
+    },
+    {
+      "check": "range:observations_daily",
+      "level": "fail",
+      "message": "mazar/nivel_pct_banda on 2026-07-07 is 100.490566, outside 0..100"
+    },
+    {
+      "check": "range:observations_daily",
+      "level": "fail",
+      "message": "mazar/nivel_pct_banda on 2026-07-08 is 100.339623, outside 0..100"
+    },
+    {
+      "check": "range:observations_daily",
+      "level": "fail",
+      "message": "mazar/nivel_pct_banda on 2026-07-17 is 101.981132, outside 0..100"
+    },
+    {
+      "check": "range:observations_daily",
+      "level": "fail",
+      "message": "mazar/nivel_pct_banda on 2026-07-18 is 101.716981, outside 0..100"
+    },
+    {
+      "check": "range:observations_daily",
+      "level": "fail",
+      "message": "mazar/nivel_pct_banda on 2026-07-19 is 101.283019, outside 0..100"
+    },
+    {
+      "check": "range:observations_daily",
+      "level": "fail",
+      "message": "mazar/nivel_pct_banda on 2026-07-20 is 100.830189, outside 0..100"
+    },
+    {
+      "check": "range:observations_daily",
+      "level": "fail",
+      "message": "mazar/nivel_pct_banda on 2026-07-21 is 100.339623, outside 0..100"
+    },
+    {
+      "check": "range:observations_daily",
+      "level": "fail",
+      "message": "mazar/nivel_pct_banda on 2026-07-22 is 100.056604, outside 0..100"
+    },
+    {
+      "check": "range:observations_daily",
+      "level": "fail",
+      "message": "mazar/nivel_pct_banda on 2026-07-23 is 101.056604, outside 0..100"
+    },
+    {
+      "check": "range:observations_daily",
+      "level": "fail",
+      "message": "mazar/nivel_pct_banda on 2026-07-24 is 101.566038, outside 0..100"
+    },
+    {
+      "check": "range:observations_daily",
+      "level": "fail",
+      "message": "mazar/nivel_pct_banda on 2026-07-25 is 101, outside 0..100"
+    },
+    {
+      "check": "range:observations_daily",
+      "level": "fail",
+      "message": "mazar/nivel_pct_banda on 2026-07-26 is 100.603774, outside 0..100"
+    }
+  ],
   "counts": {
+    "fail": 27,
     "info": 10
   }
 }

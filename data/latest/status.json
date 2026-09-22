@@ -1,30 +1,12 @@
 {
-  "generated_at": "2026-09-22T12:21:09Z",
+  "generated_at": "2026-09-22T12:33:31Z",
   "command": "backfill",
   "source": "all",
-  "requests": 0,
   "errors": [],
-  "notes": [
-    "smec 2019-03-21: report is incomplete (missing demanda_distribucion); CENACE publishes the running day this way until D+1",
-    "smec 2019-03-28: report is incomplete (missing demanda_distribucion); CENACE publishes the running day this way until D+1",
-    "smec 2020-04-07: report is incomplete (missing demanda_distribucion); CENACE publishes the running day this way until D+1",
-    "smec 2020-04-08: report is incomplete (missing demanda_distribucion); CENACE publishes the running day this way until D+1",
-    "smec 2020-06-18: report is incomplete (distribution demand is only 0.92% of total generación, so the page was rendered before the metering arrived); CENACE publishes the running day this way until D+1",
-    "smec 2020-06-20: report is incomplete (missing generacion_hidraulica, total_generacion, demanda_distribucion); CENACE publishes the running day this way until D+1",
-    "smec 2020-06-21: report is incomplete (distribution demand is only 0.85% of total generación, so the page was rendered before the metering arrived); CENACE publishes the running day this way until D+1",
-    "smec 2020-06-23: report is incomplete (distribution demand is only 1.07% of total generación, so the page was rendered before the metering arrived); CENACE publishes the running day this way until D+1",
-    "smec 2020-06-24: report is incomplete (distribution demand is only 1.01% of total generación, so the page was rendered before the metering arrived); CENACE publishes the running day this way until D+1",
-    "smec 2020-06-25: report is incomplete (distribution demand is only 2.47% of total generación, so the page was rendered before the metering arrived); CENACE publishes the running day this way until D+1",
-    "smec 2020-06-27: report is incomplete (missing generacion_hidraulica, total_generacion, demanda_distribucion); CENACE publishes the running day this way until D+1",
-    "smec 2020-06-29: report is incomplete (distribution demand is only 4.66% of total generación, so the page was rendered before the metering arrived); CENACE publishes the running day this way until D+1",
-    "smec 2020-11-28: report is incomplete (missing generacion_hidraulica, total_generacion, demanda_distribucion); CENACE publishes the running day this way until D+1",
-    "smec 2020-12-07: report is incomplete (distribution demand is only 2.32% of total generación, so the page was rendered before the metering arrived); CENACE publishes the running day this way until D+1",
-    "smec 2026-03-18: report is incomplete (distribution demand is only 1.12% of total generación, so the page was rendered before the metering arrived); CENACE publishes the running day this way until D+1",
-    "smec 2026-09-21: report is incomplete (missing generacion_hidraulica, total_generacion, demanda_distribucion); CENACE publishes the running day this way until D+1"
-  ],
+  "notes": [],
   "tables": {
     "observations_daily": {
-      "rows": 81618,
+      "rows": 87319,
       "first_date": "2009-01-01",
       "last_date": "2026-09-21",
       "files": 18
