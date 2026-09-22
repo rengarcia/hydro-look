@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-22T19:44:48Z",
+  "generated_at": "2026-09-22T21:36:54Z",
   "as_of": "2026-09-22",
   "ok": true,
   "status": "warn",
@@ -79,28 +79,28 @@
       "rows": 58114
     },
     "operativa_snapshots": {
-      "rows": 188
+      "rows": 235
     },
     "operating_bands": {
       "rows": 7
     },
     "weather_daily": {
-      "rows": 13456
+      "rows": 13472
     },
     "enso_monthly": {
       "rows": 919
     },
     "forecast_runs": {
-      "rows": 1
-    },
-    "adequacy_runs": {
       "rows": 2
     },
+    "adequacy_runs": {
+      "rows": 3
+    },
     "adequacy_values": {
-      "rows": 10
+      "rows": 15
     },
     "forecast_values": {
-      "rows": 5
+      "rows": 10
     },
     "narrative_snapshots": {
       "rows": 0
