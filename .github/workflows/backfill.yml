@@ -1,8 +1,16 @@
 name: Backfill
 
 # Manual, chunked and resumable. Every command skips days already in the store, so a long
-# history is filled by dispatching the same inputs repeatedly until the run reports no new
-# rows. --max-requests keeps a run inside the job timeout at one request per second.
+# history is filled by dispatching the same inputs repeatedly until the run reports no new rows.
+#
+# Two budgets bound a run. The request budget bounds how much is asked for; the time budget
+# (--max-minutes, set below to well under the job timeout) guarantees the run stops fetching in
+# time to archive, apply and push what it has. That matters because a staged run writes nothing
+# until fetching ends, so a job killed by the timeout would lose hours of collected responses.
+#
+# Throughput is not one request per second: the client waits --rate-ms *after* each response,
+# so a request costs its own latency plus the gap, about 1.4 s against these hosts. Budget
+# roughly 1,500 requests per wall-clock hour, not 3,600.
 on:
   workflow_dispatch:
     inputs:
@@ -27,9 +35,13 @@ on:
         required: false
         default: ""
       max_requests:
-        description: "Request budget for this run (1/s; 10000 ≈ 2h50m)"
+        description: "Request budget for this run (~1,500/hour in practice; 10000 ≈ 6-7h, so the time budget usually binds first)"
         required: false
         default: "10000"
+      max_minutes:
+        description: "Wall-clock budget for fetching, leaving the rest of the job to apply and push"
+        required: false
+        default: "270"
       plants:
         description: "Plant codes for ords-plant-energy (default ago,man,ccs)"
         required: false
@@ -66,6 +78,7 @@ jobs:
           FROM: ${{ inputs.from }}
           TO: ${{ inputs.to }}
           MAX_REQUESTS: ${{ inputs.max_requests }}
+          MAX_MINUTES: ${{ inputs.max_minutes }}
           PLANTS: ${{ inputs.plants }}
           DRY_RUN: ${{ inputs.dry_run && '--dry-run' || '' }}
         run: |
@@ -74,6 +87,7 @@ jobs:
             --from "$FROM" \
             ${TO:+--to "$TO"} \
             --max-requests "$MAX_REQUESTS" \
+            --max-minutes "$MAX_MINUTES" \
             --plants "$PLANTS" \
             --out "$RUNNER_TEMP/batch" \
             $DRY_RUN 2>&1 | tee "$RUNNER_TEMP/backfill.log"
