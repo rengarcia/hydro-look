@@ -468,11 +468,49 @@ could take instead is the scheduled daily ingest — the very thing this criteri
 a cancelled run does not count. The rule is repeated in a comment at the top of `backfill.yml`,
 where someone about to dispatch will actually read it.
 
-Also still open from this phase's acceptance, and cheap: **the true first date of the historian
-series**. The 2026-09-22 walk of mrid 30538 was bounded at 2015-01 by its `--from` and returned
-values in every month down to it, with no run of empty months to stop it — so Mazar's inflow exists
-in the historian before 2015-01, and `repDiaHid12m` reaches only 2014-09-20. One dispatch with an
-earlier `--from` settles how far back the historian actually goes.
+**The true first date of the historian series is settled: 2010-02-10** (2026-09-22, run
+35736531676). The previous walk of mrid 30538 was bounded at 2015-01 by its own `--from` and so
+proved only that the series went deeper. Walking it from 2005-01 let the stopping rule decide
+instead of the bound: it returned values in every month down to 2010-01 and then twelve consecutive
+empty months, halting at 2009-01.
+
+The date the *readings* begin is six weeks later than the date the series does, and that gap is a
+finding rather than a rounding of one. Everything the historian publishes for Mazar before
+2010-02-10 is a zero: January 2010 has nine rows and all nine are zeros, then 2010-02-01 to -09 are
+nine more, and the first number that is a measurement is 73.2 m³/s on 2010-02-10. A historian
+switched on ahead of the gauge it records is the obvious reading, and it is why a walk cannot be
+stopped on "did a value come back" alone. Mazar's inflow now holds **6,062 days, 2010-02-10 →
+2026-09-21** — 1,780 more than the 4,282 it had this morning, and reaching **fifty-five months below
+`repDiaHid12m`'s floor of 2014-09-20**. The other historian series were walked in the same run and
+stopped where their plants begin, so the fleet's histories are now bounded by the data rather than
+by a dispatch parameter.
+
+**That depth cost something to use, and the cost was already being paid.** The years the walk
+reached are not clean, and neither were the years already committed:
+
+- **A spike that is not a flood.** Mazar's historian publishes 23,221.10 m³/s on 2013-11-27, between
+  neighbours of 34.31 and 0.00, against a maximum of 867 in the same series and 1,933 anywhere in
+  this repository's 21,000 inflow readings. That is a third of the Amazon at its mouth on a river
+  averaging 60. The two zeros immediately after it are what a failed gauge looks like from outside.
+- **82 zeros, 60 of which were already here.** 28 for Coca Codo Sinclair, 31 for Manduriacu and 1
+  for Agoyán were committed in Phase 3 and never flagged; 22 more arrived with Mazar's new years.
+  The historian publishes decimals, and in it a 0.00 sits below every one of those series' own
+  non-zero floors: 84.00 m³/s for Coca Codo Sinclair against a 1st percentile of 97, 35.00 for
+  Agoyán, 10.40 for Manduriacu. They cluster the way a fault does and hydrology does not — the
+  eighteen consecutive publishing days before Mazar's first real reading, and two immediately after
+  the spike. A model handed one reads it as the river having stopped, the same false collapse §6's
+  Phase 2 already rejects on the SMEC side.
+- **And the rule nearly went one day too far.** Rejecting every zero inflow would have deleted
+  2024-11-08, where `repDiaHid12m` published 0 for Mazar at the worst of the rationing drought. The
+  reports publish whole m³/s and the historian published **0.142** for that same day, so the
+  report's zero is `round(0.142)` — the truest reading in the series, not a missing one. The rule is
+  therefore asked only of the route whose precision gives it meaning, and the test that asserts a
+  reported zero is kept now carries that day as its case.
+
+83 rows are removed from `observations_daily` (82 historian zeros and the spike); both parsers and
+`npm run check` now reject all three shapes, and every raw response stays archived so anything that
+later acquires a meaning can be reprocessed. `INFLOW_CEILING_M3S` in `src/lib/parse/ords.ts` is
+10,000 — fivefold clear of the largest reading ever seen here.
 
 Original phase text, for reference:
 Package, CLI, raw archive, `reservoir_daily` contract, ORDS client, and loaders for `repDiaHid12m` (levels
@@ -559,7 +597,9 @@ Three things the run proved rather than assumed, all against the live service:
 `npm run crosscheck:caudal`, report in `data/crosschecks/`). §2.1 asked for a month of overlap
 between mrid 30538 and Mazar's `q_ingresado`. There was none, and the reason was ours: the walk
 used the control list as a gate and then walked only the targets, so 30538 was declared and never
-fetched. Walking it produced **4,282 days, 2015-01-01 → 2026-09-21**, and the answer is not close:
+fetched. Walking it produced **4,282 days, 2015-01-01 → 2026-09-21** — a floor since pushed back to
+2010-01-01 and 6,085 days by the walk recorded in Phase 1, which does not disturb the comparison
+below because `repDiaHid12m` reaches only 2014-09-20 either way — and the answer is not close:
 
 - **`mridCaud` is inflow.** Against `repDiaHid12m` the historian matches on **4,281 days at
   offset 0, mean absolute difference 0.2491 m³/s, r = 1.0000**, and that residual is not error —

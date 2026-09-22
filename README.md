@@ -12,9 +12,9 @@ with the response that produced it archived alongside it.
 | Phase | State |
 |---|---|
 | 0 · Reconnaissance and fixtures | done — `scripts/recon/RECON_REPORT.md` |
-| 1 · Full ingest (CELEC ORDS + CENACE SMEC + Información Operativa) | code complete; levels backfilled to 2014-09-20, CELEC Sur energy to 2015-11-01, hourly energy for Coca Codo Sinclair (2016-06-24→), Agoyán (2017-01-01→) and Manduriacu (2017-07-31→). What remains is the acceptance criterion *three consecutive green scheduled daily runs*, and the count has not started: the 2026-09-22 12:15 UTC slot had still not fired at 13:07, with nothing queued, although `daily.yml` had been on `main` since 01:26. GitHub's scheduler is the reason, and this repository's only scheduled run to date started 5 h 22 min after its slot, so the close date follows the first firing that actually happens rather than the calendar |
+| 1 · Full ingest (CELEC ORDS + CENACE SMEC + Información Operativa) | code complete; levels backfilled to 2014-09-20, Mazar's historian inflow to 2010-02-10 (6,062 days — its true first reading, found by a walk that stopped on twelve empty months rather than on a `--from`), CELEC Sur energy to 2015-11-01, hourly energy for Coca Codo Sinclair (2016-06-24→), Agoyán (2017-01-01→) and Manduriacu (2017-07-31→). What remains is the acceptance criterion *three consecutive green scheduled daily runs*, and the count has not started: the 2026-09-22 12:15 UTC slot had still not fired at 13:07, with nothing queued, although `daily.yml` had been on `main` since 01:26. GitHub's scheduler is the reason, and this repository's only scheduled run to date started 5 h 22 min after its slot, so the close date follows the first firing that actually happens rather than the calendar |
 | 2 · CENACE history and reconciliation | SMEC backfilled 2016-05-01 → 2026-09-20 (3,780 days, 0.40% missing) and reconciled against the ORDS per-plant energy. The fifteen missing days were re-asked on 2026-09-22 and none recovered, so 0.40% is this source's floor. Outstanding: the Información Operativa cross-check needs ≥ 20 snapshot days and has 1 |
-| 3 · Additional reservoir levels | **done 2026-09-22** — 21,632 historian rows: daily level and inflow for Coca Codo Sinclair (2016-03-07→), Agoyán (2016-07-05→) and Manduriacu (2017-08-01→). The Mazar control month matches `repDiaHid12m` on all 31 days to 0.0000 m, and the caudal semantics are now settled on 4,281 days rather than assumed: `mridCaud` is inflow, not turbined flow (`data/crosschecks/caudal-semantics.md`) |
+| 3 · Additional reservoir levels | **done 2026-09-22** — 21,541 historian rows: daily level and inflow for Coca Codo Sinclair (2016-03-07→), Agoyán (2016-07-05→) and Manduriacu (2017-08-01→). The Mazar control month matches `repDiaHid12m` on all 31 days to 0.0000 m, and the caudal semantics are now settled on 4,281 days rather than assumed: `mridCaud` is inflow, not turbined flow (`data/crosschecks/caudal-semantics.md`) |
 | 4 · Covariates and quality | reference tables (`plants`, `thresholds`, `rationing_episodes`) and the `npm run check` gates done, `public/api/status.json` published; ONI 1950-01 → 2026-07 and ERA5 1990-01-01 → 2026-09-16 ingested. Outstanding: verified basin centroids — the 36 years of ERA5 cover the one provisional Paute point, not the fleet. Four probes on 2026-09-22 established that HydroSHEDS refuses the runner's address rather than its client or a stale path, that neither Zenodo nor figshare mirrors it, and that Ecuador's Pfafstetter units are served as queryable polygons on ArcGIS Online — from a personal account, so a lead rather than a citable source. Five of the seven pour points now agree between Wikidata and OpenStreetMap within a kilometre; Delsitanisagua's two sources are 8.18 km apart and Minas San Francisco has had no Overpass answer. See `PLAN.md` §2.4 |
 | 5–7 · Modelling, site, extensions | planned — see `PLAN.md` |
 
@@ -22,15 +22,15 @@ with the response that produced it archived alongside it.
 
 | Source | What it gives | History |
 |---|---|---|
-| CELEC ORDS `repDiaHid12m` | daily level, inflow and declared band for Mazar, Amaluza, Minas San Francisco, Delsitanisagua — 365 days per request | 2015-09-20 |
+| CELEC ORDS `repDiaHid12m` | daily level, inflow and declared band for Mazar, Amaluza, Minas San Francisco, Delsitanisagua — 365 days per request | 2014-09-20 |
 | CELEC ORDS `repDiaEner12m` | daily energy per CELEC Sur plant, 182 days per request | 2020-09-20 |
 | CELEC ORDS `repDia*` (one day each) | level/inflow, power, turbined flow, units online, spill, plant factor, day-ahead plan, SNI total | per day, 2016 → |
 | CELEC ORDS `{code}EnerDia` | 24 hourly values per plant-day, for all seven dashboard plants | 2019-06 → |
 | CENACE SMEC `ResultadoInforme1.do` | the closed day's national balance in kWh by generation type, imports, exports, distribution demand | 2016-05-01 → |
-| CELEC ORDS `pointValuesMesH24` | daily level and inflow per mrid, a month per request — the only route to Coca Codo Sinclair, Agoyán and Manduriacu | 2016-03-07 → |
+| CELEC ORDS `pointValuesMesH24` | daily level and inflow per mrid, a month per request — the only route to Coca Codo Sinclair, Agoyán and Manduriacu, and the deepest route of all for Mazar | 2010-02-10 → (Mazar inflow); 2016-03-07 → for the three |
 | CENACE Información Operativa | live production, demand by distribution utility, last validated day | snapshot |
 
-Four things worth knowing before using any of it:
+Five things worth knowing before using any of it:
 
 - **`repDiaNivQIng` answers with the previous day's numbers.** Asked for date D it returns rows
   stamped D whose level and inflow are D−1's, identical to what `repDiaHid12m` publishes for D−1 —
@@ -43,6 +43,15 @@ Four things worth knowing before using any of it:
   r = 1.0000; the only difference is that the report rounds to whole m³/s and the historian does
   not, so the report is exactly `round(historian)` on every one of those days. Turbined flow, the
   other candidate, correlates at r = −0.06.
+- **A zero inflow means opposite things on the two routes, and neither is "the river stopped".**
+  The historian publishes decimals, so its 0.00 is the service saying nothing — 82 of them sit below
+  every one of those series' own non-zero floors (84.00 m³/s for Coca Codo Sinclair, 35.00 Agoyán,
+  10.40 Manduriacu) and cluster like a fault, including the eighteen publishing days before Mazar's
+  first real reading. Those are dropped. The 12-month reports publish whole m³/s, so *their* 0 is
+  `round(x)` for any x below 0.5: on 2024-11-08, at the worst of the rationing drought,
+  `repDiaHid12m` published 0 for Mazar and the historian published 0.142 for the same day. Those are
+  kept. An inflow above 10,000 m³/s is dropped on both routes — the historian published 23,221.10
+  for Mazar on 2013-11-27, between neighbours of 34.31 and 0.00.
 - **`volutilalm` is not a volume.** The ORDS publishes it as "% de volumen útil", but it is
   exactly `(cota − min) / (max − min)`. It is stored here as `nivel_pct_banda` and must not be
   read as stored water.
