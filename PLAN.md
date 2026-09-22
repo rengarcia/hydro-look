@@ -1,6 +1,6 @@
 # hydro-look — Plan v2
 
-**Status:** ingestion implemented; historical backfill running; Phase 4 covariate ingestion implemented locally, deployment pending. **Updated:** 2026-09-22. Supersedes the initial plan and the
+**Status:** ingestion implemented; historical backfill running; Phase 4 covariate ingestion merged, first run queued; the `pointValues` null issue is resolved and Phase 3 is unblocked (probe of 2026-09-22 02:14 UTC). **Updated:** 2026-09-22. Supersedes the initial plan and the
 follow-up research note ("CELEC dashboard covers 7 plants", "CENACE header has usable numbers").
 
 This version was built after reading the two community scrapers that already run daily against
@@ -80,6 +80,18 @@ check). An OpenAPI catalog is public at `open-api-catalog/<module>/` for eight m
 Values seen on 2026-09-20: Mazar 2,139.1 masl with 75 m³/s inflow and 73.8% useful volume; Minas SF 790.3 masl
 and 56.8%; per-plant daily energy Mazar 1,462 MWh, Molino 10,507, Sopladora 6,013, Minas SF 2,672, Agoyán 2,961,
 Manduriacu 451, Coca Codo Sinclair 25,087 (64% of that day's national hydro of 76.8 GWh in SMEC).
+
+**Resolved 2026-09-22 — the historian endpoints do return values.** `scripts/probe-ords.ts`, run from Actions
+at 02:14 UTC (21:14 local, [run 35678724137](https://github.com/rengarcia/hydro-look/actions/runs/35678724137)),
+got values from all 11 probes: `pointValuesMesH24` for the current month on all eight target mrids (20 of 30 days
+non-null, i.e. every closed day), August for the Mazar control (30 of 31, the 31st null: the window's end date is
+exclusive in local time, so page months with overlap), and hourly `pointValues` for 2026-09-20 on Mazar and Coca
+Codo Sinclair (24 of 24). The Mazar control agrees with `repDiaHid12m` to the rounding the report applies (cota
+2139.14 and 2147.03 identical; caudal 37.62 and 38.22 vs the report's 38), so mrid 30538 is the same quantity the
+report calls `q_ingresado`. First values for the three uncovered plants, 2026-09-20: Coca Codo Sinclair 1220.5 masl,
+220 m³/s; Agoyán 1645.77 masl, 80 m³/s; Manduriacu 492.2 masl, 67.3 m³/s. The Phase 0 nulls were therefore a
+time-of-day or transient effect; `probe-ords.yml` keeps sampling at 06:05, 13:05 and 19:05 UTC to map any blank
+window before Phase 3 picks its ingest hour. Original finding, kept for the record:
 
 **Verified but returning `null` values in both runs (open issue, see §8):** `pointValues`, `pointValuesMesH24`
 and every `*Mes*`/`*Anio*` aggregation, including `{code}EnerMes` and `csrCaudCuenMesAvg`. Seven request styles
@@ -335,9 +347,11 @@ tefaceli's MW). Información Operativa parser for the header key/value list with
 Acceptance: `national_balance_daily` complete from the earliest date with < 1% missing days; SMEC vs
 Información Operativa closed-day totals agree within 2% on ≥ 20 days.
 
-**Phase 3 · Coca Codo Sinclair, Agoyán, Manduriacu levels and inflows (1 S, blocked on the null issue)**
-Their mrids are known (`data/reference/mrids.csv`); once `pointValuesMesH24` returns values in a run,
-backfill them and confirm the caudal semantics with a month of overlap between mrid 30538 and
+**Phase 3 · Coca Codo Sinclair, Agoyán, Manduriacu levels and inflows (1 S, unblocked 2026-09-22)**
+Their mrids are known (`data/reference/mrids.csv`) and `pointValuesMesH24` returned values for all six in the
+2026-09-22 probe (§2.1), so this phase can start: page the monthly aggregation back by month with overlap (the
+window's last local day comes back null), find each plant's first non-null month, and add the six mrids to the
+daily run at an hour the probe schedule shows to be safe. Backfill them and confirm the caudal semantics with a month of overlap between mrid 30538 and
 `q_ingresado` for Mazar. If the aggregation endpoints stay null, fall back to hourly `pointValues` sampled
 once a day at a time of day that works, and record the working window.
 Acceptance: daily level and inflow for the three plants; a documented semantics note per variable.
@@ -449,7 +463,7 @@ regime differences between Amazon- and Pacific-slope basins.
 
 | Risk | Mitigation |
 |---|---|
-| `pointValues*` and monthly aggregations return null in the evening runs (open) | Primary ingestion moved to the report and hourly-energy endpoints, which returned data; re-probe at other times of day (run 3 and a scheduled re-run); only three plants' levels depend on it. |
+| `pointValues*` and monthly aggregations return null in the evening runs (resolved 2026-09-22: values returned at 02:14 UTC, §2.1) | Primary ingestion stays on the report and hourly-energy endpoints; the mrid route serves the three uncovered plants (Phase 3). `probe-ords.yml` samples three times a day to map any blank window; the Phase 3 loader must treat an all-null month as "retry later", never as "no data". |
 | `datosabiertos.gob.ec` blocks GitHub runners (403) | Validation-only source; fetch from your machine if wanted. |
 | ORDS or SMEC changes or gets locked (the ORDS has no auth today) | Raw archive + independent sources per table; the community mirrors as a fallback; open an issue automatically on schema drift. |
 | CELEC-wide mrids not discoverable from the bundle | DevTools capture (your original plan) is the fallback; Phase 1–2 do not depend on them. |
