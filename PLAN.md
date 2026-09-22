@@ -1,6 +1,6 @@
 # hydro-look — Plan v2
 
-**Status:** ingestion implemented; historical backfill running; Phase 4 covariate ingestion merged, first run queued; the `pointValues` null issue is resolved and Phase 3 is unblocked (probe of 2026-09-22 02:14 UTC); the site is deployed on Vercel. **Updated:** 2026-09-22. Supersedes the initial plan and the
+**Status:** ingestion implemented; historical backfill running; Phase 4 covariate ingestion merged, first run queued; the `pointValues` null issue is resolved and Phase 3 is unblocked (probe of 2026-09-22 02:14 UTC); the site is deployed on Vercel; Phase 6b is built and waits on an `AI_GATEWAY_API_KEY` secret; Colombia's side of the interconnection is ingested from XM (Phase 7). **Updated:** 2026-09-22. Supersedes the initial plan and the
 follow-up research note ("CELEC dashboard covers 7 plants", "CENACE header has usable numbers").
 
 This version was built after reading the two community scrapers that already run daily against
@@ -454,6 +454,14 @@ observation is not a rate, but it is the only one there is, and it says the crit
 read off a calendar. The earliest it can close is the third calendar day after the first run that
 actually fires, not after the first that was due.
 
+**First count, taken 2026-09-22 18:30 UTC: one of three.** The 12:15 slot never fired at all —
+not late, absent, with nothing queued. The 16:30 slot fired at 16:58, twenty-eight minutes late,
+and succeeded ([run 35757592009](https://github.com/rengarcia/hydro-look/actions/runs/35757592009)).
+So the scheduler has now been measured dropping a slot outright as well as delaying one by five
+hours, and the criterion counts green scheduled runs on consecutive days, not consecutive slots:
+two slots a day is what lets a dropped one not break the streak. The earliest it can close is
+therefore 2026-09-24.
+
 That delay has a second edge worth naming, because it reaches the same hazard as the backfill rule
 below without anyone dispatching anything. A firing delayed by more than about four and a quarter
 hours arrives after the *next* slot is due, so both scheduled runs are in the `ingest` group at
@@ -746,9 +754,42 @@ only three busy Overpass servers. Either the dam is unnamed in OSM or it is mapp
 nobody here has guessed, and the next attempt should search the Jubones by geometry rather than by
 string.
 
-So the order of work is: find the official publication of those units (SENAGUA or MAATE) or a
-boundary set with upstream topology — the ArcGIS route having been closed by measurement — get an
-answer for Minas San Francisco, then delineate, and only then rewrite `basins.csv`. Nothing about
+**The first official lead, 2026-09-22 (run 35769756096).** The probe gained three phases —
+Minas San Francisco by geometry, a conduit trace from the Delsitanisagua intake lead, and a sweep
+of Ecuador's own geoservers for hydrographic units — and the third found what the ArcGIS route
+could not: **INAMHI's GeoServer (`geoservicios.inamhi.gob.ec`) serves `geonode:hidroelectricasshape`,
+titled "Cuencas Hidroeléctricas"**, beside `geonode:cuencas_inamhi` and `geonode:cuencas_maate`.
+Asked which polygon holds each pour point, the hydro-catchment layer puts Mazar in **Paute_Molino**
+and Marcel Laniado in **Marcel_Laniado_4326**; the other five sit near a polygon but outside it.
+The two national layers place all seven in the expected basin (Paute, Napo, Pastaza, Jubones,
+Esmeraldas, Santiago, Daule), and an ArcGIS layer credited to the environment ministry gives each
+a level-5 Pfafstetter code (Mazar 49982, Coca Codo Sinclair 49788, Agoyán 49967, Minas San
+Francisco 13943, Manduriacu 15241, Delsitanisagua 49989, Marcel Laniado 14293 — whose name field
+says 14283, a disagreement printed rather than resolved). INAMHI is the national hydrometeorology
+institute, so this is an agency publication rather than a paper's figure, and it is the first
+boundary set in this section that is. It is still not delineation: Paute_Molino is the catchment
+at Molino, downstream of Mazar, so it is a superset of Mazar's; and a polygon that holds a pour
+point says nothing about which polygon is *upstream* of it.
+
+Everything else the sweep asked refused or did not exist: SNI and IEDG answer 403, the SENAGUA and
+MAATE geoportal hosts do not resolve, the `ide.ambiente.gob.ec` and MAG GeoServer paths are 404, IGM's services list no
+hydrographic layer, INAMHI's GeoNode catalogue search returns its whole list regardless of the
+query, and ArcGIS Online user searches for the agencies need a login.
+
+**Minas San Francisco is now identified by QID** — way/928750864, "Central Hidroeléctrica Minas
+San Francisco", `wikidata=Q65196242`, `operator=CELEC Sur`, 270 MW, 1.39 km from the Wikidata
+point — so the powerhouse is settled the way the other three were. The intake is not: the only
+element tagged as a dam on the Jubones in a 55 km box is way/690695821, on the river (34 m from
+it), 13.3 km from the powerhouse and 315 m above it — the shape a La Unión dam feeding a tunnel
+would have — carrying no name, operator or QID. It is Minas San Francisco's version of the
+Delsitanisagua lead: the right shape, nothing tying it to the scheme. **The Delsitanisagua conduit
+trace itself was not answered** (Overpass 504, then two timeouts) and needs re-asking.
+
+So the order of work is now: fetch `hidroelectricasshape` whole — its attribute table and each
+polygon's area and outlet — to learn which schemes it covers and whether Paute_Molino has a
+Mazar-sized sibling; re-ask the Delsitanisagua trace; then delineate from the INAMHI polygons where
+they reach and from the Pfafstetter codes' upstream rule where they do not, and only then rewrite
+`basins.csv`. Nothing about
 the covariate loader changes — it already takes one row per
 basin and archives what it fetches. What is missing is the table it reads, and
 `scripts/probe-basins.ts` is what re-asks these questions once there is a new candidate to ask
@@ -856,9 +897,12 @@ were satisfied by the very outliers they were meant to remove; it now trims by r
 
 **Not done, and not pretended otherwise.** M4 (LightGBM quantile regression) is deferred: there
 is no gradient-boosting library in a TypeScript-only stack (decision 6) and M3 has not yet been
-beaten by anything simpler. Targets 3 and 4 of §7 — energy adequacy and 7-day national hydro
-generation — are untouched; only target 1 (probabilistic Mazar cota) and target 2 (days to
-threshold) ship. The backtest window is 2018-01 onward as §7 specifies, which is wider than the
+beaten by anything simpler. Target 1 (probabilistic Mazar cota) and target 2 (days to threshold)
+ship here; target 3 shipped in Phase 6c, and target 4 — national hydro generation a week out —
+ships as that model's hydro term at seven days, which since 2026-09-22 carries a calibrated
+p10–p90 of its own (`hydro_p10`/`hydro_p90` in `adequacy.json`). It beats a trailing 28-day mean
+by 9% at seven days and its band covers 71% of outcomes against a nominal 80%, the same
+shortfall as the requirement band. The backtest window is 2018-01 onward as §7 specifies, which is wider than the
 2023-09→2024-12 this phase entry originally asked for. **2115 is this project's own number**:
 `thresholds.csv` carries 2098 from the dashboard chart title and 2100 from both report
 endpoints, and no upstream source publishes 2115 at all. It is forecast against because §7 asks
@@ -985,7 +1029,24 @@ the 10.78 they had reached that August, because Colombia was short of water at t
 Imports were also below 1 GWh/day for 398 consecutive days from 2019-07-06. Every horizon
 therefore publishes a stressed deficit beside the central one.
 
-**Phase 6b · AI narrative panel via Vercel AI Gateway (1 S, after Phase 5 and 6)**
+**Phase 6b · AI narrative panel via Vercel AI Gateway — built 2026-09-22, waiting on a secret**
+`npm run narrative` builds a deterministic payload (≈9 kB of canonical JSON, sha256-hashed) only
+from what the repository already publishes: per reservoir the level, bands and slopes from
+`latest.json`, days to each floor at the 7- and 30-day slopes (a division, labelled as one), the
+same calendar day in every earlier year, and the 16-day Paute rain forecast against ERA5 for the
+same window — from the one provisional point, labelled so; Mazar's p10/p50/p90 and crossings from
+`forecast.json` with 2115 carried as `unverified`; the adequacy tier as an input; ONI at the lag a
+forecaster could have read it. `claude-opus-5` through the gateway returns `{outlook_es, drivers,
+confidence}`, and a validator rejects any output naming a number or date not in the payload, or
+not naming the tier. A 429 is retried once then recorded `skipped`; every attempt appends a
+`narrative_snapshots` row with tokens and `cost_usd`; an unchanged hash and prompt version is a
+no-op. The daily job runs it last with `continue-on-error`, calling the gateway once and
+retrying only the cheap apply. The page shows the text beside the numbers it was written from.
+**It does nothing until `AI_GATEWAY_API_KEY` is added to the repository's Actions secrets**; the
+model slug, the gateway's cost field and the push loop have not yet run against the real
+services. The acceptance criterion — seven consecutive daily narratives — starts counting then.
+
+Original phase text, for reference:
 Implements decision 8. The model interprets; it never forecasts.
 1. `narrative/payload.ts` builds a small deterministic payload from data already computed in code:
    current cota and distance to the 2153 / 2115 / 2098 bands per reservoir, 7/14/30-day slopes
@@ -1016,7 +1077,37 @@ the payload builder against a known day; the schema rejects any output that name
 not present in the payload; monthly gateway spend visible from the snapshots table.
 
 **Phase 7 · Hardening and extensions (ongoing)**
-ML v2 if it beats v1 in backtests; ARCONEL BNEE monthly loader; CENACE Datos Abiertos per-plant
+
+**Colombia's side of the interconnection, via XM — ingested 2026-09-22.** Recon (run
+35768453442, `RECON_REPORT.md` §10a) confirmed the contract of XM's official client — POST
+`/hourly` and `/daily` on `servapibi.xm.com.co`, at most a calendar month per request, a
+`ListadoMetricas` inventory, a plain-text 400 for an unknown metric — and found the two circuits,
+**ECUADOR 230 and ECUADOR 138**. `ingest xm` writes `xm_exchange_daily` (both directions per link
+per day) and `xm_system_daily` (Colombian storage, capacity, inflows against their historical
+mean, demand, spot and scarcity prices), from its own step in `covariates.yml`.
+
+- **A blank exchange hour is flow the other way, not a missing reading.** XM publishes one net
+  direction per hour: no hour is ever published both ways, on ECUADOR 230 the two directions
+  together cover the day, and zeros are never written. So a link-day is stored when either
+  direction published, and an hour published both ways is refused rather than summed.
+- **It agrees with SMEC at offset zero and at no other** (r > 0.999 on net flow, 2024-08→12; a
+  test). SMEC reads 0.991× on high-flow days, consistent with line losses; on low-flow days both
+  of SMEC's gross directions exceed XM's by ~100 MWh while the nets match, so the comparison is
+  net against net.
+- **It reproduces the 2024 cutoff** — 9.07 → 0.175 GWh/day on the 230 kV circuit, August →
+  October — **and it is happening again.** Imports ran 7.5–8.5 GWh/day through late August 2026,
+  fell to 3.5 on 2026-09-06 and have been 0.12–0.17 GWh/day every day since 2026-09-07 (SMEC and
+  XM agree). The adequacy model's central case still assumes the demonstrated 10.78; its stressed
+  case, 0.12, is now simply what is happening, and at seven days it still shows a 1.8 GWh/day
+  surplus. Whether the central case should follow observed imports when they have collapsed is a
+  modelling decision that changes the site's headline, and is left open rather than made quietly.
+- Publication lags measured on the capture: storage and inflows 1 day, demand 2, exchanges and
+  prices 3, TIE settlement 5. Colombian storage fell to 49% of useful volume in September 2024
+  with inflows at 58% of their mean: the state that explains a cutoff before the border shows it.
+
+The history backfill from 2016-05-01 was dispatched on 2026-09-22 (covariates run 35770747799).
+
+Still listed: ML v2 if it beats v1 in backtests; ARCONEL BNEE monthly loader; CENACE Datos Abiertos per-plant
 validation; Colombia export availability via XM's open API — which Phase 6c has now made the
 highest-value item on this list, because the import ceiling is the adequacy model's most fragile
 term and XM publishes the other side of it; public-records request template to CENACE/CELEC for
@@ -1043,6 +1134,8 @@ the pre-2022 daily series; optional web.archive.org with keys.
    demand trend, with a seasonal climatology and a mean-reverting anomaly. See
    `data/reports/adequacy.md`.
 4. Nice-to-have: 7-day national hydro generation.
+   **Shipped 2026-09-22** as the adequacy model's hydro term at seven days, with its own
+   calibrated band; see Phase 5's closing paragraph and `data/reports/adequacy.md`.
 
 **Method ladder** (each step must beat the previous on the same backtest to be kept)
 
