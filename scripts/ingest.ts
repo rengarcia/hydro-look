@@ -27,6 +27,7 @@ import { HttpClient } from "../src/lib/http/client.ts";
 import { checkPin, closeAgents } from "../src/lib/http/tls.ts";
 import { CelecOrds } from "../src/lib/sources/celec-ords.ts";
 import { CenaceOperativa, CenaceSmec } from "../src/lib/sources/cenace.ts";
+import { Covariates, ingestCovariates } from "../src/lib/sources/covariates.ts";
 import { emptyBatch, type IngestBatch } from "../src/lib/sources/batch.ts";
 import { CuratedStore, foldBands } from "../src/lib/store/curated.ts";
 import { RawArchive } from "../src/lib/store/archive.ts";
@@ -36,6 +37,8 @@ import {
   OBSERVATIONS_DAILY,
   OPERATING_BANDS,
   OPERATIVA_SNAPSHOTS,
+  WEATHER_DAILY,
+  ENSO_MONTHLY,
 } from "../src/lib/contracts/tables.ts";
 import { ENERGY_MODULES, type EnergyPlantCode } from "../src/lib/registry.ts";
 import { parseOptions, type BackfillSource, type Options } from "../src/lib/options.ts";
@@ -97,6 +100,10 @@ async function main(): Promise<void> {
   };
 
   switch (options.command) {
+    case "covariates": {
+      await ingestCovariates(new Covariates(http, archive), store, batch, options);
+      break;
+    }
     case "daily": {
       const end = options.date ?? todayEc();
       await verifyPins([
@@ -242,10 +249,10 @@ async function main(): Promise<void> {
     }
 
     default:
-      throw new Error(`unknown command "${options.command}"; try daily, backfill, apply, latest or smec-earliest`);
+      throw new Error(`unknown command "${options.command}"; try daily, backfill, covariates, apply, latest or smec-earliest`);
   }
 
-  if (options.out) stageBatch(archive, batch, options);
+  if (options.out && !options.dryRun) stageBatch(archive, batch, options);
   else writeBatch(store, archive, batch, options);
   await closeAgents();
   process.exitCode = batch.errors.length > 0 ? 1 : 0;
@@ -263,7 +270,7 @@ function stageBatch(archive: RawArchive, batch: IngestBatch, options: Options): 
     join(directory, "batch.json"),
     `${JSON.stringify({ generated_at: nowUtc(), command: options.command, source: options.source, ...batch }, null, 1)}\n`,
   );
-  log(`staged ${batch.observations.length + batch.national.length + batch.operativa.length} rows and ${bundles.length} raw bundles in ${directory}`);
+  log(`staged ${batch.observations.length + batch.national.length + batch.operativa.length + batch.weather.length + batch.enso.length} rows and ${bundles.length} raw bundles in ${directory}`);
   for (const note of dedupe(batch.notes).slice(0, 40)) log(`note: ${note}`);
   for (const error of batch.errors.slice(0, 40)) log(`ERROR ${error}`);
 }
@@ -312,6 +319,9 @@ function writeBatch(store: CuratedStore, archive: RawArchive, batch: IngestBatch
   if (batch.observations.length > 0) reports.push(store.upsert(OBSERVATIONS_DAILY, batch.observations));
   if (batch.national.length > 0) reports.push(store.upsert(NATIONAL_BALANCE_DAILY, batch.national));
   if (batch.operativa.length > 0) reports.push(store.upsert(OPERATIVA_SNAPSHOTS, batch.operativa));
+  // A backfill already running on the previous revision stages neither new field.
+  if (batch.weather?.length) reports.push(store.upsert(WEATHER_DAILY, batch.weather));
+  if (batch.enso?.length) reports.push(store.upsert(ENSO_MONTHLY, batch.enso));
   if (batch.bands.length > 0) {
     const existing = store.read(join(DATA_CURATED, "operating_bands.csv"));
     reports.push(store.upsert(OPERATING_BANDS, foldBands(batch.bands, existing)));
@@ -340,6 +350,8 @@ function writeBatch(store: CuratedStore, archive: RawArchive, batch: IngestBatch
         national_balance_daily: summariseTable("national_balance_daily", "date"),
         operativa_snapshots: summariseTable("operativa_snapshots", "fetched_at"),
         operating_bands: summariseTable("operating_bands", "last_date"),
+        weather_daily: summariseTable("weather_daily", "date"),
+        enso_monthly: summariseTable("enso_monthly", "month"),
       },
     });
   }

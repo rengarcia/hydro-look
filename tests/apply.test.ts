@@ -5,13 +5,14 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { parseCsv } from "../src/lib/store/csv.ts";
 import { RawArchive } from "../src/lib/store/archive.ts";
 import { parseRepDiaNivQIng } from "../src/lib/parse/ords.ts";
+import { emptyBatch } from "../src/lib/sources/batch.ts";
 import { fixture } from "./helpers.ts";
 
 const repo = join(import.meta.dirname, "..");
@@ -48,6 +49,37 @@ const rows = (dataRoot: string, year: string) =>
   parseCsv(readFileSync(join(dataRoot, "curated", "observations_daily", `${year}.csv`), "utf8"));
 
 describe("staged apply", () => {
+  it("applies covariates, preserves them through an older backfill batch, and supports dry-run", () => {
+    const root = mkdtempSync(join(tmpdir(), "hydro-covariates-apply-"));
+    const directory = join(root, "batch");
+    mkdirSync(directory);
+    const batch = emptyBatch();
+    batch.weather.push({
+      date: "2026-09-22", basin: "paute", latitude: -2.6, longitude: -78.6, kind: "forecast",
+      precip_mm: 0, temp_mean_c: 12, issued_at: "2026-09-22T17:00:00Z",
+      source: "open_meteo:forecast", fetched_at: "2026-09-22T17:00:00Z", raw_ref: "test#forecast",
+    });
+    batch.enso.push({ month: "2026-07", oni: 1.8, source: "noaa_psl:oni",
+      fetched_at: "2026-09-22T17:00:00Z", raw_ref: "test#oni" });
+    writeFileSync(join(directory, "batch.json"), JSON.stringify({ ...batch, command: "covariates" }));
+    execFileSync("npx", ["tsx", "scripts/ingest.ts", "apply", "--in", directory, "--dry-run"], {
+      cwd: repo, env: { ...process.env, HYDRO_LOOK_DATA_ROOT: root }, encoding: "utf8",
+    });
+    expect(existsSync(join(root, "curated"))).toBe(false);
+    expect(existsSync(join(root, "latest"))).toBe(false);
+    apply(root, directory);
+    const weather = readFileSync(join(root, "curated/weather_daily/2026.csv"), "utf8");
+    expect(parseCsv(weather)[0]?.["precip_mm"]).toBe("0");
+    expect(parseCsv(readFileSync(join(root, "curated/enso_monthly/2026.csv"), "utf8"))).toHaveLength(1);
+    // The user's in-flight backfill has no weather/enso fields in its staged payload.
+    stage(directory, [], []);
+    apply(root, directory);
+    expect(readFileSync(join(root, "curated/weather_daily/2026.csv"), "utf8")).toBe(weather);
+    const status = JSON.parse(readFileSync(join(root, "latest/status.json"), "utf8"));
+    expect(status.tables.weather_daily.rows).toBe(1);
+    expect(status.tables.enso_monthly.rows).toBe(1);
+  }, 60_000);
+
   it("merges two independently staged runs without either losing rows", () => {
     const dataRoot = mkdtempSync(join(tmpdir(), "hydro-look-apply-"));
     const body = fixture("celec_ords", "ords_rep_repDiaNivQIng.txt");

@@ -68,6 +68,34 @@ export const operatingBandRow = z.object({
 });
 export type OperatingBandRow = z.infer<typeof operatingBandRow>;
 
+export const weatherRow = z.object({
+  date: z.string().date(),
+  basin: z.string().regex(/^[a-z][a-z0-9_]*$/),
+  latitude: z.number().finite().min(-90).max(90),
+  longitude: z.number().finite().min(-180).max(180),
+  kind: z.enum(["era5", "forecast"]),
+  precip_mm: z.number().finite().nonnegative().nullable(),
+  temp_mean_c: z.number().finite().min(-90).max(60).nullable(),
+  // Collection vintage, not the upstream model's initialization time. Empty for ERA5.
+  issued_at: z.union([isoTimestamp, z.literal("")]),
+  source: z.enum(["open_meteo:era5", "open_meteo:forecast"]),
+  fetched_at: isoTimestamp,
+  raw_ref: z.string().min(1),
+}).refine((r) => r.kind === "era5"
+  ? r.issued_at === "" && r.source === "open_meteo:era5"
+  : r.issued_at === r.fetched_at && r.source === "open_meteo:forecast",
+{ message: "weather kind, source and collection vintage must agree" });
+export type WeatherRow = z.infer<typeof weatherRow>;
+
+export const ensoRow = z.object({
+  month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/),
+  oni: z.number().finite().min(-5).max(5),
+  source: z.literal("noaa_psl:oni"),
+  fetched_at: isoTimestamp,
+  raw_ref: z.string().min(1),
+});
+export type EnsoRow = z.infer<typeof ensoRow>;
+
 export interface TableSpec<T> {
   name: string;
   columns: readonly (keyof T & string)[];
@@ -122,6 +150,22 @@ export const OPERATING_BANDS: TableSpec<OperatingBandRow> = {
   columns: ["site", "cota_min", "cota_max", "qmax_m3s", "source", "first_date", "last_date"],
   key: ["site", "source", "cota_min", "cota_max", "qmax_m3s"],
   schema: operatingBandRow,
+};
+
+export const WEATHER_DAILY: TableSpec<WeatherRow> = {
+  name: "weather_daily",
+  columns: ["date", "basin", "latitude", "longitude", "kind", "precip_mm", "temp_mean_c", "issued_at", "source", "fetched_at", "raw_ref"],
+  key: ["date", "basin", "latitude", "longitude", "kind", "issued_at"],
+  partitionBy: "date",
+  schema: weatherRow,
+};
+
+export const ENSO_MONTHLY: TableSpec<EnsoRow> = {
+  name: "enso_monthly",
+  columns: ["month", "oni", "source", "fetched_at", "raw_ref"],
+  key: ["month", "source"],
+  partitionBy: "month",
+  schema: ensoRow,
 };
 
 /** Validates every row, reporting all failures at once rather than only the first. */

@@ -1,0 +1,64 @@
+name: Weather and ENSO
+
+on:
+  schedule:
+    - cron: "0 17 * * *"
+  workflow_dispatch:
+    inputs:
+      from:
+        description: "ERA5 history start (YYYY-MM-DD; empty refreshes recent weather and forecasts)"
+        default: ""
+      to:
+        description: "ERA5 history end (default: six days ago)"
+        default: ""
+      max_requests:
+        description: "Request budget; historical runs resume completed basin-years"
+        default: "100"
+      dry_run:
+        description: "Validate without writing"
+        type: boolean
+        default: false
+
+permissions: {}
+
+# Share the existing writer queue; a covariate run never cancels the active backfill.
+concurrency:
+  group: ingest
+  cancel-in-progress: false
+
+jobs:
+  covariates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Fetch weather and ENSO
+        env:
+          FROM: ${{ inputs.from }}
+          TO: ${{ inputs.to }}
+          MAX_REQUESTS: ${{ inputs.max_requests || '100' }}
+          DRY_RUN: ${{ inputs.dry_run && '--dry-run' || '' }}
+        run: |
+          npm run ingest -- covariates \
+            --from "$FROM" --to "$TO" --max-requests "$MAX_REQUESTS" \
+            --out "$RUNNER_TEMP/batch" $DRY_RUN 2>&1 | tee "$RUNNER_TEMP/covariates.log"
+      - name: Apply and commit
+        if: always() && !inputs.dry_run
+        env:
+          BRANCH: ${{ github.ref_name }}
+          BATCH_DIR: ${{ runner.temp }}/batch
+        run: bash .github/scripts/apply-and-push.sh "Weather and ENSO (run ${{ github.run_id }})"
+      - name: Upload run log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: covariates-log-${{ github.run_id }}
+          path: ${{ runner.temp }}/covariates.log
+          retention-days: 30

@@ -1,6 +1,6 @@
-# hydro-look — Plan v2 (pre-coding)
+# hydro-look — Plan v2
 
-**Status:** planning, no code yet. **Date:** 2026-09-21. Supersedes the initial plan and the
+**Status:** ingestion implemented; historical backfill running; Phase 4 covariate ingestion implemented locally, deployment pending. **Updated:** 2026-09-22. Supersedes the initial plan and the
 follow-up research note ("CELEC dashboard covers 7 plants", "CENACE header has usable numbers").
 
 This version was built after reading the two community scrapers that already run daily against
@@ -272,7 +272,7 @@ tests/  fixtures/<source>/*  (recorded Phase-0 responses)  *.test.ts
 
 Each phase ends with a pushed, green state. Effort is in coding sessions (S) plus your time.
 
-**Phase 0 · Reconnaissance and fixtures — done in GitHub Actions on 2026-09-21 (runs 1–2), run 3 pending**
+**Phase 0 · Reconnaissance and fixtures — done in GitHub Actions on 2026-09-21 (runs 1–3)**
 Because the sandbox is blocked, you run `scripts/recon/capture.py` (written first, network-free
 tested) which saves raw responses into `tests/fixtures/` and a `recon_report.md`:
 1. ORDS: `pointValuesMesH24` for the six known mrids for the current month and for 2022-01;
@@ -304,6 +304,9 @@ Two things the first Actions runs settled:
   in an add/add conflict on every CSV. A run now stages its output and a second step re-applies it onto
   the branch tip (`--out` / `apply --in`), which is safe because applying is an upsert.
 
+Current full backfill: [Actions run 35675850138](https://github.com/rengarcia/hydro-look/actions/runs/35675850138/job/106582137605),
+reported in progress by the user on 2026-09-21. Completion and reconciliation remain to be checked.
+
 Original phase text, for reference:
 Package, CLI, raw archive, `reservoir_daily` contract, ORDS client, and loaders for `repDiaHid12m` (levels
 and inflows, four reservoirs, paged back a year per request), `repDiaEner12m`, `repDiaNivQIng`,
@@ -332,6 +335,25 @@ once a day at a time of day that works, and record the working window.
 Acceptance: daily level and inflow for the three plants; a documented semantics note per variable.
 
 **Phase 4 · Covariates, reference tables, quality gates (1 S)**
+In progress, independently of the Phase 1–2 backfill. Implemented: `ingest covariates`,
+Open-Meteo ERA5 (explicit model selection; six-day publication buffer), 16-day forecasts,
+NOAA PSL ONI, schema/range validation, raw archives, year-partitioned CSV and the scheduled/manual
+`covariates.yml` workflow. Historical weather is resumable by complete basin-day, fetched in yearly
+windows; forecast collections retain separate timestamps and raw responses. Old staged ingestion
+batches remain applicable while the existing backfill runs.
+
+`basins.csv` currently contains only the **provisional Paute sampling point** used in Phase 0;
+it is not a verified catchment centroid. Other basins, verified areas/coordinates, plant and
+rationing references, freshness gates and the public `api/status.json` remain pending.
+Covariate data has not been published to the repository; the new workflow needs deployment and
+an initial history run (`--from 1990-01-01` for climatology, or `2022-01-01` for the initial model).
+Seasonal ensembles remain deferred. ONI is a centred three-month average and the latest revised
+series; backtests must not assume its value was available at the beginning of its labelled month.
+
+Validation on 2026-09-22: all 71 tests, TypeScript checks and lint pass. A live daily dry run
+validated 46 weather rows and 919 ONI rows, with no project data or staging files written.
+
+Original phase scope:
 Open-Meteo ERA5 daily precipitation per basin from 2022 (and 1990→ for climatology), 16-day
 forecast daily, ONI monthly; `plants.csv`, `thresholds.csv`, `rationing_episodes.csv`,
 `basins.csv` verified; freshness and range checks in CI; `api/status.json`.
