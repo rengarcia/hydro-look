@@ -1,32 +1,32 @@
 {
-  "generated_at": "2026-09-22T01:12:48Z",
-  "command": "backfill",
-  "source": "ords-levels",
+  "generated_at": "2026-09-22T01:19:08Z",
+  "command": "daily",
+  "source": "all",
   "errors": [],
   "notes": [],
   "tables": {
     "observations_daily": {
-      "rows": 29098,
-      "first_date": "2014-09-20",
-      "last_date": "2026-09-19",
-      "files": 13
+      "rows": 30278,
+      "first_date": "2009-01-01",
+      "last_date": "2026-09-21",
+      "files": 18
     },
     "national_balance_daily": {
-      "rows": 0,
-      "first_date": null,
-      "last_date": null,
-      "files": 0
+      "rows": 45,
+      "first_date": "2026-09-18",
+      "last_date": "2026-09-20",
+      "files": 1
     },
     "operativa_snapshots": {
-      "rows": 0,
-      "first_date": null,
-      "last_date": null,
-      "files": 0
+      "rows": 47,
+      "first_date": "2026-09-22",
+      "last_date": "2026-09-22",
+      "files": 1
     },
     "operating_bands": {
-      "rows": 4,
-      "first_date": "2026-09-19",
-      "last_date": "2026-09-19",
+      "rows": 7,
+      "first_date": "2026-09-20",
+      "last_date": "2026-09-21",
       "files": 1
     }
   }

@@ -7,6 +7,7 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2020-01-01,mazar,cota_masl,2153.98,ords:repDiaHid12m,,2026-09-22T01:12:39Z,celec_ords/2020/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2020-09-20
 2020-01-01,minas_san_francisco,caudal_m3s,207,ords:repDiaHid12m,,2026-09-22T01:12:39Z,celec_ords/2020/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2020-09-20
 2020-01-01,minas_san_francisco,cota_masl,792.73,ords:repDiaHid12m,,2026-09-22T01:12:39Z,celec_ords/2020/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2020-09-20
+2020-01-01,paute_cuenca,caudal_cuenca_m3s,122.705466,ords:csrCaudCuenAniosAvg,,2026-09-22T01:19:01Z,celec_ords/2027/01/csrCaudCuenAniosAvg.ndjson.gz#csrCaudCuenAniosAvg:2010-01-01:2027-01-01
 2020-01-02,amaluza,caudal_m3s,131,ords:repDiaHid12m,,2026-09-22T01:12:39Z,celec_ords/2020/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2020-09-20
 2020-01-02,amaluza,cota_masl,1990.78,ords:repDiaHid12m,,2026-09-22T01:12:39Z,celec_ords/2020/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2020-09-20
 2020-01-02,delsitanisagua,caudal_m3s,61,ords:repDiaHid12m,,2026-09-22T01:12:39Z,celec_ords/2020/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2020-09-20
