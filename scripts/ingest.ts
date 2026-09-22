@@ -3,7 +3,7 @@
  * hydro-look ingestion CLI.
  *
  *   npm run ingest -- daily                       the previous day from every source
- *   npm run ingest -- backfill --source ords-levels --from 2015-09-20
+ *   npm run ingest -- backfill --source ords-levels --from 2014-09-20
  *   npm run ingest -- latest                      live tiles only, no history written
  *   npm run ingest -- smec-earliest               binary search for SMEC's oldest report
  *
@@ -23,7 +23,6 @@
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { parseArgs } from "node:util";
 import { HttpClient } from "../src/lib/http/client.ts";
 import { checkPin, closeAgents } from "../src/lib/http/tls.ts";
 import { CelecOrds } from "../src/lib/sources/celec-ords.ts";
@@ -38,20 +37,10 @@ import {
   OPERATING_BANDS,
   OPERATIVA_SNAPSHOTS,
 } from "../src/lib/contracts/tables.ts";
-import { ENERGY_BACKFILL_ONLY_CODES, ENERGY_MODULES, type EnergyPlantCode } from "../src/lib/registry.ts";
+import { ENERGY_MODULES, type EnergyPlantCode } from "../src/lib/registry.ts";
+import { parseOptions, type BackfillSource, type Options } from "../src/lib/options.ts";
 import { DATA_CURATED, DATA_LATEST } from "../src/lib/util/paths.ts";
-import { addDays, assertIsoDate, eachDay, nowUtc, todayEc, yearOf, type IsoDate } from "../src/lib/util/dates.ts";
-
-const BACKFILL_SOURCES = [
-  "ords-levels",
-  "ords-energy",
-  "ords-daily",
-  "ords-plant-energy",
-  "ords-basin",
-  "smec",
-  "all",
-] as const;
-type BackfillSource = (typeof BACKFILL_SOURCES)[number];
+import { addDays, eachDay, nowUtc, todayEc, yearOf, type IsoDate } from "../src/lib/util/dates.ts";
 
 /** Endpoints that must be asked one day at a time, with the source id their rows carry. */
 const DAILY_REPORTS = [
@@ -61,70 +50,6 @@ const DAILY_REPORTS = [
   { endpoint: "repDiaRegAyer", source: "ords:repDiaRegAyer" },
   { endpoint: "repDiaVolAlm", source: "ords:repDiaVolAlm" },
 ] as const;
-
-interface Options {
-  command: string;
-  dryRun: boolean;
-  rateMs: number;
-  maxRequests: number;
-  from?: IsoDate;
-  to?: IsoDate;
-  date?: IsoDate;
-  days: number;
-  source: BackfillSource;
-  plants: EnergyPlantCode[];
-  /** Stage the run's output here instead of writing the store (see `apply`). */
-  out?: string;
-  /** Directory a staged run wrote, to be merged into the store. */
-  in?: string;
-}
-
-function parseOptions(argv: string[]): Options {
-  const { values, positionals } = parseArgs({
-    args: argv,
-    allowPositionals: true,
-    options: {
-      "dry-run": { type: "boolean", default: false },
-      "rate-ms": { type: "string" },
-      "max-requests": { type: "string" },
-      from: { type: "string" },
-      to: { type: "string" },
-      date: { type: "string" },
-      days: { type: "string" },
-      source: { type: "string" },
-      plants: { type: "string" },
-      out: { type: "string" },
-      in: { type: "string" },
-    },
-  });
-
-  const source = (values.source ?? "all") as BackfillSource;
-  if (!BACKFILL_SOURCES.includes(source)) {
-    throw new Error(`--source must be one of ${BACKFILL_SOURCES.join(", ")}`);
-  }
-  const plants = (values.plants ?? ENERGY_BACKFILL_ONLY_CODES.join(","))
-    .split(",")
-    .map((p) => p.trim())
-    .filter(Boolean) as EnergyPlantCode[];
-  for (const plant of plants) {
-    if (!Object.hasOwn(ENERGY_MODULES, plant)) throw new Error(`unknown plant code "${plant}"`);
-  }
-
-  return {
-    command: positionals[0] ?? "daily",
-    dryRun: values["dry-run"] ?? false,
-    rateMs: Number(values["rate-ms"] ?? 1000),
-    maxRequests: Number(values["max-requests"] ?? Infinity),
-    from: values.from ? assertIsoDate(values.from) : undefined,
-    to: values.to ? assertIsoDate(values.to) : undefined,
-    date: values.date ? assertIsoDate(values.date) : undefined,
-    days: Number(values.days ?? 1),
-    source,
-    plants,
-    out: values.out,
-    in: values.in,
-  };
-}
 
 function log(message: string): void {
   console.log(`[${new Date().toISOString().slice(11, 19)}] ${message}`);

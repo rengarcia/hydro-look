@@ -6,16 +6,6 @@ name: Daily ingest
 # Each run also re-reads the trailing year and six months from the 12m reports, so a gap
 # left by a failed run repairs itself without a manual backfill.
 on:
-  # workflow_dispatch and schedule only register once the file reaches the default branch.
-  # Until this branch merges, a push of the ingest code runs the daily ingest once, which is
-  # how the pipeline is validated against the live sources. Remove this trigger after merging.
-  push:
-    branches: ["claude/gallant-ptolemy-oz9owd"]
-    paths:
-      - ".github/workflows/daily.yml"
-      - "src/**"
-      - "scripts/ingest.ts"
-      - "package-lock.json"
   schedule:
     - cron: "15 12 * * *"
     - cron: "30 16 * * *"
@@ -57,12 +47,12 @@ jobs:
       - name: Ingest
         id: ingest
         env:
-          DAYS: ${{ github.event.inputs.days || '1' }}
-          DRY_RUN: ${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}
+          DAYS: ${{ inputs.days || '1' }}
+          DRY_RUN: ${{ inputs.dry_run && '--dry-run' || '' }}
         run: npm run ingest -- daily --days "$DAYS" --out "$RUNNER_TEMP/batch" $DRY_RUN 2>&1 | tee "$RUNNER_TEMP/ingest.log"
 
       - name: Apply and commit
-        if: always() && github.event.inputs.dry_run != 'true'
+        if: always() && !inputs.dry_run
         run: bash .github/scripts/apply-and-push.sh "Daily ingest $(date -u +%Y-%m-%d) (run ${{ github.run_id }})"
         env:
           BRANCH: ${{ github.ref_name }}
