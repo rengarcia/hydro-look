@@ -12,7 +12,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "crosscheck": "tsx scripts/crosscheck.ts"
+    "crosscheck": "tsx scripts/crosscheck.ts",
+    "probe:ords": "tsx scripts/probe-ords.ts"
   },
   "dependencies": {
     "cheerio": "^1.0.0",

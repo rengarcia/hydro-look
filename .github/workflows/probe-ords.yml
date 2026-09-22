@@ -1,0 +1,44 @@
+name: ORDS historian probe
+
+# The experiment PLAN.md §2.1 asks for: do `pointValues*` return values at some hours of the
+# day? Eleven read-only requests, nothing written under data/. The schedule spreads runs over
+# the day (01:05, 08:05 and 14:05 in Ecuador); delete it once the answer is in the plan.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "5 6,13,19 * * *"
+  # workflow_dispatch and schedule only register from the default branch; until then a push
+  # of the probe on this branch runs it.
+  push:
+    branches: ["claude/blissful-gates-0dyabj"]
+    paths:
+      - ".github/workflows/probe-ords.yml"
+      - "scripts/probe-ords.ts"
+
+permissions: {}
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Probe
+        run: npm run probe:ords -- --out "$RUNNER_TEMP/probe" 2>&1 | tee "$RUNNER_TEMP/probe.log"
+      - name: Summarise
+        if: always()
+        run: cat "$RUNNER_TEMP/probe/probe.md" >> "$GITHUB_STEP_SUMMARY" || true
+      - name: Upload result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: probe-ords-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/probe
+            ${{ runner.temp }}/probe.log
+          retention-days: 30
