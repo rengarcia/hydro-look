@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-22T18:59:07Z",
+  "generated_at": "2026-09-22T19:31:12Z",
   "as_of": "2026-09-22",
   "ok": true,
   "status": "warn",
@@ -48,15 +48,15 @@
     },
     {
       "feed": "XM exchanges with Colombia",
-      "latest": null,
+      "latest": "2026-09-19",
       "limit_days": 7,
-      "state": "not_ingested"
+      "state": "current"
     },
     {
       "feed": "XM Colombian storage",
-      "latest": null,
+      "latest": "2026-09-21",
       "limit_days": 4,
-      "state": "not_ingested"
+      "state": "current"
     },
     {
       "feed": "Mazar level forecast",
@@ -106,10 +106,10 @@
       "rows": 0
     },
     "xm_exchange_daily": {
-      "rows": 0
+      "rows": 3391
     },
     "xm_system_daily": {
-      "rows": 0
+      "rows": 33154
     }
   },
   "findings": [
@@ -120,7 +120,7 @@
     }
   ],
   "counts": {
-    "info": 18,
+    "info": 16,
     "warn": 1
   }
 }
