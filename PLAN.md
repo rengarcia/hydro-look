@@ -151,16 +151,59 @@ disallows crawlers; API use is governed by their terms (free non-commercial, att
 treats those hosts as exempt and documents it. NOAA ONI is available from PSL (`oni.data`) and CPC
 (`oni.ascii.txt`), 1950→.
 
-**Catchment geometry — probed 2026-09-22 (run 35727122874), and the obvious route is closed.**
-§3 asks for a centroid and an area per catchment, and neither can be looked up: both are
-properties of a catchment boundary, which is a property of a dam location and a flow network.
-The plan for it was HydroSHEDS' HydroBASINS, whose `NEXT_DOWN` topology turns "the catchment
-above this dam" into "the sub-basins that drain into it" and whose `SUB_AREA` gives the area
-with no geometry work. `data.hydrosheds.org/file/hydrobasins/standard/hybas_sa_lev{06,08,10,12}_v1c.zip`
-**answers 403 with a 5,767-byte HTML page** for every level, to a plain GET and a ranged one
-alike, so that route needs either a different host or a registration step that a workflow cannot
-do unattended. Finding another source for the boundaries is now the first task of the basins
-work, not a detail of it.
+**Catchment geometry — probed four times on 2026-09-22 (runs 35727122874, 35730548955,
+35731329897 and 35732611773), and HydroSHEDS is closed to this project for a reason that is now
+diagnosed rather than guessed.** §3 asks for a centroid and an area per catchment, and neither
+can be looked up: both are properties of a catchment boundary, which is a property of a dam
+location and a flow network. The plan for it was HydroSHEDS' HydroBASINS, whose `NEXT_DOWN`
+topology turns "the catchment above this dam" into "the sub-basins that drain into it" and whose
+`SUB_AREA` gives the area with no geometry work.
+
+A 403 is not one fact but three, with different fixes: the host refuses the address, or it
+refuses the client, or the path is gone. All three were tested and only one survives.
+`data.hydrosheds.org/` **403s at the root**; `hybas_sa_lev01-12_v1c.zip` 403s to this project's
+User-Agent and **403s to a browser's**; and so does the identical URL lifted from HydroSHEDS' own
+product page, which itself answers **200 with 47,522 bytes and 31 archive links, every one of
+them pointing back at `data.hydrosheds.org`**. The paths are current and the host refuses this
+address — the failure `datosabiertos.gob.ec` already has in §2.5. **No different request from a
+GitHub runner gets past it**, which retires "try it another way" as a line of work. The page also
+corrected the naming: one zip per continent carrying all twelve levels, `hybas_sa_lev01-12_v1c.zip`,
+not one file per level, so the four per-level URLs the first probe asked for never existed. That
+cost nothing only because the host refuses everything, and would have been four wrong 404s the
+day that changes.
+
+Because the block is on the *address*, the one untried route is a different address. The
+development sandbox refuses these hosts by an egress allowlist rather than by their choice — its
+proxy says so in as many words — so **adding `data.hydrosheds.org` to this environment's network
+egress settings would test whether HydroSHEDS refuses this address too, or only GitHub's**. That
+is one setting and one request, and it is the cheapest remaining shot at the dataset the plan was
+built around.
+
+**No mirror of it exists on the two hosts that would ordinarily carry one.** Zenodo answers 200
+to quoted searches for `"HydroBASINS"` (50 records), `"HydroATLAS"` (22), `"Global Dam Watch"`
+(18) and `"GRanD"` (25,168), and **not one returned record names any of them in its title**;
+figshare's search API returns **zero articles** for the same terms. A negative result is worth as
+much as a positive one here, because it redirects the work: the task is not "find the mirror", it
+is "find a different dataset".
+
+**ArcGIS Online is reachable, anonymous, and holds Ecuador's own answer to the same question** —
+the country delineates `unidades hidrográficas` by the Pfafstetter method, whose codes encode
+upstream topology in their digits, which is what `NEXT_DOWN` was wanted for. One hit is that:
+
+| service | layer | geometry | fields |
+|---|---|---|---|
+| `Fig_13__B_UnidadesHidrográficasN4Pfastetter` (`services7.arcgis.com/NWWHhu45fOJtCgG3`) | 0 | polygon | `FID`, `NIVEL_4`, `NIVEL_3`, `Shape__Area`, `Shape__Length` |
+| `04Subcuencas_Globil` (WWF) | `Subcuencas_Mira_Mataje1` | polygon | `NMGCUENID3`, `Area`, `Area_ha`, `Cuenca`, … |
+| `Subcuencas_Mira_Mataje_RSC` (WWF) | `Subcuencas_RC_Mira_Mataje` | polygon | `Area_ha`, `Area_km2`, `Name`, `A_ICA`, `A_IRH`, … |
+| `MM_Subcuencas` (WWF) | `Subcuencas` | polygon | `NMGCUENID3`, `Area`, `Area_ha`, `Cuenca`, … |
+
+Two things to be clear-eyed about before treating any of that as a source. The three WWF layers
+cover the **Mira–Mataje** border basin only, so they are a check on method, not a source for the
+fleet. And the Pfafstetter layer is `Fig 13_` of somebody's study, published from a personal
+ArcGIS account: it is **a lead to a dataset, not a citable source**, and level 4 is coarse — whether
+an N4 unit resolves the catchment above a particular dam is untested. The work it points at is to
+find the official publication of the same units, from SENAGUA or MAATE, and verify this against
+it. That is now the first task of the basins work, not a detail of it.
 
 The pour points themselves are in better shape. **Wikidata's SPARQL endpoint answered** with 23
 Ecuadorian dams and plants carrying coordinates, six of the seven matched by label:
@@ -579,15 +622,24 @@ harmless. Seasonal ensembles remain deferred. ONI is a centred three-month avera
 the latest revised series; backtests must not assume its value was available at the beginning of its
 labelled month.
 
-**What the 2026-09-22 probe (run 35727122874) established about closing that**, in full in §2.4:
-six of the seven pour points are available from Wikidata with QIDs, from one source rather than the
-two this repository asks for, because Overpass answered 504; and the catchment boundaries have no
-route at all yet, because HydroSHEDS answers 403 to every HydroBASINS download. So the order of work
-is now: find a reachable source of sub-basin boundaries with upstream topology, get the second
-opinion on the coordinates, then delineate, and only then rewrite `basins.csv`. Nothing about the
-covariate loader changes — it already takes one row per basin and archives what it fetches. What is
-missing is the table it reads, and `scripts/probe-basins.ts` is what re-asks these questions once
-there is a new candidate to ask about.
+**What the 2026-09-22 probes established about closing that**, in full in §2.4: HydroSHEDS refuses
+the runner's *address*, not its User-Agent and not a stale path — the root, a browser User-Agent and
+the URL taken from HydroSHEDS' own live product page are all 403 — so no different request from
+Actions reaches it, and neither Zenodo nor figshare carries a mirror. What is reachable is ArcGIS
+Online, where Ecuador's Pfafstetter `unidades hidrográficas` are served as anonymous, queryable
+polygons; the hit found is a figure from a personal account rather than an agency publication, so
+it is a lead to a dataset rather than a citable source. So the order of work is unchanged but
+better aimed: find the official publication of those units (SENAGUA or MAATE) or a boundary set
+with upstream topology, finish the second opinion on the coordinates, then delineate, and only then
+rewrite `basins.csv`. Nothing about the covariate loader changes — it already takes one row per
+basin and archives what it fetches. What is missing is the table it reads, and
+`scripts/probe-basins.ts` is what re-asks these questions once there is a new candidate to ask
+about.
+
+One setting would reopen the route the plan was built around, and it is not in this repository: the
+block is on the address, and the development sandbox is a different address that refuses these
+hosts only by its own egress allowlist. Adding `data.hydrosheds.org` to this environment's network
+egress settings tests whether HydroSHEDS refuses everyone or only GitHub.
 
 
 Original phase scope:
