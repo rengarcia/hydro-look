@@ -1,0 +1,1 @@
+{"items":[],"hasMore":false,"limit":0,"offset":0,"count":0,"links":[{"rel":"self","href":"https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24"},{"rel":"describedby","href":"https://generacioncsr.celec.gob.ec:8443/ords/csr/metadata-catalog/sardomcsr/item"}]}

@@ -1,0 +1,56 @@
+{
+  "generacioncsr.celec.gob.ec:8443": {
+    "host": "generacioncsr.celec.gob.ec",
+    "port": 8443,
+    "tls_version": "TLSv1.2",
+    "cipher": [
+      "ECDHE-RSA-AES256-GCM-SHA384",
+      "TLSv1.2",
+      256
+    ],
+    "sha256": "8a3c3b97aed3a406b64ebb905b7638dfad5fb77b83e2438da348d376ce2c03bb",
+    "x509": "subject=C = EC, ST = Pichincha, O = Corporacion Electrica del Ecuador Celec EP, CN = *.celec.gob.ec\nissuer=C = GB, O = Sectigo Limited, CN = Sectigo Public Server Authentication CA OV R36\nnotBefore=Sep 17 00:00:00 2026 GMT\nnotAfter=Apr  3 23:59:59 2027 GMT",
+    "verifies_with_system_ca": true
+  },
+  "generacioncsr.celec.gob.ec:443": {
+    "host": "generacioncsr.celec.gob.ec",
+    "port": 443,
+    "tls_version": "TLSv1.2",
+    "cipher": [
+      "DHE-RSA-AES256-GCM-SHA384",
+      "TLSv1.2",
+      256
+    ],
+    "sha256": "8a3c3b97aed3a406b64ebb905b7638dfad5fb77b83e2438da348d376ce2c03bb",
+    "x509": "subject=C = EC, ST = Pichincha, O = Corporacion Electrica del Ecuador Celec EP, CN = *.celec.gob.ec\nissuer=C = GB, O = Sectigo Limited, CN = Sectigo Public Server Authentication CA OV R36\nnotBefore=Sep 17 00:00:00 2026 GMT\nnotAfter=Apr  3 23:59:59 2027 GMT",
+    "verifies_with_system_ca": true
+  },
+  "smec.cenace.gob.ec:443": {
+    "host": "smec.cenace.gob.ec",
+    "port": 443,
+    "tls_version": "TLSv1.2",
+    "cipher": [
+      "ECDHE-RSA-AES256-GCM-SHA384",
+      "TLSv1.2",
+      256
+    ],
+    "sha256": "3ac3888f3f80a593857607bcb50e000847fb5c6bfa0b36ff32bba0e1ea21761d",
+    "x509": "subject=C = EC, ST = Pichincha, L = Quito, O = Cenace, OU = Informatica, CN = Marco Bautista, emailAddress = mbautista@cenace.org.ec\nissuer=C = EC, ST = Pichincha, L = Quito, O = Cenace, OU = Informatica, CN = Marco Bautista, emailAddress = mbautista@cenace.org.ec\nnotBefore=Jun 24 20:20:41 2008 GMT\nnotAfter=Jun 24 20:20:41 2009 GMT",
+    "verifies_with_system_ca": false,
+    "verify_error": "SSLCertVerificationError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: EE certificate key too weak (_ssl.c:1010)"
+  },
+  "www.cenace.gob.ec:443": {
+    "host": "www.cenace.gob.ec",
+    "port": 443,
+    "tls_version": "TLSv1.2",
+    "cipher": [
+      "ECDHE-RSA-AES256-GCM-SHA384",
+      "TLSv1.2",
+      256
+    ],
+    "sha256": "524c72c1b6ae5e3299e8cb4c15ee387da8544fbd2438d48ce59b69dc13c56956",
+    "x509": "subject=CN = *.cenace.gob.ec\nissuer=C = GB, O = Sectigo Limited, CN = Sectigo Public Server Authentication CA DV R36\nnotBefore=Nov 12 00:00:00 2025 GMT\nnotAfter=Nov 12 23:59:59 2026 GMT",
+    "verifies_with_system_ca": false,
+    "verify_error": "SSLCertVerificationError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)"
+  }
+}

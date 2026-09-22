@@ -1,0 +1,11 @@
+User-agent: *
+Disallow: /.git/
+Disallow: /.tmb/
+Disallow: /casc/
+Disallow: /shortlink/
+Disallow: /video/
+Disallow: /wp-admin/
+Disallow: /wp-includes/
+
+
+

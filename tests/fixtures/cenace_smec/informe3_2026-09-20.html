@@ -1,0 +1,16 @@
+<html>
+<head>
+<script language="JavaScript">
+    // Si la sesión ha finalizado cerramos la ventana
+    if (opener.opener)
+    {
+        opener.opener.window.location = "/SMEC" + "/Index.do?sesionExpire=1";
+        opener.window.close();
+        window.close();
+    } else {     
+        opener.window.location = "/SMEC" + "/Index.do?sesionExpire=1";
+        window.close();
+    }
+</script>
+</head>
+</html>
