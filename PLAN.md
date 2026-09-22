@@ -151,36 +151,103 @@ disallows crawlers; API use is governed by their terms (free non-commercial, att
 treats those hosts as exempt and documents it. NOAA ONI is available from PSL (`oni.data`) and CPC
 (`oni.ascii.txt`), 1950→.
 
-**Catchment geometry — probed 2026-09-22 (run 35727122874), and the obvious route is closed.**
-§3 asks for a centroid and an area per catchment, and neither can be looked up: both are
-properties of a catchment boundary, which is a property of a dam location and a flow network.
-The plan for it was HydroSHEDS' HydroBASINS, whose `NEXT_DOWN` topology turns "the catchment
-above this dam" into "the sub-basins that drain into it" and whose `SUB_AREA` gives the area
-with no geometry work. `data.hydrosheds.org/file/hydrobasins/standard/hybas_sa_lev{06,08,10,12}_v1c.zip`
-**answers 403 with a 5,767-byte HTML page** for every level, to a plain GET and a ranged one
-alike, so that route needs either a different host or a registration step that a workflow cannot
-do unattended. Finding another source for the boundaries is now the first task of the basins
-work, not a detail of it.
+**Catchment geometry — probed four times on 2026-09-22 (runs 35727122874, 35730548955,
+35731329897 and 35732611773), and HydroSHEDS is closed to this project for a reason that is now
+diagnosed rather than guessed.** §3 asks for a centroid and an area per catchment, and neither
+can be looked up: both are properties of a catchment boundary, which is a property of a dam
+location and a flow network. The plan for it was HydroSHEDS' HydroBASINS, whose `NEXT_DOWN`
+topology turns "the catchment above this dam" into "the sub-basins that drain into it" and whose
+`SUB_AREA` gives the area with no geometry work.
 
-The pour points themselves are in better shape. **Wikidata's SPARQL endpoint answered** with 23
-Ecuadorian dams and plants carrying coordinates, six of the seven matched by label:
+A 403 is not one fact but three, with different fixes: the host refuses the address, or it
+refuses the client, or the path is gone. All three were tested and only one survives.
+`data.hydrosheds.org/` **403s at the root**; `hybas_sa_lev01-12_v1c.zip` 403s to this project's
+User-Agent and **403s to a browser's**; and so does the identical URL lifted from HydroSHEDS' own
+product page, which itself answers **200 with 47,522 bytes and 31 archive links, every one of
+them pointing back at `data.hydrosheds.org`**. The paths are current and the host refuses this
+address — the failure `datosabiertos.gob.ec` already has in §2.5. **No different request from a
+GitHub runner gets past it**, which retires "try it another way" as a line of work. The page also
+corrected the naming: one zip per continent carrying all twelve levels, `hybas_sa_lev01-12_v1c.zip`,
+not one file per level, so the four per-level URLs the first probe asked for never existed. That
+cost nothing only because the host refuses everything, and would have been four wrong 404s the
+day that changes.
 
-| site | basin | Wikidata | coordinates |
+Because the block is on the *address*, the one untried route is a different address. The
+development sandbox refuses these hosts by an egress allowlist rather than by their choice — its
+proxy says so in as many words — so **adding `data.hydrosheds.org` to this environment's network
+egress settings would test whether HydroSHEDS refuses this address too, or only GitHub's**. That
+is one setting and one request, and it is the cheapest remaining shot at the dataset the plan was
+built around.
+
+**No mirror of it exists on the two hosts that would ordinarily carry one.** Zenodo answers 200
+to quoted searches for `"HydroBASINS"` (50 records), `"HydroATLAS"` (22), `"Global Dam Watch"`
+(18) and `"GRanD"` (25,168), and **not one returned record names any of them in its title**;
+figshare's search API returns **zero articles** for the same terms. A negative result is worth as
+much as a positive one here, because it redirects the work: the task is not "find the mirror", it
+is "find a different dataset".
+
+**ArcGIS Online is reachable, anonymous, and holds Ecuador's own answer to the same question** —
+the country delineates `unidades hidrográficas` by the Pfafstetter method, whose codes encode
+upstream topology in their digits, which is what `NEXT_DOWN` was wanted for. One hit is that:
+
+| service | layer | geometry | fields |
 |---|---|---|---|
-| mazar | paute | Q1751861 | −2.5953091, −78.6218378 |
-| coca_codo_sinclair | coca | Q19277520 | −0.1979037, −77.6849914 |
-| agoyan | pastaza | Q5760779 | −1.39852778, −78.37755556 |
-| minas_san_francisco | jubones | Q65196242 | −3.3221588, −79.6016026 |
-| manduriacu | guayllabamba | Q65196233 | 0.21480556, −78.91233333 |
-| delsitanisagua | zamora | Q65196191 | −4.04588889, −78.98377778 |
+| `Fig_13__B_UnidadesHidrográficasN4Pfastetter` (`services7.arcgis.com/NWWHhu45fOJtCgG3`) | 0 | polygon | `FID`, `NIVEL_4`, `NIVEL_3`, `Shape__Area`, `Shape__Length` |
+| `04Subcuencas_Globil` (WWF) | `Subcuencas_Mira_Mataje1` | polygon | `NMGCUENID3`, `Area`, `Area_ha`, `Cuenca`, … |
+| `Subcuencas_Mira_Mataje_RSC` (WWF) | `Subcuencas_RC_Mira_Mataje` | polygon | `Area_ha`, `Area_km2`, `Name`, `A_ICA`, `A_IRH`, … |
+| `MM_Subcuencas` (WWF) | `Subcuencas` | polygon | `NMGCUENID3`, `Area`, `Area_ha`, `Cuenca`, … |
 
-Marcel Laniado (Daule-Peripa) matched nothing, because the probe searches on the first word of
-its query string and the label is not "Daule-Peripa". These are **one source, so they are not yet
-verified coordinates**: the second opinion was to be OpenStreetMap, and Overpass answered **504**
-to the Ecuador-wide query. A lighter query, or one of the other Overpass instances, is the next
-attempt. Both hosts disallow crawlers in `robots.txt` (`Disallow: /sparql`, `Disallow: /api/`)
-and both publish API terms instead, which is the same situation as Open-Meteo above and is
-handled the same way.
+Two things to be clear-eyed about before treating any of that as a source. The three WWF layers
+cover the **Mira–Mataje** border basin only, so they are a check on method, not a source for the
+fleet. And the Pfafstetter layer is `Fig 13_` of somebody's study, published from a personal
+ArcGIS account: it is **a lead to a dataset, not a citable source**, and level 4 is coarse — whether
+an N4 unit resolves the catchment above a particular dam is untested. The work it points at is to
+find the official publication of the same units, from SENAGUA or MAATE, and verify this against
+it. That is now the first task of the basins work, not a detail of it.
+
+**The pour points are in much better shape, and five of the seven now have the two independent
+sources this repository requires before it writes `verified` anywhere.** Wikidata's SPARQL
+endpoint answers with 23 Ecuadorian dams and plants carrying coordinates and **all seven match**;
+the second opinion is OpenStreetMap, asked one small bounding box per dam (run 35734086216, and
+Marcel Laniado from run 35730548955):
+
+| site | basin | Wikidata | OpenStreetMap | km apart | verdict |
+|---|---|---|---|---|---|
+| manduriacu | guayllabamba | Q65196233, 0.21480556, −78.91233333 | `way/562129245` Central Hidroeléctrica Manduriacu | **0.02** | agreed |
+| coca_codo_sinclair | coca | Q19277520, −0.1979037, −77.6849914 | `way/310742588` Coca Codo Sinclair | **0.11** | agreed |
+| marcel_laniado | daule | Q19381026, −0.927, −79.75 | `way/550243261` Represa Daule-Peripa | **0.46** | agreed |
+| agoyan | pastaza | Q5760779, −1.39852778, −78.37755556 | `node/4976262596` Central Hidroagoyan | **0.56** | agreed |
+| mazar | paute | Q1751861, −2.5953091, −78.6218378 | `node/5741662743` Central hidroeléctrica Mazar | **0.69** | agreed |
+| delsitanisagua | zamora | Q65196191, −4.04588889, −78.98377778 | `node/2489320895` Delsitanisagua | **8.18** | **disagree** |
+| minas_san_francisco | jubones | Q65196242, −3.3221588, −79.6016026 | — | — | no answer yet |
+
+**Delsitanisagua is the interesting row, and it is exactly what this comparison exists to catch.**
+Both sources name the plant and they place it **8.18 km apart** — far more than a mapping
+imprecision and more than a sub-basin. The likely explanation is that they are naming different
+structures: Delsitanisagua is run-of-river on the Zamora, and on such a scheme the intake and the
+powerhouse sit at opposite ends of a headrace of exactly this order. That distinction is not a
+detail here, because **a catchment is defined at the intake and not at the machines**: taking the
+powerhouse would hand this basin several kilometres of river it does not drain. Neither point may
+be used until which is which is established, and averaging them would produce a place that is
+neither.
+
+Marcel Laniado is now matched because the probe compares alias lists with accents and punctuation
+folded away instead of the first word of a query string; its QID, **Q19381026**, was not in this
+plan before. `minas_san_francisco` has never had an answer from Overpass in four runs — every
+instance refused it — so its column is blank for want of a reply, not for want of a dam.
+
+Nine further Ecuadorian entries came back that no site claimed, and they are recorded here because
+they are where the next alias or the next plant comes from: Sopladora (Q23887004), Molino
+(Q65196245), San Francisco (Q65196252), Represa de Paute (Q453432), Abanico (Q23886977), Pucará
+(Q65196249), Quijos (Q65196199), Alluriquín (Q65196189), Sarapullo (Q65196256).
+
+One limit to keep in view when reading the blanks: the OSM box is drawn **around the Wikidata
+point**, which makes this a confirmation test rather than an independent search. It can confirm
+agreement and it can report a disagreement like Delsitanisagua's, but it cannot find a dam that
+OSM places somewhere else entirely — only the country-wide query can, and that is the one that
+still answers 504. Both hosts disallow crawlers in `robots.txt` (`Disallow: /sparql`,
+`Disallow: /api/`) and both publish API terms instead, which is the same situation as Open-Meteo
+above and is handled the same way.
 
 ### 2.5 Open-data portals
 
@@ -374,10 +441,24 @@ Two things the first Actions runs settled:
 That backfill ([run 35675850138](https://github.com/rengarcia/hydro-look/actions/runs/35675850138/job/106582137605))
 is long finished and reconciled; §6's Phase 2 and Phase 3 entries record what it and its successors
 found. **What is left of Phase 1 is one acceptance criterion and a clock: three consecutive green
-*scheduled* daily runs.** The schedule's first firing was due 2026-09-22 12:15 UTC and had not
-appeared by 12:29, which is ordinary — GitHub delays scheduled workflows under load — but it does
-mean the earliest this can close is the third calendar day after the first run that actually fires,
-not after the first that was due.
+*scheduled* daily runs.** The schedule's first firing was due 2026-09-22 12:15 UTC and **had still
+not appeared at 13:07**, with nothing queued. That is not a registration problem — `daily.yml` has
+been on `main` since 2026-09-22 01:26 UTC and in its final form since 01:34, so the schedule had
+over ten hours to register before the slot. It is GitHub's scheduler, and this repository now has
+a measurement of it rather than an expectation: **the only scheduled run in its life, `probe-ords`
+at the 06:05 slot on 2026-09-22, started at 11:27 — five hours and twenty-two minutes late.** One
+observation is not a rate, but it is the only one there is, and it says the criterion cannot be
+read off a calendar. The earliest it can close is the third calendar day after the first run that
+actually fires, not after the first that was due.
+
+That delay has a second edge worth naming, because it reaches the same hazard as the backfill rule
+below without anyone dispatching anything. A firing delayed by more than about four and a quarter
+hours arrives after the *next* slot is due, so both scheduled runs are in the `ingest` group at
+once. Two runs there are safe while one of them is running — the second simply waits. What is not
+safe is either of them sitting **pending**: GitHub keeps one pending run per group, so whichever
+is waiting when a third enters is cancelled, and a cancelled run does not count toward this
+criterion. The mitigation already exists and needs no change — each run re-reads a trailing year,
+so a lost run repairs itself — but a lost run still costs a day of the three.
 
 **Do not dispatch a backfill in the minutes around 12:15 or 16:30 UTC.** `backfill.yml` and
 `daily.yml` share the `ingest` concurrency group, and `cancel-in-progress: false` does not mean
@@ -565,15 +646,29 @@ harmless. Seasonal ensembles remain deferred. ONI is a centred three-month avera
 the latest revised series; backtests must not assume its value was available at the beginning of its
 labelled month.
 
-**What the 2026-09-22 probe (run 35727122874) established about closing that**, in full in §2.4:
-six of the seven pour points are available from Wikidata with QIDs, from one source rather than the
-two this repository asks for, because Overpass answered 504; and the catchment boundaries have no
-route at all yet, because HydroSHEDS answers 403 to every HydroBASINS download. So the order of work
-is now: find a reachable source of sub-basin boundaries with upstream topology, get the second
-opinion on the coordinates, then delineate, and only then rewrite `basins.csv`. Nothing about the
-covariate loader changes — it already takes one row per basin and archives what it fetches. What is
-missing is the table it reads, and `scripts/probe-basins.ts` is what re-asks these questions once
-there is a new candidate to ask about.
+**What the 2026-09-22 probes established about closing that**, in full in §2.4: HydroSHEDS refuses
+the runner's *address*, not its User-Agent and not a stale path — the root, a browser User-Agent and
+the URL taken from HydroSHEDS' own live product page are all 403 — so no different request from
+Actions reaches it, and neither Zenodo nor figshare carries a mirror. What is reachable is ArcGIS
+Online, where Ecuador's Pfafstetter `unidades hidrográficas` are served as anonymous, queryable
+polygons; the hit found is a figure from a personal account rather than an agency publication, so
+it is a lead to a dataset rather than a citable source. The second opinion on the coordinates is
+most of the way done: **five of the seven pour points now agree between Wikidata and OpenStreetMap
+within a kilometre** (Manduriacu to 0.02 km), Minas San Francisco has had no Overpass answer in
+four runs, and Delsitanisagua's two sources name the same plant **8.18 km apart** — almost
+certainly intake versus powerhouse on a run-of-river scheme, which must be settled before either
+point is used, since a catchment is defined at the intake. So the order of work is unchanged but
+better aimed: find the official publication of those units (SENAGUA or MAATE) or a boundary set
+with upstream topology, settle Delsitanisagua and get an answer for Minas San Francisco, then
+delineate, and only then rewrite `basins.csv`. Nothing about the covariate loader changes — it already takes one row per
+basin and archives what it fetches. What is missing is the table it reads, and
+`scripts/probe-basins.ts` is what re-asks these questions once there is a new candidate to ask
+about.
+
+One setting would reopen the route the plan was built around, and it is not in this repository: the
+block is on the address, and the development sandbox is a different address that refuses these
+hosts only by its own egress allowlist. Adding `data.hydrosheds.org` to this environment's network
+egress settings tests whether HydroSHEDS refuses everyone or only GitHub.
 
 
 Original phase scope:
