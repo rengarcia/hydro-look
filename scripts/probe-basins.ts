@@ -70,9 +70,13 @@ const PLANTS = [
   { site: "marcel_laniado", basin: "daule", qid: "", aliases: ["marcel laniado", "daule peripa"] },
 ] as const;
 
-const HYDROSHEDS = "https://data.hydrosheds.org/file/hydrobasins/standard";
-/** South America, the four levels worth weighing: coarse and small against fine and large. */
-const HYBAS_LEVELS = [6, 8, 10, 12];
+/**
+ * The real naming, read off the product page on 2026-09-22: one zip per continent carrying all
+ * twelve levels, not one per level. The 2026-09-22 run asked for `hybas_sa_lev06_v1c.zip` and
+ * four siblings that do not exist — which cost nothing only because the host refuses this
+ * address whatever is asked of it, and would have been four wrong 404s the day that changes.
+ */
+const HYBAS_SA = "https://data.hydrosheds.org/file/hydrobasins/standard/hybas_sa_lev01-12_v1c.zip";
 
 /** What a browser sends, used once, to tell a User-Agent block apart from an address block. */
 const BROWSER_UA =
@@ -136,6 +140,19 @@ const fold = (s: string): string =>
     .trim();
 
 const bytesOf = (n: number | null): string => (n === null ? "—" : n.toLocaleString("en-US"));
+
+/**
+ * Words that make a title or a layer name plausibly about drainage boundaries.
+ *
+ * The 2026-09-22 run needed this and did not have it: it took the three top hits of every search
+ * and called the largest file in each a boundary candidate, so its report led with fourteen of
+ * them — a Tibetan Plateau hydrograph set, EU ecosystem services, Global Fishing Watch, and a
+ * PLOS figure of the Cauca River. A search engine answering *something* is not a source, and a
+ * probe that cannot tell the difference is worse than one that finds nothing, because the report
+ * is what the plan gets written from.
+ */
+const HYDRO_WORDS = ["cuenca", "subcuenca", "microcuenca", "hidrograf", "pfafstetter", "watershed", "basin", "drenaje", "catchment", "hydrobasins", "hydroatlas", "hydrosheds"];
+const hydroScore = (s: string): number => HYDRO_WORDS.filter((w) => fold(s).includes(w)).length;
 
 /** Size and reachability without pulling the file: HEAD, or a one-byte range when HEAD is refused. */
 async function probeDownload(probe: string, url: string, headers: Record<string, string> = {}): Promise<number | null> {
@@ -209,8 +226,9 @@ async function probeRobots(host: string): Promise<void> {
 async function probeHydroshedsBlock(): Promise<void> {
   await probeDownload("hydrosheds root (repo UA)", "https://data.hydrosheds.org/");
   await sleep(1000);
-  const file = `${HYDROSHEDS}/hybas_sa_lev06_v1c.zip`;
-  await probeDownload("hydrobasins lev06 (browser UA)", file, {
+  await probeDownload("hydrobasins sa (repo UA)", HYBAS_SA);
+  await sleep(1000);
+  await probeDownload("hydrobasins sa (browser UA)", HYBAS_SA, {
     "user-agent": BROWSER_UA,
     accept: "*/*",
     referer: "https://www.hydrosheds.org/",
@@ -232,10 +250,10 @@ async function probeHydroshedsBlock(): Promise<void> {
       bytes: body.length,
       note: links.length ? `${links.length} archive links on ${hosts.join(", ")}; e.g. ${links[0]}` : "no archive links in the HTML (the page builds them in JS)",
     });
-    for (const link of links.filter((l) => /hybas_sa_lev0?6/i.test(l)).slice(0, 1)) {
+    for (const link of links.filter((l) => /hybas_sa_/i.test(l)).slice(0, 1)) {
       await sleep(1000);
-      const bytes = await probeDownload("hydrobasins lev06 (link from the page)", link);
-      if (bytes) boundaries.push({ source: "hydrosheds", title: "HydroBASINS South America level 6", url: link, bytes, note: "NEXT_DOWN topology and SUB_AREA per sub-basin" });
+      const bytes = await probeDownload("hydrobasins sa (link from the page)", link);
+      if (bytes) boundaries.push({ source: "hydrosheds", title: "HydroBASINS South America, levels 1-12", url: link, bytes, note: "NEXT_DOWN topology and SUB_AREA per sub-basin" });
     }
   } catch (error) {
     record({ probe: "hydrosheds product page", url: page, error: String(error) });
@@ -249,7 +267,9 @@ async function probeHydroshedsBlock(): Promise<void> {
  * plus upstream area already summed, which is most of §3's arithmetic done.
  */
 async function probeMirrors(): Promise<void> {
-  for (const q of ["hydrobasins", "hydroatlas", "global dam watch"]) {
+  // Quoted, and matched against the title afterwards. Unquoted, `global dam watch` is three
+  // OR-ed words and Zenodo answers with 300,885 records led by Global Fishing Watch.
+  for (const q of ['"HydroBASINS"', '"HydroATLAS"', '"Global Dam Watch"', '"GRanD" reservoirs']) {
     const url = `https://zenodo.org/api/records?q=${encodeURIComponent(q)}&size=5`;
     try {
       const response = await get(url, { headers: { accept: "application/json" } });
@@ -263,11 +283,13 @@ async function probeMirrors(): Promise<void> {
         hits: { total?: number; hits: { title: string; doi?: string; links?: { self_html?: string }; files?: { key: string; size: number; links?: { self?: string } }[] }[] };
       };
       const hits = json.hits.hits ?? [];
-      for (const hit of hits.slice(0, 3)) {
+      // The title has to name the thing searched for, or it is a coincidence, not a mirror.
+      const needle = fold(q.replace(/"/g, ""));
+      for (const hit of hits.filter((h) => fold(h.title).includes(needle) || hydroScore(h.title) > 0).slice(0, 3)) {
         const biggest = (hit.files ?? []).sort((a, b) => b.size - a.size)[0];
         if (biggest?.links?.self) {
           boundaries.push({
-            source: `zenodo (${q})`,
+            source: `zenodo ${q}`,
             title: hit.title.slice(0, 90),
             url: biggest.links.self,
             bytes: biggest.size,
@@ -280,7 +302,7 @@ async function probeMirrors(): Promise<void> {
         url,
         status: response.status,
         bytes: body.length,
-        note: `${json.hits.total ?? hits.length} records; top: ${hits.slice(0, 3).map((h) => h.title.slice(0, 50)).join(" / ") || "none"}`,
+        note: `${json.hits.total ?? hits.length} records; kept ${hits.filter((h) => fold(h.title).includes(needle)).length} whose title names it; top: ${hits.slice(0, 3).map((h) => h.title.slice(0, 44)).join(" / ") || "none"}`,
       });
     } catch (error) {
       record({ probe: `zenodo "${q}"`, url, error: String(error) });
@@ -293,7 +315,7 @@ async function probeMirrors(): Promise<void> {
     const response = await get(search, {
       method: "POST",
       headers: { "content-type": "application/json", accept: "application/json" },
-      body: JSON.stringify({ search_for: "HydroATLAS", page_size: 5 }),
+      body: JSON.stringify({ search_for: '"HydroATLAS" OR "HydroBASINS"', page_size: 10 }),
     });
     const body = await response.text();
     if (!response.ok) {
@@ -308,8 +330,13 @@ async function probeMirrors(): Promise<void> {
       bytes: body.length,
       note: `${articles.length} articles; top: ${articles.slice(0, 3).map((a) => `${a.id} ${a.title.slice(0, 40)}`).join(" / ") || "none"}`,
     });
-    const first = articles[0];
-    if (!first) return;
+    // Only an article whose own title names it is worth opening; the 2026-09-22 run opened a
+    // PLOS figure of the Cauca River because it was simply first.
+    const first = articles.find((a) => hydroScore(a.title) > 0);
+    if (!first) {
+      record({ probe: "figshare HydroATLAS", url: search, status: response.status, bytes: body.length, note: `${articles.length} articles, none whose title names a drainage dataset` });
+      return;
+    }
     await sleep(1000);
     const detail = `https://api.figshare.com/v2/articles/${first.id}`;
     const dresponse = await get(detail, { headers: { accept: "application/json" } });
@@ -344,10 +371,19 @@ async function probeMirrors(): Promise<void> {
  * asked for.
  */
 async function probeArcgis(): Promise<void> {
-  const queries = ["unidades hidrograficas Ecuador", "cuencas hidrograficas Ecuador", "Ecuador Pfafstetter"];
-  const services: { title: string; url: string }[] = [];
+  const queries = [
+    'unidades hidrograficas Ecuador type:"Feature Service"',
+    'cuencas hidrograficas Ecuador type:"Feature Service"',
+    'Ecuador Pfafstetter type:"Feature Service"',
+    'Ecuador subcuencas type:"Feature Service"',
+  ];
+  // Scored and pooled across every query, because the run that matters is the one that opens
+  // the right service. The 2026-09-22 run took the first four it saw, which came from the two
+  // queries that returned nothing relevant, and so never opened the one hit that was:
+  // "Fig 13_ B_UnidadesHidrográficasN4Pfastet".
+  const services = new Map<string, { title: string; url: string; score: number }>();
   for (const q of queries) {
-    const url = `https://www.arcgis.com/sharing/rest/search?f=json&num=8&q=${encodeURIComponent(q)}`;
+    const url = `https://www.arcgis.com/sharing/rest/search?f=json&num=10&q=${encodeURIComponent(q)}`;
     try {
       const response = await get(url, { headers: { accept: "application/json" } });
       const body = await response.text();
@@ -358,13 +394,18 @@ async function probeArcgis(): Promise<void> {
       }
       const json = JSON.parse(body) as { total?: number; results?: { title: string; type: string; owner: string; url?: string }[] };
       const results = json.results ?? [];
-      for (const r of results) if (r.url && services.length < 6) services.push({ title: `${r.title} (${r.owner})`, url: r.url });
+      for (const r of results) {
+        if (!r.url) continue;
+        const score = hydroScore(r.title);
+        const seen = services.get(r.url);
+        if (!seen || score > seen.score) services.set(r.url, { title: `${r.title} (${r.owner})`, url: r.url, score });
+      }
       record({
-        probe: `arcgis "${q}"`,
+        probe: `arcgis "${q.replace(' type:"Feature Service"', "")}"`,
         url,
         status: response.status,
         bytes: body.length,
-        note: `${json.total ?? results.length} items; ${results.slice(0, 4).map((r) => `${r.title.slice(0, 40)} [${r.type}]`).join(" / ") || "none"}`,
+        note: `${json.total ?? results.length} items; ${results.slice(0, 4).map((r) => `${r.title.slice(0, 40)} [${r.type}]${hydroScore(r.title) ? " *" : ""}`).join(" / ") || "none"}`,
       });
     } catch (error) {
       record({ probe: `arcgis "${q}"`, url, error: String(error) });
@@ -372,22 +413,53 @@ async function probeArcgis(): Promise<void> {
     await sleep(1000);
   }
 
-  for (const service of services.slice(0, 4)) {
+  const ranked = [...services.values()].sort((a, b) => b.score - a.score).slice(0, 4);
+  for (const service of ranked) {
     const url = `${service.url}?f=json`;
     try {
       const response = await get(url, { headers: { accept: "application/json" } });
       const body = await response.text();
       const json = response.ok ? (JSON.parse(body) as { layers?: { id: number; name: string }[]; error?: { message?: string } }) : null;
       const layers = json?.layers ?? [];
+      // Which layer, if any, is actually a drainage boundary — not just which service answered.
+      const best = layers.map((l) => ({ ...l, score: hydroScore(l.name) })).sort((a, b) => b.score - a.score)[0];
       record({
         probe: `arcgis service ${service.title.slice(0, 40)}`,
         url: service.url,
         status: response.status,
         bytes: body.length,
-        note: json?.error ? `needs a token: ${json.error.message ?? ""}` : `${layers.length} layers: ${layers.slice(0, 4).map((l) => l.name).join(", ")}`,
+        note: json?.error
+          ? `needs a token: ${json.error.message ?? ""}`
+          : `${layers.length} layers; best drainage match ${best && best.score > 0 ? `"${best.name}"` : "none"}`,
       });
-      if (layers.length && !json?.error) {
-        boundaries.push({ source: "arcgis", title: service.title, url: service.url, bytes: null, note: `queryable per feature; layers: ${layers.slice(0, 4).map((l) => l.name).join(", ")}` });
+      if (!best || best.score === 0 || json?.error) {
+        await sleep(1000);
+        continue;
+      }
+
+      // The fields are the answer to the question behind the question: Pfafstetter codes encode
+      // the upstream topology in their digits, so a code column is worth as much as NEXT_DOWN.
+      await sleep(1000);
+      const layerUrl = `${service.url}/${best.id}?f=json`;
+      const lresponse = await get(layerUrl, { headers: { accept: "application/json" } });
+      const lbody = await lresponse.text();
+      const layer = lresponse.ok ? (JSON.parse(lbody) as { name?: string; geometryType?: string; fields?: { name: string }[] }) : null;
+      const fields = (layer?.fields ?? []).map((f) => f.name);
+      record({
+        probe: `arcgis layer "${best.name.slice(0, 34)}"`,
+        url: layerUrl,
+        status: lresponse.status,
+        bytes: lbody.length,
+        note: `${layer?.geometryType ?? "?"}; fields: ${fields.slice(0, 12).join(", ") || "none"}`,
+      });
+      if (layer?.geometryType === "esriGeometryPolygon") {
+        boundaries.push({
+          source: "arcgis",
+          title: `${service.title} — layer ${best.id} "${best.name}"`,
+          url: `${service.url}/${best.id}/query`,
+          bytes: null,
+          note: `polygons, queryable per feature, no download; fields: ${fields.slice(0, 8).join(", ")}`,
+        });
       }
     } catch (error) {
       record({ probe: `arcgis service ${service.title.slice(0, 40)}`, url: service.url, error: String(error) });
@@ -452,22 +524,37 @@ async function probeWikidata(): Promise<Record<string, (Point & { matchedBy: str
   return found;
 }
 
+/** What came back for a site, so a blank cell cannot be read as a statement about OSM. */
+type OsmHit = Point & { name: string; kmFromWikidata: number; byName: boolean };
+interface OsmResult {
+  hit: OsmHit | null;
+  /** `match`, `nearest-only`, `empty box`, `no answer`, or `no anchor`. */
+  outcome: string;
+}
+
 /**
  * OpenStreetMap as the second opinion, one small box per dam instead of the country-wide query
  * that timed out. Both the name match and the nearest named feature are reported: a name match
  * at 140 m is a confirmed pour point, and a nearest feature at 9 km under a different name is
  * the kind of near-miss that must not be averaged into a coordinate.
+ *
+ * Every site now carries the outcome that produced its row, because the 2026-09-22 run could not
+ * tell two very different things apart. It pinned itself to the first instance that answered and
+ * never left it, so when that server returned 504 to Coca Codo Sinclair and Minas San Francisco
+ * and 429 to Manduriacu and Delsitanisagua, four sites were printed with an empty OSM column
+ * under a paragraph explaining that an empty column means OSM has nothing within 13 km. It means
+ * no such thing when nobody answered the question.
  */
 async function probeOverpass(
   wikidata: Record<string, (Point & { matchedBy: string }) | null>,
-): Promise<Record<string, (Point & { name: string; kmFromWikidata: number; byName: boolean }) | null>> {
-  const found: Record<string, (Point & { name: string; kmFromWikidata: number; byName: boolean }) | null> = {};
-  let endpoint: string | null = null;
+): Promise<Record<string, OsmResult>> {
+  const found: Record<string, OsmResult> = {};
+  let lastGood: string | null = null;
 
   for (const plant of PLANTS) {
     const anchor = wikidata[plant.site];
     if (!anchor) {
-      found[plant.site] = null;
+      found[plant.site] = { hit: null, outcome: "no anchor" };
       continue;
     }
     const d = 0.12; // ~13 km, wide enough to catch a disagreement and small enough to be cheap
@@ -481,20 +568,21 @@ async function probeOverpass(
 );
 out center tags;`;
 
-    let done = false;
-    // Once one instance has answered, stay on it: spreading seven queries over four servers is
-    // worse manners than sending them all to the one that is willing.
-    const attempts: string[] = endpoint ? [endpoint] : OVERPASS;
+    // Start with whichever instance last answered, then fall through to the others.
+    const attempts: string[] = lastGood ? [lastGood, ...OVERPASS.filter((o) => o !== lastGood)] : [...OVERPASS];
+    found[plant.site] = { hit: null, outcome: "no answer" };
     for (const candidate of attempts) {
       try {
         const response = await get(candidate, { method: "POST", body: new URLSearchParams({ data: query }) });
         const body = await response.text();
         if (!response.ok) {
-          record({ probe: `overpass ${plant.site}`, url: candidate, status: response.status, note: body.slice(0, 120) });
-          await sleep(1000);
+          record({ probe: `overpass ${plant.site}`, url: candidate, status: response.status, note: body.slice(0, 80).replace(/\s+/g, " ") });
+          // 429 is "you, slower" and 504 is "me, busy". Both deserve another server and a pause
+          // long enough to be an apology rather than a retry storm.
+          await sleep(response.status === 429 ? 5000 : 1500);
           continue;
         }
-        endpoint = candidate;
+        lastGood = candidate;
         const json = JSON.parse(body) as {
           elements: { type: string; id: number; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> }[];
         };
@@ -507,13 +595,12 @@ out center tags;`;
           }))
           .filter((i): i is { name: string; id: string; lat: number; lon: number } => i.lat !== undefined && i.lon !== undefined);
         const byName = items.find((i) => plant.aliases.some((a) => fold(i.name).includes(fold(a))));
-        const nearest = items
-          .filter((i) => i.name)
-          .sort((a, b) => kmApart(anchor, a) - kmApart(anchor, b))[0];
+        const nearest = items.filter((i) => i.name).sort((a, b) => kmApart(anchor, a) - kmApart(anchor, b))[0];
         const hit = byName ?? nearest;
-        found[plant.site] = hit
-          ? { lat: hit.lat, lon: hit.lon, id: hit.id, name: hit.name || "(unnamed)", kmFromWikidata: kmApart(anchor, hit), byName: Boolean(byName) }
-          : null;
+        found[plant.site] = {
+          hit: hit ? { lat: hit.lat, lon: hit.lon, id: hit.id, name: hit.name || "(unnamed)", kmFromWikidata: kmApart(anchor, hit), byName: Boolean(byName) } : null,
+          outcome: byName ? "match" : nearest ? "nearest-only" : "empty box",
+        };
         record({
           probe: `overpass ${plant.site}`,
           url: candidate,
@@ -521,14 +608,12 @@ out center tags;`;
           bytes: body.length,
           note: `${items.length} dams/plants in the box; ${byName ? `name match ${byName.name}` : nearest ? `no name match, nearest named is ${nearest.name}` : "nothing named"}`,
         });
-        done = true;
         break;
       } catch (error) {
         record({ probe: `overpass ${plant.site}`, url: candidate, error: String(error) });
-        await sleep(1000);
+        await sleep(1500);
       }
     }
-    if (!done) found[plant.site] ??= null;
     await sleep(1000);
   }
   return found;
@@ -550,10 +635,6 @@ async function main(): Promise<void> {
 
   // Is the 403 the address, the client or the path? Then: who else serves this data?
   await probeHydroshedsBlock();
-  for (const level of HYBAS_LEVELS) {
-    await probeDownload(`hydrobasins lev${String(level).padStart(2, "0")}`, `${HYDROSHEDS}/hybas_sa_lev${String(level).padStart(2, "0")}_v1c.zip`);
-    await sleep(1000);
-  }
   await probeMirrors();
   await probeArcgis();
 
@@ -568,27 +649,32 @@ async function main(): Promise<void> {
 
   const coordinates = PLANTS.map((plant) => {
     const a = wikidata[plant.site];
-    const b = overpass[plant.site];
+    const b = overpass[plant.site]?.hit ?? null;
     return {
       site: plant.site,
       basin: plant.basin,
       wikidata: a,
       osm: b,
+      outcome: overpass[plant.site]?.outcome ?? "not asked",
       km_apart: a && b ? kmApart(a, b) : null,
       agrees: Boolean(a && b && b.byName && kmApart(a, b) <= 1),
     };
   });
 
-  // The largest reachable candidate is not the answer; a named one that actually serves bytes is.
-  const reachable = boundaries.filter((b) => b.bytes === null || b.bytes > 0);
-  const verdict = reachable.length
+  const verdict = boundaries.length
     ? [
-        `**${reachable.length} boundary candidate${reachable.length === 1 ? "" : "s"} to weigh**, listed above. The next run picks one,`,
-        "downloads it inside the job, clips it to Ecuador and writes the per-dam catchments; nothing",
-        "in `basins.csv` changes until a delineation exists to put in it.",
+        `**${boundaries.length} boundary candidate${boundaries.length === 1 ? "" : "s"}**, listed above, each one a dataset whose own`,
+        "title or layer name says it is about drainage. The next run picks one, reads it inside the job,",
+        "and writes the per-dam catchments; nothing in `basins.csv` changes until a delineation exists to",
+        "put in it.",
       ].join(" ")
-    : "**No boundary source answered.** Until one does, `basins.csv` cannot hold a verified centroid or area, and the ERA5 climatology stays a single provisional point — that is the finding, not a gap to paper over.";
+    : [
+        "**No boundary source answered.** Until one does, `basins.csv` cannot hold a verified centroid or",
+        "area, and the ERA5 climatology stays a single provisional point — that is the finding, not a gap",
+        "to paper over.",
+      ].join(" ");
   const agreed = coordinates.filter((c) => c.agrees).length;
+  const unanswered = coordinates.filter((c) => c.outcome === "no answer").length;
 
   const finishedAt = nowUtc();
   const report = [
@@ -602,7 +688,7 @@ async function main(): Promise<void> {
     "|---|---|---|---|",
     ...(boundaries.length
       ? boundaries.map((b) => `| ${b.source} | [${b.title}](${b.url}) | ${bytesOf(b.bytes)} | ${b.note} |`)
-      : ["| — | none | — | every route probed below refused or returned nothing |"]),
+      : ["| — | none | — | every route probed below refused or returned nothing about drainage |"]),
     "",
     verdict,
     "",
@@ -614,20 +700,25 @@ async function main(): Promise<void> {
     "",
     "## Dam coordinates, from two sources that do not share editors",
     "",
-    "| site | basin | Wikidata | OSM | km apart | agrees |",
-    "|---|---|---|---|---|---|",
+    "| site | basin | Wikidata | OSM | km apart | outcome | agrees |",
+    "|---|---|---|---|---|---|---|",
     ...coordinates.map(
       (c) =>
         `| ${c.site} | ${c.basin} | ${c.wikidata ? `${c.wikidata.lat}, ${c.wikidata.lon} (${c.wikidata.id}, by ${c.wikidata.matchedBy})` : "—"} | ` +
-        `${c.osm ? `${c.osm.lat}, ${c.osm.lon} (${c.osm.id}, ${c.osm.name}${c.osm.byName ? "" : ", NOT a name match"})` : "—"} | ${c.km_apart ?? "—"} | ${c.agrees ? "yes" : "no"} |`,
+        `${c.osm ? `${c.osm.lat}, ${c.osm.lon} (${c.osm.id}, ${c.osm.name})` : "—"} | ${c.km_apart ?? "—"} | ${c.outcome} | ${c.agrees ? "yes" : "no"} |`,
     ),
     "",
     `**${agreed} of ${PLANTS.length} sites** have two sources that name the same dam within a kilometre. Only those`,
     "are pour points this repository may mark `verified`; a pair that disagrees by more than a sub-basin",
-    "is two different places and must not be averaged into one. A site whose OSM column says",
-    "`NOT a name match` was matched only by proximity, which is a lead, not a confirmation — and the",
-    "box is drawn around the Wikidata point, so a blank OSM column means *nothing within 13 km of",
-    "where Wikidata puts it*, which the country-wide query is the only way to rule on.",
+    "is two different places and must not be averaged into one.",
+    "",
+    "Read the outcome column before the blank cells, because they do not all mean the same thing.",
+    "`match` is a named agreement. `nearest-only` matched on proximity alone, which is a lead rather",
+    "than a confirmation. `empty box` is the only one that says something about OSM: nothing mapped",
+    "within 13 km of where Wikidata puts the dam, and since the box is drawn around the Wikidata point,",
+    "even that cannot rule on a dam OSM places somewhere else entirely — the country-wide query is the",
+    `only way to settle that. \`no answer\` says nothing about OSM at all: every instance refused, and`,
+    `**${unanswered} site${unanswered === 1 ? "" : "s"}** ended that way this run.`,
     "",
   ].join("\n");
 
