@@ -26,9 +26,10 @@ on:
           - ords-basin
           - smec
           - ords-plant-energy
+          - ords-historian
           - ords-daily
       from:
-        description: "First day, YYYY-MM-DD (levels reach 2014-09-20, SMEC 2016-05-01 or earlier)"
+        description: "First day, YYYY-MM-DD (levels reach 2014-09-20, SMEC 2016-05-01 or earlier; ords-historian pages by month)"
         required: true
       to:
         description: "Last day, YYYY-MM-DD (default: yesterday)"

@@ -55,6 +55,12 @@ interface ProbeRow {
   error: string;
 }
 
+/**
+ * The window as the dashboard itself sends it, deliberately *without* the day of overlap the
+ * ingestion adds. The 2026-08 control probe returned 30 values for 31 days through this window,
+ * which is how the exclusive local end was found; keeping the probe on the narrow window is what
+ * lets a later run notice if that behaviour ever changes.
+ */
 function monthWindow(year: number, month: number): Record<string, string> {
   const start: IsoDate = `${year}-${String(month).padStart(2, "0")}-01`;
   const next: IsoDate = month === 12 ? `${year + 1}-01-01` : `${year}-${String(month + 1).padStart(2, "0")}-01`;

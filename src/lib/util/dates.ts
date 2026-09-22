@@ -87,6 +87,55 @@ export function eachDay(from: IsoDate, to: IsoDate): IsoDate[] {
   return out;
 }
 
+export interface YearMonth {
+  year: number;
+  month: number;
+}
+
+/** Every calendar month touching `[from, to]`, ascending. Empty when `from` is after `to`. */
+export function eachMonth(from: IsoDate, to: IsoDate): YearMonth[] {
+  assertIsoDate(from);
+  assertIsoDate(to);
+  const out: YearMonth[] = [];
+  let year = yearOf(from);
+  let month = Number(monthOf(from));
+  const lastYear = yearOf(to);
+  const lastMonth = Number(monthOf(to));
+  while (year < lastYear || (year === lastYear && month <= lastMonth)) {
+    out.push({ year, month });
+    [year, month] = month === 12 ? [year + 1, 1] : [year, month + 1];
+  }
+  return out;
+}
+
+export function nextMonth({ year, month }: YearMonth): YearMonth {
+  return month === 12 ? { year: year + 1, month: 1 } : { year, month: month + 1 };
+}
+
+export function previousMonth({ year, month }: YearMonth): YearMonth {
+  return month === 1 ? { year: year - 1, month: 12 } : { year, month: month - 1 };
+}
+
+/** The month a local day falls in. */
+export function monthOfDate(date: IsoDate): YearMonth {
+  return { year: yearOf(date), month: Number(monthOf(date)) };
+}
+
+/** First local day of a month. */
+export function monthStart({ year, month }: YearMonth): IsoDate {
+  return `${year}-${String(month).padStart(2, "0")}-01`;
+}
+
+/** Last local day of a month. */
+export function monthEnd(ym: YearMonth): IsoDate {
+  return addDays(monthStart(nextMonth(ym)), -1);
+}
+
+/** `2026-09`, how a month is written in notes and logs. */
+export function monthLabel({ year, month }: YearMonth): string {
+  return `${year}-${String(month).padStart(2, "0")}`;
+}
+
 /** Today in Ecuador. */
 export function todayEc(now: Date = new Date()): IsoDate {
   return isoDateOfWallClock(toEcWallClock(now));

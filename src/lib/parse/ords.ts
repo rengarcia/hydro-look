@@ -60,6 +60,23 @@ function requireFields(rows: Json[], fields: string[], endpoint: string): void {
   }
 }
 
+/**
+ * Inflow the reports publish as a negative number, which is not a low reading but not a reading.
+ *
+ * `q_ingresado` is water entering the reservoir; it has no negative branch. The ORDS emits one
+ * on days before a plant's series begins: Minas San Francisco's level is null on 2018-10-01 and
+ * 2018-10-10 and its inflow on those two days is -4,999,995 and -3,999,996, against single
+ * digits either side and nothing else negative in 14,619 inflow readings. Whatever those
+ * magic numbers mean upstream, they are not m3/s, so they are dropped with a note rather than
+ * carried into a series someone will fit a model to. The raw response stays archived, so if
+ * their meaning is ever established they can be reprocessed.
+ */
+function usableInflow(value: number | null, context: { site: string; date: string; endpoint: string }, notes: string[]): number | null {
+  if (value === null || value >= 0) return value;
+  notes.push(`${context.endpoint} ${context.site} ${context.date}: inflow ${value} is negative, which q_ingresado cannot be; dropped`);
+  return null;
+}
+
 function push(out: Observation[], row: Omit<Observation, "mrid"> & { mrid?: string }): void {
   out.push({ mrid: "", ...row });
 }
@@ -76,12 +93,13 @@ export function parseRepDiaHid12m(body: string): ParseResult {
 
   const observations: Observation[] = [];
   const bands: BandReading[] = [];
+  const notes: string[] = [];
 
   for (const row of rows) {
     const date = localDateOf(requireString(row, "loctimestamp", endpoint));
     for (const [suffix, site] of Object.entries(HID12M_SUFFIX_TO_SITE)) {
       const cota = asNumber(row[`nivel${suffix}`]);
-      const caudal = asNumber(row[`q_ingresado${suffix}`]);
+      const caudal = usableInflow(asNumber(row[`q_ingresado${suffix}`]), { site, date, endpoint }, notes);
       if (cota !== null) push(observations, { date, site, variable: "cota_masl", value: cota, source: endpoint });
       if (caudal !== null) push(observations, { date, site, variable: "caudal_m3s", value: caudal, source: endpoint });
 
@@ -93,7 +111,7 @@ export function parseRepDiaHid12m(body: string): ParseResult {
       }
     }
   }
-  return { observations, bands };
+  return { observations, bands, notes };
 }
 
 /**
@@ -124,15 +142,17 @@ export function parseRepDiaNivQIng(body: string): ParseResult {
   requireFields(rows, ["fecha", "embalse", "nivel", "q_ingresado"], endpoint);
 
   const observations: Observation[] = [];
+  const notes: string[] = [];
   for (const row of rows) {
     const date = localDateOf(requireString(row, "fecha", endpoint));
     const site = siteFromLabel(requireString(row, "embalse", endpoint));
     const cota = asNumber(row["nivel"]);
-    const caudal = asNumber(row["q_ingresado"]);
+    // The same quantity as repDiaHid12m's q_ingresado, so the same rule applies to it.
+    const caudal = usableInflow(asNumber(row["q_ingresado"]), { site, date, endpoint }, notes);
     if (cota !== null) push(observations, { date, site, variable: "cota_masl", value: cota, source: endpoint });
     if (caudal !== null) push(observations, { date, site, variable: "caudal_m3s", value: caudal, source: endpoint });
   }
-  return { observations };
+  return { observations, notes };
 }
 
 /** `repDiaPotQTurb?fecha=` — one day: power, units online and turbined flow per plant. */

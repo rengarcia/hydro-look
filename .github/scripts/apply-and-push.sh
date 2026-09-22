@@ -27,16 +27,24 @@ for attempt in $(seq 1 "$ATTEMPTS"); do
 
   npm run ingest -- apply --in "$BATCH_DIR" || APPLY_FAILED=1
 
+  # Refresh the public status document from what was just written. It reports freshness even
+  # when the gate does not, because the site's job is to show how old the data is. A failing
+  # check does not abort the commit: the rows are already fetched and archived, and losing them
+  # would help nobody -- the failure is recorded in the document and in the step's exit code.
+  npm run check -- --freshness --out public/api/status.json || CHECK_FAILED=1
+
   git add data
+  if [ -d public ]; then git add public; fi
   if git diff --cached --quiet; then
     echo "No data changes."
-    exit "${APPLY_FAILED:-0}"
+    exit $(( ${APPLY_FAILED:-0} | ${CHECK_FAILED:-0} ))
   fi
 
   git commit -m "$MESSAGE"
   if git push origin "HEAD:$BRANCH"; then
     echo "Pushed on attempt $attempt."
-    exit "${APPLY_FAILED:-0}"
+    if [ -n "${CHECK_FAILED:-}" ]; then echo "Quality checks failed; see public/api/status.json."; fi
+    exit $(( ${APPLY_FAILED:-0} | ${CHECK_FAILED:-0} ))
   fi
 
   echo "Push rejected (attempt $attempt); another run got there first. Re-applying onto the new tip."

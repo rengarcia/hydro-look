@@ -93,6 +93,38 @@ export type EnergyPlantCode = keyof typeof ENERGY_MODULES;
  */
 export const ENERGY_BACKFILL_ONLY_CODES: EnergyPlantCode[] = ["ago", "man", "ccs"];
 
+/**
+ * The historian series behind the dashboard charts, from `data/reference/mrids.csv`.
+ *
+ * These mrids are the only route to levels and inflows for Coca Codo Sinclair, Agoyán and
+ * Manduriacu; `repDiaHid12m` covers every other reservoir. Mazar is carried as a **control**:
+ * its level and inflow are already published by the report endpoints, so a run can tell
+ * "the historian is answering null right now" from "this plant has no data that far back".
+ * Without that distinction a run made inside the blank window of §2.1 would record a false
+ * "no data" for exactly the three plants we have no second source for.
+ */
+export interface HistorianSeries {
+  site: SiteId;
+  variable: "cota_masl" | "caudal_m3s";
+  mrid: number;
+  /** Values also published by `repDiaHid12m`, so an answer can be checked rather than counted. */
+  control?: boolean;
+}
+
+export const HISTORIAN_SERIES: readonly HistorianSeries[] = [
+  { site: "mazar", variable: "cota_masl", mrid: 30031, control: true },
+  { site: "mazar", variable: "caudal_m3s", mrid: 30538, control: true },
+  { site: "coca_codo_sinclair", variable: "cota_masl", mrid: 100540 },
+  { site: "coca_codo_sinclair", variable: "caudal_m3s", mrid: 100037 },
+  { site: "agoyan", variable: "cota_masl", mrid: 140031 },
+  { site: "agoyan", variable: "caudal_m3s", mrid: 140537 },
+  { site: "manduriacu", variable: "cota_masl", mrid: 110031 },
+  { site: "manduriacu", variable: "caudal_m3s", mrid: 110537 },
+];
+
+export const HISTORIAN_CONTROLS = HISTORIAN_SERIES.filter((s) => s.control);
+export const HISTORIAN_TARGETS = HISTORIAN_SERIES.filter((s) => !s.control);
+
 /** Strip accents and case so upstream labels match regardless of how they are written. */
 export function normalizeLabel(label: string): string {
   return label

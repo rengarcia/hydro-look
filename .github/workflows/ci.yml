@@ -25,3 +25,8 @@ jobs:
       - run: npm run lint
       # Every parser runs against the recorded Phase 0 responses, so CI needs no network.
       - run: npm test
+      # Shape, ranges and reference integrity over the committed data. Deliberately without
+      # --freshness: that one depends on the clock, so in CI it would turn every pull request
+      # red once the data aged a few days, which only teaches people to ignore a red build.
+      # The ingest job checks freshness instead, where a stopped feed is news.
+      - run: npm run check

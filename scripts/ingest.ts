@@ -40,10 +40,23 @@ import {
   WEATHER_DAILY,
   ENSO_MONTHLY,
 } from "../src/lib/contracts/tables.ts";
-import { ENERGY_MODULES, type EnergyPlantCode } from "../src/lib/registry.ts";
+import { ENERGY_MODULES, HISTORIAN_SERIES, type EnergyPlantCode } from "../src/lib/registry.ts";
+import { walkHistorian } from "../src/lib/sources/historian.ts";
 import { parseOptions, type BackfillSource, type Options } from "../src/lib/options.ts";
 import { DATA_CURATED, DATA_LATEST } from "../src/lib/util/paths.ts";
-import { addDays, eachDay, nowUtc, todayEc, yearOf, type IsoDate } from "../src/lib/util/dates.ts";
+import {
+  addDays,
+  eachDay,
+  eachMonth,
+  monthEnd,
+  monthOfDate,
+  monthStart,
+  nowUtc,
+  previousMonth,
+  todayEc,
+  yearOf,
+  type IsoDate,
+} from "../src/lib/util/dates.ts";
 
 /** Endpoints that must be asked one day at a time, with the source id their rows carry. */
 const DAILY_REPORTS = [
@@ -144,6 +157,24 @@ async function main(): Promise<void> {
 
       await ords.caudCuenAniosAvg(batch, "2010-01-01", `${yearOf(end) + 1}-01-01`);
 
+      // The historian is the only route to Coca Codo Sinclair, Agoyán and Manduriacu levels
+      // and inflows. Asking for the whole running month every day is what repairs a day the
+      // endpoint answered null for — §2.1's blank window is a property of when you ask, not of
+      // the day you ask about — because the rows are upserted and the value lands on the first
+      // run made outside it. Early in a month the previous one is asked for again, since its
+      // last days are still settling when it closes. Mazar rides along as the control: it costs
+      // two requests and builds the running overlap against `repDiaHid12m` that Phase 3 needs
+      // to confirm the caudal mrids really are `q_ingresado`.
+      log("ORDS: historian month for the plants the reports do not cover");
+      const runningMonth = monthOfDate(end);
+      const historianMonths =
+        Number(end.slice(8, 10)) <= 3 ? [runningMonth, previousMonth(runningMonth)] : [runningMonth];
+      for (const ym of historianMonths) {
+        for (const series of HISTORIAN_SERIES) {
+          await ords.pointValuesMesH24(batch, series.site, series.variable, series.mrid, ym);
+        }
+      }
+
       // SMEC closes a day at D+1 around 11:15 local; re-asking the last few days also picks up
       // any revision CENACE publishes after the fact.
       for (const date of eachDay(addDays(end, -(options.days + 2)), addDays(end, -1))) {
@@ -201,7 +232,8 @@ async function main(): Promise<void> {
 
       // `all` spends the budget in this order deliberately. The windowed endpoints above cost
       // tens of requests for years of history, so they always finish. SMEC comes next because
-      // it is the national backbone and one request buys a whole closed day; the per-day CELEC
+      // it is the national backbone and one request buys a whole closed day; the historian
+      // follows at a month per request for the three plants no report covers; the per-day CELEC
       // reports come last because they cost five requests per day for variables the windowed
       // reports largely already cover.
       if (runs("smec")) {
@@ -220,6 +252,32 @@ async function main(): Promise<void> {
             if (daysSinceLog(date)) log(`ords-plant-energy ${code}: reached ${date}, ${budget.left} requests left`);
           }
         }
+      }
+
+      if (runs("ords-historian")) {
+        const today = todayEc();
+        const walk = await walkHistorian({
+          months: eachMonth(from, to),
+          today,
+          // A closed month that already holds a day for this mrid was fetched by an earlier
+          // run: one request writes every non-null day of the month at once, so there is
+          // nothing left to ask for. The running month is never skipped — its days are still
+          // arriving, and re-asking is how a day that was null yesterday gets filled.
+          isDone: (ym, mrid) =>
+            monthEnd(ym) < today &&
+            eachDay(monthStart(ym), monthEnd(ym)).some((day) => present.has(`${day}|ords:pointValues|${mrid}`)),
+          fetchMonth: async (series, ym) => {
+            let added: number | null = null;
+            await spend(async () => {
+              const before = batch.observations.length;
+              await ords.pointValuesMesH24(batch, series.site, series.variable, series.mrid, ym);
+              added = batch.observations.length - before;
+            });
+            return added;
+          },
+        });
+        batch.notes.push(...walk.notes);
+        for (const line of walk.logs) log(`${line}, ${budget.left} requests left`);
       }
 
       if (runs("ords-daily")) {
@@ -314,12 +372,21 @@ function applyStaged(options: Options): void {
   process.exitCode = staged.errors.length > 0 ? 1 : 0;
 }
 
-/** `date|source` pairs already in observations_daily, used to skip finished work. */
+/**
+ * `date|source` pairs already in observations_daily, used to skip finished work, plus the
+ * `date|source|mrid` form.
+ *
+ * The historian series all carry the same source id (`ords:pointValues`) and are told apart
+ * only by their mrid, so the pair alone would report Agoyán's level as already fetched the
+ * moment Mazar's was. Both forms go in one set because the walk over existing keys is the
+ * expensive part and a second index would double it.
+ */
 function indexBySourceAndDate(store: CuratedStore, years: number[]): Set<string> {
   const keys = new Set<string>();
   for (const key of store.existingKeys(OBSERVATIONS_DAILY, years)) {
-    const [date, , , source] = key.split("\u0000");
+    const [date, , , source, mrid] = key.split("\u0000");
     keys.add(`${date}|${source}`);
+    if (mrid) keys.add(`${date}|${source}|${mrid}`);
   }
   return keys;
 }

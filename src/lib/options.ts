@@ -12,6 +12,7 @@ export const BACKFILL_SOURCES = [
   "ords-energy",
   "ords-daily",
   "ords-plant-energy",
+  "ords-historian",
   "ords-basin",
   "smec",
   "all",

@@ -138,6 +138,37 @@ describe("the historian and live endpoints", () => {
     expect(result.notes?.[0]).toMatch(/all 24 points are null/);
   });
 
+  it("drops an inflow the report publishes as negative, and says so", () => {
+    // Copied verbatim from the archived response of 2019-09-20
+    // (celec_ords/2019/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2019-09-20), which is what the
+    // ORDS really sends on the two days before Minas San Francisco's level series begins.
+    const body = JSON.stringify({
+      items: [
+        {
+          loctimestamp: "2018-10-01T05:00:00Z",
+          nivelmsf: null, q_ingresadomsf: -4999995, limmsf: 793, min_msf: 750, qmax_msf: 600,
+          nivelmaz: 2144.64, q_ingresadomaz: 24, limmaz: 2153, min_maz: 2100, qmax_maz: 800,
+        },
+      ],
+    });
+    const result = parseRepDiaHid12m(body);
+
+    expect(find(result.observations, "2018-10-01", "minas_san_francisco", "caudal_m3s")).toBeUndefined();
+    expect(result.notes?.join(" ")).toMatch(/minas_san_francisco 2018-10-01: inflow -4999995 is negative/);
+    // The rest of the row is untouched: one bad field does not cost the day.
+    expect(find(result.observations, "2018-10-01", "mazar", "caudal_m3s")?.value).toBe(24);
+    expect(find(result.observations, "2018-10-01", "mazar", "cota_masl")?.value).toBe(2144.64);
+  });
+
+  it("keeps a zero inflow, which is a reading", () => {
+    const body = JSON.stringify({
+      items: [{ loctimestamp: "2020-01-01T05:00:00Z", nivelmaz: 2100, q_ingresadomaz: 0, limmaz: 2153, min_maz: 2100, qmax_maz: 800 }],
+    });
+    const result = parseRepDiaHid12m(body);
+    expect(find(result.observations, "2020-01-01", "mazar", "caudal_m3s")?.value).toBe(0);
+    expect(result.notes).toEqual([]);
+  });
+
   it("reads the yearly basin flow, including the 2024 drought", () => {
     const result = parseCaudCuenAniosAvg(ords("ords_hist_csrCaudCuenAniosAvg.txt"));
     expect(find(result.observations, "2024-01-01", "paute_cuenca", "caudal_cuenca_m3s")?.value).toBeCloseTo(74.57, 2);
