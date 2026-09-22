@@ -205,25 +205,49 @@ an N4 unit resolves the catchment above a particular dam is untested. The work i
 find the official publication of the same units, from SENAGUA or MAATE, and verify this against
 it. That is now the first task of the basins work, not a detail of it.
 
-The pour points themselves are in better shape. **Wikidata's SPARQL endpoint answered** with 23
-Ecuadorian dams and plants carrying coordinates, six of the seven matched by label:
+**The pour points are in much better shape, and five of the seven now have the two independent
+sources this repository requires before it writes `verified` anywhere.** Wikidata's SPARQL
+endpoint answers with 23 Ecuadorian dams and plants carrying coordinates and **all seven match**;
+the second opinion is OpenStreetMap, asked one small bounding box per dam (run 35734086216, and
+Marcel Laniado from run 35730548955):
 
-| site | basin | Wikidata | coordinates |
-|---|---|---|---|
-| mazar | paute | Q1751861 | −2.5953091, −78.6218378 |
-| coca_codo_sinclair | coca | Q19277520 | −0.1979037, −77.6849914 |
-| agoyan | pastaza | Q5760779 | −1.39852778, −78.37755556 |
-| minas_san_francisco | jubones | Q65196242 | −3.3221588, −79.6016026 |
-| manduriacu | guayllabamba | Q65196233 | 0.21480556, −78.91233333 |
-| delsitanisagua | zamora | Q65196191 | −4.04588889, −78.98377778 |
+| site | basin | Wikidata | OpenStreetMap | km apart | verdict |
+|---|---|---|---|---|---|
+| manduriacu | guayllabamba | Q65196233, 0.21480556, −78.91233333 | `way/562129245` Central Hidroeléctrica Manduriacu | **0.02** | agreed |
+| coca_codo_sinclair | coca | Q19277520, −0.1979037, −77.6849914 | `way/310742588` Coca Codo Sinclair | **0.11** | agreed |
+| marcel_laniado | daule | Q19381026, −0.927, −79.75 | `way/550243261` Represa Daule-Peripa | **0.46** | agreed |
+| agoyan | pastaza | Q5760779, −1.39852778, −78.37755556 | `node/4976262596` Central Hidroagoyan | **0.56** | agreed |
+| mazar | paute | Q1751861, −2.5953091, −78.6218378 | `node/5741662743` Central hidroeléctrica Mazar | **0.69** | agreed |
+| delsitanisagua | zamora | Q65196191, −4.04588889, −78.98377778 | `node/2489320895` Delsitanisagua | **8.18** | **disagree** |
+| minas_san_francisco | jubones | Q65196242, −3.3221588, −79.6016026 | — | — | no answer yet |
 
-Marcel Laniado (Daule-Peripa) matched nothing, because the probe searches on the first word of
-its query string and the label is not "Daule-Peripa". These are **one source, so they are not yet
-verified coordinates**: the second opinion was to be OpenStreetMap, and Overpass answered **504**
-to the Ecuador-wide query. A lighter query, or one of the other Overpass instances, is the next
-attempt. Both hosts disallow crawlers in `robots.txt` (`Disallow: /sparql`, `Disallow: /api/`)
-and both publish API terms instead, which is the same situation as Open-Meteo above and is
-handled the same way.
+**Delsitanisagua is the interesting row, and it is exactly what this comparison exists to catch.**
+Both sources name the plant and they place it **8.18 km apart** — far more than a mapping
+imprecision and more than a sub-basin. The likely explanation is that they are naming different
+structures: Delsitanisagua is run-of-river on the Zamora, and on such a scheme the intake and the
+powerhouse sit at opposite ends of a headrace of exactly this order. That distinction is not a
+detail here, because **a catchment is defined at the intake and not at the machines**: taking the
+powerhouse would hand this basin several kilometres of river it does not drain. Neither point may
+be used until which is which is established, and averaging them would produce a place that is
+neither.
+
+Marcel Laniado is now matched because the probe compares alias lists with accents and punctuation
+folded away instead of the first word of a query string; its QID, **Q19381026**, was not in this
+plan before. `minas_san_francisco` has never had an answer from Overpass in four runs — every
+instance refused it — so its column is blank for want of a reply, not for want of a dam.
+
+Nine further Ecuadorian entries came back that no site claimed, and they are recorded here because
+they are where the next alias or the next plant comes from: Sopladora (Q23887004), Molino
+(Q65196245), San Francisco (Q65196252), Represa de Paute (Q453432), Abanico (Q23886977), Pucará
+(Q65196249), Quijos (Q65196199), Alluriquín (Q65196189), Sarapullo (Q65196256).
+
+One limit to keep in view when reading the blanks: the OSM box is drawn **around the Wikidata
+point**, which makes this a confirmation test rather than an independent search. It can confirm
+agreement and it can report a disagreement like Delsitanisagua's, but it cannot find a dam that
+OSM places somewhere else entirely — only the country-wide query can, and that is the one that
+still answers 504. Both hosts disallow crawlers in `robots.txt` (`Disallow: /sparql`,
+`Disallow: /api/`) and both publish API terms instead, which is the same situation as Open-Meteo
+above and is handled the same way.
 
 ### 2.5 Open-data portals
 
@@ -628,10 +652,15 @@ the URL taken from HydroSHEDS' own live product page are all 403 — so no diffe
 Actions reaches it, and neither Zenodo nor figshare carries a mirror. What is reachable is ArcGIS
 Online, where Ecuador's Pfafstetter `unidades hidrográficas` are served as anonymous, queryable
 polygons; the hit found is a figure from a personal account rather than an agency publication, so
-it is a lead to a dataset rather than a citable source. So the order of work is unchanged but
+it is a lead to a dataset rather than a citable source. The second opinion on the coordinates is
+most of the way done: **five of the seven pour points now agree between Wikidata and OpenStreetMap
+within a kilometre** (Manduriacu to 0.02 km), Minas San Francisco has had no Overpass answer in
+four runs, and Delsitanisagua's two sources name the same plant **8.18 km apart** — almost
+certainly intake versus powerhouse on a run-of-river scheme, which must be settled before either
+point is used, since a catchment is defined at the intake. So the order of work is unchanged but
 better aimed: find the official publication of those units (SENAGUA or MAATE) or a boundary set
-with upstream topology, finish the second opinion on the coordinates, then delineate, and only then
-rewrite `basins.csv`. Nothing about the covariate loader changes — it already takes one row per
+with upstream topology, settle Delsitanisagua and get an answer for Minas San Francisco, then
+delineate, and only then rewrite `basins.csv`. Nothing about the covariate loader changes — it already takes one row per
 basin and archives what it fetches. What is missing is the table it reads, and
 `scripts/probe-basins.ts` is what re-asks these questions once there is a new candidate to ask
 about.
