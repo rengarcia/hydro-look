@@ -323,6 +323,16 @@ Two things the first Actions runs settled:
 - **Generated files cannot be merged by rebase.** The first daily run collided with the levels backfill
   in an add/add conflict on every CSV. A run now stages its output and a second step re-applies it onto
   the branch tip (`--out` / `apply --in`), which is safe because applying is an upsert.
+- **The levels cross-check passes exactly** (`npm run crosscheck`, report in `data/crosschecks/`).
+  Against jordanvt18's 1,668-day historian-derived series, our `repDiaHid12m` backfill agrees on
+  **100% of days to the mirror's published precision of 0.01 m** for both Mazar (mean absolute
+  difference 0.0001 m) and Amaluza (0 m), at offset 0. A one-day shift in either direction costs
+  0.5–0.65 m of mean error, so the local-midnight date convention in §4 is confirmed, not assumed:
+  two independent routes into the same historian, parsed by two people, agree on the numbers *and*
+  the dates. This closes the D4/§6 acceptance criterion for levels. `repDiaNivQIng` has only been
+  ingested for one day so far and the mirror stops at 2026-09-20, so it has no usable overlap yet;
+  the report lists it explicitly as "not enough overlap to judge" rather than letting a one-day
+  comparison masquerade as a date-convention finding.
 
 Current full backfill: [Actions run 35675850138](https://github.com/rengarcia/hydro-look/actions/runs/35675850138/job/106582137605),
 reported in progress by the user on 2026-09-21. Completion and reconciliation remain to be checked.
