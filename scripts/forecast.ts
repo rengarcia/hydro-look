@@ -8,6 +8,14 @@
  *   npm run forecast -- --report <path>  where the backtest report goes
  *   npm run forecast -- --no-variant     skip the ENSO comparison (about a third of the runtime)
  *
+ * M4, the boosted-tree rung, is not backtested here: that takes minutes, so `npm run backtest:m4`
+ * runs it and commits `data/reports/m4-backtest.json`, which this command renders into the
+ * report. What this command does run is the one M4 design the backtest earned, at the live
+ * origin and for seven days only: its median is published at that horizon, banded by the
+ * residuals the snapshot recorded, and every other horizon stays M3. If the snapshot no longer
+ * covers the ladder's origins, seven days falls back to M3 and `forecast.json` says why
+ * (`src/lib/models/m4-live.ts`).
+ *
  * The backtest always runs, because the published band *is* the backtest: the p10 and p90 are
  * the model's own out-of-sample residual quantiles at that horizon. There is no mode that
  * forecasts without measuring, which is deliberate — a band with nothing behind it would be
@@ -22,6 +30,7 @@ import { dirname, join } from "node:path";
 import { parseArgs } from "node:util";
 import { loadSeries } from "../src/lib/features/series.ts";
 import { readOni, phaseAt } from "../src/lib/features/enso.ts";
+import { readEra5Precip } from "../src/lib/features/weather.ts";
 import { climatologicalDrift, persistence, seasonalAnomalyDecay } from "../src/lib/models/baselines.ts";
 import {
   createFitCache,
@@ -41,7 +50,16 @@ import {
   falseAlarms,
   type ThresholdRef,
 } from "../src/lib/models/forecast.ts";
-import { renderBacktestReport, type CrisisReport } from "../src/lib/models/report.ts";
+import { renderBacktestReport, type CrisisReport, type PublishedSwitch } from "../src/lib/models/report.ts";
+import { readM4Snapshot } from "../src/lib/models/m4-scoring.ts";
+import {
+  fitM4Live,
+  m4HorizonSwitch,
+  m4SwitchCheck,
+  PUBLISHED_M4_HORIZON,
+  PUBLISHED_M4_ID,
+  type M4LiveForecast,
+} from "../src/lib/models/m4-live.ts";
 import { CuratedStore } from "../src/lib/store/curated.ts";
 import { FORECAST_RUNS, FORECAST_VALUES } from "../src/lib/contracts/tables.ts";
 import { parseCsv } from "../src/lib/store/csv.ts";
@@ -156,6 +174,39 @@ function main(): void {
     console.log(`enso variant: scored on ${variant.sharedOrigins} shared origins`);
   }
 
+  // Seven days: the M4 design the backtest earned, if its committed snapshot still covers the
+  // ladder and was scored with the settings this code fits; otherwise M3, and the reason.
+  const m4 = readM4Snapshot();
+  if (m4) {
+    const aligned = m4.origins.length === ladder.origins.length && m4.origins.every((o, i) => o === ladder.origins[i]);
+    console.log(`M4 snapshot ${m4.generatedAt}: ${m4.origins.length} origins, ${aligned ? "aligned with" : "stale against"} the ladder`);
+  }
+  const check = m4SwitchCheck(m4, ladder.origins);
+  let live: M4LiveForecast | null = null;
+  let fallback: string | null = check.ok ? null : check.reason;
+  if (check.ok) {
+    const started = performance.now();
+    live = fitM4Live({
+      origin: dates.at(-1)!,
+      levels,
+      inflow,
+      production,
+      covariates: { oni: readOni(), precip: readEra5Precip() },
+      crestM,
+      fits: cache,
+    });
+    console.log(`${PUBLISHED_M4_ID} at ${PUBLISHED_M4_HORIZON} d fitted at the live origin in ${((performance.now() - started) / 1000).toFixed(1)} s`);
+    if (!live) fallback = `${PUBLISHED_M4_ID} could not be fitted at the origin ${dates.at(-1)} (no M3 anchor or too few training rows)`;
+  }
+  if (fallback) console.log(`${PUBLISHED_M4_HORIZON} d falls back to ${shipped.id}: ${fallback}`);
+  const horizonSwitch = m4HorizonSwitch(check.ok ? check.evidence : null, live, fallback, shipped.id);
+  const published: PublishedSwitch = {
+    published: fallback === null,
+    modelId: PUBLISHED_M4_ID,
+    horizonDays: PUBLISHED_M4_HORIZON,
+    reason: fallback,
+  };
+
   const thresholds = readThresholds();
   const forecast = buildForecast({
     series,
@@ -168,6 +219,7 @@ function main(): void {
     modelId: shipped.id,
     modelLabel: shipped.label,
     backtestOrigins: ladder.origins.length,
+    horizonSwitch,
   });
   if (!forecast) {
     console.error("the model could not be fitted on the committed data; nothing written");
@@ -219,6 +271,8 @@ function main(): void {
     fit: forecast.fit,
     crestM,
     levelRange: { first: dates[0]!, last: dates.at(-1)!, days: levels.size },
+    m4: m4 ? { snapshot: m4, ladderOrigins: ladder.origins } : null,
+    published,
   });
 
   const document = {
@@ -238,11 +292,16 @@ function main(): void {
     },
   };
 
-  for (const horizon of forecast.valueRows) {
+  for (const horizon of [...forecast.valueRows].sort((a, b) => a.horizon_days - b.horizon_days)) {
     console.log(
       `  +${String(horizon.horizon_days).padStart(2)}d ${horizon.target_date}  ` +
-        `p10 ${horizon.p10.toFixed(2)}  p50 ${horizon.p50.toFixed(2)}  p90 ${horizon.p90.toFixed(2)}`,
+        `p10 ${horizon.p10.toFixed(2)}  p50 ${horizon.p50.toFixed(2)}  p90 ${horizon.p90.toFixed(2)}  ${horizon.model_id ?? ""}`,
     );
+  }
+  const switched = (forecast.document["forecast"] as Record<string, unknown>[]).find((h) => h["would_have_published"]);
+  if (switched) {
+    const m3 = switched["would_have_published"] as { p10: number; p50: number; p90: number };
+    console.log(`  (${shipped.id} would have published +${PUBLISHED_M4_HORIZON}d p10 ${m3.p10.toFixed(2)}  p50 ${m3.p50.toFixed(2)}  p90 ${m3.p90.toFixed(2)})`);
   }
 
   if (dryRun) {

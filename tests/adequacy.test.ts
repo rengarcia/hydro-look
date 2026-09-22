@@ -27,6 +27,7 @@ import {
   fitDemand,
   fitHydro,
   forecastAdequacy,
+  importRegime,
   tierFor,
   weekdayOf,
   DEFAULT_HYDRO,
@@ -304,12 +305,12 @@ describe("forecastAdequacy", () => {
     for (const horizon of out.horizons) {
       expect(horizon.requirementGwhDay).toBeCloseTo(horizon.demandGwhDay - horizon.hydroGwhDay, 9);
       expect(horizon.deficitGwhDay).toBeCloseTo(
-        horizon.requirementGwhDay - (ceilings.thermalGwhDay + ceilings.otherGwhDay + ceilings.importGwhDay),
+        horizon.requirementGwhDay - (ceilings.thermalGwhDay + ceilings.otherGwhDay + out.imports.centralGwhDay),
         9,
       );
       // The stressed case differs from the central one by exactly the import assumption.
       expect(horizon.stressedDeficitGwhDay - horizon.deficitGwhDay).toBeCloseTo(
-        ceilings.importGwhDay - ceilings.stressedImportGwhDay,
+        out.imports.centralGwhDay - ceilings.stressedImportGwhDay,
         9,
       );
     }
@@ -329,10 +330,65 @@ describe("forecastAdequacy", () => {
     expect(horizon.requirementP90!).toBeGreaterThanOrEqual(horizon.requirementGwhDay);
   });
 
+  it("gives the hydro term a band of its own that contains its centre (§7 target 4)", () => {
+    const hydroCalibration = new Map([[7, { q10: -9, q50: -8, q90: -7, n: 30 }]]);
+    const out = forecastAdequacy({
+      days,
+      episodes: [],
+      ceilings,
+      origin: "2025-12-01",
+      horizonDays: [7],
+      hydroCalibration,
+    })!;
+    const horizon = out.horizons[0]!;
+    expect(horizon.hydroP10!).toBeCloseTo(horizon.hydroGwhDay - 9, 9);
+    expect(horizon.hydroP90!).toBe(horizon.hydroGwhDay);
+    // One band never borrows the other's calibration.
+    expect(horizon.requirementP10).toBeNull();
+  });
+
   it("declines rather than guessing when there is too little history", () => {
     expect(
       forecastAdequacy({ days: days.slice(0, 30), episodes: [], ceilings, origin: "2020-01-30" }),
     ).toBeNull();
+  });
+});
+
+describe("importRegime", () => {
+  const ceilings = { thermalGwhDay: 30, importGwhDay: 10, stressedImportGwhDay: 0.1, otherGwhDay: 2, basis: "test" };
+  const fortnight = (importGwh: number, thermalGwh: number, count = 14) =>
+    syntheticDays({ days: count, from: "2026-09-08", growthPerYear: 0 }).map((d) => ({ ...d, importGwh, thermalGwh }));
+
+  it("cuts the central case to what is arriving when imports stop while thermal works hard", () => {
+    const regime = importRegime(fortnight(0.14, 25), "2026-09-21", ceilings);
+    expect(regime.state).toBe("cutoff");
+    expect(regime.centralGwhDay).toBeCloseTo(0.14, 9);
+  });
+
+  it("reads low imports with idle thermal as imports not wanted, not imports unavailable", () => {
+    const regime = importRegime(fortnight(0.14, 12), "2026-09-21", ceilings);
+    expect(regime.state).toBe("normal");
+    expect(regime.centralGwhDay).toBe(10);
+  });
+
+  it("keeps the ceiling while imports flow, and when too few days are usable to judge", () => {
+    expect(importRegime(fortnight(8, 25), "2026-09-21", ceilings).state).toBe("normal");
+    const sparse = importRegime(fortnight(0.1, 25, 5), "2026-09-12", ceilings);
+    expect(sparse.state).toBe("normal");
+    expect(sparse.trailingGwhDay).toBeNull();
+  });
+
+  it("feeds the central supply of every horizon, and can be switched off for comparison", () => {
+    const days = syntheticDays({ days: 2200, from: "2020-01-01", growthPerYear: 0.08 }).map((d) =>
+      d.date > "2025-11-15" ? { ...d, importGwh: 0.1, thermalGwh: 28 } : d,
+    );
+    const on = forecastAdequacy({ days, episodes: [], ceilings, origin: "2025-12-01", horizonDays: [7] })!;
+    const off = forecastAdequacy({
+      days, episodes: [], ceilings, origin: "2025-12-01", horizonDays: [7], ignoreImportRegime: true,
+    })!;
+    expect(on.imports.state).toBe("cutoff");
+    expect(on.horizons[0]!.deficitGwhDay - off.horizons[0]!.deficitGwhDay).toBeCloseTo(10 - 0.1, 6);
+    expect(on.horizons[0]!.stressedDeficitGwhDay).toBeCloseTo(off.horizons[0]!.stressedDeficitGwhDay, 9);
   });
 });
 
@@ -345,7 +401,7 @@ describe("buildAdequacyDocument", () => {
     otherGwhDay: 2,
     basis: "test",
   };
-  const backtest = { origins: [], scores: [], calibration: new Map() };
+  const backtest = { origins: [], scores: [], calibration: new Map(), hydroCalibration: new Map() };
   const crisis = { episodes: [], calls: [] };
 
   function documentWith(basis: string) {

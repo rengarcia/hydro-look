@@ -12,7 +12,13 @@ import { FanChart } from "./components/FanChart.tsx";
 import { InflowChart } from "./components/InflowChart.tsx";
 import { MixChart, MIX_SERIES } from "./components/MixChart.tsx";
 import { apiDocument, latest, mix, ribbon, series, window as windowOf } from "../lib/site/data.ts";
-import type { AdequacyDocument, ForecastDocument, RiskTier, StatusDocument } from "../lib/site/documents.ts";
+import type {
+  AdequacyDocument,
+  ForecastDocument,
+  NarrativeDocument,
+  RiskTier,
+  StatusDocument,
+} from "../lib/site/documents.ts";
 import { conceptLabel, feedLabel, longDate, num, pct, signed } from "../lib/site/format.ts";
 import { eachDay } from "../lib/util/dates.ts";
 
@@ -28,6 +34,7 @@ export default function Page() {
   const forecast = apiDocument<ForecastDocument>("forecast.json");
   const adequacy = apiDocument<AdequacyDocument>("adequacy.json");
   const status = apiDocument<StatusDocument>("status.json");
+  const narrative = apiDocument<NarrativeDocument>("narrative.json");
 
   return (
     <main>
@@ -53,8 +60,9 @@ export default function Page() {
         <Inflow />
         <National now={now} />
         <Adequacy adequacy={adequacy} />
+        <Narrative narrative={narrative} forecast={forecast} />
         <Freshness status={status} />
-        <Downloads />
+        <Downloads narrative={narrative !== null} />
         <Method />
       </div>
 
@@ -114,6 +122,14 @@ function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
   const ninety = forecast.backtest.horizons.find((h) => h.horizon_days === 90);
   const sixty = forecast.backtest.horizons.find((h) => h.horizon_days === 60);
   const critical = forecast.days_to_threshold.thresholds.find((t) => t.status === "unverified");
+  // Since 2026-09-22 the 7-day row can come from M4 while the rest are M3; each row names its
+  // model, and older documents that do not are all `model.id`.
+  const modelOf = (h: { model?: string }) => h.model ?? forecast.model.id;
+  const switched = forecast.forecast.filter((h) => modelOf(h) !== forecast.model.id);
+  const switchedScore = switched[0]
+    ? forecast.backtest.horizons.find((b) => b.horizon_days === switched[0]!.horizon_days)
+    : undefined;
+  const fellBack = forecast.horizon_switch?.status === "fallback" ? forecast.horizon_switch : null;
 
   return (
     <section id="mazar">
@@ -136,6 +152,12 @@ function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
           <li>
             <span className="swatch" style={{ background: "var(--series-1)", opacity: 0.35 }} /> Banda p10–p90
           </li>
+          {switched.length > 0 ? (
+            <li>
+              <span className="swatch" style={{ border: "2px solid var(--series-1)", borderRadius: "50%" }} />{" "}
+              {switched.map((h) => h.horizon_days).join(", ")} días: otro modelo ({modelOf(switched[0]!)})
+            </li>
+          ) : null}
           <li>
             <span className="swatch line" style={{ background: "var(--critical)" }} /> Mínimos declarados
           </li>
@@ -147,6 +169,7 @@ function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
           horizons={forecast.forecast}
           thresholds={thresholds}
           label={`Cota de Mazar: ${FAN_HISTORY_DAYS} días observados y pronóstico a 90 días`}
+          primaryModel={forecast.model.id}
         />
       </div>
 
@@ -156,6 +179,15 @@ function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
             Pronóstico emitido el {longDate(forecast.origin_date)} desde una cota de {num(forecast.current.level_masl, 2)} m.
             «Acierto frente a persistencia» compara el error del modelo con el de suponer que la cota no cambia:
             0 % es empatar, negativo es perder.
+            {switched.length > 0 ? (
+              <>
+                {" "}
+                La fila de {switched.map((h) => h.horizon_days).join(", ")} días viene de otro modelo,{" "}
+                <code>{modelOf(switched[0]!)}</code> (árboles de gradiente que corrigen el error del balance de agua), porque
+                en el respaldo es el único que le gana a la persistencia a una semana; su banda sale de sus propios errores
+                fuera de muestra. El resto de horizontes, los escenarios y los días hasta el umbral son del balance de agua.
+              </>
+            ) : null}
           </caption>
           <thead>
             <tr>
@@ -173,7 +205,9 @@ function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
               const score = forecast.backtest.horizons.find((b) => b.horizon_days === h.horizon_days);
               return (
                 <tr key={h.horizon_days}>
-                  <th scope="row">{h.horizon_days} días</th>
+                  <th scope="row">
+                    {h.horizon_days} días{modelOf(h) !== forecast.model.id ? " ·" : ""}
+                  </th>
                   <td>{longDate(h.target_date)}</td>
                   <td className="num">{num(h.p10, 2)}</td>
                   <td className="num">{num(h.p50, 2)}</td>
@@ -192,8 +226,22 @@ function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
         2018-01 el modelo es{" "}
         {sixty ? <strong>{pct(sixty.skill_vs_persistence * 100, 1)} mejor que la persistencia a 60 días</strong> : null}
         {ninety ? <> y {pct(ninety.skill_vs_persistence * 100, 1)} a 90</> : null}, y <strong>indistinguible de ella por
-        debajo del mes</strong>. Para menos de treinta días, suponer que la cota no cambia es tan bueno como esto. La
-        banda p10–p90 cubre entre el 72 % y el 80 % de los casos según el horizonte, por debajo del 80 % nominal.
+        debajo del mes</strong>. Para menos de treinta días, suponer que la cota no cambia es tan bueno como esto
+        {switchedScore ? (
+          <>
+            , salvo a {switchedScore.horizon_days} días, donde se publica el otro modelo:{" "}
+            {pct(switchedScore.skill_vs_persistence * 100, 1)} mejor que la persistencia en el mismo respaldo
+          </>
+        ) : null}
+        . La banda p10–p90 cubre entre el 72 % y el 80 % de los casos según el horizonte, por debajo del 80 % nominal.
+        {fellBack ? (
+          <>
+            {" "}
+            Hoy los {fellBack.horizon_days} días vuelven al balance de agua: <code>{fellBack.candidate_model}</code> no se
+            publica cuando su respaldo no cubre los mismos orígenes que el del balance de agua (el motivo está en{" "}
+            <code>horizon_switch</code> de forecast.json).
+          </>
+        ) : null}
       </p>
 
       {critical ? <Crossings threshold={critical} note={forecast.days_to_threshold.note} /> : null}
@@ -574,6 +622,191 @@ function Adequacy({ adequacy }: { adequacy: AdequacyDocument | null }) {
   );
 }
 
+/* ---------------------------------------------------------------- narrative */
+
+const CONFIDENCE_ES: Record<NarrativeDocument["confidence"], string> = {
+  low: "baja",
+  medium: "media",
+  high: "alta",
+};
+
+/** `2026-09-22T12:40:05Z` -> `22 de septiembre de 2026, 07:40 (hora de Ecuador)`. */
+function narrativeStamp(timestamp: string): string {
+  const instant = Date.parse(timestamp);
+  if (!Number.isFinite(instant)) return timestamp;
+  // Ecuador is UTC−5 all year; the arithmetic is the same one `util/dates.ts` does.
+  const local = new Date(instant - 5 * 3_600_000).toISOString();
+  return `${longDate(local.slice(0, 10))}, ${local.slice(11, 16)} (hora de Ecuador)`;
+}
+
+/**
+ * Phase 6b. A paragraph a language model wrote, and — beside it, in the same ink — the numbers
+ * it was handed, so the reader can check one against the other without leaving the section.
+ *
+ * The numbers come from the narrative's own `basis`, not from today's documents. On a day the
+ * gateway rate-limits or the validator rejects the text, the page keeps the previous narrative,
+ * and pairing old prose with new numbers would make a correct paragraph look wrong. When the
+ * basis is older than the forecast above, the section says so.
+ *
+ * The risk tier shown is the one the text was given, and it is the adequacy model's: the model
+ * explains it and cannot choose it, so there is never a second tier on the page.
+ */
+function Narrative({ narrative, forecast }: { narrative: NarrativeDocument | null; forecast: ForecastDocument | null }) {
+  if (narrative === null || !narrative.outlook_es) return null;
+  const basis = narrative.basis;
+  const mazar = basis?.reservoirs?.find((r) => r.site === (basis.mazar_forecast?.site ?? "mazar")) ?? null;
+  const floors = mazar?.floors ?? [];
+  const primaryBand = mazar?.bands?.[0] ?? null;
+  const horizons = basis?.mazar_forecast?.horizons ?? [];
+  const rain = basis?.precipitation_16d ?? null;
+  const enso = basis?.enso ?? null;
+  const tier = narrative.risk_tier ? TIER_STYLE[narrative.risk_tier as RiskTier] : undefined;
+  const stale = forecast !== null && narrative.origin_date < forecast.origin_date;
+
+  return (
+    <section id="lectura">
+      <h2>Lectura del día</h2>
+      <p className="lede">
+        Un resumen en prosa de los números de esta página, redactado por un modelo de lenguaje a partir de los datos
+        que se muestran a su derecha y de nada más. Un validador rechaza cualquier texto que cite una cota o una fecha
+        que no esté en esos datos; si el de hoy fue rechazado, se mantiene el anterior.
+      </p>
+
+      <div className="cards">
+        <article className="card">
+          <h3>
+            Resumen<span className="basin">texto generado por un modelo</span>
+          </h3>
+          <p style={{ margin: "8px 0 0" }}>{narrative.outlook_es}</p>
+          {narrative.drivers.length > 0 ? (
+            <ul className="sub" style={{ margin: "12px 0 0", paddingLeft: 18 }}>
+              {narrative.drivers.map((driver, i) => (
+                <li key={i}>{driver}</li>
+              ))}
+            </ul>
+          ) : null}
+          <dl className="pairs">
+            <dt>Confianza declarada</dt>
+            <dd>{CONFIDENCE_ES[narrative.confidence] ?? narrative.confidence}</dd>
+            <dt>Generado</dt>
+            <dd>{narrativeStamp(narrative.generated_at)}</dd>
+            <dt>Datos del</dt>
+            <dd>{longDate(narrative.origin_date)}</dd>
+            <dt>Modelo</dt>
+            <dd>
+              <code>{narrative.model}</code> · instrucciones <code>{narrative.prompt_version}</code>
+            </dd>
+          </dl>
+        </article>
+
+        <article className="card">
+          <h3>
+            Los números que leyó<span className="basin">{mazar?.label ?? "Mazar"}</span>
+          </h3>
+          <dl className="pairs">
+            {mazar ? (
+              <>
+                <dt>Cota</dt>
+                <dd>{num(mazar.level_masl, 2)} m</dd>
+                {primaryBand ? (
+                  <>
+                    <dt>Banda {num(primaryBand.floor_masl, 0)}–{num(primaryBand.ceiling_masl, 0)}</dt>
+                    <dd>{pct(primaryBand.band_pct)}</dd>
+                  </>
+                ) : null}
+                <dt>Pendiente 7 / 14 / 30 d</dt>
+                <dd>
+                  {signed(mazar.slopes_m_per_day.d7, 2)} / {signed(mazar.slopes_m_per_day.d14, 2)} /{" "}
+                  {signed(mazar.slopes_m_per_day.d30, 2)} m/día
+                </dd>
+                {floors.map((floor) => (
+                  <FloorPair key={floor.floor_masl} floor={floor} />
+                ))}
+              </>
+            ) : null}
+            {horizons.map((h) => (
+              <HorizonPair key={h.horizon_days} horizon={h} />
+            ))}
+            {tier ? (
+              <>
+                <dt>Suficiencia</dt>
+                <dd>
+                  <span className="pill">
+                    <span className={`dot ${tier.dot}`} aria-hidden="true" />
+                    {tier.label}
+                  </span>
+                </dd>
+              </>
+            ) : null}
+            {rain ? (
+              <>
+                <dt>Lluvia prevista, {rain.days} días</dt>
+                <dd>
+                  {num(rain.forecast_total_mm, 1)} mm frente a una mediana de {num(rain.climatology_p50_mm, 1)} mm
+                  {rain.coordinate_status === "provisional" ? " (punto provisional)" : ""}
+                </dd>
+              </>
+            ) : null}
+            {enso ? (
+              <>
+                <dt>ONI {enso.month}</dt>
+                <dd>
+                  {signed(enso.oni, 2)} · {{ el_nino: "El Niño", la_nina: "La Niña", neutral: "neutral" }[enso.phase]}
+                </dd>
+              </>
+            ) : null}
+          </dl>
+          <p className="sub" style={{ marginTop: 12 }}>
+            El abanico y la tabla completa están en <a href="#mazar">la sección de Mazar</a>; el nivel de suficiencia, en{" "}
+            <a href="#suficiencia">la sección anterior</a>. El documento entero, con todo lo que recibió el modelo, es{" "}
+            <a href="/api/narrative.json">narrative.json</a>.
+          </p>
+        </article>
+      </div>
+
+      <p className="note">
+        <strong>El texto lo generó un modelo de lenguaje; el pronóstico es el estadístico.</strong> Las cifras de la
+        cota futura son las de la sección de Mazar (el balance de agua y, donde la tabla lo indica, el modelo que corrige
+        su error a 7 días), con su respaldo medido, y el nivel de
+        riesgo lo calcula el modelo de suficiencia: el modelo de lenguaje los describe, no los produce.
+        {stale ? (
+          <>
+            {" "}
+            Este texto se escribió sobre los datos del {longDate(narrative.origin_date)}; las secciones de arriba ya
+            muestran los del {longDate(forecast!.origin_date)}.
+          </>
+        ) : null}
+      </p>
+    </section>
+  );
+}
+
+function FloorPair({ floor }: { floor: NarrativeDocument["basis"]["reservoirs"][number]["floors"][number] }) {
+  const pace = floor.days_at_slope_30d ?? floor.days_at_slope_7d;
+  return (
+    <>
+      <dt>
+        Sobre {num(floor.floor_masl, 0)} m{floor.status === "unverified" ? " (marcador propio)" : ""}
+      </dt>
+      <dd>
+        {num(floor.metres_above, 2)} m
+        {pace !== null ? <> · {num(pace, 0)} días al ritmo de {floor.days_at_slope_30d !== null ? "30" : "7"} días</> : null}
+      </dd>
+    </>
+  );
+}
+
+function HorizonPair({ horizon }: { horizon: NonNullable<NarrativeDocument["basis"]["mazar_forecast"]>["horizons"][number] }) {
+  return (
+    <>
+      <dt>p50 a {horizon.horizon_days} días</dt>
+      <dd>
+        {num(horizon.p50, 2)} m ({num(horizon.p10, 2)}–{num(horizon.p90, 2)})
+      </dd>
+    </>
+  );
+}
+
 /* ---------------------------------------------------------------- freshness */
 
 const FRESHNESS_WORDS: Record<string, { word: string; dot: string }> = {
@@ -637,12 +870,12 @@ function Freshness({ status }: { status: StatusDocument | null }) {
 
 /* ---------------------------------------------------------------- downloads */
 
-function Downloads() {
+function Downloads({ narrative }: { narrative: boolean }) {
   return (
     <section id="descargas">
       <h2>Descargas</h2>
       <p className="lede">
-        Los cuatro documentos JSON son pequeños y estables; las tablas completas están en CSV particionado por año,
+        Los documentos JSON son pequeños y estables; las tablas completas están en CSV particionado por año,
         y cada respuesta original queda archivada comprimida junto a la fila que produjo.
       </p>
       <ul className="links">
@@ -659,6 +892,12 @@ function Downloads() {
         <li>
           <a href="/api/status.json">status.json</a> — <code>frescura por fuente y control de calidad</code>
         </li>
+        {narrative ? (
+          <li>
+            <a href="/api/narrative.json">narrative.json</a> —{" "}
+            <code>el resumen generado por un modelo, con los datos que recibió</code>
+          </li>
+        ) : null}
         <li>
           <a href={`${REPO}/tree/main/data/curated`}>data/curated/</a> — <code>tablas en CSV por año</code>
         </li>

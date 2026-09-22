@@ -6,6 +6,7 @@
 import { z } from "zod";
 import { SITES, VARIABLES } from "../registry.ts";
 import { SMEC_CONCEPTS } from "../parse/smec.ts";
+import { XM_LINKS, XM_SYSTEM_METRICS, type XmSystemMetric } from "../parse/xm.ts";
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "expected YYYY-MM-DD");
 const isoTimestamp = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/, "expected an ISO UTC timestamp");
@@ -97,6 +98,37 @@ export const ensoRow = z.object({
 export type EnsoRow = z.infer<typeof ensoRow>;
 
 /**
+ * One Ecuador circuit on one day, from XM's side of the border. Both directions sit on one row
+ * because a blank hour in one direction is flow in the other (see parse/xm.ts), so the two are
+ * only meaningful read together. `raw_ref` lists both archived answers the row was built from.
+ */
+export const xmExchangeRow = z.object({
+  date: isoDate,
+  link: z.enum(XM_LINKS),
+  export_kwh: z.number().finite().nonnegative(),
+  import_kwh: z.number().finite().nonnegative(),
+  export_hours: z.number().int().min(0).max(24),
+  import_hours: z.number().int().min(0).max(24),
+  source: z.literal("xm:servapibi"),
+  fetched_at: isoTimestamp,
+  raw_ref: z.string().min(1),
+}).refine((r) => r.export_hours + r.import_hours <= 24, { message: "an hour cannot flow both ways" })
+  .refine((r) => r.export_hours + r.import_hours > 0, { message: "a stored link-day has at least one published hour" });
+export type XmExchangeRow = z.infer<typeof xmExchangeRow>;
+
+/** Colombian system state, one metric per row, so each series keeps its own publication lag. */
+export const xmSystemRow = z.object({
+  date: isoDate,
+  metric: z.enum(Object.keys(XM_SYSTEM_METRICS) as [XmSystemMetric, ...XmSystemMetric[]]),
+  value: z.number().finite().nonnegative(),
+  unit: z.enum(["fraction", "kWh", "COP/kWh"]),
+  source: z.literal("xm:servapibi"),
+  fetched_at: isoTimestamp,
+  raw_ref: z.string().min(1),
+}).refine((r) => XM_SYSTEM_METRICS[r.metric].unit === r.unit, { message: "metric and unit must agree" });
+export type XmSystemRow = z.infer<typeof xmSystemRow>;
+
+/**
  * A forecast run: one origin, one target, one model, with enough of the fit recorded that the
  * run can be argued with later. The curve and the rule curve are refitted from the data every
  * time, so without these columns a forecast committed today could not be reproduced once the
@@ -144,6 +176,13 @@ export const forecastValueRow = z.object({
   ensemble_p10: nullableNumber,
   ensemble_p90: nullableNumber,
   ensemble_n: z.number().int().nonnegative(),
+  /**
+   * The model whose median this row publishes. Since MODEL_VERSION 2 a run can publish its
+   * 7-day row from M4 and the rest from M3, so the run's `model_id` no longer names every row.
+   * Optional because rows written before the column existed carry it empty, which means the
+   * run's own `model_id`.
+   */
+  model_id: z.string().min(1).optional(),
 }).refine((r) => r.p10 <= r.p50 && r.p50 <= r.p90, { message: "quantiles must not cross" });
 export type ForecastValueRow = z.infer<typeof forecastValueRow>;
 
@@ -219,6 +258,22 @@ export const ENSO_MONTHLY: TableSpec<EnsoRow> = {
   schema: ensoRow,
 };
 
+export const XM_EXCHANGE_DAILY: TableSpec<XmExchangeRow> = {
+  name: "xm_exchange_daily",
+  columns: ["date", "link", "export_kwh", "import_kwh", "export_hours", "import_hours", "source", "fetched_at", "raw_ref"],
+  key: ["date", "link"],
+  partitionBy: "date",
+  schema: xmExchangeRow,
+};
+
+export const XM_SYSTEM_DAILY: TableSpec<XmSystemRow> = {
+  name: "xm_system_daily",
+  columns: ["date", "metric", "value", "unit", "source", "fetched_at", "raw_ref"],
+  key: ["date", "metric"],
+  partitionBy: "date",
+  schema: xmSystemRow,
+};
+
 /** Validates every row, reporting all failures at once rather than only the first. */
 export function validateRows<T>(spec: TableSpec<T>, rows: unknown[]): T[] {
   const problems: string[] = [];
@@ -265,7 +320,8 @@ export const FORECAST_RUNS: TableSpec<ForecastRunRow> = {
 
 export const FORECAST_VALUES: TableSpec<ForecastValueRow> = {
   name: "forecast_values",
-  columns: ["run_id", "origin_date", "horizon_days", "target_date", "p10", "p50", "p90", "ensemble_p10", "ensemble_p90", "ensemble_n"],
+  // `model_id` is last so every earlier header is a prefix of this one.
+  columns: ["run_id", "origin_date", "horizon_days", "target_date", "p10", "p50", "p90", "ensemble_p10", "ensemble_p90", "ensemble_n", "model_id"],
   key: ["run_id", "horizon_days"],
   partitionBy: "origin_date",
   schema: forecastValueRow,
@@ -367,4 +423,67 @@ export const ADEQUACY_VALUES: TableSpec<AdequacyValueRow> = {
   key: ["run_id", "horizon_days"],
   partitionBy: "origin_date",
   schema: adequacyValueRow,
+};
+
+/**
+ * One attempt at the AI narrative (Phase 6b), whatever became of it.
+ *
+ * A row is written for every attempt that reached the gateway or was refused by it — `ok`,
+ * `rejected`, `skipped`, `failed` — and not for a rerun the payload hash made a no-op, nor for a
+ * run without a key. That makes the table the spend log decision 8 asks for (monthly gateway
+ * spend is the sum of `cost_usd` by month) and the audit trail for the validator: a rejected
+ * row keeps the text and, in `reason`, the figures it invented.
+ *
+ * `risk_tier` is copied from the payload, which copied it from `adequacy.json`; it is here so
+ * the row says which tier the text was asked to explain, not because the model chose it.
+ * `drivers_json` is a JSON array in one cell because a CSV has no lists, and the text columns
+ * are quoted by `toCsv` like any other cell containing a comma.
+ */
+export const narrativeSnapshotRow = z.object({
+  run_id: z.string().min(1),
+  generated_at: isoTimestamp,
+  origin_date: isoDate,
+  status: z.enum(["ok", "skipped", "rejected", "failed"]),
+  model_id: z.string().min(1),
+  prompt_version: z.string().min(1),
+  payload_hash: z.string().regex(/^[0-9a-f]{64}$/, "expected a sha256 hex digest"),
+  forecast_run_id: z.string(),
+  adequacy_run_id: z.string(),
+  risk_tier: z.union([z.enum(["holgado", "vigilancia", "ajustado", "deficit"]), z.literal("")]),
+  confidence: z.union([z.enum(["low", "medium", "high"]), z.literal("")]),
+  input_tokens: z.number().int().nonnegative().nullable(),
+  output_tokens: z.number().int().nonnegative().nullable(),
+  cost_usd: z.number().finite().nonnegative().nullable(),
+  outlook_es: z.string(),
+  drivers_json: z.string(),
+  reason: z.string(),
+}).refine((r) => r.status !== "ok" || (r.outlook_es !== "" && r.confidence !== ""), {
+  message: "an ok snapshot must carry its text and confidence",
+});
+export type NarrativeSnapshotRow = z.infer<typeof narrativeSnapshotRow>;
+
+export const NARRATIVE_SNAPSHOTS: TableSpec<NarrativeSnapshotRow> = {
+  name: "narrative_snapshots",
+  columns: [
+    "run_id",
+    "generated_at",
+    "origin_date",
+    "status",
+    "model_id",
+    "prompt_version",
+    "payload_hash",
+    "forecast_run_id",
+    "adequacy_run_id",
+    "risk_tier",
+    "confidence",
+    "input_tokens",
+    "output_tokens",
+    "cost_usd",
+    "outlook_es",
+    "drivers_json",
+    "reason",
+  ],
+  key: ["run_id"],
+  partitionBy: "generated_at",
+  schema: narrativeSnapshotRow,
 };

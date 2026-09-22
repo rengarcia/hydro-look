@@ -1,0 +1,105 @@
+{
+  "generated_at": "2026-09-22T17:23:10Z",
+  "as_of": "2026-09-22",
+  "ok": true,
+  "status": "warn",
+  "feeds": [
+    {
+      "feed": "ORDS levels and inflows (repDiaHid12m)",
+      "latest": "2026-09-21",
+      "limit_days": 3,
+      "state": "current"
+    },
+    {
+      "feed": "ORDS CELEC Sur energy (repDiaEner12m)",
+      "latest": "2026-09-21",
+      "limit_days": 3,
+      "state": "current"
+    },
+    {
+      "feed": "ORDS historian (pointValues)",
+      "latest": "2026-09-21",
+      "limit_days": 3,
+      "state": "current"
+    },
+    {
+      "feed": "CENACE SMEC national balance",
+      "latest": "2026-09-21",
+      "limit_days": 4,
+      "state": "current"
+    },
+    {
+      "feed": "CENACE Información Operativa",
+      "latest": "2026-09-22",
+      "limit_days": 3,
+      "state": "current"
+    },
+    {
+      "feed": "Open-Meteo ERA5",
+      "latest": "2026-09-16",
+      "limit_days": 10,
+      "state": "current"
+    },
+    {
+      "feed": "NOAA ONI",
+      "latest": "2026-07-01",
+      "limit_days": 110,
+      "state": "current"
+    },
+    {
+      "feed": "Mazar level forecast",
+      "latest": "2026-09-21",
+      "limit_days": 3,
+      "state": "current"
+    },
+    {
+      "feed": "National adequacy",
+      "latest": "2026-09-21",
+      "limit_days": 3,
+      "state": "current"
+    }
+  ],
+  "tables": {
+    "observations_daily": {
+      "rows": 89122
+    },
+    "national_balance_daily": {
+      "rows": 58114
+    },
+    "operativa_snapshots": {
+      "rows": 188
+    },
+    "operating_bands": {
+      "rows": 7
+    },
+    "weather_daily": {
+      "rows": 13424
+    },
+    "enso_monthly": {
+      "rows": 919
+    },
+    "forecast_runs": {
+      "rows": 1
+    },
+    "adequacy_runs": {
+      "rows": 2
+    },
+    "adequacy_values": {
+      "rows": 10
+    },
+    "forecast_values": {
+      "rows": 5
+    }
+  },
+  "findings": [
+    {
+      "check": "range:observations_daily",
+      "level": "warn",
+      "message": "27 percentage(s) sit outside 0..100 — a reservoir above its declared band or a plant above nominal capacity, not an error; first: mazar/nivel_pct_banda 2026-06-02 100.792453"
+    }
+  ],
+  "counts": {
+    "warn": 1,
+    "info": 13
+  }
+}

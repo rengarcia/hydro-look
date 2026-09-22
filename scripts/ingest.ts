@@ -28,6 +28,7 @@ import { checkPin, closeAgents } from "../src/lib/http/tls.ts";
 import { CelecOrds } from "../src/lib/sources/celec-ords.ts";
 import { CenaceOperativa, CenaceSmec } from "../src/lib/sources/cenace.ts";
 import { Covariates, ingestCovariates } from "../src/lib/sources/covariates.ts";
+import { Xm, ingestXm } from "../src/lib/sources/xm.ts";
 import { emptyBatch, type IngestBatch } from "../src/lib/sources/batch.ts";
 import { CuratedStore, foldBands } from "../src/lib/store/curated.ts";
 import { RawArchive } from "../src/lib/store/archive.ts";
@@ -39,6 +40,8 @@ import {
   OPERATIVA_SNAPSHOTS,
   WEATHER_DAILY,
   ENSO_MONTHLY,
+  XM_EXCHANGE_DAILY,
+  XM_SYSTEM_DAILY,
 } from "../src/lib/contracts/tables.ts";
 import { DATA_DATE_OFFSET_DAYS, ENERGY_MODULES, HISTORIAN_SERIES, type EnergyPlantCode } from "../src/lib/registry.ts";
 import { walkHistorian } from "../src/lib/sources/historian.ts";
@@ -127,6 +130,10 @@ async function main(): Promise<void> {
   switch (options.command) {
     case "covariates": {
       await ingestCovariates(new Covariates(http, archive), store, batch, options);
+      break;
+    }
+    case "xm": {
+      await ingestXm(new Xm(http, archive), store, batch, options);
       break;
     }
     case "daily": {
@@ -330,7 +337,7 @@ async function main(): Promise<void> {
     }
 
     default:
-      throw new Error(`unknown command "${options.command}"; try daily, backfill, covariates, apply, latest or smec-earliest`);
+      throw new Error(`unknown command "${options.command}"; try daily, backfill, covariates, xm, apply, latest or smec-earliest`);
   }
 
   if (options.out && !options.dryRun) stageBatch(archive, batch, options);
@@ -351,7 +358,7 @@ function stageBatch(archive: RawArchive, batch: IngestBatch, options: Options): 
     join(directory, "batch.json"),
     `${JSON.stringify({ generated_at: nowUtc(), command: options.command, source: options.source, ...batch }, null, 1)}\n`,
   );
-  log(`staged ${batch.observations.length + batch.national.length + batch.operativa.length + batch.weather.length + batch.enso.length} rows and ${bundles.length} raw bundles in ${directory}`);
+  log(`staged ${batch.observations.length + batch.national.length + batch.operativa.length + batch.weather.length + batch.enso.length + batch.xmExchange.length + batch.xmSystem.length} rows and ${bundles.length} raw bundles in ${directory}`);
   for (const note of dedupe(batch.notes).slice(0, 40)) log(`note: ${note}`);
   for (const error of batch.errors.slice(0, 40)) log(`ERROR ${error}`);
 }
@@ -412,6 +419,8 @@ function writeBatch(store: CuratedStore, archive: RawArchive, batch: IngestBatch
   // A backfill already running on the previous revision stages neither new field.
   if (batch.weather?.length) reports.push(store.upsert(WEATHER_DAILY, batch.weather));
   if (batch.enso?.length) reports.push(store.upsert(ENSO_MONTHLY, batch.enso));
+  if (batch.xmExchange?.length) reports.push(store.upsert(XM_EXCHANGE_DAILY, batch.xmExchange));
+  if (batch.xmSystem?.length) reports.push(store.upsert(XM_SYSTEM_DAILY, batch.xmSystem));
   if (batch.bands.length > 0) {
     const existing = store.read(join(DATA_CURATED, "operating_bands.csv"));
     reports.push(store.upsert(OPERATING_BANDS, foldBands(batch.bands, existing)));
@@ -442,6 +451,8 @@ function writeBatch(store: CuratedStore, archive: RawArchive, batch: IngestBatch
         operating_bands: summariseTable("operating_bands", "last_date"),
         weather_daily: summariseTable("weather_daily", "date"),
         enso_monthly: summariseTable("enso_monthly", "month"),
+        xm_exchange_daily: summariseTable("xm_exchange_daily", "date"),
+        xm_system_daily: summariseTable("xm_system_daily", "date"),
       },
     });
   }

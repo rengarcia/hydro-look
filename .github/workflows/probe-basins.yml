@@ -2,14 +2,22 @@ name: Basin sources probe
 
 # The reconnaissance §3's basins.csv needs and the development sandbox cannot do: its proxy
 # answers 403 for every host but GitHub, so HydroSHEDS, Zenodo, figshare, ArcGIS Online,
-# Wikidata and Overpass can only be asked from a runner. Around forty read-only requests at
-# one a second, nothing written under data/. Delete this workflow once basins.csv carries
-# verified rows and the answers are in PLAN.md §2.4.
+# Wikidata and Overpass — and Ecuador's own geoservers — can only be asked from a runner. A few
+# hundred read-only requests at one a second at most, nothing written under data/. Delete this
+# workflow once basins.csv carries verified rows and the answers are in PLAN.md §2.4.
 # Dispatch-only now that it is on main: a dispatch names the ref it runs, so a probe under
 # development is run from its own branch without a push trigger pinned to a branch name that
 # stops existing the moment it merges.
 on:
   workflow_dispatch:
+    inputs:
+      phases:
+        description: >-
+          Comma-separated phases, or "all". The open items are wikidata, jubones,
+          delsitanisagua, official; the settled re-checks are hydrosheds, mirrors, arcgis,
+          robots, overpass, contains. wikidata is added whenever a phase needs an anchor.
+        required: false
+        default: all
 
 permissions: {}
 
@@ -29,7 +37,10 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Probe
-        run: npm run probe:basins -- --out "$RUNNER_TEMP/probe" 2>&1 | tee "$RUNNER_TEMP/probe.log"
+        # Through the environment, not interpolated into the script, so an input is data and never shell.
+        env:
+          PHASES: ${{ inputs.phases }}
+        run: npm run probe:basins -- --out "$RUNNER_TEMP/probe" --phases "${PHASES:-all}" 2>&1 | tee "$RUNNER_TEMP/probe.log"
       - name: Summarise
         if: always()
         run: cat "$RUNNER_TEMP/probe/probe-basins.md" >> "$GITHUB_STEP_SUMMARY" || true

@@ -1,0 +1,1357 @@
+{
+ "generatedAt": "2026-09-22T19:56:51Z",
+ "runtimeSeconds": 391,
+ "command": "npm run backtest:m4",
+ "origins": [
+  "2018-01-01",
+  "2018-02-01",
+  "2018-03-01",
+  "2018-04-01",
+  "2018-05-01",
+  "2018-06-01",
+  "2018-07-01",
+  "2018-08-01",
+  "2018-09-01",
+  "2018-10-01",
+  "2018-11-01",
+  "2018-12-01",
+  "2019-01-01",
+  "2019-02-01",
+  "2019-03-01",
+  "2019-04-01",
+  "2019-05-01",
+  "2019-06-01",
+  "2019-07-01",
+  "2019-08-01",
+  "2019-09-01",
+  "2019-10-01",
+  "2019-11-01",
+  "2019-12-01",
+  "2020-01-01",
+  "2020-02-01",
+  "2020-03-01",
+  "2020-04-01",
+  "2020-05-01",
+  "2020-06-01",
+  "2020-07-01",
+  "2020-08-01",
+  "2020-09-01",
+  "2020-10-01",
+  "2020-11-01",
+  "2020-12-01",
+  "2021-01-01",
+  "2021-02-01",
+  "2021-03-01",
+  "2021-04-01",
+  "2021-05-01",
+  "2021-06-01",
+  "2021-07-01",
+  "2021-08-01",
+  "2021-09-01",
+  "2021-10-01",
+  "2021-11-01",
+  "2021-12-01",
+  "2022-01-01",
+  "2022-02-01",
+  "2022-03-01",
+  "2022-04-01",
+  "2022-05-01",
+  "2022-06-01",
+  "2022-07-01",
+  "2022-08-01",
+  "2022-09-01",
+  "2022-10-01",
+  "2022-11-01",
+  "2022-12-01",
+  "2023-01-01",
+  "2023-02-01",
+  "2023-03-01",
+  "2023-04-01",
+  "2023-05-01",
+  "2023-06-01",
+  "2023-07-01",
+  "2023-08-01",
+  "2023-09-01",
+  "2023-10-01",
+  "2023-11-01",
+  "2023-12-01",
+  "2024-01-01",
+  "2024-02-01",
+  "2024-03-01",
+  "2024-04-01",
+  "2024-05-01",
+  "2024-06-01",
+  "2024-07-01",
+  "2024-08-01",
+  "2024-09-01",
+  "2024-10-01",
+  "2024-11-01",
+  "2024-12-01",
+  "2025-01-01",
+  "2025-02-01",
+  "2025-03-01",
+  "2025-04-01",
+  "2025-05-01",
+  "2025-06-01",
+  "2025-07-01",
+  "2025-08-01",
+  "2025-09-01",
+  "2025-10-01",
+  "2025-11-01",
+  "2025-12-01",
+  "2026-01-01",
+  "2026-02-01",
+  "2026-03-01",
+  "2026-04-01",
+  "2026-05-01",
+  "2026-06-01",
+  "2026-07-01",
+  "2026-08-01",
+  "2026-09-01"
+ ],
+ "horizonDays": [
+  7,
+  14,
+  30,
+  60,
+  90
+ ],
+ "settings": {
+  "gbm": {
+   "trees": 200,
+   "learningRate": 0.05,
+   "maxDepth": 3,
+   "minLeaf": 20,
+   "subsample": 0.8,
+   "featureFraction": 1,
+   "maxBins": 32,
+   "l2": 0,
+   "seed": 20260922
+  },
+  "strideDays": 2,
+  "minRows": 200,
+  "quantiles": [
+   0.1,
+   0.5,
+   0.9
+  ]
+ },
+ "features": {
+  "base": [
+   "level_m",
+   "level_change_1d_m",
+   "level_change_3d_m",
+   "level_change_7d_m",
+   "level_change_14d_m",
+   "level_change_30d_m",
+   "level_change_60d_m",
+   "level_minus_trailing_365d_mean_m",
+   "inflow_m3s",
+   "inflow_mean_3d_m3s",
+   "inflow_mean_7d_m3s",
+   "inflow_mean_30d_m3s",
+   "inflow_mean_90d_m3s",
+   "production_mwh",
+   "production_mean_7d_mwh",
+   "production_mean_30d_mwh",
+   "day_of_year_sin",
+   "day_of_year_cos",
+   "oni_as_available",
+   "oni_change_3m_as_available",
+   "era5_precip_paute_provisional_point_7d_mm",
+   "era5_precip_paute_provisional_point_30d_mm",
+   "era5_precip_paute_provisional_point_90d_mm"
+  ],
+  "m3": [
+   "m3_p50_change_m",
+   "m3_ensemble_p10_p90_width_m",
+   "m3_release_stance_m3s"
+  ]
+ },
+ "referenceId": "M3-water-balance",
+ "scores": [
+  {
+   "modelId": "M0-persistence",
+   "label": "Persistence (today's level, held)",
+   "horizons": [
+    {
+     "horizonDays": 7,
+     "n": 105,
+     "maeM": 2.2911428571428716,
+     "rmseM": 3.5866621968462025,
+     "biasM": 0.02923809523810979,
+     "skillVsPersistence": 0,
+     "nBand": 93,
+     "pinballMeanM": 0.84648458781362,
+     "coverageP10P90": 0.7741935483870968,
+     "ensembleCoverage": null,
+     "meanBandWidthM": 6.6789462365591135
+    },
+    {
+     "horizonDays": 14,
+     "n": 105,
+     "maeM": 3.572857142857144,
+     "rmseM": 5.603254241531265,
+     "biasM": -0.16028571428570926,
+     "skillVsPersistence": 0,
+     "nBand": 93,
+     "pinballMeanM": 1.337435483870971,
+     "coverageP10P90": 0.7741935483870968,
+     "ensembleCoverage": null,
+     "meanBandWidthM": 11.036612903225755
+    },
+    {
+     "horizonDays": 30,
+     "n": 104,
+     "maeM": 5.8566346153845945,
+     "rmseM": 8.534222791434855,
+     "biasM": 0.1481730769230974,
+     "skillVsPersistence": 0,
+     "nBand": 92,
+     "pinballMeanM": 2.090036231884056,
+     "coverageP10P90": 0.7065217391304348,
+     "ensembleCoverage": null,
+     "meanBandWidthM": 17.472500000000014
+    },
+    {
+     "horizonDays": 60,
+     "n": 103,
+     "maeM": 9.600582524271847,
+     "rmseM": 13.25507105744304,
+     "biasM": 0.17883495145633346,
+     "skillVsPersistence": 0,
+     "nBand": 91,
+     "pinballMeanM": 3.2782479853479933,
+     "coverageP10P90": 0.7472527472527473,
+     "ensembleCoverage": null,
+     "meanBandWidthM": 28.361285714285582
+    },
+    {
+     "horizonDays": 90,
+     "n": 102,
+     "maeM": 11.207549019607844,
+     "rmseM": 15.44282697248015,
+     "biasM": 0.36735294117650874,
+     "skillVsPersistence": 0,
+     "nBand": 90,
+     "pinballMeanM": 3.9045181481481466,
+     "coverageP10P90": 0.7222222222222222,
+     "ensembleCoverage": null,
+     "meanBandWidthM": 33.76565555555547
+    }
+   ]
+  },
+  {
+   "modelId": "M3-water-balance",
+   "label": "Water balance with a fitted release rule and analogue inflow years",
+   "horizons": [
+    {
+     "horizonDays": 7,
+     "n": 105,
+     "maeM": 2.2923387417301195,
+     "rmseM": 3.385967231235754,
+     "biasM": -0.3512964242871584,
+     "skillVsPersistence": -0.0005219598522718805,
+     "nBand": 93,
+     "pinballMeanM": 0.8498593648249952,
+     "coverageP10P90": 0.7419354838709677,
+     "ensembleCoverage": 0.6095238095238096,
+     "meanBandWidthM": 6.16101990254635
+    },
+    {
+     "horizonDays": 14,
+     "n": 105,
+     "maeM": 3.6164486523221187,
+     "rmseM": 5.618924531179248,
+     "biasM": -1.2293451924384802,
+     "skillVsPersistence": -0.012200742353251748,
+     "nBand": 93,
+     "pinballMeanM": 1.2926630397295,
+     "coverageP10P90": 0.7741935483870968,
+     "ensembleCoverage": 0.6,
+     "meanBandWidthM": 11.666728115736875
+    },
+    {
+     "horizonDays": 30,
+     "n": 104,
+     "maeM": 5.850836290708134,
+     "rmseM": 8.473374161567227,
+     "biasM": -2.470765549105557,
+     "skillVsPersistence": 0.0009900437806430462,
+     "nBand": 92,
+     "pinballMeanM": 1.8728865096776743,
+     "coverageP10P90": 0.8043478260869565,
+     "ensembleCoverage": 0.5096153846153846,
+     "meanBandWidthM": 17.146740051526194
+    },
+    {
+     "horizonDays": 60,
+     "n": 103,
+     "maeM": 7.252950496780667,
+     "rmseM": 10.745492632721325,
+     "biasM": -3.512398052778638,
+     "skillVsPersistence": 0.24453016486822354,
+     "nBand": 91,
+     "pinballMeanM": 2.4340799660577375,
+     "coverageP10P90": 0.7362637362637363,
+     "ensembleCoverage": 0.5339805825242718,
+     "meanBandWidthM": 21.04253187372923
+    },
+    {
+     "horizonDays": 90,
+     "n": 102,
+     "maeM": 7.304690324695439,
+     "rmseM": 11.200972738312407,
+     "biasM": -3.545406162554208,
+     "skillVsPersistence": 0.3482348092419022,
+     "nBand": 90,
+     "pinballMeanM": 2.5722709657334284,
+     "coverageP10P90": 0.7222222222222222,
+     "ensembleCoverage": 0.5294117647058824,
+     "meanBandWidthM": 20.161437472891745
+    }
+   ]
+  },
+  {
+   "modelId": "M4-gbm-direct",
+   "label": "Boosted quantile trees on the level change, no M3",
+   "horizons": [
+    {
+     "horizonDays": 7,
+     "n": 105,
+     "maeM": 2.0179770062197178,
+     "rmseM": 3.1788140053795364,
+     "biasM": -0.01633326790823568,
+     "skillVsPersistence": 0.1192268959011139,
+     "nBand": 93,
+     "pinballMeanM": 0.7583897042841921,
+     "coverageP10P90": 0.7741935483870968,
+     "ensembleCoverage": 0.6571428571428571,
+     "meanBandWidthM": 5.944038738476696
+    },
+    {
+     "horizonDays": 14,
+     "n": 105,
+     "maeM": 3.323076879093653,
+     "rmseM": 5.1347171183496805,
+     "biasM": -0.5067871613570007,
+     "skillVsPersistence": 0.06991050964991752,
+     "nBand": 93,
+     "pinballMeanM": 1.251393453407231,
+     "coverageP10P90": 0.7849462365591398,
+     "ensembleCoverage": 0.6190476190476191,
+     "meanBandWidthM": 11.1345498784398
+    },
+    {
+     "horizonDays": 30,
+     "n": 104,
+     "maeM": 5.4851463439364485,
+     "rmseM": 7.881287346599567,
+     "biasM": -1.1406573033300578,
+     "skillVsPersistence": 0.06343033087164018,
+     "nBand": 92,
+     "pinballMeanM": 1.9027020776024015,
+     "coverageP10P90": 0.7608695652173914,
+     "ensembleCoverage": 0.40384615384615385,
+     "meanBandWidthM": 16.12089061652149
+    },
+    {
+     "horizonDays": 60,
+     "n": 103,
+     "maeM": 8.159464145542206,
+     "rmseM": 11.357136406377716,
+     "biasM": -2.252421362518018,
+     "skillVsPersistence": 0.15010738932624734,
+     "nBand": 91,
+     "pinballMeanM": 2.804757199018473,
+     "coverageP10P90": 0.6703296703296703,
+     "ensembleCoverage": 0.39805825242718446,
+     "meanBandWidthM": 22.86814037339104
+    },
+    {
+     "horizonDays": 90,
+     "n": 102,
+     "maeM": 8.74877261236619,
+     "rmseM": 11.911865488852454,
+     "biasM": -1.358945090786936,
+     "skillVsPersistence": 0.2193857375006768,
+     "nBand": 90,
+     "pinballMeanM": 2.995412339441889,
+     "coverageP10P90": 0.6555555555555556,
+     "ensembleCoverage": 0.4019607843137255,
+     "meanBandWidthM": 23.18992104971099
+    }
+   ]
+  },
+  {
+   "modelId": "M4-gbm-direct-m3",
+   "label": "Boosted quantile trees on the level change, M3 as a feature",
+   "horizons": [
+    {
+     "horizonDays": 7,
+     "n": 105,
+     "maeM": 2.0498476206554272,
+     "rmseM": 3.1762647205944683,
+     "biasM": -0.10473538179599667,
+     "skillVsPersistence": 0.10531653918269734,
+     "nBand": 93,
+     "pinballMeanM": 0.7618638202013797,
+     "coverageP10P90": 0.7634408602150538,
+     "ensembleCoverage": 0.6,
+     "meanBandWidthM": 6.044226814040807
+    },
+    {
+     "horizonDays": 14,
+     "n": 105,
+     "maeM": 3.441088683545652,
+     "rmseM": 5.321887286722382,
+     "biasM": -0.45219518566344136,
+     "skillVsPersistence": 0.03688041644064155,
+     "nBand": 93,
+     "pinballMeanM": 1.2543663565240744,
+     "coverageP10P90": 0.7956989247311828,
+     "ensembleCoverage": 0.6285714285714286,
+     "meanBandWidthM": 10.784423577208912
+    },
+    {
+     "horizonDays": 30,
+     "n": 104,
+     "maeM": 5.735585226305939,
+     "rmseM": 8.0053873989285,
+     "biasM": -1.2191272263594022,
+     "skillVsPersistence": 0.020668762357254677,
+     "nBand": 92,
+     "pinballMeanM": 1.9468848562495922,
+     "coverageP10P90": 0.75,
+     "ensembleCoverage": 0.4807692307692308,
+     "meanBandWidthM": 17.329180246348148
+    },
+    {
+     "horizonDays": 60,
+     "n": 103,
+     "maeM": 8.082738642052364,
+     "rmseM": 11.218504180618078,
+     "biasM": -2.5274947759538637,
+     "skillVsPersistence": 0.1580991443365154,
+     "nBand": 91,
+     "pinballMeanM": 2.7344204093406486,
+     "coverageP10P90": 0.6813186813186813,
+     "ensembleCoverage": 0.4077669902912621,
+     "meanBandWidthM": 22.589358856542315
+    },
+    {
+     "horizonDays": 90,
+     "n": 102,
+     "maeM": 8.856923412316902,
+     "rmseM": 12.287295190667384,
+     "biasM": -1.8248129369914892,
+     "skillVsPersistence": 0.20973592024255017,
+     "nBand": 90,
+     "pinballMeanM": 3.098062985245705,
+     "coverageP10P90": 0.6777777777777778,
+     "ensembleCoverage": 0.37254901960784315,
+     "meanBandWidthM": 22.069000016209454
+    }
+   ]
+  },
+  {
+   "modelId": "M4-gbm-m3-residual",
+   "label": "Boosted quantile trees on M3's residual",
+   "horizons": [
+    {
+     "horizonDays": 7,
+     "n": 105,
+     "maeM": 2.034168396105187,
+     "rmseM": 3.1108354600262422,
+     "biasM": -0.19652643202557774,
+     "skillVsPersistence": 0.11215994683026442,
+     "nBand": 93,
+     "pinballMeanM": 0.7746856839443143,
+     "coverageP10P90": 0.7634408602150538,
+     "ensembleCoverage": 0.6190476190476191,
+     "meanBandWidthM": 5.988681581316434
+    },
+    {
+     "horizonDays": 14,
+     "n": 105,
+     "maeM": 3.4633272875271968,
+     "rmseM": 5.331226904252617,
+     "biasM": -0.3972948507541722,
+     "skillVsPersistence": 0.030656097053563758,
+     "nBand": 93,
+     "pinballMeanM": 1.2693339076716779,
+     "coverageP10P90": 0.7634408602150538,
+     "ensembleCoverage": 0.5904761904761905,
+     "meanBandWidthM": 9.749509228874372
+    },
+    {
+     "horizonDays": 30,
+     "n": 104,
+     "maeM": 5.808799465975028,
+     "rmseM": 8.412750981550497,
+     "biasM": -1.322168409910043,
+     "skillVsPersistence": 0.008167685462895369,
+     "nBand": 92,
+     "pinballMeanM": 1.9742526652431274,
+     "coverageP10P90": 0.8260869565217391,
+     "ensembleCoverage": 0.46153846153846156,
+     "meanBandWidthM": 20.227232042576446
+    },
+    {
+     "horizonDays": 60,
+     "n": 103,
+     "maeM": 8.277959360053346,
+     "rmseM": 11.860947686273065,
+     "biasM": -2.9736571067679347,
+     "skillVsPersistence": 0.1377648867529332,
+     "nBand": 91,
+     "pinballMeanM": 2.810839894989902,
+     "coverageP10P90": 0.6813186813186813,
+     "ensembleCoverage": 0.4368932038834951,
+     "meanBandWidthM": 23.911864726935033
+    },
+    {
+     "horizonDays": 90,
+     "n": 102,
+     "maeM": 8.335043582491817,
+     "rmseM": 12.09816365191247,
+     "biasM": -3.073572097721086,
+     "skillVsPersistence": 0.25630094787812374,
+     "nBand": 90,
+     "pinballMeanM": 2.9959528185409714,
+     "coverageP10P90": 0.6777777777777778,
+     "ensembleCoverage": 0.37254901960784315,
+     "meanBandWidthM": 21.11229274675513
+    }
+   ]
+  }
+ ],
+ "native": [
+  {
+   "modelId": "M3-water-balance",
+   "horizons": [
+    {
+     "horizonDays": 7,
+     "n": 93,
+     "coverage": 0.6021505376344086,
+     "pinballMeanM": 0.8080682390587308
+    },
+    {
+     "horizonDays": 14,
+     "n": 93,
+     "coverage": 0.5913978494623656,
+     "pinballMeanM": 1.2238265443332002
+    },
+    {
+     "horizonDays": 30,
+     "n": 92,
+     "coverage": 0.5217391304347826,
+     "pinballMeanM": 1.8826169153102117
+    },
+    {
+     "horizonDays": 60,
+     "n": 91,
+     "coverage": 0.5604395604395604,
+     "pinballMeanM": 2.4807779627846047
+    },
+    {
+     "horizonDays": 90,
+     "n": 90,
+     "coverage": 0.5222222222222223,
+     "pinballMeanM": 2.6241241742807597
+    }
+   ]
+  },
+  {
+   "modelId": "M4-gbm-direct",
+   "horizons": [
+    {
+     "horizonDays": 7,
+     "n": 93,
+     "coverage": 0.6451612903225806,
+     "pinballMeanM": 0.6959027068600651
+    },
+    {
+     "horizonDays": 14,
+     "n": 93,
+     "coverage": 0.6129032258064516,
+     "pinballMeanM": 1.1666462436269618
+    },
+    {
+     "horizonDays": 30,
+     "n": 92,
+     "coverage": 0.41304347826086957,
+     "pinballMeanM": 1.9397396579353055
+    },
+    {
+     "horizonDays": 60,
+     "n": 91,
+     "coverage": 0.4065934065934066,
+     "pinballMeanM": 2.875832737916477
+    },
+    {
+     "horizonDays": 90,
+     "n": 90,
+     "coverage": 0.4,
+     "pinballMeanM": 3.16235546900401
+    }
+   ]
+  },
+  {
+   "modelId": "M4-gbm-direct-m3",
+   "horizons": [
+    {
+     "horizonDays": 7,
+     "n": 93,
+     "coverage": 0.5913978494623656,
+     "pinballMeanM": 0.7072468366341776
+    },
+    {
+     "horizonDays": 14,
+     "n": 93,
+     "coverage": 0.6129032258064516,
+     "pinballMeanM": 1.1709587948308853
+    },
+    {
+     "horizonDays": 30,
+     "n": 92,
+     "coverage": 0.5,
+     "pinballMeanM": 1.9454249675446225
+    },
+    {
+     "horizonDays": 60,
+     "n": 91,
+     "coverage": 0.4065934065934066,
+     "pinballMeanM": 2.820294329036692
+    },
+    {
+     "horizonDays": 90,
+     "n": 90,
+     "coverage": 0.3888888888888889,
+     "pinballMeanM": 3.1668140506763396
+    }
+   ]
+  },
+  {
+   "modelId": "M4-gbm-m3-residual",
+   "horizons": [
+    {
+     "horizonDays": 7,
+     "n": 93,
+     "coverage": 0.6021505376344086,
+     "pinballMeanM": 0.7203990834098759
+    },
+    {
+     "horizonDays": 14,
+     "n": 93,
+     "coverage": 0.5913978494623656,
+     "pinballMeanM": 1.1834208578272973
+    },
+    {
+     "horizonDays": 30,
+     "n": 92,
+     "coverage": 0.4782608695652174,
+     "pinballMeanM": 1.9394133131667142
+    },
+    {
+     "horizonDays": 60,
+     "n": 91,
+     "coverage": 0.46153846153846156,
+     "pinballMeanM": 2.98174963145211
+    },
+    {
+     "horizonDays": 90,
+     "n": 90,
+     "coverage": 0.35555555555555557,
+     "pinballMeanM": 3.106802159647497
+    }
+   ]
+  }
+ ],
+ "paired": [
+  {
+   "modelId": "M4-gbm-direct",
+   "horizons": [
+    {
+     "horizonDays": 7,
+     "n": 105,
+     "maeDifferenceM": -0.274361735510402,
+     "low90": -0.5508683843906209,
+     "high90": -0.013175758258106136,
+     "winShare": 0.6285714285714286
+    },
+    {
+     "horizonDays": 14,
+     "n": 105,
+     "maeDifferenceM": -0.29337177322846575,
+     "low90": -0.8016001421964237,
+     "high90": 0.19983468592751727,
+     "winShare": 0.5142857142857142
+    },
+    {
+     "horizonDays": 30,
+     "n": 104,
+     "maeDifferenceM": -0.3656899467716856,
+     "low90": -0.9866669702495304,
+     "high90": 0.28081987877651005,
+     "winShare": 0.5576923076923077
+    },
+    {
+     "horizonDays": 60,
+     "n": 103,
+     "maeDifferenceM": 0.9065136487615393,
+     "low90": 0.26750992519623984,
+     "high90": 1.5786680704987417,
+     "winShare": 0.3786407766990291
+    },
+    {
+     "horizonDays": 90,
+     "n": 102,
+     "maeDifferenceM": 1.4440822876707515,
+     "low90": 0.21699272118532384,
+     "high90": 2.9042612984009253,
+     "winShare": 0.4117647058823529
+    }
+   ]
+  },
+  {
+   "modelId": "M4-gbm-direct-m3",
+   "horizons": [
+    {
+     "horizonDays": 7,
+     "n": 105,
+     "maeDifferenceM": -0.24249112107469217,
+     "low90": -0.5204174876394423,
+     "high90": 0.02970577340001364,
+     "winShare": 0.6190476190476191
+    },
+    {
+     "horizonDays": 14,
+     "n": 105,
+     "maeDifferenceM": -0.17535996877646712,
+     "low90": -0.6935244196385681,
+     "high90": 0.34867753774790816,
+     "winShare": 0.5142857142857142
+    },
+    {
+     "horizonDays": 30,
+     "n": 104,
+     "maeDifferenceM": -0.115251064402195,
+     "low90": -0.7488683792463208,
+     "high90": 0.5515606200143538,
+     "winShare": 0.5096153846153846
+    },
+    {
+     "horizonDays": 60,
+     "n": 103,
+     "maeDifferenceM": 0.829788145271698,
+     "low90": 0.2297547314230555,
+     "high90": 1.4702204831720007,
+     "winShare": 0.3786407766990291
+    },
+    {
+     "horizonDays": 90,
+     "n": 102,
+     "maeDifferenceM": 1.552233087621463,
+     "low90": 0.32290022258991985,
+     "high90": 2.995227130486566,
+     "winShare": 0.45098039215686275
+    }
+   ]
+  },
+  {
+   "modelId": "M4-gbm-m3-residual",
+   "horizons": [
+    {
+     "horizonDays": 7,
+     "n": 105,
+     "maeDifferenceM": -0.25817034562493235,
+     "low90": -0.4531312800890774,
+     "high90": -0.06752278458019972,
+     "winShare": 0.6190476190476191
+    },
+    {
+     "horizonDays": 14,
+     "n": 105,
+     "maeDifferenceM": -0.15312136479492222,
+     "low90": -0.6472215251580922,
+     "high90": 0.3300590242374971,
+     "winShare": 0.5619047619047619
+    },
+    {
+     "horizonDays": 30,
+     "n": 104,
+     "maeDifferenceM": -0.042036824733105944,
+     "low90": -0.6122504016184522,
+     "high90": 0.5444396583148204,
+     "winShare": 0.6153846153846154
+    },
+    {
+     "horizonDays": 60,
+     "n": 103,
+     "maeDifferenceM": 1.02500886327268,
+     "low90": 0.41128510514317695,
+     "high90": 1.666555271772934,
+     "winShare": 0.3883495145631068
+    },
+    {
+     "horizonDays": 90,
+     "n": 102,
+     "maeDifferenceM": 1.0303532577963779,
+     "low90": 0.029545506781211296,
+     "high90": 2.1495530984701636,
+     "winShare": 0.4117647058823529
+    }
+   ]
+  }
+ ],
+ "crisis": {
+  "thresholdM": 2115,
+  "episodes": [
+   {
+    "crossedOn": "2024-04-11",
+    "models": [
+     {
+      "modelId": "M3-water-balance",
+      "p50CalledFrom": null,
+      "p50LeadDays": null,
+      "p10CalledFrom": null,
+      "p10LeadDays": null,
+      "runUp": [
+       {
+        "origin": "2023-11-01",
+        "p50": null,
+        "p10": "2023-11-08"
+       },
+       {
+        "origin": "2023-12-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-01-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-02-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-03-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-04-01",
+        "p50": null,
+        "p10": null
+       }
+      ]
+     },
+     {
+      "modelId": "M4-gbm-direct",
+      "p50CalledFrom": null,
+      "p50LeadDays": null,
+      "p10CalledFrom": "2024-04-01",
+      "p10LeadDays": 10,
+      "runUp": [
+       {
+        "origin": "2023-11-01",
+        "p50": "2023-11-08",
+        "p10": "2023-11-08"
+       },
+       {
+        "origin": "2023-12-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-01-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-02-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-03-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-04-01",
+        "p50": null,
+        "p10": "2024-04-08"
+       }
+      ]
+     },
+     {
+      "modelId": "M4-gbm-direct-m3",
+      "p50CalledFrom": null,
+      "p50LeadDays": null,
+      "p10CalledFrom": "2024-04-01",
+      "p10LeadDays": 10,
+      "runUp": [
+       {
+        "origin": "2023-11-01",
+        "p50": "2023-11-08",
+        "p10": "2023-11-08"
+       },
+       {
+        "origin": "2023-12-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-01-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-02-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-03-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-04-01",
+        "p50": null,
+        "p10": "2024-04-08"
+       }
+      ]
+     },
+     {
+      "modelId": "M4-gbm-m3-residual",
+      "p50CalledFrom": null,
+      "p50LeadDays": null,
+      "p10CalledFrom": null,
+      "p10LeadDays": null,
+      "runUp": [
+       {
+        "origin": "2023-11-01",
+        "p50": "2023-11-08",
+        "p10": "2023-11-08"
+       },
+       {
+        "origin": "2023-12-01",
+        "p50": null,
+        "p10": "2023-12-31"
+       },
+       {
+        "origin": "2024-01-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-02-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-03-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-04-01",
+        "p50": null,
+        "p10": null
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "crossedOn": "2024-10-08",
+    "models": [
+     {
+      "modelId": "M3-water-balance",
+      "p50CalledFrom": null,
+      "p50LeadDays": null,
+      "p10CalledFrom": "2024-10-01",
+      "p10LeadDays": 7,
+      "runUp": [
+       {
+        "origin": "2024-05-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-06-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-07-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-08-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-09-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-10-01",
+        "p50": null,
+        "p10": "2024-10-08"
+       }
+      ]
+     },
+     {
+      "modelId": "M4-gbm-direct",
+      "p50CalledFrom": null,
+      "p50LeadDays": null,
+      "p10CalledFrom": null,
+      "p10LeadDays": null,
+      "runUp": [
+       {
+        "origin": "2024-05-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-06-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-07-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-08-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-09-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-10-01",
+        "p50": null,
+        "p10": null
+       }
+      ]
+     },
+     {
+      "modelId": "M4-gbm-direct-m3",
+      "p50CalledFrom": null,
+      "p50LeadDays": null,
+      "p10CalledFrom": "2024-10-01",
+      "p10LeadDays": 7,
+      "runUp": [
+       {
+        "origin": "2024-05-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-06-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-07-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-08-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-09-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-10-01",
+        "p50": null,
+        "p10": "2024-10-15"
+       }
+      ]
+     },
+     {
+      "modelId": "M4-gbm-m3-residual",
+      "p50CalledFrom": null,
+      "p50LeadDays": null,
+      "p10CalledFrom": "2024-10-01",
+      "p10LeadDays": 7,
+      "runUp": [
+       {
+        "origin": "2024-05-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-06-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-07-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-08-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-09-01",
+        "p50": null,
+        "p10": null
+       },
+       {
+        "origin": "2024-10-01",
+        "p50": null,
+        "p10": "2024-10-15"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "falseAlarms": [
+   {
+    "modelId": "M3-water-balance",
+    "count": 0
+   },
+   {
+    "modelId": "M4-gbm-direct",
+    "count": 1
+   },
+   {
+    "modelId": "M4-gbm-direct-m3",
+    "count": 1
+   },
+   {
+    "modelId": "M4-gbm-m3-residual",
+    "count": 1
+   }
+  ],
+  "originsConsidered": 105
+ },
+ "m3AnchorMaxAbsDifferenceM": 0,
+ "calibration": [
+  {
+   "modelId": "M0-persistence",
+   "horizons": [
+    {
+     "horizonDays": 7,
+     "q10": -3.4260000000002035,
+     "q50": -0.3400000000001455,
+     "q90": 3.215999999999804,
+     "n": 105
+    },
+    {
+     "horizonDays": 14,
+     "q10": -6.208000000000083,
+     "q50": -0.169999999999618,
+     "q90": 5.39199999999992,
+     "n": 105
+    },
+    {
+     "horizonDays": 30,
+     "q10": -9.564999999999825,
+     "q50": 0.004999999999881766,
+     "q90": 10.490000000000236,
+     "n": 104
+    },
+    {
+     "horizonDays": 60,
+     "q10": -15.961999999999898,
+     "q50": 0.05999999999994543,
+     "q90": 15.717999999999938,
+     "n": 103
+    },
+    {
+     "horizonDays": 90,
+     "q10": -20.44699999999984,
+     "q50": 0.020000000000209184,
+     "q90": 22.554999999999747,
+     "n": 102
+    }
+   ]
+  },
+  {
+   "modelId": "M3-water-balance",
+   "horizons": [
+    {
+     "horizonDays": 7,
+     "q10": -4.3042141735239055,
+     "q50": 0.13167114747739106,
+     "q90": 2.3477523271973966,
+     "n": 105
+    },
+    {
+     "horizonDays": 14,
+     "q10": -7.837390901196613,
+     "q50": -0.18569125273234022,
+     "q90": 3.2931414422007053,
+     "n": 105
+    },
+    {
+     "horizonDays": 30,
+     "q10": -12.83984464016694,
+     "q50": 0.19461908088783275,
+     "q90": 4.679397353988135,
+     "n": 104
+    },
+    {
+     "horizonDays": 60,
+     "q10": -18.142658307964574,
+     "q50": -0.0014391503036677022,
+     "q90": 5.2376358147019335,
+     "n": 103
+    },
+    {
+     "horizonDays": 90,
+     "q10": -20.078945395759863,
+     "q50": 0.15736138409988598,
+     "q90": 6.374080719088034,
+     "n": 102
+    }
+   ]
+  },
+  {
+   "modelId": "M4-gbm-direct",
+   "horizons": [
+    {
+     "horizonDays": 7,
+     "q10": -3.1959448978481304,
+     "q50": -0.00932098874636722,
+     "q90": 2.760649975660911,
+     "n": 105
+    },
+    {
+     "horizonDays": 14,
+     "q10": -6.7765981457753695,
+     "q50": -0.25986252371876617,
+     "q90": 4.928892235101119,
+     "n": 105
+    },
+    {
+     "horizonDays": 30,
+     "q10": -11.672194617782088,
+     "q50": -0.016785880587576685,
+     "q90": 7.088701343829053,
+     "n": 104
+    },
+    {
+     "horizonDays": 60,
+     "q10": -20.354145135388716,
+     "q50": 0.8089345621137909,
+     "q90": 8.690327095508836,
+     "n": 103
+    },
+    {
+     "horizonDays": 90,
+     "q10": -18.43753118197178,
+     "q50": -0.21968338727037917,
+     "q90": 12.26126178662903,
+     "n": 102
+    }
+   ]
+  },
+  {
+   "modelId": "M4-gbm-direct-m3",
+   "horizons": [
+    {
+     "horizonDays": 7,
+     "q10": -3.289357062717136,
+     "q50": -0.18113490213727346,
+     "q90": 2.8225265120491745,
+     "n": 105
+    },
+    {
+     "horizonDays": 14,
+     "q10": -6.59777576823908,
+     "q50": -0.32686521203322627,
+     "q90": 4.589710557112003,
+     "n": 105
+    },
+    {
+     "horizonDays": 30,
+     "q10": -12.198296319979045,
+     "q50": -0.24041153058055897,
+     "q90": 8.569072326497919,
+     "n": 104
+    },
+    {
+     "horizonDays": 60,
+     "q10": -19.65913431007175,
+     "q50": 0.2543169016284992,
+     "q90": 8.715522933739702,
+     "n": 103
+    },
+    {
+     "horizonDays": 90,
+     "q10": -17.977588149326355,
+     "q50": -0.5630346725729396,
+     "q90": 10.672049069431752,
+     "n": 102
+    }
+   ]
+  },
+  {
+   "modelId": "M4-gbm-m3-residual",
+   "horizons": [
+    {
+     "horizonDays": 7,
+     "q10": -3.449270673220144,
+     "q50": -0.2531382076722366,
+     "q90": 2.6787456054416006,
+     "n": 105
+    },
+    {
+     "horizonDays": 14,
+     "q10": -5.7288422618635195,
+     "q50": -0.14986447817364024,
+     "q90": 4.173671641962483,
+     "n": 105
+    },
+    {
+     "horizonDays": 30,
+     "q10": -13.15379164267174,
+     "q50": -0.0890224313136514,
+     "q90": 7.262761918223624,
+     "n": 104
+    },
+    {
+     "horizonDays": 60,
+     "q10": -20.19845331631959,
+     "q50": -0.25055091742660807,
+     "q90": 7.2447598994308455,
+     "n": 103
+    },
+    {
+     "horizonDays": 90,
+     "q10": -19.188736051793057,
+     "q50": -0.5825293569043879,
+     "q90": 9.144171962771726,
+     "n": 102
+    }
+   ]
+  }
+ ]
+}

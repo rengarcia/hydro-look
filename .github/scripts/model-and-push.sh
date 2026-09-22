@@ -5,7 +5,7 @@
 # simpler than the ingest's: there is nothing staged to replay, so a rejected push is resolved by
 # resetting to the new tip and modelling again. The second run sees whatever rows the other job
 # landed and produces the documents that tip deserves, rather than merging two that were computed
-# from different data.
+# from different data. The loop itself lives in push-loop.sh, shared with the narrative step.
 #
 # That is also why this runs *after* the ingest has pushed: the models should stand on the day
 # that just landed, not on yesterday's.
@@ -20,49 +20,48 @@ set -euo pipefail
 MESSAGE="${1:?commit message required}"
 BRANCH="${BRANCH:?BRANCH required}"
 LOG="${LOG:-/dev/null}"
-ATTEMPTS="${ATTEMPTS:-5}"
+LABEL="Models"
 
-git config user.name "github-actions[bot]"
-git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+# shellcheck source=push-loop.sh
+source "$(dirname "$0")/push-loop.sh"
 
-for attempt in $(seq 1 "$ATTEMPTS"); do
-  git fetch origin "$BRANCH"
-  git reset --hard "origin/$BRANCH"
-
-  # A modelling failure must not be papered over: leave the previous documents committed and
-  # exit non-zero so the step is visibly red, rather than pushing a half-written one.
+# A modelling failure must not be papered over: leave the previous documents committed and
+# return non-zero so the step is visibly red, rather than pushing a half-written one.
+regenerate_models() {
   if ! npm run forecast 2>&1 | tee -a "$LOG"; then
     echo "Forecast failed; the previously committed forecast is left in place."
-    exit 1
+    return 1
+  fi
+
+  # The 7-day point is M4's only while the committed M4 backtest covers exactly the ladder's
+  # origins, and the ladder gains one a week into every month. When that is the *only* reason
+  # the switch fell back, rerun the backtest (~6.5 min, once a month) and forecast again. Any
+  # other reason -- settings changed, M4 no longer winning -- is left as a fallback for a person
+  # to read in forecast.json's `horizon_switch`, never refreshed away.
+  if node -e '
+    const s = require("./public/api/forecast.json").horizon_switch;
+    process.exit(s && s.status === "fallback" && /no longer covers the ladder/.test(s.reason) ? 0 : 1);
+  '; then
+    echo "M4 backtest is behind the ladder; rerunning it before forecasting again."
+    if npm run backtest:m4 2>&1 | tee -a "$LOG" && npm run forecast 2>&1 | tee -a "$LOG"; then
+      :
+    else
+      echo "M4 refresh failed; the forecast above, with seven days on M3, is what gets committed."
+    fi
   fi
 
   if ! npm run adequacy 2>&1 | tee -a "$LOG"; then
     echo "Adequacy failed; the previously committed adequacy document is left in place."
-    exit 1
+    return 1
   fi
 
   # Only now can latest.json carry today's risk tier; see the note at the top.
   if ! npm run publish:api 2>&1 | tee -a "$LOG"; then
     echo "latest.json could not be rebuilt; the copy apply-and-push.sh committed is left in place."
-    exit 1
+    return 1
   fi
+}
 
-  git add data/curated/forecast_runs data/curated/forecast_values data/curated/adequacy_runs \
-    data/curated/adequacy_values data/reports public/api
-  if git diff --cached --quiet; then
-    echo "Models unchanged."
-    exit 0
-  fi
-
-  git commit -m "$MESSAGE"
-  if git push origin "HEAD:$BRANCH"; then
-    echo "Pushed on attempt $attempt."
-    exit 0
-  fi
-
-  echo "Push rejected (attempt $attempt); another run got there first. Re-modelling onto the new tip."
-  sleep $((attempt * 5))
-done
-
-echo "Could not push after $ATTEMPTS attempts."
-exit 1
+push_with_retry "$MESSAGE" regenerate_models \
+  data/curated/forecast_runs data/curated/forecast_values data/curated/adequacy_runs \
+  data/curated/adequacy_values data/reports public/api

@@ -1,6 +1,6 @@
 # hydro-look — Plan v2
 
-**Status:** ingestion implemented; historical backfill running; Phase 4 covariate ingestion merged, first run queued; the `pointValues` null issue is resolved and Phase 3 is unblocked (probe of 2026-09-22 02:14 UTC). **Updated:** 2026-09-22. Supersedes the initial plan and the
+**Status:** ingestion implemented; historical backfill running; Phase 4 covariate ingestion merged, first run queued; the `pointValues` null issue is resolved and Phase 3 is unblocked (probe of 2026-09-22 02:14 UTC); the site is deployed on Vercel; Phase 6b is built and waits on an `AI_GATEWAY_API_KEY` secret; Colombia's side of the interconnection is ingested from XM (Phase 7). **Updated:** 2026-09-22. Supersedes the initial plan and the
 follow-up research note ("CELEC dashboard covers 7 plants", "CENACE header has usable numbers").
 
 This version was built after reading the two community scrapers that already run daily against
@@ -454,6 +454,14 @@ observation is not a rate, but it is the only one there is, and it says the crit
 read off a calendar. The earliest it can close is the third calendar day after the first run that
 actually fires, not after the first that was due.
 
+**First count, taken 2026-09-22 18:30 UTC: one of three.** The 12:15 slot never fired at all —
+not late, absent, with nothing queued. The 16:30 slot fired at 16:58, twenty-eight minutes late,
+and succeeded ([run 35757592009](https://github.com/rengarcia/hydro-look/actions/runs/35757592009)).
+So the scheduler has now been measured dropping a slot outright as well as delaying one by five
+hours, and the criterion counts green scheduled runs on consecutive days, not consecutive slots:
+two slots a day is what lets a dropped one not break the streak. The earliest it can close is
+therefore 2026-09-24.
+
 That delay has a second edge worth naming, because it reaches the same hazard as the backfill rule
 below without anyone dispatching anything. A firing delayed by more than about four and a quarter
 hours arrives after the *next* slot is due, so both scheduled runs are in the `ingest` group at
@@ -746,9 +754,42 @@ only three busy Overpass servers. Either the dam is unnamed in OSM or it is mapp
 nobody here has guessed, and the next attempt should search the Jubones by geometry rather than by
 string.
 
-So the order of work is: find the official publication of those units (SENAGUA or MAATE) or a
-boundary set with upstream topology — the ArcGIS route having been closed by measurement — get an
-answer for Minas San Francisco, then delineate, and only then rewrite `basins.csv`. Nothing about
+**The first official lead, 2026-09-22 (run 35769756096).** The probe gained three phases —
+Minas San Francisco by geometry, a conduit trace from the Delsitanisagua intake lead, and a sweep
+of Ecuador's own geoservers for hydrographic units — and the third found what the ArcGIS route
+could not: **INAMHI's GeoServer (`geoservicios.inamhi.gob.ec`) serves `geonode:hidroelectricasshape`,
+titled "Cuencas Hidroeléctricas"**, beside `geonode:cuencas_inamhi` and `geonode:cuencas_maate`.
+Asked which polygon holds each pour point, the hydro-catchment layer puts Mazar in **Paute_Molino**
+and Marcel Laniado in **Marcel_Laniado_4326**; the other five sit near a polygon but outside it.
+The two national layers place all seven in the expected basin (Paute, Napo, Pastaza, Jubones,
+Esmeraldas, Santiago, Daule), and an ArcGIS layer credited to the environment ministry gives each
+a level-5 Pfafstetter code (Mazar 49982, Coca Codo Sinclair 49788, Agoyán 49967, Minas San
+Francisco 13943, Manduriacu 15241, Delsitanisagua 49989, Marcel Laniado 14293 — whose name field
+says 14283, a disagreement printed rather than resolved). INAMHI is the national hydrometeorology
+institute, so this is an agency publication rather than a paper's figure, and it is the first
+boundary set in this section that is. It is still not delineation: Paute_Molino is the catchment
+at Molino, downstream of Mazar, so it is a superset of Mazar's; and a polygon that holds a pour
+point says nothing about which polygon is *upstream* of it.
+
+Everything else the sweep asked refused or did not exist: SNI and IEDG answer 403, the SENAGUA and
+MAATE geoportal hosts do not resolve, the `ide.ambiente.gob.ec` and MAG GeoServer paths are 404, IGM's services list no
+hydrographic layer, INAMHI's GeoNode catalogue search returns its whole list regardless of the
+query, and ArcGIS Online user searches for the agencies need a login.
+
+**Minas San Francisco is now identified by QID** — way/928750864, "Central Hidroeléctrica Minas
+San Francisco", `wikidata=Q65196242`, `operator=CELEC Sur`, 270 MW, 1.39 km from the Wikidata
+point — so the powerhouse is settled the way the other three were. The intake is not: the only
+element tagged as a dam on the Jubones in a 55 km box is way/690695821, on the river (34 m from
+it), 13.3 km from the powerhouse and 315 m above it — the shape a La Unión dam feeding a tunnel
+would have — carrying no name, operator or QID. It is Minas San Francisco's version of the
+Delsitanisagua lead: the right shape, nothing tying it to the scheme. **The Delsitanisagua conduit
+trace itself was not answered** (Overpass 504, then two timeouts) and needs re-asking.
+
+So the order of work is now: fetch `hidroelectricasshape` whole — its attribute table and each
+polygon's area and outlet — to learn which schemes it covers and whether Paute_Molino has a
+Mazar-sized sibling; re-ask the Delsitanisagua trace; then delineate from the INAMHI polygons where
+they reach and from the Pfafstetter codes' upstream rule where they do not, and only then rewrite
+`basins.csv`. Nothing about
 the covariate loader changes — it already takes one row per
 basin and archives what it fetches. What is missing is the table it reads, and
 `scripts/probe-basins.ts` is what re-asks these questions once there is a new candidate to ask
@@ -854,17 +895,55 @@ were satisfied by the very outliers they were meant to remove; it now trims by r
 29 February origin would have compared against the wrong day once every four years.
 `isCalendarDate` now guards it.
 
-**Not done, and not pretended otherwise.** M4 (LightGBM quantile regression) is deferred: there
-is no gradient-boosting library in a TypeScript-only stack (decision 6) and M3 has not yet been
-beaten by anything simpler. Targets 3 and 4 of §7 — energy adequacy and 7-day national hydro
-generation — are untouched; only target 1 (probabilistic Mazar cota) and target 2 (days to
-threshold) ship. The backtest window is 2018-01 onward as §7 specifies, which is wider than the
+**M4 was run after all (2026-09-22), and it earns seven days only.** There is no
+gradient-boosting library in a TypeScript-only stack, so one was written: `src/lib/models/gbm.ts`,
+dependency-free — histogram splits, depth-3 trees, shrinkage, subsampling, pinball loss, seeded.
+Three designs were scored on the same 105 origins, harness, band calibration and crisis check as
+M0–M3: the level change directly, directly with M3's forecast as a feature, and M3's residual.
+Every feature is read as a forecaster could have had it — ONI two months stale, ERA5 at the one
+provisional Paute point lagged five days, M3 recomputed as it would have been made on each
+training day (identical to the shipped M3 at all 105 origins).
+
+| MAE, m (skill vs M0) | h=7 | h=14 | h=30 | h=60 | h=90 |
+|---|---|---|---|---|---|
+| M3 water balance | 2.29 (−0.1%) | 3.62 (−1.2%) | 5.85 (+0.1%) | 7.25 (+24.5%) | 7.30 (+34.8%) |
+| M4 direct | 2.02 (+11.9%) | 3.32 (+7.0%) | 5.49 (+6.3%) | 8.16 (+15.0%) | 8.75 (+21.9%) |
+| M4 M3-residual | 2.03 (+11.2%) | 3.46 (+3.1%) | 5.81 (+0.8%) | 8.28 (+13.8%) | 8.34 (+25.6%) |
+
+At seven days every design beats M3 — the first rung on this ladder to beat persistence at a
+week — and for two of them the paired 90% interval on the error difference lies wholly below
+zero. At 14 and 30 days the gains are within noise or come with a worse band; at 60 and 90 every
+design is 0.8–1.6 m worse than M3, with an interval wholly above zero, and its own quantiles cover
+only 36–50%. On the crisis check no median called either 2024 crossing; the direct designs' p10
+called April ten days out from 1.7 m above the line, which M3 missed at every quantile, and one of
+them then missed October; each design raised one false alarm (2023-11-01). Under the ladder's
+rule M4 is kept for seven days only.
+
+**Adopted the same day, at seven days only.** `forecast.json` publishes `M4-gbm-m3-residual`'s
+median at 7 days and M3 at 14–90 days, for the three named scenarios and for days-to-threshold,
+which need the daily simulated path only M3 produces. The daily run fits that one design at the
+live origin — three boosted fits, ~5 s — with exactly the settings and features the snapshot was
+scored with, and refuses to publish if they differ. The band is the median widened by the model's
+own residual quantiles at 7 days over the 105 origins (q10 −3.45 m, q90 +2.68 m), clamped to
+contain the median as M3's is. The entry names its model, its band's source and the backtest it
+rests on (MAE 2.03 vs 2.29 m, paired interval [−0.45, −0.07]) and carries M3's figure beside it;
+`horizon_switch` says whether the switch was made and why; `forecast_values` gained a `model_id`
+column; the model version is 2; the fan chart marks the 7-day point as another model's. When the
+ladder gains an origin the snapshot lacks, seven days falls back to M3 — and the daily modelling
+step, seeing that as the only reason, reruns `npm run backtest:m4` (~6.5 min, once a month) and
+forecasts again. Any other fallback reason is left for a person to read. The CI dry-run went from
+22.5 s to 27.3 s. Target 1 (probabilistic Mazar cota) and target 2 (days to threshold)
+ship here; target 3 shipped in Phase 6c, and target 4 — national hydro generation a week out —
+ships as that model's hydro term at seven days, which since 2026-09-22 carries a calibrated
+p10–p90 of its own (`hydro_p10`/`hydro_p90` in `adequacy.json`). It beats a trailing 28-day mean
+by 9% at seven days and its band covers 71% of outcomes against a nominal 80%, the same
+shortfall as the requirement band. The backtest window is 2018-01 onward as §7 specifies, which is wider than the
 2023-09→2024-12 this phase entry originally asked for. **2115 is this project's own number**:
 `thresholds.csv` carries 2098 from the dashboard chart title and 2100 from both report
 endpoints, and no upstream source publishes 2115 at all. It is forecast against because §7 asks
 for it and labelled `unverified` everywhere it appears.
 
-**Phase 6 · Site and JSON API — built 2026-09-22, not yet deployed**
+**Phase 6 · Site and JSON API — built and deployed 2026-09-22**
 Delivered as specified apart from one tile, and the exception is the point of the entry.
 
 `public/api/latest.json` is the third public document, beside `status.json` and `forecast.json`:
@@ -901,9 +980,9 @@ now — see Phase 6c below.** What the balance section shows remains the observe
 closed day's supply, labelled as description rather than forecast; the forecast is the section
 after it, and it carries its own skill scores and its own negatives.
 
-The remaining step is connecting a Vercel project to this repository; it cannot be done from a
-sandbox. `npm run build` produces `out/`, which any static host serves, so nothing about the
-deployment target is load-bearing.
+The site is deployed: a Vercel project was connected to this repository on 2026-09-22, outside
+the sandbox, which cannot reach Vercel. `npm run build` produces `out/`, which any static host
+serves, so nothing about the deployment target is load-bearing.
 
 **Phase 6c · Energy adequacy — §7 target 3 — done 2026-09-22**
 The identity is one line and every term in it is either forecast with a backtest below it or an
@@ -985,7 +1064,24 @@ the 10.78 they had reached that August, because Colombia was short of water at t
 Imports were also below 1 GWh/day for 398 consecutive days from 2019-07-06. Every horizon
 therefore publishes a stressed deficit beside the central one.
 
-**Phase 6b · AI narrative panel via Vercel AI Gateway (1 S, after Phase 5 and 6)**
+**Phase 6b · AI narrative panel via Vercel AI Gateway — built 2026-09-22, waiting on a secret**
+`npm run narrative` builds a deterministic payload (≈9 kB of canonical JSON, sha256-hashed) only
+from what the repository already publishes: per reservoir the level, bands and slopes from
+`latest.json`, days to each floor at the 7- and 30-day slopes (a division, labelled as one), the
+same calendar day in every earlier year, and the 16-day Paute rain forecast against ERA5 for the
+same window — from the one provisional point, labelled so; Mazar's p10/p50/p90 and crossings from
+`forecast.json` with 2115 carried as `unverified`; the adequacy tier as an input; ONI at the lag a
+forecaster could have read it. `claude-opus-5` through the gateway returns `{outlook_es, drivers,
+confidence}`, and a validator rejects any output naming a number or date not in the payload, or
+not naming the tier. A 429 is retried once then recorded `skipped`; every attempt appends a
+`narrative_snapshots` row with tokens and `cost_usd`; an unchanged hash and prompt version is a
+no-op. The daily job runs it last with `continue-on-error`, calling the gateway once and
+retrying only the cheap apply. The page shows the text beside the numbers it was written from.
+**It does nothing until `AI_GATEWAY_API_KEY` is added to the repository's Actions secrets**; the
+model slug, the gateway's cost field and the push loop have not yet run against the real
+services. The acceptance criterion — seven consecutive daily narratives — starts counting then.
+
+Original phase text, for reference:
 Implements decision 8. The model interprets; it never forecasts.
 1. `narrative/payload.ts` builds a small deterministic payload from data already computed in code:
    current cota and distance to the 2153 / 2115 / 2098 bands per reservoir, 7/14/30-day slopes
@@ -1016,7 +1112,62 @@ the payload builder against a known day; the schema rejects any output that name
 not present in the payload; monthly gateway spend visible from the snapshots table.
 
 **Phase 7 · Hardening and extensions (ongoing)**
-ML v2 if it beats v1 in backtests; ARCONEL BNEE monthly loader; CENACE Datos Abiertos per-plant
+
+**Colombia's side of the interconnection, via XM — ingested 2026-09-22.** Recon (run
+35768453442, `RECON_REPORT.md` §10a) confirmed the contract of XM's official client — POST
+`/hourly` and `/daily` on `servapibi.xm.com.co`, at most a calendar month per request, a
+`ListadoMetricas` inventory, a plain-text 400 for an unknown metric — and found the two circuits,
+**ECUADOR 230 and ECUADOR 138**. `ingest xm` writes `xm_exchange_daily` (both directions per link
+per day) and `xm_system_daily` (Colombian storage, capacity, inflows against their historical
+mean, demand, spot and scarcity prices), from its own step in `covariates.yml`.
+
+- **A blank exchange hour is flow the other way, not a missing reading.** XM publishes one net
+  direction per hour: no hour is ever published both ways, on ECUADOR 230 the two directions
+  together cover the day, and zeros are never written. So a link-day is stored when either
+  direction published, and an hour published both ways is refused rather than summed.
+- **It agrees with SMEC at offset zero and at no other** (r > 0.999 on net flow, 2024-08→12; a
+  test). SMEC reads 0.991× on high-flow days, consistent with line losses; on low-flow days both
+  of SMEC's gross directions exceed XM's by ~100 MWh while the nets match, so the comparison is
+  net against net.
+- **It reproduces the 2024 cutoff** — 9.07 → 0.175 GWh/day on the 230 kV circuit, August →
+  October — **and it is happening again.** Imports ran 7.5–8.5 GWh/day through late August 2026,
+  fell to 3.5 on 2026-09-06 and have been 0.12–0.17 GWh/day every day since 2026-09-07 (SMEC and
+  XM agree). The adequacy model's central case still assumes the demonstrated 10.78; its stressed
+  case, 0.12, was simply what was happening. **Decided 2026-09-22: the central case now stops
+  assuming the interconnection when imports stop while thermal works hard** — a fortnight below
+  1 GWh/day with thermal at 70% or more of its ceiling. Low imports alone would not do: they
+  preceded 68 of 99 monthly origins since 2018, mostly wet months when Ecuador had no use for
+  them. With the thermal condition the rule picks out 4 (2024-05, 2024-11, 2026-04, 2026-05), the
+  same 4 at any share from 60% to 75%, and leaves the tier record untouched. XM says this stop is
+  not Colombian scarcity (storage 79%, spot under the scarcity threshold), so the cause is outside
+  this data. Live, the 7-day tier moves from **holgado to vigilancia** (margin 1.7%) and 60–90 days
+  reach **ajustado** (central deficit 0.5–0.8 GWh/day), holding the cut for the horizon.
+  `adequacy.json` carries the regime and its reason under `assumptions.import_regime`.
+- Publication lags measured on the capture: storage and inflows 1 day, demand 2, exchanges and
+  prices 3, TIE settlement 5. Colombian storage fell to 49% of useful volume in September 2024
+  with inflows at 58% of their mean: the state that explains a cutoff before the border shows it.
+
+**The history is in, back to SMEC's first day, and it agrees with SMEC across all of it.** The
+backfill (covariates run 35770747799) asked every month from 2016-05-01: XM answered all of them,
+and eight of the nine system series are complete from that first day (3,794–3,796 days each). The
+scarcity activation price begins 2017-12-01, which is when CREG Resolution 140 of 2017 created it —
+a start date, not a gap. Over the full overlap, net flow on the two Ecuador circuits agrees with
+SMEC's net Colombian imports on **3,772 days at r = 0.99996, mean absolute difference 13 MWh/day,
+no day off by more than 1 GWh**; a one-day shift drops r to 0.92. Two sides of one border, metered
+by two operators in two countries, agree on the numbers and the dates for a decade.
+
+**That run also found a defect of ours.** It lost twenty months of Ecuador exchange rows, 2016-12
+to 2018-11: the both-directions check ran on every link in XM's answer, and the Venezuela link,
+CUATRICENTENARIO 1, does publish hours both ways in those years. It is neither stored nor what the
+rule is about; the check is now confined to the Ecuador circuits, March 2017's real answer is a
+regression test, and replaying all 125 archived months parses every one. Covariates run
+35775149361 refetched the twenty months, and ECUADOR 230 now has a row for 3,788 of the 3,794
+days to 2026-09-19. The six without one (2024-04-20→22 and 25→27) are real zeros: XM never writes
+a zero, and CENACE shows nothing crossing either way those days, the week Colombia suspended
+exports. A `--from` run will re-ask that month each time, which costs eleven requests and nothing
+else.
+
+Still listed: ML v2 if it beats v1 in backtests; ARCONEL BNEE monthly loader; CENACE Datos Abiertos per-plant
 validation; Colombia export availability via XM's open API — which Phase 6c has now made the
 highest-value item on this list, because the import ceiling is the adequacy model's most fragile
 term and XM publishes the other side of it; public-records request template to CENACE/CELEC for
@@ -1043,6 +1194,8 @@ the pre-2022 daily series; optional web.archive.org with keys.
    demand trend, with a seasonal climatology and a mean-reverting anomaly. See
    `data/reports/adequacy.md`.
 4. Nice-to-have: 7-day national hydro generation.
+   **Shipped 2026-09-22** as the adequacy model's hydro term at seven days, with its own
+   calibrated band; see Phase 5's closing paragraph and `data/reports/adequacy.md`.
 
 **Method ladder** (each step must beat the previous on the same backtest to be kept)
 
@@ -1065,8 +1218,9 @@ because a reservoir level is an operating decision rather than a seasonal signal
 60 and 90 days but loses to M3 everywhere. M3 as specified here — release held where it recently
 was — is the worst rung on the ladder (−69% at 90 days); it only works once release is fitted as
 a **rule curve against level** and read back on every simulated day, which is the one substantive
-departure from this section. M4 is deferred: no gradient-boosting library exists in a
-TypeScript-only stack (decision 6), and nothing simpler has beaten M3 yet. The P50 crisis metric
+departure from this section. M4 was later run on a boosted-tree learner written for
+this repository: it beats M3 at seven days and loses at sixty and ninety (Phase 5 has the table),
+so it is proposed for the 7-day median only and M3 still ships everywhere. The P50 crisis metric
 this section specifies turned out to be the wrong statistic for the question — it called neither
 2024 crossing, while the ensemble's dry tail called October seven days out — so the forecast
 publishes the full censored crossing distribution rather than the median alone. Full numbers,

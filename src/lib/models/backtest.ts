@@ -60,7 +60,10 @@ export interface Prediction {
   targetDate: IsoDate;
   actual: number;
   p50: number;
-  /** Spread of the model's own ensemble, before calibration. Null for a point model. */
+  /**
+   * The model's own spread, before calibration: its ensemble's quantiles, or the quantiles it
+   * predicts directly when it has no ensemble. Null for a point model.
+   */
   ensembleP10: number | null;
   ensembleP90: number | null;
   /** Calibrated band; null until enough earlier origins exist to calibrate from. */
@@ -167,8 +170,8 @@ export function runBacktest(inputs: Inputs, models: readonly Model[], options: B
           targetDate: forecast.targetDate,
           actual,
           p50: forecast.p50,
-          ensembleP10: ensemble.length > 0 ? quantile(ensemble, 0.1) : null,
-          ensembleP90: ensemble.length > 0 ? quantile(ensemble, 0.9) : null,
+          ensembleP10: forecast.quantiles?.p10 ?? (ensemble.length > 0 ? quantile(ensemble, 0.1) : null),
+          ensembleP90: forecast.quantiles?.p90 ?? (ensemble.length > 0 ? quantile(ensemble, 0.9) : null),
           p10: null,
           p90: null,
         });

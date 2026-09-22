@@ -12,7 +12,10 @@ Captures raw responses from every candidate data source into tests/fixtures/
 It runs from GitHub Actions (.github/workflows/recon.yml) or from any machine
 that can reach the Ecuadorian government hosts. A failed fetch never aborts the
 run: every target is recorded with its status and error so the report can
-answer "does this work?" for each source.
+answer "does this work?" for each source. The `xm` section probes Colombia's market operator
+(servapibi.xm.com.co and simem.co) for export availability to Ecuador. A partial run (--only)
+carries the other sections' findings and log rows over from the previous run, so the report
+stays whole.
 
 Etiquette: identified User-Agent, one request per second, robots.txt is read
 for every host and disallowed paths are skipped (recorded, not fetched).
@@ -633,6 +636,9 @@ def write_report(path: Path, rec: Recorder, findings: dict, started: dt.datetime
 def _r_header(rec, findings, started):
     now_utc = dt.datetime.now(dt.timezone.utc)
     lines = ["# Phase 0 reconnaissance report", "", f"Generated {now_utc.isoformat(timespec='seconds')} (UTC) · {now_utc.astimezone(TZ_EC).isoformat(timespec='seconds')} (Ecuador) · started {started.isoformat(timespec='seconds')} · {len(rec.log)} requests.", "", "Raw responses: `tests/fixtures/` (gzipped when large). Structured findings: `tests/fixtures/recon/findings.json`. Full log: `tests/fixtures/recon/capture_log.json`.", ""]
+    part = findings.get("partial_run")
+    if part:
+        lines += [f"Partial run of **{', '.join(part.get('sections') or [])}**; every other section, and its log rows, are carried over from the run started {part.get('previous_started_utc')}.", ""]
     return "\n".join(lines)
 
 def _r_1(rec, findings, started):
@@ -945,7 +951,362 @@ def _r_ords_new_mrids(rec, findings, started):
     return "\n".join(["## 4d. New mrids from the CELEC-wide bundle (current month, MesH24)", "", md_table(["plant/var/mrid", "status", "items", "non-null", "min", "max"], [[k, v.get("status"), v.get("n_items"), v.get("n_nonnull"), v.get("min"), v.get("max")] for k, v in c.items()]), ""])
 
 
-REPORT_SECTIONS = [("header", _r_header)] + [("1. Every request", _r_1), ("2. robots.txt verdicts", _r_2), ("3. TLS", _r_4), ("4. CELEC ORDS", _r_5), ("4a", _r_ords_matrix), ("4b", _r_ords_catalog), ("4c", _r_ords_reports), ("4d", _r_ords_new_mrids), ("4e", _r_ords_history), ("5. CELEC dashboards (Angular bundles)", _r_6), ("6. CENACE SMEC daily balance", _r_7), ("7. CENACE Información Operativa", _r_8), ("8. Covariates", _r_9), ("9. Open-data portals", _r_10), ("10. Community mirrors", _r_11), ("11. Failures and skips", _r_13), ("section errors", _r_failures)]
+# ---------------------------------------------------------------------------
+# XM, Colombia's market operator: how much Colombia can export to Ecuador
+# ---------------------------------------------------------------------------
+# Request contract, from the official client EquipoAnaliticaXM/API_XM (pydataxm/pydataxm.py and
+# README.md "Endpoints API", master 0b203a5 of 2026-07-03):
+#   POST https://servapibi.xm.com.co/{hourly|daily|monthly|lists}
+#   {"MetricId": "...", "StartDate": "YYYY-MM-DD", "EndDate": "YYYY-MM-DD", "Entity": "Sistema", "Filter": [codes]}
+#   Filter is optional and only applies to entities other than Sistema. The inventory of metrics is
+#   POST /lists {"MetricId": "ListadoMetricas"} (pydataxm posts to /Lists; the README writes /lists).
+#   Limits (README): hourly and daily at most 30 days per call, monthly 731; each catalog row also
+#   carries its own MaxDays (31 for hourly/daily in public catalog dumps). pydataxm splits every
+#   request into calendar months, which this section copies, so a window never spans more than 30 days.
+#   Response: {"Items": [{"Date": ..., "<Type>": [{"Id": ..., "Values": {"code": ..., "Hour01".."Hour24" | "Value"}}]}]};
+#   the lists answer uses the key "ListEntities" although the catalog Type is "ListsEntities".
+# SIMEM (simem.co) is XM's second public API, dataset-based, with a 31-day window for hourly and
+# daily datasets (same README, "Restricciones"): GET /backend-files/api/PublicData?startdate&enddate&datasetId,
+# metadata at /detalle-datos-publicos?datasetId, dataset catalog = dataset e007fb (pydataxm/pydatasimem.py).
+XM_API = "https://servapibi.xm.com.co"
+SIMEM_API = "https://www.simem.co/backend-files/api"
+SIMEM_CATALOG_ID = "e007fb"
+XM_TYPE_ENDPOINT = {"HourlyEntities": "hourly", "DailyEntities": "daily", "MonthlyEntities": "monthly", "AnnualEntities": "annual", "ListsEntities": "lists"}
+XM_SRC_CLIENT = "API_XM pydataxm/metricasAPI.json (2024-11-14) + README metric list"
+XM_SRC_DUMP = "ListadoMetricas dumps on GitHub (danielbenavides-git/tesis data/raw/XM/catalogo_metricas_xm.csv; GNUTADEO/Tuxilo data/XM/CatalogoSINERGOX.csv)"
+# (MetricId, Entity, endpoint if the live catalog does not say, what it should answer, where the name came from)
+XM_CANDIDATES = [
+    ("ExpoEner", "Sistema", "hourly", "Colombia's total exports (kWh per hour). With the Venezuela link idle this is roughly Ecuador; 2024-10 should show the collapse to ~0.12 GWh/day seen from Ecuador", XM_SRC_CLIENT),
+    ("ExpoEner", "Enlace", "hourly", "Exports per interconnection link: which codes are the Ecuador circuits, and the per-link hourly ceiling actually reached", XM_SRC_DUMP),
+    ("ImpoEner", "Sistema", "hourly", "Colombia's imports, i.e. the reverse flow (Ecuador exporting to Colombia)", XM_SRC_CLIENT),
+    ("ImpoEner", "Enlace", "hourly", "Imports per link", XM_SRC_DUMP),
+    ("CompBolsaTIEEner", "Sistema", "hourly", "Energy bought in the Colombian pool to serve TIE (Ecuador) demand: the market-side view of exports", XM_SRC_CLIENT),
+    ("VentBolsaTIEEner", "Sistema", "hourly", "Energy sold in the pool under TIE: the other side of the same trade", XM_SRC_CLIENT),
+    ("PorcVoluUtilDiar", "Sistema", "daily", "Aggregate Colombian useful storage, % (the state that drove the 2024 cutoff)", XM_SRC_CLIENT),
+    ("VoluUtilDiarEner", "Sistema", "daily", "Aggregate useful storage in energy terms (kWh)", XM_SRC_CLIENT),
+    ("CapaUtilDiarEner", "Sistema", "daily", "Aggregate useful capacity (kWh), the denominator of the % above", XM_SRC_CLIENT),
+    ("AporEner", "Sistema", "daily", "Daily inflows in energy terms (kWh)", XM_SRC_CLIENT),
+    ("AporEnerMediHist", "Sistema", "daily", "Historical mean inflows for the same days (kWh)", XM_SRC_CLIENT),
+    ("PorcApor", "Sistema", "daily", "Inflows as % of the historical mean: Colombia's drought signal", XM_SRC_CLIENT),
+    ("PrecBolsNaci", "Sistema", "hourly", "Colombian spot price (COP/kWh); TIE flows follow the price differential", XM_SRC_CLIENT),
+    ("PrecEscaAct", "Sistema", "daily", "Scarcity activation price (COP/kWh); spot above it marks Colombia's own scarcity", XM_SRC_CLIENT),
+    ("DemaSIN", "Sistema", "daily", "Colombian national demand (kWh), to size the exportable surplus", XM_SRC_CLIENT),
+]
+# Catalog rows fetched even though they are not listed above (recent and 2024-10 windows only).
+XM_DISCOVER_RE = re.compile(r"^(Expo|Impo)\w*Ener$|Ecuador|TIE\w*Ener", re.I)
+XM_DISCOVER_MAX = 8
+# SIMEM dataset ids from Wiferpagri/xm-power-forecast docs/discovery/SIMEM_DATASETS.md (a dump of catalog
+# e007fb made 2026-08-24); the catalog fetched here confirms or refutes them.
+SIMEM_CANDIDATES = [
+    ("b9f2ec", "Información de Transferencias Internacionales", "International transfers, 2013 onwards; two ids share this name, both are captured to tell them apart"),
+    ("7f16cb", "Información de Transferencias Internacionales", "Second dataset with the same name"),
+    ("860c86", "Estudio Interconexión Colombia Ecuador", "XM's Colombia-Ecuador interconnection study 2022-2025: the most likely place for transfer limits"),
+    ("CDD16E", "Generación ideal internacional Ecuador por planta", "Which Colombian plants the ideal dispatch assigns to Ecuador's demand; empty means nothing was offered"),
+    ("C35A63", "Precio de oferta en el nodo frontera para exportación", "Export offer price at the border node, the price Ecuador sees"),
+    ("31E0AF", "Demanda comercial internacional", "International commercial demand served from Colombia"),
+    ("4A17B1", "Magnitud de generación de seguridad del país importador", "Security generation requested for the importing country"),
+    ("842296", "Energía calculada para plantas hidráulicas por reconciliación positiva asociada a la exportación hacia Ecuador", "Hydro reconciliation tied to exports to Ecuador"),
+    ("1088a6", "Importaciones Netas Energético Mediano Plazo", "XM's medium-term planning assumption for net imports/exports"),
+    ("8d3ccd", "Proyección de embalse agregado de corto plazo", "XM's own short-term projection of aggregate storage"),
+]
+SIMEM_CATALOG_RE = re.compile(r"ecuador|\bTIE\b|internacional|transferencia|interconexi|exporta|importa|embalse agregado", re.I)
+XM_DEAD_AFTER = 4  # consecutive connection-level failures before a host is given up for this run
+
+
+def xm_month_chunks(start: dt.date, end: dt.date, max_span_days: int = 30) -> list[tuple[dt.date, dt.date]]:
+    """Calendar-month pieces of [start, end] (as pydataxm does), each spanning at most max_span_days."""
+    out: list[tuple[dt.date, dt.date]] = []
+    cur = start
+    while cur <= end:
+        nxt_month = dt.date(cur.year + (cur.month == 12), cur.month % 12 + 1, 1)
+        stop = min(end, nxt_month - dt.timedelta(days=1), cur + dt.timedelta(days=max_span_days))
+        out.append((cur, stop))
+        cur = stop + dt.timedelta(days=1)
+    return out
+
+
+def xm_windows(today: dt.date) -> list[tuple[str, dt.date, dt.date]]:
+    """recent (30 days ending yesterday; publication lags 1-5 days), 2024-08 (import peak, contrast),
+    2024-09..12 (the rationing crisis), 2019-07 (start of 398 days below 1 GWh/day)."""
+    wins = [("recent", today - dt.timedelta(days=30), today - dt.timedelta(days=1))]
+    for s, e in xm_month_chunks(dt.date(2024, 8, 1), dt.date(2024, 12, 31)):
+        wins.append((s.strftime("%Y-%m"), s, e))
+    wins.append(("2019-07", dt.date(2019, 7, 1), dt.date(2019, 7, 31)))
+    return wins
+
+
+def xm_catalog_rows(data) -> list[dict]:
+    rows: list[dict] = []
+    for item in (data.get("Items") or []) if isinstance(data, dict) else []:
+        for ent in item.get("ListEntities") or item.get("ListsEntities") or []:
+            vals = ent.get("Values") if isinstance(ent, dict) else None
+            if isinstance(vals, dict) and vals.get("MetricId"):
+                rows.append(vals)
+    return rows
+
+
+def xm_error_kind(text: str) -> str | None:
+    t = (text or "").lower()
+    if "configuraci" in t and "no encontrada" in t:
+        return "entity_not_found"
+    if "no encontrada" in t or "no existe" in t:
+        return "metric_not_found"
+    if "rango" in t:
+        return "range_exceeded"
+    return None
+
+
+def _xm_num(v):
+    if v is None or (isinstance(v, str) and not v.strip()):
+        return None
+    if isinstance(v, (int, float)):
+        return float(v)
+    try:
+        return float(str(v).strip())
+    except ValueError:
+        return "bad"
+
+
+def summarize_xm(r: requests.Response | None) -> dict:
+    """Shape and per-entity daily totals of a servapibi answer. A blank hour ("") is unpublished, not zero."""
+    if r is None:
+        return {}
+    try:
+        data = r.json()
+    except Exception:  # noqa: BLE001
+        return {"not_json": True, "head": r.text[:300]}
+    if not isinstance(data, dict):
+        return {"top_level": type(data).__name__}
+    items = data.get("Items") or []
+    out: dict = {"top_level_keys": sorted(data.keys()), "n_items": len(items), "entity_keys": [], "cells": 0, "blank": 0, "bad": 0}
+    per_code: dict = {}
+    dates = []
+    for item in items if isinstance(items, list) else []:
+        if not isinstance(item, dict):
+            continue
+        date = item.get("Date")
+        dates.append(date)
+        for key, ents in item.items():
+            if not (key.endswith("Entities") and isinstance(ents, list)):
+                continue
+            if key not in out["entity_keys"]:
+                out["entity_keys"].append(key)
+            for ent in ents:
+                if not isinstance(ent, dict):
+                    continue
+                vals = ent.get("Values") if isinstance(ent.get("Values"), dict) else ent
+                code = str(vals.get("code") or vals.get("Name") or ent.get("Id") or "?")
+                cells = [v for k, v in vals.items() if re.fullmatch(r"Hour\d\d", k)]
+                if not cells and "Value" in vals:
+                    cells = [vals["Value"]]
+                nums = [_xm_num(v) for v in cells]
+                out["cells"] += len(nums)
+                out["blank"] += sum(n is None for n in nums)
+                out["bad"] += sum(n == "bad" for n in nums)
+                good = [n for n in nums if isinstance(n, float)]
+                pc = per_code.setdefault(code, {"days": 0, "blank": 0, "totals": []})
+                pc["days"] += 1
+                pc["blank"] += sum(n is None for n in nums)
+                if good:
+                    pc["totals"].append(sum(good))
+    dates = sorted(d for d in dates if d)
+    out["first_date"], out["last_date"] = (dates[0], dates[-1]) if dates else (None, None)
+    out["per_code"] = {}
+    for code, pc in list(per_code.items())[:15]:
+        t = sorted(pc["totals"])
+        out["per_code"][code] = {"days": pc["days"], "days_with_values": len(t), "blank_cells": pc["blank"], "daily_mean": round(sum(t) / len(t), 3) if t else None, "daily_min": t[0] if t else None, "daily_median": t[len(t) // 2] if t else None, "daily_max": t[-1] if t else None}
+    out["n_codes"] = len(per_code)
+    if items and isinstance(items, list):
+        out["sample"] = json.dumps(items[0], ensure_ascii=False)[:500]
+    return out
+
+
+def section_xm(rec: Recorder) -> dict:
+    today = dt.datetime.now(TZ_EC).date()
+    out: dict = {"windows": [(label, str(s), str(e)) for label, s, e in xm_windows(today)], "catalog": {}, "requests": {}, "simem": {"catalog": {}, "datasets": {}}}
+    dead: dict = {}  # host -> consecutive connection-level failures
+
+    def call(key: str, url: str, save_as: str, *, body=None, params=None) -> tuple[dict, requests.Response | None]:
+        host = urlparse(url).hostname or ""
+        if dead.get(host, 0) >= XM_DEAD_AFTER:
+            r_ = {"key": key, "url": url, "status": None, "error": f"skipped: {host} unreachable earlier in this run", "bytes": 0}
+            rec.log.append(r_)
+            return r_, None
+        r_, r = rec.fetch(key, url, params=params, save_as=save_as, method="POST" if body is not None else "GET", json_body=body, timeout=90)
+        dead[host] = dead.get(host, 0) + 1 if (r is None and r_.get("status") is None and not str(r_.get("error") or "").startswith("skipped")) else 0
+        return r_, r
+
+    # 1. the inventory of metrics: this is how the names below get confirmed
+    catalog: list[dict] = []
+    for path in ("lists", "Lists"):
+        r_, r = call(f"xm:{path}:ListadoMetricas", f"{XM_API}/{path}", f"xm/{path}_ListadoMetricas.json", body={"MetricId": "ListadoMetricas"})
+        out["catalog"][path] = {"status": r_.get("status"), "error": r_.get("error"), "bytes": r_.get("bytes"), "content_type": r_.get("content_type")}
+        if r is not None and r.ok:
+            try:
+                catalog = xm_catalog_rows(r.json())
+            except Exception as error:  # noqa: BLE001
+                out["catalog"][path]["parse_error"] = str(error)[:200]
+            if catalog:
+                break
+    out["catalog"]["n_rows"] = len(catalog)
+    out["catalog"]["n_metrics"] = len({c.get("MetricId") for c in catalog})
+    out["catalog"]["types"] = sorted({str(c.get("Type")) for c in catalog})
+    out["catalog"]["entities"] = sorted({str(c.get("Entity")) for c in catalog})
+    by_pair = {(c.get("MetricId"), c.get("Entity")): c for c in catalog}
+    keep = ("MetricId", "Entity", "MaxDays", "Type", "Url", "Filter", "MetricUnits", "MetricName", "MetricDescription")
+    relevant = re.compile(r"^(Expo|Impo|Export|Import)|TIE|Int(Ener|Moneda)|Volu|Capa|Apor|PorcApor|PrecEsca|DemaSIN", re.I)
+    out["catalog"]["relevant_rows"] = [{k: (str(c.get(k))[:160] if c.get(k) is not None else None) for k in keep} for c in catalog if relevant.search(str(c.get("MetricId"))) or c.get("Entity") == "Enlace" or re.search("ecuador", json.dumps(c, ensure_ascii=False), re.I)]
+
+    # 2. candidates, plus exchange rows the catalog has that the list above does not
+    listed = {(m, e) for m, e, *_ in XM_CANDIDATES}
+    plan = [(m, e, ep, q, src, None) for m, e, ep, q, src in XM_CANDIDATES]
+    extras = [c for c in catalog if (c.get("MetricId"), c.get("Entity")) not in listed and (XM_DISCOVER_RE.search(str(c.get("MetricId"))) or c.get("Entity") == "Enlace" or re.search("ecuador", str(c.get("MetricName")) + str(c.get("MetricDescription")), re.I))]
+    for c in extras[:XM_DISCOVER_MAX]:
+        plan.append((c.get("MetricId"), c.get("Entity"), None, f"discovered in ListadoMetricas: {c.get('MetricName')}", "live ListadoMetricas", ("recent", "2024-10")))
+    out["catalog"]["candidates_not_in_catalog"] = [f"{m}/{e}" for m, e, *_ in XM_CANDIDATES if catalog and (m, e) not in by_pair]
+    out["catalog"]["discovered_extra"] = [f"{c.get('MetricId')}/{c.get('Entity')}" for c in extras]
+
+    windows = xm_windows(today)
+    for metric, entity, fallback_ep, question, source, only_labels in plan:
+        row = by_pair.get((metric, entity), {})
+        endpoint = XM_TYPE_ENDPOINT.get(str(row.get("Type")), fallback_ep or "hourly")
+        try:
+            max_days = int(row.get("MaxDays") or 31)
+        except (TypeError, ValueError):
+            max_days = 31
+        span_limit = max(1, min(30 if endpoint in ("hourly", "daily") else 730, max_days - 1))
+        entry: dict = {"metric": metric, "entity": entity, "endpoint": endpoint, "question": question, "name_source": source, "in_catalog": bool(row) if catalog else None, "unit": row.get("MetricUnits"), "max_days": row.get("MaxDays"), "windows": {}}
+        for label, start, end in windows:
+            if only_labels and label not in only_labels:
+                continue
+            for s, e in xm_month_chunks(start, end, max_span_days=span_limit) if (end - start).days > span_limit else [(start, end)]:
+                wkey = label if (s, e) == (start, end) else f"{label}:{s}"
+                body = {"MetricId": metric, "StartDate": s.isoformat(), "EndDate": e.isoformat(), "Entity": entity, "Filter": []}
+                r_, r = call(f"xm:{endpoint}:{metric}:{entity}:{wkey}", f"{XM_API}/{endpoint}", f"xm/{metric}_{entity}_{wkey.replace(':', '_')}.json", body=body)
+                w = {"start": str(s), "end": str(e), "status": r_.get("status"), "error": r_.get("error"), "bytes": r_.get("bytes")}
+                if r is not None and not r.ok:
+                    w["error_head"] = r.text[:300]
+                    w["error_kind"] = xm_error_kind(r.text)
+                elif r is not None:
+                    w.update(summarize_xm(r))
+                entry["windows"][wkey] = w
+            if w.get("error_kind") in ("metric_not_found", "entity_not_found"):
+                entry["gave_up"] = w["error_kind"]
+                print(f"[xm] {metric}/{entity}: {w['error_kind']} — skipping its other windows", flush=True)
+                break
+        out["requests"][f"{metric}/{entity}"] = entry
+
+    # 3. SIMEM: dataset catalog, then per dataset its metadata and the same kind of windows
+    r_, r = call("simem:catalog", f"{SIMEM_API}/PublicData", f"xm/simem/catalog_{SIMEM_CATALOG_ID}.json", params={"startdate": "1990-01-01", "enddate": today.isoformat(), "datasetId": SIMEM_CATALOG_ID})
+    cat = out["simem"]["catalog"]
+    cat.update(status=r_.get("status"), error=r_.get("error"), bytes=r_.get("bytes"))
+    records: list = []
+    if r is not None:
+        try:
+            records = ((r.json().get("result") or {}).get("records")) or []
+        except Exception:  # noqa: BLE001
+            cat["head"] = r.text[:300]
+    cat["n_records"] = len(records)
+    cat["matches"] = [json.dumps(x, ensure_ascii=False)[:400] for x in records if SIMEM_CATALOG_RE.search(json.dumps(x, ensure_ascii=False))][:60]
+    for ds, name, question in SIMEM_CANDIDATES:
+        d: dict = {"name_expected": name, "question": question, "windows": {}}
+        r_, r = call(f"simem:detail:{ds}", f"{SIMEM_API}/detalle-datos-publicos", f"xm/simem/detail_{ds}.json", params={"datasetId": ds})
+        d["detail_status"] = r_.get("status") or r_.get("error")
+        gran = None
+        if r is not None:
+            try:
+                res = r.json().get("result") or {}
+                meta = res.get("metadata") or {}
+                gran = meta.get("granularity")
+                d.update(name=res.get("name"), granularity=gran, metadata={k: meta.get(k) for k in list(meta)[:15]}, columns=[c.get("nameColumn") or c.get("name") or str(c)[:60] for c in (res.get("columns") or []) if isinstance(c, dict)][:25])
+            except Exception:  # noqa: BLE001
+                d["detail_head"] = r.text[:300]
+        if gran in ("Mensual", "Semanal", "Anual"):
+            wins = [("recent", today - dt.timedelta(days=365), today + dt.timedelta(days=365)), ("2024", dt.date(2023, 7, 1), dt.date(2025, 6, 30))]
+        else:
+            wins = [("recent", today - dt.timedelta(days=14), today - dt.timedelta(days=1)), ("2024-10", dt.date(2024, 10, 1), dt.date(2024, 10, 31)), ("2019-07", dt.date(2019, 7, 1), dt.date(2019, 7, 31))]
+        for label, s, e in wins:
+            r_, r = call(f"simem:{ds}:{label}", f"{SIMEM_API}/PublicData", f"xm/simem/{ds}_{label}.json", params={"startdate": s.isoformat(), "enddate": e.isoformat(), "datasetId": ds})
+            w = {"start": str(s), "end": str(e), "status": r_.get("status"), "error": r_.get("error"), "bytes": r_.get("bytes")}
+            if r is not None:
+                try:
+                    j = r.json()
+                    res = j.get("result") or {}
+                    recs = res.get("records") or []
+                    w.update(success=j.get("success", j.get("status")), message=str(j.get("message") or "")[:200] or None, n_records=len(recs), record_keys=sorted(recs[0].keys()) if recs and isinstance(recs[0], dict) else None, sample=json.dumps(recs[:2], ensure_ascii=False)[:400] if recs else None, last_update=(res.get("metadata") or {}).get("lastUpdate"))
+                except Exception:  # noqa: BLE001
+                    w["head"] = r.text[:300]
+            d["windows"][label] = w
+        out["simem"]["datasets"][ds] = d
+    return out
+
+
+def _gwh(v, unit) -> str:
+    return f"{v / 1e6:.3f}" if isinstance(v, (int, float)) and str(unit or "").lower() == "kwh" else ""
+
+
+def _r_xm(rec, findings, started):
+    x = _section(findings, "xm")
+    if not x:
+        return ""
+    cat = x.get("catalog", {})
+    lines = ["## 10a. XM (Colombia): export availability to Ecuador", "",
+             "Contract (official client EquipoAnaliticaXM/API_XM, `pydataxm/pydataxm.py` + README): `POST https://servapibi.xm.com.co/{hourly,daily,monthly,lists}` with JSON `{MetricId, StartDate, EndDate (YYYY-MM-DD), Entity, Filter}`; inventory `POST /lists {\"MetricId\": \"ListadoMetricas\"}`; hourly/daily at most 30 days per call, requested here in calendar months as the client does. Raw answers in `tests/fixtures/xm/`.", "",
+             f"Windows: {', '.join(f'{l} {s}→{e}' for l, s, e in x.get('windows', []))}", "",
+             "### Metric inventory (ListadoMetricas)", "",
+             md_table(["path", "status", "bytes", "content-type", "error"], [[p, v.get("status"), v.get("bytes"), v.get("content_type"), v.get("error") or v.get("parse_error")] for p, v in cat.items() if isinstance(v, dict)]), "",
+             f"Rows: **{cat.get('n_rows')}**, metrics: {cat.get('n_metrics')}, types: {', '.join(cat.get('types') or []) or '—'}, entities: {', '.join(cat.get('entities') or []) or '—'}", "",
+             f"Candidates **not** in the live catalog: {', '.join(cat.get('candidates_not_in_catalog') or []) or 'none (or no catalog)'} · extra exchange rows fetched: {', '.join(cat.get('discovered_extra') or []) or 'none'}", ""]
+    if cat.get("relevant_rows"):
+        lines += ["<details><summary>Catalog rows on exchanges, storage, inflows, scarcity</summary>", "", md_table(["MetricId", "Entity", "MaxDays", "Type", "unit", "filter", "name", "description"], [[c.get("MetricId"), c.get("Entity"), c.get("MaxDays"), c.get("Type"), c.get("MetricUnits"), c.get("Filter"), c.get("MetricName"), c.get("MetricDescription")] for c in cat["relevant_rows"]]), "", "</details>", ""]
+    rows, code_rows = [], []
+    for pair, e in x.get("requests", {}).items():
+        for wk, w in e.get("windows", {}).items():
+            codes = w.get("per_code") or {}
+            first = next(iter(codes.values()), {}) if len(codes) == 1 else {}
+            rows.append([pair, e.get("endpoint"), wk, w.get("status") or w.get("error"), w.get("error_kind") or (w.get("error_head") or "")[:80], w.get("n_items"), w.get("n_codes"), f"{w.get('blank')}/{w.get('cells')}" if w.get("cells") is not None else "", first.get("daily_mean"), _gwh(first.get("daily_mean"), e.get("unit")), first.get("daily_min"), first.get("daily_max")])
+            if len(codes) > 1:
+                for code, c in codes.items():
+                    code_rows.append([pair, wk, code, c.get("days_with_values"), c.get("blank_cells"), c.get("daily_mean"), _gwh(c.get("daily_mean"), e.get("unit")), c.get("daily_min"), c.get("daily_max")])
+    lines += ["### Requests", "", md_table(["metric/entity", "endpoint", "window", "status", "error", "days", "codes", "blank/cells", "daily mean", "GWh/day", "daily min", "daily max"], rows), ""]
+    if code_rows:
+        lines += ["### Per entity code (Enlace and other multi-code answers)", "", md_table(["metric/entity", "window", "code", "days with values", "blank cells", "daily mean", "GWh/day", "min", "max"], code_rows), ""]
+    lines += ["### What each candidate should answer", "", md_table(["metric/entity", "in catalog", "unit", "MaxDays", "question", "name source"], [[k, e.get("in_catalog"), e.get("unit"), e.get("max_days"), e.get("question"), e.get("name_source")] for k, e in x.get("requests", {}).items()]), ""]
+    sim = x.get("simem", {})
+    sc = sim.get("catalog", {})
+    lines += ["### SIMEM (simem.co)", "", f"Catalog `{SIMEM_CATALOG_ID}`: status {sc.get('status') or sc.get('error')}, {sc.get('n_records')} datasets, {len(sc.get('matches') or [])} match exchange/Ecuador/storage terms.", ""]
+    if sc.get("matches"):
+        lines += ["<details><summary>Matching catalog records</summary>", ""] + [f"- `{m}`" for m in sc["matches"]] + ["", "</details>", ""]
+    srows = []
+    for ds, d in sim.get("datasets", {}).items():
+        for wk, w in d.get("windows", {}).items():
+            srows.append([ds, d.get("name") or d.get("name_expected"), d.get("granularity"), wk, w.get("status") or w.get("error"), w.get("n_records"), w.get("last_update"), w.get("message") or (w.get("head") or "")[:120], ", ".join(w.get("record_keys") or [])[:200]])
+    lines += [md_table(["dataset", "name", "granularity", "window", "status", "records", "lastUpdate", "message", "record keys"], srows), ""]
+    return "\n".join(lines)
+
+
+def merge_previous_run(recon_dir: Path, rec: Recorder, findings: dict, wanted: list[str]) -> None:
+    """A partial run (--only) keeps the other sections' findings and log, so the report stays whole."""
+    try:
+        old = json.loads((recon_dir / "findings.json").read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        old = {}
+    try:
+        old_log = json.loads((recon_dir / "capture_log.json").read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        old_log = []
+    for name, value in old.items():
+        if name in SECTIONS and name not in wanted:
+            findings[name] = value
+    findings["sections"] = [s for s in SECTIONS if s in findings]
+    findings["partial_run"] = {"sections": wanted, "previous_started_utc": old.get("started_utc")}
+    seen = {v.get("url") for v in rec.robots_verdicts}
+    rec.robots_verdicts[:0] = [v for v in old.get("robots_verdicts") or [] if v.get("url") not in seen]
+    new_keys = {r.get("key") for r in rec.log}
+    rec.log[:0] = [r for r in old_log if isinstance(r, dict) and r.get("key") not in new_keys]
+
+
+REPORT_SECTIONS = [("header", _r_header)] + [("1. Every request", _r_1), ("2. robots.txt verdicts", _r_2), ("3. TLS", _r_4), ("4. CELEC ORDS", _r_5), ("4a", _r_ords_matrix), ("4b", _r_ords_catalog), ("4c", _r_ords_reports), ("4d", _r_ords_new_mrids), ("4e", _r_ords_history), ("5. CELEC dashboards (Angular bundles)", _r_6), ("6. CENACE SMEC daily balance", _r_7), ("7. CENACE Información Operativa", _r_8), ("8. Covariates", _r_9), ("9. Open-data portals", _r_10), ("10. Community mirrors", _r_11), ("10a. XM (Colombia)", _r_xm), ("11. Failures and skips", _r_13), ("section errors", _r_failures)]
 
 
 SECTIONS = {
@@ -962,6 +1323,7 @@ SECTIONS = {
     "covariates": section_covariates,
     "mirrors": section_mirrors,
     "open_data": section_open_data,
+    "xm": section_xm,
 }
 
 
@@ -987,6 +1349,9 @@ def main() -> int:
             print(f"[section error] {name}: {error}", flush=True)
     recon_dir = Path(args.fixtures) / "recon"
     recon_dir.mkdir(parents=True, exist_ok=True)
+    if args.only.strip():
+        merge_previous_run(recon_dir, rec, findings, wanted)
+    findings["robots_verdicts"] = rec.robots_verdicts
     (recon_dir / "capture_log.json").write_text(json.dumps(rec.log, indent=1, ensure_ascii=False), encoding="utf-8")
     (recon_dir / "findings.json").write_text(json.dumps(findings, indent=1, ensure_ascii=False, default=str), encoding="utf-8")
     write_report(Path(args.report), rec, findings, started)

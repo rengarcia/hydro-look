@@ -252,6 +252,35 @@ export function simulatePath(
   return steps;
 }
 
+/**
+ * `simulatePath`'s levels and nothing else, for callers that run it thousands of times: M4 reads
+ * M3's forecast at every training day, and building a dated step object per simulated day is
+ * most of the cost of that. The arithmetic is the same line for line, and a test holds the two
+ * to identical output.
+ */
+export function simulateLevels(
+  curve: Hypsometry,
+  rule: ReleaseRule,
+  startLevel: number,
+  path: ArrayLike<number>,
+  stance: number,
+  crestM: number,
+  options: WaterBalanceOptions = DEFAULT_WATER_BALANCE,
+): Float64Array {
+  const ceiling = volumeAt(curve, crestM);
+  const floor = volumeAt(curve, curve.datumM + 1);
+  let volume = volumeAt(curve, startLevel);
+  const out = new Float64Array(path.length);
+  for (let day = 0; day < path.length; day++) {
+    const level = levelAt(curve, volume);
+    const releaseM3s = Math.max(0, releaseAt(rule, level) + stance * Math.pow(options.stanceDecay, day + 1));
+    const proposed = volume + SECONDS_PER_DAY * (path[day]! - releaseM3s);
+    volume = Math.min(Math.max(proposed, floor), ceiling);
+    out[day] = levelAt(curve, volume);
+  }
+  return out;
+}
+
 /** Everything the fit produced at one origin, kept so the forecast document can report it. */
 export interface WaterBalanceFit {
   curve: Hypsometry;

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-22T20:04:22Z",
+  "generated_at": "2026-09-22T21:36:54Z",
   "as_of": "2026-09-22",
   "ok": true,
   "status": "warn",
@@ -47,6 +47,18 @@
       "state": "current"
     },
     {
+      "feed": "XM exchanges with Colombia",
+      "latest": "2026-09-19",
+      "limit_days": 7,
+      "state": "current"
+    },
+    {
+      "feed": "XM Colombian storage",
+      "latest": "2026-09-21",
+      "limit_days": 4,
+      "state": "current"
+    },
+    {
       "feed": "Mazar level forecast",
       "latest": "2026-09-21",
       "limit_days": 3,
@@ -73,22 +85,31 @@
       "rows": 7
     },
     "weather_daily": {
-      "rows": 13440
+      "rows": 13472
     },
     "enso_monthly": {
       "rows": 919
     },
     "forecast_runs": {
-      "rows": 1
-    },
-    "adequacy_runs": {
       "rows": 2
     },
+    "adequacy_runs": {
+      "rows": 3
+    },
     "adequacy_values": {
-      "rows": 10
+      "rows": 15
     },
     "forecast_values": {
-      "rows": 5
+      "rows": 10
+    },
+    "narrative_snapshots": {
+      "rows": 0
+    },
+    "xm_exchange_daily": {
+      "rows": 4002
+    },
+    "xm_system_daily": {
+      "rows": 33154
     }
   },
   "findings": [
@@ -99,7 +120,7 @@
     }
   ],
   "counts": {
-    "warn": 1,
-    "info": 13
+    "info": 16,
+    "warn": 1
   }
 }

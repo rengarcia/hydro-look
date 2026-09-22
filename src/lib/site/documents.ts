@@ -8,6 +8,8 @@
  * the HTML for a week before anybody notices.
  */
 
+import type { NarrativePayload } from "../narrative/payload.ts";
+
 export interface ForecastHorizon {
   horizon_days: number;
   target_date: string;
@@ -16,6 +18,13 @@ export interface ForecastHorizon {
   p90: number;
   median_backtest_residual_m: number | null;
   ensemble: { p10: number; p90: number; n: number; years: number[] };
+  /**
+   * The model whose median this row publishes. Since 2026-09-22 the 7-day row can come from
+   * M4 while the rest are M3; absent in documents written before then, which were all
+   * `model.id`.
+   */
+  model?: string;
+  band_source?: string;
 }
 
 export interface ForecastThreshold {
@@ -52,6 +61,8 @@ export interface CrossingThreshold {
 
 export interface BacktestHorizon {
   horizon_days: number;
+  /** Whose backtest this row is: the model published at this horizon. Absent before 2026-09-22. */
+  model?: string;
   n: number;
   mae_m: number;
   skill_vs_persistence: number;
@@ -65,6 +76,8 @@ export interface ForecastDocument {
   site: string;
   disclaimer: string;
   model: { id: string; label: string; version: string; backtest_origins: number };
+  /** Whether the 7-day row publishes M4 this run, and why not when it does not. */
+  horizon_switch?: { horizon_days: number; candidate_model: string; published_model: string; status: string; reason: string } | null;
   current: {
     level_masl: number;
     observed_on: string;
@@ -91,6 +104,8 @@ export interface AdequacyHorizon {
   target_date: string;
   demand_gwh_day: number;
   hydro_gwh_day: number;
+  hydro_p10: number | null;
+  hydro_p90: number | null;
   requirement_gwh_day: number;
   deficit_gwh_day: number;
   deficit_p10: number | null;
@@ -143,6 +158,8 @@ export interface AdequacyDocument {
     share_of_cuts_that_were_flagged: number | null;
   };
   crisis_check: { episodes: AdequacyEpisode[] };
+  /** The tier definitions in Spanish, as the document states them. */
+  tiers?: { definition: Record<string, string> };
 }
 
 export interface StatusFeed {
@@ -160,4 +177,26 @@ export interface StatusDocument {
   feeds: StatusFeed[];
   tables: Record<string, { rows: number }>;
   findings: { check: string; level: string; message: string }[];
+}
+
+/**
+ * `narrative.json`, as far as the panel reads it. `basis` is the payload the text was written
+ * from, and the panel renders from it rather than from today's `latest.json`: when a later run
+ * is skipped or rejected the page keeps the older text, and the numbers beside it have to be the
+ * ones it was written about, not the ones that have arrived since.
+ *
+ * The type is imported, not restated, and only as a type: the site must never pull the AI SDK
+ * or the payload builder's file reads into the bundle.
+ */
+export interface NarrativeDocument {
+  generated_at: string;
+  model: string;
+  prompt_version: string;
+  origin_date: string;
+  risk_tier: string | null;
+  outlook_es: string;
+  drivers: string[];
+  confidence: "low" | "medium" | "high";
+  disclaimer: string;
+  basis: NarrativePayload;
 }

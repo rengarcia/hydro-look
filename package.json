@@ -21,15 +21,18 @@
     "check": "tsx scripts/check.ts",
     "publish:api": "tsx scripts/publish.ts",
     "forecast": "tsx scripts/forecast.ts",
-    "adequacy": "tsx scripts/adequacy.ts"
+    "adequacy": "tsx scripts/adequacy.ts",
+    "narrative": "tsx scripts/narrative.ts",
+    "backtest:m4": "tsx scripts/backtest-m4.ts"
   },
   "dependencies": {
+    "ai": "^7.0.111",
     "cheerio": "^1.0.0",
     "next": "^16.3.5",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "undici": "^7.10.0",
-    "zod": "^3.23.8"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",

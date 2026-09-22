@@ -5,6 +5,15 @@
  * thing and should not look alike. The fan is the published p10–p90 — the ensemble of analogue
  * inflow years widened by the model's own out-of-sample error — with the p50 through it.
  *
+ * Since 2026-09-22 the 7-day point can come from a different model (M4, boosted trees on M3's
+ * error) than the rest of the fan (M3, the water balance). The fan is drawn as straight segments
+ * between the published horizons — it has never been a daily path — so the switch cannot open a
+ * gap: the segment from day 7 to day 14 joins two models the way every other segment joins two
+ * horizons, by interpolation. What would be a lie is drawing that vertex as though the same model
+ * made it, so a horizon whose `model` differs from `primaryModel` gets a ring and a p10–p90
+ * whisker of its own, and the legend and the table beside the chart name the model. The named
+ * scenarios and days-to-threshold stay M3's daily simulation and are not drawn here.
+ *
  * The declared floors are drawn as horizontal rules. 2115 is drawn like the others and labelled
  * like none of them: no upstream source publishes it, it is this project's own marker from
  * PLAN.md §7, and the table under the chart says so. Drawing it unlabelled beside two CELEC
@@ -24,6 +33,8 @@ export interface FanHorizon {
   p10: number;
   p50: number;
   p90: number;
+  /** The model this horizon was published from; absent means `primaryModel`. */
+  model?: string;
 }
 
 export interface FanThreshold {
@@ -39,6 +50,7 @@ export function FanChart({
   horizons,
   thresholds,
   label,
+  primaryModel,
 }: {
   history: SeriesPoint[];
   origin: string;
@@ -46,6 +58,8 @@ export function FanChart({
   horizons: FanHorizon[];
   thresholds: FanThreshold[];
   label: string;
+  /** The model most horizons come from; a horizon from any other is marked. */
+  primaryModel?: string;
 }) {
   if (history.length < 2 || horizons.length === 0) return null;
 
@@ -80,6 +94,7 @@ export function FanChart({
   const upper: Point[] = fan.map((h) => ({ x: frame.x(at(h.date)), y: frame.y(h.p90) }));
   const lower: Point[] = fan.map((h) => ({ x: frame.x(at(h.date)), y: frame.y(h.p10) }));
   const middle: Point[] = fan.map((h) => ({ x: frame.x(at(h.date)), y: frame.y(h.p50) }));
+  const switched = horizons.filter((h) => primaryModel !== undefined && h.model !== undefined && h.model !== primaryModel);
 
   const labelDates = [first, addDays(first, Math.round(span / 3)), origin, last];
 
@@ -111,6 +126,18 @@ export function FanChart({
 
       <path d={bandPath(upper, lower)} fill="var(--series-1)" fillOpacity={0.22} />
       <path d={linePath(middle)} fill="none" stroke="var(--series-1)" strokeWidth={2} strokeLinecap="round" />
+      {switched.map((h) => {
+        // Rounded like the paths, to a hundredth of a pixel.
+        const px = (v: number) => Math.round(v * 100) / 100;
+        const x = px(frame.x(at(h.target_date)));
+        return (
+          <g key={h.target_date}>
+            <title>{`${h.model}: p50 ${num(h.p50, 2)} m (${num(h.p10, 2)}–${num(h.p90, 2)})`}</title>
+            <line x1={x} x2={x} y1={px(frame.y(h.p90))} y2={px(frame.y(h.p10))} stroke="var(--series-1)" strokeWidth={1.5} />
+            <circle cx={x} cy={px(frame.y(h.p50))} r={4} fill="var(--surface)" stroke="var(--series-1)" strokeWidth={2} />
+          </g>
+        );
+      })}
       <line
         x1={frame.x(at(origin))}
         x2={frame.x(at(origin))}

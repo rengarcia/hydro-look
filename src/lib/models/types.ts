@@ -33,6 +33,12 @@ export interface HorizonForecast {
    * because an ensemble over inflow alone knows nothing about the model's own error.
    */
   ensemble: readonly number[];
+  /**
+   * A model's own p10 and p90 when it predicts them directly rather than through an ensemble —
+   * M4's quantile regressions. Scored where the ensemble's spread would be, and, like it, never
+   * the published band on its own.
+   */
+  quantiles?: { p10: number; p90: number };
 }
 
 export interface Model {
