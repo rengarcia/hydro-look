@@ -12,10 +12,10 @@ with the response that produced it archived alongside it.
 | Phase | State |
 |---|---|
 | 0 · Reconnaissance and fixtures | done — `scripts/recon/RECON_REPORT.md` |
-| 1 · Full ingest (CELEC ORDS + CENACE SMEC + Información Operativa) | code complete; backfill running in Actions |
-| 2 · CENACE history and reconciliation | parsers implemented; historical backfill and reconciliation pending |
-| 3 · Additional reservoir levels | blocked on upstream null values |
-| 4 · Covariates and quality | weather/ENSO ingestion implemented; provisional Paute point; deployment and verified references pending |
+| 1 · Full ingest (CELEC ORDS + CENACE SMEC + Información Operativa) | code complete; levels backfilled to 2014-09-20 and CELEC Sur energy to 2015-11-01; hourly plant energy still to run for Mazar, Molino, Minas San Francisco and Sopladora |
+| 2 · CENACE history and reconciliation | SMEC backfilled 2016-05-01 → 2026-09-20; reconciliation pending |
+| 3 · Additional reservoir levels | unblocked 2026-09-22 — the historian returns values; ingestion not written yet |
+| 4 · Covariates and quality | weather/ENSO ingested — ONI 1950-01 → 2026-07, recent ERA5 and a 16-day forecast; climatology backfill, provisional Paute point, deployment and verified references pending |
 | 5–7 · Modelling, site, extensions | planned — see `PLAN.md` |
 
 ## Where the data comes from
@@ -34,9 +34,12 @@ Two things worth knowing before using any of it:
 - **`volutilalm` is not a volume.** The ORDS publishes it as "% de volumen útil", but it is
   exactly `(cota − min) / (max − min)`. It is stored here as `nivel_pct_banda` and must not be
   read as stored water.
-- **The historian endpoints (`pointValues`, `pointValuesMesH24`) return nulls.** Every Phase 0
-  run got the timestamp skeleton with no values. The report endpoints above are the backbone;
-  the historian is kept only as the route to Coca Codo Sinclair, Agoyán and Manduriacu levels.
+- **The historian endpoints (`pointValues`, `pointValuesMesH24`) depend on when you ask.** Every
+  Phase 0 run, made between 23:37 and 00:09 UTC, got the timestamp skeleton with no values; the
+  probe of 2026-09-22 at 02:14 UTC got values for all eight target mrids, and `probe-ords.yml`
+  keeps sampling three times a day to map any blank window. A month's last local day still comes
+  back null, so page it with overlap. The report endpoints above are the backbone; the historian
+  is the route to Coca Codo Sinclair, Agoyán and Manduriacu levels.
 
 ## Running it
 
