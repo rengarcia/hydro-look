@@ -1123,9 +1123,16 @@ mean, demand, spot and scarcity prices), from its own step in `covariates.yml`.
   October — **and it is happening again.** Imports ran 7.5–8.5 GWh/day through late August 2026,
   fell to 3.5 on 2026-09-06 and have been 0.12–0.17 GWh/day every day since 2026-09-07 (SMEC and
   XM agree). The adequacy model's central case still assumes the demonstrated 10.78; its stressed
-  case, 0.12, is now simply what is happening, and at seven days it still shows a 1.8 GWh/day
-  surplus. Whether the central case should follow observed imports when they have collapsed is a
-  modelling decision that changes the site's headline, and is left open rather than made quietly.
+  case, 0.12, was simply what was happening. **Decided 2026-09-22: the central case now stops
+  assuming the interconnection when imports stop while thermal works hard** — a fortnight below
+  1 GWh/day with thermal at 70% or more of its ceiling. Low imports alone would not do: they
+  preceded 68 of 99 monthly origins since 2018, mostly wet months when Ecuador had no use for
+  them. With the thermal condition the rule picks out 4 (2024-05, 2024-11, 2026-04, 2026-05), the
+  same 4 at any share from 60% to 75%, and leaves the tier record untouched. XM says this stop is
+  not Colombian scarcity (storage 79%, spot under the scarcity threshold), so the cause is outside
+  this data. Live, the 7-day tier moves from **holgado to vigilancia** (margin 1.7%) and 60–90 days
+  reach **ajustado** (central deficit 0.5–0.8 GWh/day), holding the cut for the horizon.
+  `adequacy.json` carries the regime and its reason under `assumptions.import_regime`.
 - Publication lags measured on the capture: storage and inflows 1 day, demand 2, exchanges and
   prices 3, TIE settlement 5. Colombian storage fell to 49% of useful volume in September 2024
   with inflows at 58% of their mean: the state that explains a cutoff before the border shows it.
@@ -1143,8 +1150,12 @@ by two operators in two countries, agree on the numbers and the dates for a deca
 to 2018-11: the both-directions check ran on every link in XM's answer, and the Venezuela link,
 CUATRICENTENARIO 1, does publish hours both ways in those years. It is neither stored nor what the
 rule is about; the check is now confined to the Ecuador circuits, March 2017's real answer is a
-regression test, and replaying all 125 archived months parses every one. The twenty months are
-being refetched by covariates run 35775149361, which resumes only incomplete months.
+regression test, and replaying all 125 archived months parses every one. Covariates run
+35775149361 refetched the twenty months, and ECUADOR 230 now has a row for 3,788 of the 3,794
+days to 2026-09-19. The six without one (2024-04-20→22 and 25→27) are real zeros: XM never writes
+a zero, and CENACE shows nothing crossing either way those days, the week Colombia suspended
+exports. A `--from` run will re-ask that month each time, which costs eleven requests and nothing
+else.
 
 Still listed: ML v2 if it beats v1 in backtests; ARCONEL BNEE monthly loader; CENACE Datos Abiertos per-plant
 validation; Colombia export availability via XM's open API — which Phase 6c has now made the

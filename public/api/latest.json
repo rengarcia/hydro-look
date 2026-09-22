@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-22T19:44:50Z",
+  "generated_at": "2026-09-22T19:53:09Z",
   "as_of": "2026-09-22",
   "disclaimer": "No es una fuente oficial. Cada número es una copia de lo que publicaron CELEC o CENACE, con la respuesta que lo produjo archivada junto a él.",
   "reservoirs": [
@@ -426,11 +426,11 @@
   },
   "adequacy": {
     "origin_date": "2026-09-21",
-    "tier": "holgado",
-    "worst_tier": "holgado",
+    "tier": "vigilancia",
+    "worst_tier": "ajustado",
     "worst_tier_horizon_days": 60,
-    "worst_deficit_gwh_day": 0,
-    "run_id": "2026-09-21-adequacy-1-3a236765"
+    "worst_deficit_gwh_day": 0.797,
+    "run_id": "2026-09-21-adequacy-1-06a49241"
   },
   "see_also": {
     "forecast": "/api/forecast.json",
