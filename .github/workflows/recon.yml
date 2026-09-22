@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       only:
-        description: "Comma-separated sections (tls,ords,celec_web,smec,operativa,covariates,mirrors,open_data); empty = all"
+        description: "Comma-separated sections (tls,ords_matrix,ords,ords_catalog,ords_reports,ords_new_mrids,ords_history,celec_web,smec,operativa,covariates,mirrors,open_data,xm); empty = all"
         required: false
         default: ""
   # workflow_dispatch is only registered once the file reaches the default
