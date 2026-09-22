@@ -13,20 +13,20 @@ on:
   workflow_dispatch:
     inputs:
       source:
-        description: "Which backfill to run"
+        description: "Which backfill to run ('all' spends the budget in priority order)"
         type: choice
         required: true
-        default: ords-levels
+        default: all
         options:
+          - all
           - ords-levels
           - ords-energy
-          - ords-daily
-          - ords-plant-energy
           - ords-basin
           - smec
-          - all
+          - ords-plant-energy
+          - ords-daily
       from:
-        description: "First day, YYYY-MM-DD (levels go back to 2015-09-20, SMEC to 2016-05-01)"
+        description: "First day, YYYY-MM-DD (levels reach 2014-09-20, SMEC 2016-05-01 or earlier)"
         required: true
       to:
         description: "Last day, YYYY-MM-DD (default: yesterday)"
@@ -68,8 +68,8 @@ jobs:
 
       - name: Backfill
         env:
-          SOURCE: ${{ github.event.inputs.source || 'ords-levels' }}
-          FROM: ${{ github.event.inputs.from || '2015-09-20' }}
+          SOURCE: ${{ github.event.inputs.source || 'all' }}
+          FROM: ${{ github.event.inputs.from || '2016-05-01' }}
           TO: ${{ github.event.inputs.to }}
           MAX_REQUESTS: ${{ github.event.inputs.max_requests || '10000' }}
           PLANTS: ${{ github.event.inputs.plants || 'ago,man,ccs' }}
@@ -87,8 +87,8 @@ jobs:
       - name: Apply and commit
         if: always() && github.event.inputs.dry_run != 'true'
         env:
-          SOURCE: ${{ github.event.inputs.source || 'ords-levels' }}
-          FROM: ${{ github.event.inputs.from || '2015-09-20' }}
+          SOURCE: ${{ github.event.inputs.source || 'all' }}
+          FROM: ${{ github.event.inputs.from || '2016-05-01' }}
           BRANCH: ${{ github.ref_name }}
           BATCH_DIR: ${{ runner.temp }}/batch
         run: bash .github/scripts/apply-and-push.sh "Backfill $SOURCE from $FROM (run ${{ github.run_id }})"

@@ -289,7 +289,22 @@ tested) which saves raw responses into `tests/fixtures/` and a `recon_report.md`
 Acceptance: fixtures committed; `mrids.csv` has candidates for all seven plants with sample values;
 `recon_report.md` answers every "verify" in §2.2 and §3.
 
-**Phase 1 · Skeleton + CELEC report endpoints + backfill (2 S)**
+**Phase 1 · Skeleton + CELEC report endpoints + backfill — code complete 2026-09-22, backfill running**
+Built in TypeScript (decision 6), and widened to the full ingest (decision 7), so it also carries what
+§6 originally deferred to Phase 2: the SMEC parser and the Información Operativa parser ship with it.
+Delivered: `src/lib/parse/*` (one pure parser per endpoint, 59 tests against the Phase 0 fixtures),
+`src/lib/sources/*`, the rate-limited client with per-host TLS policy, the gzipped-NDJSON raw archive,
+the year-partitioned CSV store with zod contracts, and `scripts/ingest.ts`
+(`daily | backfill | apply | latest | smec-earliest`), wired into `ci.yml`, `daily.yml` and `backfill.yml`.
+Two things the first Actions runs settled:
+
+- **Levels reach 2014-09-20, a year deeper than Phase 0 found.** `repDiaHid12m` paged back one further
+  year than the 2015-09-20 the reconnaissance established; 29,110 level and inflow rows are committed.
+- **Generated files cannot be merged by rebase.** The first daily run collided with the levels backfill
+  in an add/add conflict on every CSV. A run now stages its output and a second step re-applies it onto
+  the branch tip (`--out` / `apply --in`), which is safe because applying is an upsert.
+
+Original phase text, for reference:
 Package, CLI, raw archive, `reservoir_daily` contract, ORDS client, and loaders for `repDiaHid12m` (levels
 and inflows, four reservoirs, paged back a year per request), `repDiaEner12m`, `repDiaNivQIng`,
 `repDiaVolAlm`, `repDiaRegAyer`, `repDiaEnerAyerHoy` (SNI daily total) and `{code}EnerDia` for the seven

@@ -255,6 +255,29 @@ async function main(): Promise<void> {
         await spend(() => ords.caudCuenAniosAvg(batch, "2010-01-01", `${yearOf(to) + 1}-01-01`));
       }
 
+      // `all` spends the budget in this order deliberately. The windowed endpoints above cost
+      // tens of requests for years of history, so they always finish. SMEC comes next because
+      // it is the national backbone and one request buys a whole closed day; the per-day CELEC
+      // reports come last because they cost five requests per day for variables the windowed
+      // reports largely already cover.
+      if (runs("smec")) {
+        for (const date of eachDay(from, to)) {
+          if (smecDates.has(date)) continue;
+          if (!(await spend(async () => void (await smec.day(batch, date))))) break;
+          if (daysSinceLog(date)) log(`smec: reached ${date}, ${budget.left} requests left`);
+        }
+      }
+
+      if (runs("ords-plant-energy")) {
+        outer: for (const code of options.plants) {
+          for (const date of eachDay(from, to)) {
+            if (present.has(`${date}|ords:${code}EnerDia`)) continue;
+            if (!(await spend(() => ords.enerDia(batch, code, date)))) break outer;
+            if (daysSinceLog(date)) log(`ords-plant-energy ${code}: reached ${date}, ${budget.left} requests left`);
+          }
+        }
+      }
+
       if (runs("ords-daily")) {
         outer: for (const date of eachDay(from, to)) {
           for (const report of DAILY_REPORTS) {
@@ -269,24 +292,6 @@ async function main(): Promise<void> {
             if (!(await spend(call))) break outer;
           }
           if (daysSinceLog(date)) log(`ords-daily: reached ${date}, ${budget.left} requests left in this run`);
-        }
-      }
-
-      if (runs("ords-plant-energy")) {
-        outer: for (const code of options.plants) {
-          for (const date of eachDay(from, to)) {
-            if (present.has(`${date}|ords:${code}EnerDia`)) continue;
-            if (!(await spend(() => ords.enerDia(batch, code, date)))) break outer;
-            if (daysSinceLog(date)) log(`ords-plant-energy ${code}: reached ${date}, ${budget.left} requests left`);
-          }
-        }
-      }
-
-      if (runs("smec")) {
-        for (const date of eachDay(from, to)) {
-          if (smecDates.has(date)) continue;
-          if (!(await spend(async () => void (await smec.day(batch, date))))) break;
-          if (daysSinceLog(date)) log(`smec: reached ${date}, ${budget.left} requests left`);
         }
       }
       break;
