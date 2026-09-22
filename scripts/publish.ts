@@ -61,6 +61,9 @@ function main(): void {
   const outPath = values.out?.trim() || repoPath("public", "api", "latest.json");
   const dryRun = values["dry-run"] ?? false;
 
+  const adequacyPath = repoPath("public", "api", "adequacy.json");
+  const adequacy = existsSync(adequacyPath) ? JSON.parse(readFileSync(adequacyPath, "utf8")) : null;
+
   const document = buildLatest({
     series: loadSeries(),
     thresholds: readReference("thresholds.csv") as unknown as ThresholdRow[],
@@ -68,6 +71,7 @@ function main(): void {
     sites: reservoirSites(),
     generatedAt: nowUtc(),
     asOf: todayEc(),
+    adequacy,
   });
 
   const withLevel = document.reservoirs.filter((r) => r.level !== null).length;
@@ -90,6 +94,12 @@ function main(): void {
     national
       ? `national ${national.date}: hydro ${national.hydro_share_pct ?? "?"}%, thermal ${national.thermal_share_pct ?? "?"}%, imports ${national.import_share_pct ?? "?"}%`
       : "national: no closed day",
+  );
+  const adequate = document.adequacy;
+  console.log(
+    adequate
+      ? `adequacy ${adequate.origin_date}: ${adequate.tier}, worst ${adequate.worst_tier} at ${adequate.worst_tier_horizon_days} days`
+      : "adequacy: not generated yet (run npm run adequacy)",
   );
 
   if (dryRun) {

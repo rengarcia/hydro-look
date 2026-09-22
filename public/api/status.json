@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-22T16:59:20Z",
+  "generated_at": "2026-09-22T17:23:10Z",
   "as_of": "2026-09-22",
   "ok": true,
   "status": "warn",
@@ -51,6 +51,12 @@
       "latest": "2026-09-21",
       "limit_days": 3,
       "state": "current"
+    },
+    {
+      "feed": "National adequacy",
+      "latest": "2026-09-21",
+      "limit_days": 3,
+      "state": "current"
     }
   ],
   "tables": {
@@ -75,6 +81,12 @@
     "forecast_runs": {
       "rows": 1
     },
+    "adequacy_runs": {
+      "rows": 2
+    },
+    "adequacy_values": {
+      "rows": 10
+    },
     "forecast_values": {
       "rows": 5
     }
@@ -88,6 +100,6 @@
   ],
   "counts": {
     "warn": 1,
-    "info": 11
+    "info": 13
   }
 }

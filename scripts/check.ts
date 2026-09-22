@@ -19,6 +19,8 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { dirname, join } from "node:path";
 import {
   ENSO_MONTHLY,
+  ADEQUACY_RUNS,
+  ADEQUACY_VALUES,
   FORECAST_RUNS,
   FORECAST_VALUES,
   NATIONAL_BALANCE_DAILY,
@@ -73,6 +75,10 @@ const FRESHNESS_LIMIT_DAYS: Record<string, number> = {
   // upstream publication lag of its own, so a forecast older than the levels it was built on
   // means the forecast step stopped running while the ingest carried on.
   "Mazar level forecast": 3,
+  // Same reasoning, and the same daily job. An adequacy document older than the balance it was
+  // built on means the modelling step stopped while the ingest carried on, which would leave the
+  // site's risk tier describing a week that has already happened.
+  "National adequacy": 3,
 };
 
 function readTable(name: string): { rows: Rows; header: string[] | null; mismatches: string[] } {
@@ -128,6 +134,8 @@ function main(): void {
   const weather = readTable(WEATHER_DAILY.name);
   const enso = readTable(ENSO_MONTHLY.name);
   const forecastRuns = readTable(FORECAST_RUNS.name);
+  const adequacyRuns = readTable(ADEQUACY_RUNS.name);
+  const adequacyValues = readTable(ADEQUACY_VALUES.name);
   const forecastValues = readTable(FORECAST_VALUES.name);
 
   const thresholds = readReference("thresholds.csv");
@@ -141,6 +149,8 @@ function main(): void {
     [WEATHER_DAILY as TableSpec<unknown>, weather],
     [ENSO_MONTHLY as TableSpec<unknown>, enso],
     [FORECAST_RUNS as TableSpec<unknown>, forecastRuns],
+    [ADEQUACY_RUNS as TableSpec<unknown>, adequacyRuns],
+    [ADEQUACY_VALUES as TableSpec<unknown>, adequacyValues],
     [FORECAST_VALUES as TableSpec<unknown>, forecastValues],
   ];
   for (const [spec, table] of tables) {
@@ -171,6 +181,7 @@ function main(): void {
     // ONI is a month, not a day; its first day stands in for it so the arithmetic is uniform.
     ["NOAA ONI", latestWhere(enso.rows.map((r) => ({ ...r, month: `${r["month"]}-01` })), "month", () => true)],
     ["Mazar level forecast", latestWhere(forecastRuns.rows, "origin_date", (row) => row["site"] === "mazar")],
+    ["National adequacy", latestWhere(adequacyRuns.rows, "origin_date", () => true)],
   ].map(([label, latest]) => ({ label: label!, latest: latest ?? null, maxAgeDays: FRESHNESS_LIMIT_DAYS[label!] ?? 7 }));
 
   const freshness = checkFreshness(rules, todayEc());

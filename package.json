@@ -20,7 +20,8 @@
     "probe:basins": "tsx scripts/probe-basins.ts",
     "check": "tsx scripts/check.ts",
     "publish:api": "tsx scripts/publish.ts",
-    "forecast": "tsx scripts/forecast.ts"
+    "forecast": "tsx scripts/forecast.ts",
+    "adequacy": "tsx scripts/adequacy.ts"
   },
   "dependencies": {
     "cheerio": "^1.0.0",
@@ -39,6 +40,6 @@
     "tsx": "^4.19.2",
     "typescript": "^5.6.3",
     "typescript-eslint": "^8.14.0",
-    "vitest": "^2.1.4"
+    "vitest": "^4.1.11"
   }
 }

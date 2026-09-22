@@ -35,6 +35,11 @@ jobs:
       # the ladder still fits and scores on the actual history, which is what would break first
       # when a source changes shape. About twenty seconds, and no network.
       - run: npm run forecast -- --dry-run
+      # The adequacy model, likewise end to end and writing nothing. It carries its own backtest
+      # over ninety-nine monthly origins, so this is also the check that the national balance
+      # still parses into days the model will accept: a source change that makes half the record
+      # unusable shows up here as a failure rather than as a quiet shift in the deficit.
+      - run: npm run adequacy -- --dry-run
       # The public current-state document, built and discarded. It is what the site's tiles read,
       # so a change that leaves a reservoir without a level should be red here and not on the page.
       - run: npm run publish:api -- --dry-run
