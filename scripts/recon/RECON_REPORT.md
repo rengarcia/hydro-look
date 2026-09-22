@@ -1,8 +1,10 @@
 # Phase 0 reconnaissance report
 
-Generated 2026-09-22T00:10:43+00:00 (UTC) · 2026-09-21T19:10:43-05:00 (Ecuador) · started 2026-09-22T00:05:25+00:00 · 212 requests.
+Generated 2026-09-22T18:45:35+00:00 (UTC) · 2026-09-22T13:45:35-05:00 (Ecuador) · started 2026-09-22T18:38:11+00:00 · 368 requests.
 
 Raw responses: `tests/fixtures/` (gzipped when large). Structured findings: `tests/fixtures/recon/findings.json`. Full log: `tests/fixtures/recon/capture_log.json`.
+
+Partial run of **xm**; every other section, and its log rows, are carried over from the run started 2026-09-22T00:05:25+00:00.
 
 ## 1. Every request
 
@@ -220,209 +222,321 @@ Raw responses: `tests/fixtures/` (gzipped when large). Structured findings: `tes
 | opendata:arconel_bnee_1 |  | 0 | 0.87 |  | SSLError: HTTPSConnectionPool(host='www.controlrecursosyenergia.gob.ec', port=443): Max retries exceeded with url: /balance-nacional-de-energia-electrica/ (Caused by SSLError(SSLCertVerificationError(1, "[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is no |
 | robots:arconel.gob.ec | 200 | 164 |  | robots/arconel.gob.ec.txt |  |
 | opendata:arconel_bnee_2 | 200 | 68185 | 2.09 | tests/fixtures/open_data/arconel_bnee_2.html |  |
+| robots:servapibi.xm.com.co | 404 | 0 |  | robots/servapibi.xm.com.co.txt |  |
+| xm:lists:ListadoMetricas | 200 | 84852 | 0.29 | tests/fixtures/xm/lists_ListadoMetricas.json |  |
+| xm:hourly:ExpoEner:Sistema:recent | 200 | 17225 | 0.31 | tests/fixtures/xm/ExpoEner_Sistema_recent.json |  |
+| xm:hourly:ExpoEner:Sistema:2024-08 | 200 | 20632 | 0.35 | tests/fixtures/xm/ExpoEner_Sistema_2024-08.json |  |
+| xm:hourly:ExpoEner:Sistema:2024-09 | 200 | 19859 | 0.28 | tests/fixtures/xm/ExpoEner_Sistema_2024-09.json |  |
+| xm:hourly:ExpoEner:Sistema:2024-10 | 200 | 16627 | 0.26 | tests/fixtures/xm/ExpoEner_Sistema_2024-10.json |  |
+| xm:hourly:ExpoEner:Sistema:2024-11 | 200 | 17780 | 0.27 | tests/fixtures/xm/ExpoEner_Sistema_2024-11.json |  |
+| xm:hourly:ExpoEner:Sistema:2024-12 | 200 | 20499 | 0.29 | tests/fixtures/xm/ExpoEner_Sistema_2024-12.json |  |
+| xm:hourly:ExpoEner:Sistema:2019-07 | 200 | 8274 | 0.26 | tests/fixtures/xm/ExpoEner_Sistema_2019-07.json |  |
+| xm:hourly:ExpoEner:Enlace:recent | 200 | 15430 | 0.3 | tests/fixtures/xm/ExpoEner_Enlace_recent.json |  |
+| xm:hourly:ExpoEner:Enlace:2024-08 | 200 | 22623 | 0.28 | tests/fixtures/xm/ExpoEner_Enlace_2024-08.json |  |
+| xm:hourly:ExpoEner:Enlace:2024-09 | 200 | 31884 | 0.28 | tests/fixtures/xm/ExpoEner_Enlace_2024-09.json |  |
+| xm:hourly:ExpoEner:Enlace:2024-10 | 200 | 15953 | 0.27 | tests/fixtures/xm/ExpoEner_Enlace_2024-10.json |  |
+| xm:hourly:ExpoEner:Enlace:2024-11 | 200 | 16423 | 0.28 | tests/fixtures/xm/ExpoEner_Enlace_2024-11.json |  |
+| xm:hourly:ExpoEner:Enlace:2024-12 | 200 | 23987 | 0.28 | tests/fixtures/xm/ExpoEner_Enlace_2024-12.json |  |
+| xm:hourly:ExpoEner:Enlace:2019-07 | 200 | 7886 | 0.27 | tests/fixtures/xm/ExpoEner_Enlace_2019-07.json |  |
+| xm:hourly:ImpoEner:Sistema:recent | 200 | 6021 | 0.27 | tests/fixtures/xm/ImpoEner_Sistema_recent.json |  |
+| xm:hourly:ImpoEner:Sistema:2024-08 | 200 | 914 | 0.24 | tests/fixtures/xm/ImpoEner_Sistema_2024-08.json |  |
+| xm:hourly:ImpoEner:Sistema:2024-09 | 200 | 607 | 0.26 | tests/fixtures/xm/ImpoEner_Sistema_2024-09.json |  |
+| xm:hourly:ImpoEner:Sistema:2024-10 | 200 | 13494 | 0.26 | tests/fixtures/xm/ImpoEner_Sistema_2024-10.json |  |
+| xm:hourly:ImpoEner:Sistema:2024-11 | 200 | 7333 | 0.25 | tests/fixtures/xm/ImpoEner_Sistema_2024-11.json |  |
+| xm:hourly:ImpoEner:Sistema:2024-12 | 200 | 958 | 0.25 | tests/fixtures/xm/ImpoEner_Sistema_2024-12.json |  |
+| xm:hourly:ImpoEner:Sistema:2019-07 | 200 | 18789 | 0.27 | tests/fixtures/xm/ImpoEner_Sistema_2019-07.json |  |
+| xm:hourly:ImpoEner:Enlace:recent | 200 | 5834 | 0.29 | tests/fixtures/xm/ImpoEner_Enlace_recent.json |  |
+| xm:hourly:ImpoEner:Enlace:2024-08 | 200 | 901 | 0.28 | tests/fixtures/xm/ImpoEner_Enlace_2024-08.json |  |
+| xm:hourly:ImpoEner:Enlace:2024-09 | 200 | 570 | 0.26 | tests/fixtures/xm/ImpoEner_Enlace_2024-09.json |  |
+| xm:hourly:ImpoEner:Enlace:2024-10 | 200 | 12859 | 0.26 | tests/fixtures/xm/ImpoEner_Enlace_2024-10.json |  |
+| xm:hourly:ImpoEner:Enlace:2024-11 | 200 | 6962 | 0.25 | tests/fixtures/xm/ImpoEner_Enlace_2024-11.json |  |
+| xm:hourly:ImpoEner:Enlace:2024-12 | 200 | 930 | 0.26 | tests/fixtures/xm/ImpoEner_Enlace_2024-12.json |  |
+| xm:hourly:ImpoEner:Enlace:2019-07 | 200 | 16966 | 0.28 | tests/fixtures/xm/ImpoEner_Enlace_2019-07.json |  |
+| xm:hourly:CompBolsaTIEEner:Sistema:recent | 200 | 16125 | 0.32 | tests/fixtures/xm/CompBolsaTIEEner_Sistema_recent.json |  |
+| xm:hourly:CompBolsaTIEEner:Sistema:2024-08 | 200 | 20645 | 0.28 | tests/fixtures/xm/CompBolsaTIEEner_Sistema_2024-08.json |  |
+| xm:hourly:CompBolsaTIEEner:Sistema:2024-09 | 200 | 19871 | 0.28 | tests/fixtures/xm/CompBolsaTIEEner_Sistema_2024-09.json |  |
+| xm:hourly:CompBolsaTIEEner:Sistema:2024-10 | 200 | 16642 | 0.28 | tests/fixtures/xm/CompBolsaTIEEner_Sistema_2024-10.json |  |
+| xm:hourly:CompBolsaTIEEner:Sistema:2024-11 | 200 | 17795 | 0.29 | tests/fixtures/xm/CompBolsaTIEEner_Sistema_2024-11.json |  |
+| xm:hourly:CompBolsaTIEEner:Sistema:2024-12 | 200 | 20513 | 0.32 | tests/fixtures/xm/CompBolsaTIEEner_Sistema_2024-12.json |  |
+| xm:hourly:CompBolsaTIEEner:Sistema:2019-07 | 200 | 8287 | 0.28 | tests/fixtures/xm/CompBolsaTIEEner_Sistema_2019-07.json |  |
+| xm:hourly:VentBolsaTIEEner:Sistema:recent | 200 | 16124 | 0.3 | tests/fixtures/xm/VentBolsaTIEEner_Sistema_recent.json |  |
+| xm:hourly:VentBolsaTIEEner:Sistema:2024-08 | 200 | 20644 | 0.27 | tests/fixtures/xm/VentBolsaTIEEner_Sistema_2024-08.json |  |
+| xm:hourly:VentBolsaTIEEner:Sistema:2024-09 | 200 | 19870 | 0.27 | tests/fixtures/xm/VentBolsaTIEEner_Sistema_2024-09.json |  |
+| xm:hourly:VentBolsaTIEEner:Sistema:2024-10 | 200 | 16641 | 0.27 | tests/fixtures/xm/VentBolsaTIEEner_Sistema_2024-10.json |  |
+| xm:hourly:VentBolsaTIEEner:Sistema:2024-11 | 200 | 17794 | 0.27 | tests/fixtures/xm/VentBolsaTIEEner_Sistema_2024-11.json |  |
+| xm:hourly:VentBolsaTIEEner:Sistema:2024-12 | 200 | 20512 | 0.26 | tests/fixtures/xm/VentBolsaTIEEner_Sistema_2024-12.json |  |
+| xm:hourly:VentBolsaTIEEner:Sistema:2019-07 | 200 | 8286 | 0.25 | tests/fixtures/xm/VentBolsaTIEEner_Sistema_2019-07.json |  |
+| xm:daily:PorcVoluUtilDiar:Sistema:recent | 200 | 2407 | 0.26 | tests/fixtures/xm/PorcVoluUtilDiar_Sistema_recent.json |  |
+| xm:daily:PorcVoluUtilDiar:Sistema:2024-08 | 200 | 2482 | 0.25 | tests/fixtures/xm/PorcVoluUtilDiar_Sistema_2024-08.json |  |
+| xm:daily:PorcVoluUtilDiar:Sistema:2024-09 | 200 | 2407 | 0.25 | tests/fixtures/xm/PorcVoluUtilDiar_Sistema_2024-09.json |  |
+| xm:daily:PorcVoluUtilDiar:Sistema:2024-10 | 200 | 2482 | 0.27 | tests/fixtures/xm/PorcVoluUtilDiar_Sistema_2024-10.json |  |
+| xm:daily:PorcVoluUtilDiar:Sistema:2024-11 | 200 | 2407 | 0.26 | tests/fixtures/xm/PorcVoluUtilDiar_Sistema_2024-11.json |  |
+| xm:daily:PorcVoluUtilDiar:Sistema:2024-12 | 200 | 2482 | 0.27 | tests/fixtures/xm/PorcVoluUtilDiar_Sistema_2024-12.json |  |
+| xm:daily:PorcVoluUtilDiar:Sistema:2019-07 | 200 | 2482 | 0.27 | tests/fixtures/xm/PorcVoluUtilDiar_Sistema_2019-07.json |  |
+| xm:daily:VoluUtilDiarEner:Sistema:recent | 200 | 2713 | 0.28 | tests/fixtures/xm/VoluUtilDiarEner_Sistema_recent.json |  |
+| xm:daily:VoluUtilDiarEner:Sistema:2024-08 | 200 | 2782 | 0.25 | tests/fixtures/xm/VoluUtilDiarEner_Sistema_2024-08.json |  |
+| xm:daily:VoluUtilDiarEner:Sistema:2024-09 | 200 | 2683 | 0.26 | tests/fixtures/xm/VoluUtilDiarEner_Sistema_2024-09.json |  |
+| xm:daily:VoluUtilDiarEner:Sistema:2024-10 | 200 | 2767 | 0.25 | tests/fixtures/xm/VoluUtilDiarEner_Sistema_2024-10.json |  |
+| xm:daily:VoluUtilDiarEner:Sistema:2024-11 | 200 | 2705 | 0.25 | tests/fixtures/xm/VoluUtilDiarEner_Sistema_2024-11.json |  |
+| xm:daily:VoluUtilDiarEner:Sistema:2024-12 | 200 | 2798 | 0.28 | tests/fixtures/xm/VoluUtilDiarEner_Sistema_2024-12.json |  |
+| xm:daily:VoluUtilDiarEner:Sistema:2019-07 | 200 | 2798 | 0.27 | tests/fixtures/xm/VoluUtilDiarEner_Sistema_2019-07.json |  |
+| xm:daily:CapaUtilDiarEner:Sistema:recent | 200 | 2708 | 0.28 | tests/fixtures/xm/CapaUtilDiarEner_Sistema_recent.json |  |
+| xm:daily:CapaUtilDiarEner:Sistema:2024-08 | 200 | 2793 | 0.25 | tests/fixtures/xm/CapaUtilDiarEner_Sistema_2024-08.json |  |
+| xm:daily:CapaUtilDiarEner:Sistema:2024-09 | 200 | 2708 | 0.26 | tests/fixtures/xm/CapaUtilDiarEner_Sistema_2024-09.json |  |
+| xm:daily:CapaUtilDiarEner:Sistema:2024-10 | 200 | 2793 | 0.24 | tests/fixtures/xm/CapaUtilDiarEner_Sistema_2024-10.json |  |
+| xm:daily:CapaUtilDiarEner:Sistema:2024-11 | 200 | 2708 | 0.24 | tests/fixtures/xm/CapaUtilDiarEner_Sistema_2024-11.json |  |
+| xm:daily:CapaUtilDiarEner:Sistema:2024-12 | 200 | 2793 | 0.25 | tests/fixtures/xm/CapaUtilDiarEner_Sistema_2024-12.json |  |
+| xm:daily:CapaUtilDiarEner:Sistema:2019-07 | 200 | 2793 | 0.24 | tests/fixtures/xm/CapaUtilDiarEner_Sistema_2019-07.json |  |
+| xm:daily:AporEner:Sistema:recent | 200 | 2633 | 0.26 | tests/fixtures/xm/AporEner_Sistema_recent.json |  |
+| xm:daily:AporEner:Sistema:2024-08 | 200 | 2715 | 0.24 | tests/fixtures/xm/AporEner_Sistema_2024-08.json |  |
+| xm:daily:AporEner:Sistema:2024-09 | 200 | 2623 | 0.25 | tests/fixtures/xm/AporEner_Sistema_2024-09.json |  |
+| xm:daily:AporEner:Sistema:2024-10 | 200 | 2716 | 0.25 | tests/fixtures/xm/AporEner_Sistema_2024-10.json |  |
+| xm:daily:AporEner:Sistema:2024-11 | 200 | 2633 | 0.25 | tests/fixtures/xm/AporEner_Sistema_2024-11.json |  |
+| xm:daily:AporEner:Sistema:2024-12 | 200 | 2716 | 0.25 | tests/fixtures/xm/AporEner_Sistema_2024-12.json |  |
+| xm:daily:AporEner:Sistema:2019-07 | 200 | 2716 | 0.24 | tests/fixtures/xm/AporEner_Sistema_2019-07.json |  |
+| xm:daily:AporEnerMediHist:Sistema:recent | 200 | 2657 | 0.26 | tests/fixtures/xm/AporEnerMediHist_Sistema_recent.json |  |
+| xm:daily:AporEnerMediHist:Sistema:2024-08 | 200 | 2740 | 0.25 | tests/fixtures/xm/AporEnerMediHist_Sistema_2024-08.json |  |
+| xm:daily:AporEnerMediHist:Sistema:2024-09 | 200 | 2657 | 0.25 | tests/fixtures/xm/AporEnerMediHist_Sistema_2024-09.json |  |
+| xm:daily:AporEnerMediHist:Sistema:2024-10 | 200 | 2740 | 0.25 | tests/fixtures/xm/AporEnerMediHist_Sistema_2024-10.json |  |
+| xm:daily:AporEnerMediHist:Sistema:2024-11 | 200 | 2657 | 0.25 | tests/fixtures/xm/AporEnerMediHist_Sistema_2024-11.json |  |
+| xm:daily:AporEnerMediHist:Sistema:2024-12 | 200 | 2740 | 0.24 | tests/fixtures/xm/AporEnerMediHist_Sistema_2024-12.json |  |
+| xm:daily:AporEnerMediHist:Sistema:2019-07 | 200 | 2740 | 0.25 | tests/fixtures/xm/AporEnerMediHist_Sistema_2019-07.json |  |
+| xm:daily:PorcApor:Sistema:recent | 200 | 2385 | 0.27 | tests/fixtures/xm/PorcApor_Sistema_recent.json |  |
+| xm:daily:PorcApor:Sistema:2024-08 | 200 | 2460 | 0.25 | tests/fixtures/xm/PorcApor_Sistema_2024-08.json |  |
+| xm:daily:PorcApor:Sistema:2024-09 | 200 | 2385 | 0.25 | tests/fixtures/xm/PorcApor_Sistema_2024-09.json |  |
+| xm:daily:PorcApor:Sistema:2024-10 | 200 | 2460 | 0.25 | tests/fixtures/xm/PorcApor_Sistema_2024-10.json |  |
+| xm:daily:PorcApor:Sistema:2024-11 | 200 | 2385 | 0.25 | tests/fixtures/xm/PorcApor_Sistema_2024-11.json |  |
+| xm:daily:PorcApor:Sistema:2024-12 | 200 | 2460 | 0.25 | tests/fixtures/xm/PorcApor_Sistema_2024-12.json |  |
+| xm:daily:PorcApor:Sistema:2019-07 | 200 | 2460 | 0.25 | tests/fixtures/xm/PorcApor_Sistema_2019-07.json |  |
+| xm:hourly:PrecBolsNaci:Sistema:recent | 200 | 16849 | 0.32 | tests/fixtures/xm/PrecBolsNaci_Sistema_recent.json |  |
+| xm:hourly:PrecBolsNaci:Sistema:2024-08 | 200 | 18441 | 0.29 | tests/fixtures/xm/PrecBolsNaci_Sistema_2024-08.json |  |
+| xm:hourly:PrecBolsNaci:Sistema:2024-09 | 200 | 17875 | 0.28 | tests/fixtures/xm/PrecBolsNaci_Sistema_2024-09.json |  |
+| xm:hourly:PrecBolsNaci:Sistema:2024-10 | 200 | 19026 | 0.3 | tests/fixtures/xm/PrecBolsNaci_Sistema_2024-10.json |  |
+| xm:hourly:PrecBolsNaci:Sistema:2024-11 | 200 | 18062 | 0.29 | tests/fixtures/xm/PrecBolsNaci_Sistema_2024-11.json |  |
+| xm:hourly:PrecBolsNaci:Sistema:2024-12 | 200 | 18511 | 0.3 | tests/fixtures/xm/PrecBolsNaci_Sistema_2024-12.json |  |
+| xm:hourly:PrecBolsNaci:Sistema:2019-07 | 200 | 18248 | 0.29 | tests/fixtures/xm/PrecBolsNaci_Sistema_2019-07.json |  |
+| xm:daily:PrecEscaAct:Sistema:recent | 200 | 2339 | 0.27 | tests/fixtures/xm/PrecEscaAct_Sistema_recent.json |  |
+| xm:daily:PrecEscaAct:Sistema:2024-08 | 200 | 2542 | 0.24 | tests/fixtures/xm/PrecEscaAct_Sistema_2024-08.json |  |
+| xm:daily:PrecEscaAct:Sistema:2024-09 | 200 | 2465 | 0.25 | tests/fixtures/xm/PrecEscaAct_Sistema_2024-09.json |  |
+| xm:daily:PrecEscaAct:Sistema:2024-10 | 200 | 2542 | 0.25 | tests/fixtures/xm/PrecEscaAct_Sistema_2024-10.json |  |
+| xm:daily:PrecEscaAct:Sistema:2024-11 | 200 | 2465 | 0.25 | tests/fixtures/xm/PrecEscaAct_Sistema_2024-11.json |  |
+| xm:daily:PrecEscaAct:Sistema:2024-12 | 200 | 2542 | 0.25 | tests/fixtures/xm/PrecEscaAct_Sistema_2024-12.json |  |
+| xm:daily:PrecEscaAct:Sistema:2019-07 | 200 | 2542 | 0.25 | tests/fixtures/xm/PrecEscaAct_Sistema_2019-07.json |  |
+| xm:daily:DemaSIN:Sistema:recent | 200 | 2548 | 0.27 | tests/fixtures/xm/DemaSIN_Sistema_recent.json |  |
+| xm:daily:DemaSIN:Sistema:2024-08 | 200 | 2717 | 0.34 | tests/fixtures/xm/DemaSIN_Sistema_2024-08.json |  |
+| xm:daily:DemaSIN:Sistema:2024-09 | 200 | 2634 | 0.35 | tests/fixtures/xm/DemaSIN_Sistema_2024-09.json |  |
+| xm:daily:DemaSIN:Sistema:2024-10 | 200 | 2717 | 0.26 | tests/fixtures/xm/DemaSIN_Sistema_2024-10.json |  |
+| xm:daily:DemaSIN:Sistema:2024-11 | 200 | 2634 | 0.28 | tests/fixtures/xm/DemaSIN_Sistema_2024-11.json |  |
+| xm:daily:DemaSIN:Sistema:2024-12 | 200 | 2717 | 0.26 | tests/fixtures/xm/DemaSIN_Sistema_2024-12.json |  |
+| xm:daily:DemaSIN:Sistema:2019-07 | 200 | 2717 | 0.27 | tests/fixtures/xm/DemaSIN_Sistema_2019-07.json |  |
+| xm:hourly:ImpoMoneda:Enlace:recent | 200 | 6030 | 0.29 | tests/fixtures/xm/ImpoMoneda_Enlace_recent.json |  |
+| xm:hourly:ImpoMoneda:Enlace:2024-10 | 200 | 13595 | 0.28 | tests/fixtures/xm/ImpoMoneda_Enlace_2024-10.json |  |
+| xm:hourly:ExpoMoneda:Enlace:recent | 200 | 17132 | 0.31 | tests/fixtures/xm/ExpoMoneda_Enlace_recent.json |  |
+| xm:hourly:ExpoMoneda:Enlace:2024-10 | 200 | 17616 | 0.26 | tests/fixtures/xm/ExpoMoneda_Enlace_2024-10.json |  |
+| xm:hourly:CompBolsaTIEEner:Agente:recent | 200 | 14263 | 0.44 | tests/fixtures/xm/CompBolsaTIEEner_Agente_recent.json |  |
+| xm:hourly:CompBolsaTIEEner:Agente:2024-10 | 200 | 14909 | 0.35 | tests/fixtures/xm/CompBolsaTIEEner_Agente_2024-10.json |  |
+| xm:hourly:VentBolsaTIEEner:Agente:recent | 200 | 60876 | 0.48 | tests/fixtures/xm/VentBolsaTIEEner_Agente_recent.json |  |
+| xm:hourly:VentBolsaTIEEner:Agente:2024-10 | 200 | 54533 | 0.32 | tests/fixtures/xm/VentBolsaTIEEner_Agente_2024-10.json |  |
+| robots:www.simem.co | 404 | 0 |  | robots/www.simem.co.txt |  |
+| simem:catalog | 200 | 201959 | 38.86 | tests/fixtures/xm/simem/catalog_e007fb.json |  |
+| simem:detail:b9f2ec | 200 | 2369 | 20.94 | tests/fixtures/xm/simem/detail_b9f2ec.json |  |
+| simem:b9f2ec:recent | 200 | 6914 | 3.28 | tests/fixtures/xm/simem/b9f2ec_recent.json |  |
+| simem:b9f2ec:2024-10 | 200 | 12427 | 3.9 | tests/fixtures/xm/simem/b9f2ec_2024-10.json |  |
+| simem:b9f2ec:2019-07 | 200 | 12646 | 3.62 | tests/fixtures/xm/simem/b9f2ec_2019-07.json |  |
+| simem:detail:7f16cb | 200 | 2410 | 21.61 | tests/fixtures/xm/simem/detail_7f16cb.json |  |
+| simem:7f16cb:recent | 200 | 13617 | 10.06 | tests/fixtures/xm/simem/7f16cb_recent.json |  |
+| simem:7f16cb:2024-10 | 200 | 12684 | 4.86 | tests/fixtures/xm/simem/7f16cb_2024-10.json |  |
+| simem:7f16cb:2019-07 | 200 | 12643 | 4.81 | tests/fixtures/xm/simem/7f16cb_2019-07.json |  |
+| simem:detail:860c86 | 200 | 1011 | 0.71 | tests/fixtures/xm/simem/detail_860c86.json |  |
+| simem:860c86:recent | 200 | 997 | 0.82 | tests/fixtures/xm/simem/860c86_recent.json |  |
+| simem:860c86:2024-10 | 200 | 2919671 | 2.22 | capture-only (2919671 B raw, 2189864 B gz) |  |
+| simem:860c86:2019-07 | 200 | 997 | 0.77 | tests/fixtures/xm/simem/860c86_2019-07.json |  |
+| simem:detail:CDD16E | 200 | 2219 | 10.35 | tests/fixtures/xm/simem/detail_CDD16E.json |  |
+| simem:CDD16E:recent | 200 | 758279 | 3.56 | tests/fixtures/xm/simem/CDD16E_recent.json.gz |  |
+| simem:CDD16E:2024-10 | 200 | 7082724 | 4.22 | tests/fixtures/xm/simem/CDD16E_2024-10.json.gz |  |
+| simem:CDD16E:2019-07 | 200 | 2215 | 3.19 | tests/fixtures/xm/simem/CDD16E_2019-07.json |  |
+| simem:detail:C35A63 | 200 | 1918 | 21.88 | tests/fixtures/xm/simem/detail_C35A63.json |  |
+| simem:C35A63:recent | 200 | 206777 | 6.18 | tests/fixtures/xm/simem/C35A63_recent.json |  |
+| simem:C35A63:2024-10 | 200 | 2022617 | 5.59 | tests/fixtures/xm/simem/C35A63_2024-10.json.gz |  |
+| simem:C35A63:2019-07 | 200 | 290585 | 5.51 | tests/fixtures/xm/simem/C35A63_2019-07.json |  |
+| simem:detail:31E0AF | 200 | 1545 | 9.64 | tests/fixtures/xm/simem/detail_31E0AF.json |  |
+| simem:31E0AF:recent | 200 | 4906 | 2.53 | tests/fixtures/xm/simem/31E0AF_recent.json |  |
+| simem:31E0AF:2024-10 | 200 | 11026 | 2.87 | tests/fixtures/xm/simem/31E0AF_2024-10.json |  |
+| simem:31E0AF:2019-07 | 200 | 1541 | 2.25 | tests/fixtures/xm/simem/31E0AF_2019-07.json |  |
+| simem:detail:4A17B1 | 200 | 2300 | 3.78 | tests/fixtures/xm/simem/detail_4A17B1.json |  |
+| simem:4A17B1:recent | 200 | 2296 | 1.25 | tests/fixtures/xm/simem/4A17B1_recent.json |  |
+| simem:4A17B1:2024-10 | 200 | 28601 | 1.52 | tests/fixtures/xm/simem/4A17B1_2024-10.json |  |
+| simem:4A17B1:2019-07 | 200 | 2296 | 1.48 | tests/fixtures/xm/simem/4A17B1_2019-07.json |  |
+| simem:detail:842296 | 200 | 2242 | 4.16 | tests/fixtures/xm/simem/detail_842296.json |  |
+| simem:842296:recent | 200 | 2238 | 1.83 | tests/fixtures/xm/simem/842296_recent.json |  |
+| simem:842296:2024-10 | 200 | 75539 | 1.93 | tests/fixtures/xm/simem/842296_2024-10.json |  |
+| simem:842296:2019-07 | 200 | 2238 | 2.06 | tests/fixtures/xm/simem/842296_2019-07.json |  |
+| simem:detail:1088a6 | 200 | 2910 | 4.85 | tests/fixtures/xm/simem/detail_1088a6.json |  |
+| simem:1088a6:recent | 200 | 109790023 | 11.79 | capture-only (109790023 B raw, 4503299 B gz) |  |
+| simem:1088a6:2024 | 200 | 77872584 | 9.17 | capture-only (77872584 B raw, 3367037 B gz) |  |
+| simem:detail:8d3ccd | 200 | 2401 | 5.85 | tests/fixtures/xm/simem/detail_8d3ccd.json |  |
+| simem:8d3ccd:recent | 200 | 532871 | 2.38 | tests/fixtures/xm/simem/8d3ccd_recent.json.gz |  |
+| simem:8d3ccd:2024-10 | 200 | 912338 | 2.74 | tests/fixtures/xm/simem/8d3ccd_2024-10.json.gz |  |
+| simem:8d3ccd:2019-07 | 200 | 2397 | 1.96 | tests/fixtures/xm/simem/8d3ccd_2019-07.json |  |
 
 ## 2. robots.txt verdicts
 
 | url | allowed | detail |
 |---|---|---|
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValues | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValues | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/ | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/ | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/metadata-catalog/ | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/metadata-catalog/sardomcsr/ | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/ | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/open-api-catalog/sardomcsr/ | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/open-api-catalog/sardomcsr/ | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/open-api-catalog/sardommaz/ | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/open-api-catalog/sardommol/ | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/open-api-catalog/sardomsop/ | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/open-api-catalog/sardommsf/ | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/open-api-catalog/sardomago/ | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/open-api-catalog/sardomman/ | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/open-api-catalog/sardomccs/ | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaNivQIng | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaPotQTurb | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaHid12m | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaEner12m | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaEnerAyerHoy | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaRegAyer | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/csrEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/csrEnerMes | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/csrEstUnidades | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/csrProdLinea | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/csrProdLineaEnerAll | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/csrProdLineaEnerDay | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/csrProdLineaLast2h | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/csrCaudCuenMesAvg | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaVolAlm | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardommaz/mazEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardommaz/mazEnerMes | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardommol/molEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardommol/molEnerMes | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomsop/sopEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomsop/sopEnerMes | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardommsf/msfEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardommsf/msfEnerMes | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomago/agoEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomago/agoEnerMes | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomman/manEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomman/manEnerMes | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomccs/ccsEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomccs/ccsEnerMes | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaHid12m | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaHid12m | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaHid12m | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaHid12m | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaHid12m | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaHid12m | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaHid12m | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaHid12m | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaEner12m | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaEner12m | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaEner12m | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaEner12m | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaEner12m | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaEner12m | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaNivQIng | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaNivQIng | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaNivQIng | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaNivQIng | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaPotQTurb | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaPotQTurb | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaPotQTurb | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaPotQTurb | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaEnerAyerHoy | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaEnerAyerHoy | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaEnerAyerHoy | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaEnerAyerHoy | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaRegAyer | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaRegAyer | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaRegAyer | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaRegAyer | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardommaz/mazEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardommaz/mazEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardommaz/mazEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardommol/molEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardommol/molEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardommol/molEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomsop/sopEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomsop/sopEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomsop/sopEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardommsf/msfEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardommsf/msfEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardommsf/msfEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomago/agoEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomago/agoEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomago/agoEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomman/manEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomman/manEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomman/manEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomccs/ccsEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomccs/ccsEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomccs/ccsEnerDia | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/repDiaVolAlm | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/csrCaudCuenAniosAvg | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/pointValuesMesH24 | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec/graficasproduccionCELEC/ | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec/graficasproduccionCELEC/runtime-es2015.17457c14264390561f33.js | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec/graficasproduccionCELEC/runtime-es5.17457c14264390561f33.js | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec/graficasproduccionCELEC/polyfills-es5.1460e12205482c371a4c.js | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec/graficasproduccionCELEC/polyfills-es2015.c8d9fd53a40f4ff61e6e.js | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec/graficasproduccionCELEC/scripts.d5cb97c61d24c303c034.js | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec/graficasproduccionCELEC/main-es2015.bb8d1c1f9fb35745e7e5.js | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec/graficasproduccionCELEC/main-es5.bb8d1c1f9fb35745e7e5.js | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec/graficasproduccion/ | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec/graficasproduccion/runtime-es2015.1eba213af0b233498d9d.js | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec/graficasproduccion/runtime-es5.1eba213af0b233498d9d.js | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec/graficasproduccion/polyfills-es5.84963675a8c97dd2bc1e.js | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec/graficasproduccion/polyfills-es2015.e4277e903aed07751db3.js | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec/graficasproduccion/scripts.d5cb97c61d24c303c034.js | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec/graficasproduccion/main-es2015.3f8644f615fd6faf6b00.js | True | no robots.txt |
-| https://generacioncsr.celec.gob.ec/graficasproduccion/main-es5.3f8644f615fd6faf6b00.js | True | no robots.txt |
-| https://smec.cenace.gob.ec/SMEC/ResultadoInforme1.do | True | no robots.txt |
-| https://smec.cenace.gob.ec/SMEC/ResultadoInforme1.do | True | no robots.txt |
-| https://smec.cenace.gob.ec/SMEC/ResultadoInforme1.do | True | no robots.txt |
-| https://smec.cenace.gob.ec/SMEC/ResultadoInforme1.do | True | no robots.txt |
-| https://smec.cenace.gob.ec/SMEC/ResultadoInforme1.do | True | no robots.txt |
-| https://smec.cenace.gob.ec/SMEC/ResultadoInforme1.do | True | no robots.txt |
-| https://smec.cenace.gob.ec/SMEC/ResultadoInforme1.do | True | no robots.txt |
-| https://smec.cenace.gob.ec/SMEC/ResultadoInforme1.do | True | no robots.txt |
-| https://smec.cenace.gob.ec/SMEC/ResultadoInforme1.do | True | no robots.txt |
-| https://smec.cenace.gob.ec/SMEC/ResultadoInforme1.do | True | no robots.txt |
-| https://smec.cenace.gob.ec/SMEC/ResultadoInforme1.do | True | no robots.txt |
-| https://smec.cenace.gob.ec/SMEC/ResultadoInforme1.do | True | no robots.txt |
-| https://smec.cenace.gob.ec/SMEC/ResultadoInforme1.do | True | no robots.txt |
-| https://smec.cenace.gob.ec/SMEC/ResultadoInforme2.do | True | no robots.txt |
-| https://smec.cenace.gob.ec/SMEC/ResultadoInforme3.do | True | no robots.txt |
-| https://smec.cenace.gob.ec/SMEC/ResultadoInforme4.do | True | no robots.txt |
-| https://smec.cenace.gob.ec/SMEC/ResultadoInforme5.do | True | no robots.txt |
-| https://smec.cenace.gob.ec/SMEC/ResultadoInforme6.do | True | no robots.txt |
-| https://smec.cenace.gob.ec/SMEC/ResultadoInforme7.do | True | no robots.txt |
-| https://smec.cenace.gob.ec/SMEC/ResultadoInforme8.do | True | no robots.txt |
-| https://smec.cenace.gob.ec/SMEC/ResultadoInforme9.do | True | no robots.txt |
-| https://smec.cenace.gob.ec/SMEC/ResultadoInforme10.do | True | no robots.txt |
-| https://smec.cenace.gob.ec/SMEC/ResultadoInforme11.do | True | no robots.txt |
-| https://smec.cenace.gob.ec/SMEC/ResultadoInforme12.do | True | no robots.txt |
-| https://smec.cenace.gob.ec/SMEC/ | True | no robots.txt |
-| https://smec.cenace.gob.ec/ | True | no robots.txt |
-| https://smec.cenace.gob.ec/SMEC/index.jsp | True | no robots.txt |
-| https://smec.cenace.gob.ec/SMEC/Menu.do | True | no robots.txt |
-| https://www.cenace.gob.ec/info-operativa/InformacionOperativa.htm | True | can_fetch(ua)=True can_fetch(*)=True |
-| https://psl.noaa.gov/data/correlation/oni.data | True | no robots.txt |
-| https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt | True | no robots.txt |
-| https://raw.githubusercontent.com/jordanvt18/cotas-embalses-ecuador/main/docs/estado.json | True | no robots.txt |
-| https://raw.githubusercontent.com/tefaceli/scraper-mazar/main/data/historico.json | True | no robots.txt |
-| https://raw.githubusercontent.com/tefaceli/scraper-mazar/main/data/en_vivo.json | True | no robots.txt |
-| https://www.datosabiertos.gob.ec/api/3/action/package_search?fq=organization:cenace&rows=100 | True | no robots.txt |
-| https://datosabiertos.gob.ec/api/3/action/package_search?fq=organization:cenace&rows=100 | True | no robots.txt |
-| https://www.datosabiertos.gob.ec/api/3/action/package_search?q=balance%20nacional%20energia%20electrica&rows=20 | True | no robots.txt |
-| https://www.datosabiertos.gob.ec/dataset/http-portalsimem-cenace-corp | True | no robots.txt |
-| https://www.controlrecursosyenergia.gob.ec/balance-nacional-de-energia-electrica/ | True | no robots.txt |
-| https://arconel.gob.ec/balance-nacional-de-energia-electrica/ | True | can_fetch(ua)=True can_fetch(*)=True |
+| https://servapibi.xm.com.co/lists | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/daily | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://servapibi.xm.com.co/hourly | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/detalle-datos-publicos | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/detalle-datos-publicos | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/detalle-datos-publicos | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/detalle-datos-publicos | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/detalle-datos-publicos | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/detalle-datos-publicos | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/detalle-datos-publicos | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/detalle-datos-publicos | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/detalle-datos-publicos | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/detalle-datos-publicos | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
+| https://www.simem.co/backend-files/api/PublicData | True | no robots.txt |
 
 ## 3. TLS
 
@@ -992,6 +1106,324 @@ File links:
 | tefaceli_historico | 200 | 9867 |
 | tefaceli_en_vivo | 200 | 81 |
 
+## 10a. XM (Colombia): export availability to Ecuador
+
+Contract (official client EquipoAnaliticaXM/API_XM, `pydataxm/pydataxm.py` + README): `POST https://servapibi.xm.com.co/{hourly,daily,monthly,lists}` with JSON `{MetricId, StartDate, EndDate (YYYY-MM-DD), Entity, Filter}`; inventory `POST /lists {"MetricId": "ListadoMetricas"}`; hourly/daily at most 30 days per call, requested here in calendar months as the client does. Raw answers in `tests/fixtures/xm/`.
+
+Windows: recent 2026-08-23→2026-09-21, 2024-08 2024-08-01→2024-08-31, 2024-09 2024-09-01→2024-09-30, 2024-10 2024-10-01→2024-10-31, 2024-11 2024-11-01→2024-11-30, 2024-12 2024-12-01→2024-12-31, 2019-07 2019-07-01→2019-07-31
+
+### Metric inventory (ListadoMetricas)
+
+| path | status | bytes | content-type | error |
+|---|---|---|---|---|
+| lists | 200 | 84852 | application/json; charset=utf-8 |  |
+
+Rows: **193**, metrics: 142, types: DailyEntities, HourlyEntities, ListsEntities, MonthlyEntities, entities: Agente, Area, CIIU, Combustible, Embalse, Enlace, MercadoComercializacion, Recurso, RecursoComb, Rio, Sistema, SubArea, Subarea
+
+Candidates **not** in the live catalog: none (or no catalog) · extra exchange rows fetched: ImpoMoneda/Enlace, ExpoMoneda/Enlace, CompBolsaTIEEner/Agente, VentBolsaTIEEner/Agente
+
+<details><summary>Catalog rows on exchanges, storage, inflows, scarcity</summary>
+
+| MetricId | Entity | MaxDays | Type | unit | filter | name | description |
+|---|---|---|---|---|---|---|---|
+| ExpoMoneda | Sistema | 31 | HourlyEntities | COP | No aplica | Exportaciones Moneda por Sistema | Transferencias de Energia desde Colombia hacia otros paises |
+| ImpoEner | Sistema | 31 | HourlyEntities | kWh | No aplica | Importaciones Energía por Sistema | Transferencias de Energia desde otros paises para abastecer la demanda nacional |
+| ImpoEner | Enlace | 31 | HourlyEntities | kWh | No aplica | Importaciones Energía | Transferencias de Energia desde otros paises para abastecer la demanda nacional |
+| ImpoMoneda | Enlace | 31 | HourlyEntities | COP | No aplica | Importaciones Moneda | Transferencias de Energia desde otros paises para abastecer la demanda nacional |
+| ExpoEner | Enlace | 31 | HourlyEntities | kWh | No aplica | Exportaciones Energía | Transferencias de Energia desde Colombia hacia otros paises |
+| ExpoMoneda | Enlace | 31 | HourlyEntities | COP | No aplica | Exportaciones Moneda | Transferencias de Energia desde Colombia hacia otros paises |
+| ExpoEner | Sistema | 31 | HourlyEntities | kWh | No aplica | Exportaciones Energía por Sistema | Transferencias de Energia desde Colombia hacia otros paises |
+| SnTIEMerito | Sistema | 31 | HourlyEntities | COP | No aplica | Saldo Neto TIE Merito por Sistema | Corresponde a los valores netos deficitarios o superavitarios resultantes del ajuste final de Transacciones Internacionales de Electricidad de acuerdo con lo de |
+| SnTIEFueraMerito | Sistema | 31 | HourlyEntities | COP | No aplica | Saldo Neto TIE Fuera Merito por Sistema | Corresponde a los valores netos deficitarios o superavitarios resultantes del ajuste final de Transacciones Internacionales de Electricidad de acuerdo con lo de |
+| CompBolsaTIEEner | Sistema | 31 | HourlyEntities | kWh | No aplica | Compras Bolsa TIE Energía por Sistema | Energía comprada en la Bolsa de Energía para atender la demanda TIE |
+| CompBolsaIntEner | Sistema | 31 | HourlyEntities | kWh | No aplica | Compras Bolsa Internacional Energía por Sistema | Energía comprada en la Bolsa para atender la demanda internacional, es decir, las exportaciones a Venezuela. La interconexión con Venezuela se hace a través de  |
+| VentBolsaTIEEner | Sistema | 31 | HourlyEntities | kWh | No aplica | Ventas Bolsa TIE Energía por Sistema | Energía comprada en la Bolsa de Energía para atender la demanda TIE |
+| VentBolsaIntEner | Sistema | 31 | HourlyEntities | kWh | No aplica | Ventas Bolsa Internacional Energía por Sistema | Energía vendida en la Bolsa de Energía para atender la demanda internacional. |
+| CompBolsaTIEEner | Agente | 31 | HourlyEntities | kWh | Codigo Agente | Compras Bolsa TIE Energía por Agente | Energía comprada en la Bolsa de Energía para atender la demanda TIE |
+| CompBolsaIntEner | Agente | 31 | HourlyEntities | kWh | Codigo Agente | Compras Bolsa Internacional Energía por Agente | Energía comprada en la Bolsa para atender la demanda internacional, es decir, las exportaciones a Venezuela. La interconexión con Venezuela se hace a través de  |
+| VentBolsaTIEEner | Agente | 31 | HourlyEntities | kWh | Codigo Agente | Ventas Bolsa TIE Energía por Agente | Energía comprada en la Bolsa de Energía para atender la demanda TIE |
+| VentBolsaIntEner | Agente | 31 | HourlyEntities | kWh | Codigo Agente | Ventas Bolsa Internacional Energía por Agente | Energía vendida en la Bolsa de Energía para atender la demanda internacional. |
+| CompBolsaTIEMoneda | Agente | 31 | HourlyEntities | COP | Codigo Agente | Compras Bolsa TIE Moneda por Agente | Energía comprada en la Bolsa de Energía para atender la demanda TIE |
+| CompBolsaIntMoneda | Agente | 31 | HourlyEntities | COP | Codigo Agente | Compras Bolsa Internacional Moneda por Agente | Energía comprada en la Bolsa para atender la demanda internacional, es decir, las exportaciones a Venezuela. La interconexión con Venezuela se hace a través de  |
+| VentBolsaTIEMoneda | Agente | 31 | HourlyEntities | COP | Codigo Agente | Ventas Bolsa TIE Moneda por Agente | Energía comprada en la Bolsa de Energía para atender la demanda TIE |
+| VentBolsaIntMoneda | Agente | 31 | HourlyEntities | COP | Codigo Agente | Ventas Bolsa Internacional Moneda por Agente | Energía vendida en la Bolsa de Energía para atender la demanda internacional. |
+| CompBolsaTIEMoneda | Sistema | 31 | HourlyEntities | COP | No aplica | Compras Bolsa TIE Moneda por Sistema | Energía comprada en la Bolsa de Energía para atender la demanda TIE |
+| CompBolsaIntMoneda | Sistema | 31 | HourlyEntities | COP | No aplica | Compras Bolsa Internacional Moneda por Sistema | Energía comprada en la Bolsa para atender la demanda internacional, es decir, las exportaciones a Venezuela. La interconexión con Venezuela se hace a través de  |
+| VentBolsaTIEMoneda | Sistema | 31 | HourlyEntities | COP | No aplica | Ventas Bolsa TIE Moneda por Sistema | Energía comprada en la Bolsa de Energía para atender la demanda TIE |
+| VentBolsaIntMoneda | Sistema | 31 | HourlyEntities | COP | No aplica | Ventas Bolsa Internacional Moneda por Sistema | Energía vendida en la Bolsa de Energía para atender la demanda internacional. |
+| ImportMonedaCOP | Sistema | 31 | HourlyEntities | COP | No aplica | Importaciones Moneda COP por Sistema | Transferencias de Energia desde otros paises para abastecer la demanda nacional |
+| ExportMonedaUSD | Sistema | 31 | HourlyEntities | COP | No aplica | Exportaciones Moneda USD por Sistema | Transferencias de Energia desde Colombia hacia otros paises |
+| ImportMonedaUSD | Sistema | 31 | HourlyEntities | COP | No aplica | Importaciones Moneda USD por Sistema | Transferencias de Energia desde otros paises para abastecer la demanda nacional |
+| AporEner | Sistema | 31 | DailyEntities | kWh | No aplica | Aportes  Energía por Sistema | Caudales en energia de los rios que aportan agua a algun embalse del SIN |
+| VoluUtilDiarEner | Sistema | 31 | DailyEntities | kWh | No aplica | Volumen Útil diario Energía por Sistema | Volumen almacenado por encima del Nivel Minimo Tecnico, reportado diariamente por los agentes. En % corresponde a la relacion entre el Volumen Util Diario y la  |
+| PrecEscaAct | Sistema | 31 | DailyEntities | COP/kWh | No aplica | Precio Escasez Activación por Sistema | Precio de Escasez de Activación calculado de acuerdo con la Resolución CREG 140 del 2017 |
+| PrecEsca | Sistema | 31 | DailyEntities | COP/kWh | No aplica | Precio Escasez por Sistema | Establecido por la CREG- y actualizado mensualmente con base en la variación de un índice de precios de combustibles, tiene una doble función. Por una parte ind |
+| PrecEscaMarg | Sistema | 31 | DailyEntities | COP/kWh | No aplica | Precio Marginal Escasez por Sistema | Precio Marginal de Escasez calculado de acuerdo con la Resolución CREG 140 del 2017 |
+| PrecEscaSup | Sistema | 31 | DailyEntities | COP/kWh | No aplica | Precio Escasez Superior | Precio de Escasez Superior |
+| PrecEscaInf | Sistema | 31 | DailyEntities | COP/kWh | No aplica | Precio Escasez Inferior | Precio de Escasez Inferior |
+| DemaSIN | Sistema | 31 | DailyEntities | kWh | No aplica | Demanda Energia SIN por Sistema | Demanda del SIN, la cual se calcula con base en la generacion neta de las plantas e incluye: hidraulicas, termicas, plantas menores, cogeneradores , solares, eo |
+| AporEnerMediHist | Sistema | 31 | DailyEntities | kWh | No aplica | Aportes Media Histórica Energía por Sistema | Caudal medio mensual histórico en energia para los rios del SIN, obtenido como el promedio de los valores de cada mes para todos años con información disponible |
+| CapaUtilDiarEner | Sistema | 31 | DailyEntities | kWh | No aplica | Capacidad Útil Energía por Sistema | Corresponde al Volumen Útil del Embalse, que se define como el volumen almacenado entre el nivel Mínimo Técnico y el Nivel Máximo Físico |
+| VoluUtilDiarEner | Embalse | 31 | DailyEntities | kWh | Nombre Embalse | Volumen Útil diario Energía por Embalse | Volumen almacenado por encima del Nivel Minimo Tecnico, reportado diariamente por los agentes. En % corresponde a la relacion entre el Volumen Util Diario y la  |
+| CapaUtilDiarEner | Embalse | 31 | DailyEntities | kWh | Nombre Embalse | Capacidad Útil Energía por Embalse | Corresponde al Volumen Útil del Embalse, que se define como el volumen almacenado entre el nivel Mínimo Técnico y el Nivel Máximo Físico |
+| AporEner | Rio | 31 | DailyEntities | kWh | Nombre Río | Aportes  Energía por Rio | Caudales en energia de los rios que aportan agua a algun embalse del SIN |
+| AporEnerMediHist | Rio | 31 | DailyEntities | kWh | Nombre Río | Aportes Media Histórica Energía por Rio | Caudal medio mensual histórico en energia para los rios del SIN, obtenido como el promedio de los valores de cada mes para todos años con información disponible |
+| VoluUtilDiarMasa | Embalse | 31 | DailyEntities | m3 | Nombre Embalse | Volumen Útil diario por Embalse | Definida como el volumen almacenado en el embalse por encima del Nivel Mínimo Técnico, inició su declaración diaria por parte de los agentes hidráulicos del mer |
+| AporCaudal | Rio | 31 | DailyEntities | m3/s | Nombre Río | Aportes Caudal por Rio | Valores de la hidrologia de los caudales de los rios del SIN, en metros cubicos por segundo |
+| AporCaudalMediHist | Rio | 31 | DailyEntities | m3/s | Nombre Río | Aportes Media Histórica Caudal por Rio | Caudal medio mensual histórico para los rios del SIN, obtenido como el promedio de los valores de cada mes para todos años con información disponibles |
+| CapaUtilDiarMasa | Embalse | 31 | DailyEntities | m3 | Nombre Embalse | Capacidad Útil Volumen por Embalse | Corresponde al Volumen Útil del Embalse, que se define como el volumen almacenado entre el nivel Mínimo Técnico y el Nivel Máximo Físico |
+| CapaUtilDiarMasa | Sistema | 31 | DailyEntities | m3 | No aplica | Capacidad Útil Volumen por Sistema | Corresponde al Volumen Útil del Embalse, que se define como el volumen almacenado entre el nivel Mínimo Técnico y el Nivel Máximo Físico |
+| PorcVoluUtilDiar | Sistema | 31 | DailyEntities | % | No aplica | Volumen Útil  diario % por Sistema | Porcentaje de llenado del area util de un embalse (Volumen almacenado por encima del Nivel Mínimo Técnico) |
+| PorcVoluUtilDiar | Embalse | 31 | DailyEntities | % | Nombre Embalse | Volumen Útil  diario % por Embalse | Porcentaje de llenado del area util de un embalse (Volumen almacenado por encima del Nivel Mínimo Técnico) |
+| PorcApor | Sistema | 31 | DailyEntities | % | No aplica | Aportes % por Sistema | Aportes naturales de los ríos que aportan agua a algún embalse del SIN, dividido por su media histórica calculado en porcentaje  |
+| PorcApor | Rio | 31 | DailyEntities | % | Nombre Río | Aportes % por Rio | Aportes naturales de los ríos que aportan agua a algún embalse del SIN, dividido por su media histórica calculado en porcentaje  |
+| PrecEscaPon | Sistema | 31 | DailyEntities | COP/kWh | No aplica | Precio Escasez Ponderado por Sistema | Precio Escasez Ponderado del Sistema calculado de acuerdo a la Resolución CREG 140 de 2017 |
+
+</details>
+
+### Requests
+
+| metric/entity | endpoint | window | status | error | days | codes | blank/cells | daily mean | GWh/day | daily min | daily max |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| ExpoEner/Sistema | hourly | recent | 200 |  | 28 | 1 | 69/672 | 3736830.794 | 3.737 | 16039.65 | 8572400.15 |
+| ExpoEner/Sistema | hourly | 2024-08 | 200 |  | 31 | 1 | 2/744 | 9125389.342 | 9.125 | 4208540.23 | 10887289.06 |
+| ExpoEner/Sistema | hourly | 2024-09 | 200 |  | 30 | 1 | 9/720 | 8179415.549 | 8.179 | 18805.4 | 10637505.44 |
+| ExpoEner/Sistema | hourly | 2024-10 | 200 |  | 31 | 1 | 231/744 | 178415.247 | 0.178 | 10643.37 | 4776137.13 |
+| ExpoEner/Sistema | hourly | 2024-11 | 200 |  | 30 | 1 | 130/720 | 4682819.838 | 4.683 | 7632.12 | 10842570.09 |
+| ExpoEner/Sistema | hourly | 2024-12 | 200 |  | 31 | 1 | 7/744 | 8277751.135 | 8.278 | 3591713.73 | 10453150.98 |
+| ExpoEner/Sistema | hourly | 2019-07 | 200 |  | 18 | 1 | 295/432 | 243267.369 | 0.243 | 489.67999999999995 | 1435107.01 |
+| ExpoEner/Enlace | hourly | recent | 200 |  | 28 | 1 | 69/672 | 3736830.794 | 3.737 | 16039.65 | 8572400.15 |
+| ExpoEner/Enlace | hourly | 2024-08 | 200 |  | 39 | 2 | 29/936 |  |  |  |  |
+| ExpoEner/Enlace | hourly | 2024-09 | 200 |  | 60 | 2 | 339/1440 |  |  |  |  |
+| ExpoEner/Enlace | hourly | 2024-10 | 200 |  | 33 | 2 | 266/792 |  |  |  |  |
+| ExpoEner/Enlace | hourly | 2024-11 | 200 |  | 31 | 2 | 146/744 |  |  |  |  |
+| ExpoEner/Enlace | hourly | 2024-12 | 200 |  | 42 | 2 | 55/1008 |  |  |  |  |
+| ExpoEner/Enlace | hourly | 2019-07 | 200 |  | 18 | 1 | 295/432 | 243267.369 | 0.243 | 489.67999999999995 | 1435107.01 |
+| ImpoEner/Sistema | hourly | recent | 200 |  | 14 | 1 | 267/336 | 5902.201 | 0.006 | 121.32 | 19176.42 |
+| ImpoEner/Sistema | hourly | 2024-08 | 200 |  | 2 | 1 | 46/48 | 734.975 | 0.001 | 553.2 | 916.75 |
+| ImpoEner/Sistema | hourly | 2024-09 | 200 |  | 1 | 1 | 15/24 | 9394.18 | 0.009 | 9394.18 | 9394.18 |
+| ImpoEner/Sistema | hourly | 2024-10 | 200 |  | 30 | 1 | 489/720 | 8455.594 | 0.008 | 1599.01 | 21657.29 |
+| ImpoEner/Sistema | hourly | 2024-11 | 200 |  | 16 | 1 | 254/384 | 9220.662 | 0.009 | 1572.54 | 26487.84 |
+| ImpoEner/Sistema | hourly | 2024-12 | 200 |  | 2 | 1 | 41/48 | 3084.38 | 0.003 | 810.2900000000001 | 5358.47 |
+| ImpoEner/Sistema | hourly | 2019-07 | 200 |  | 31 | 1 | 137/744 | 3674306.649 | 3.674 | 250558.16999999998 | 7332588.37 |
+| ImpoEner/Enlace | hourly | recent | 200 |  | 14 | 1 | 267/336 | 5902.201 | 0.006 | 121.32 | 19176.42 |
+| ImpoEner/Enlace | hourly | 2024-08 | 200 |  | 2 | 1 | 46/48 | 734.975 | 0.001 | 553.2 | 916.75 |
+| ImpoEner/Enlace | hourly | 2024-09 | 200 |  | 1 | 1 | 15/24 | 9394.18 | 0.009 | 9394.18 | 9394.18 |
+| ImpoEner/Enlace | hourly | 2024-10 | 200 |  | 30 | 1 | 489/720 | 8455.594 | 0.008 | 1599.01 | 21657.29 |
+| ImpoEner/Enlace | hourly | 2024-11 | 200 |  | 16 | 1 | 254/384 | 9220.662 | 0.009 | 1572.54 | 26487.84 |
+| ImpoEner/Enlace | hourly | 2024-12 | 200 |  | 2 | 1 | 41/48 | 3084.38 | 0.003 | 810.2900000000001 | 5358.47 |
+| ImpoEner/Enlace | hourly | 2019-07 | 200 |  | 31 | 1 | 137/744 | 3674306.649 | 3.674 | 250558.16999999998 | 7332588.37 |
+| CompBolsaTIEEner/Sistema | hourly | recent | 200 |  | 26 | 1 | 59/624 | 4077154.504 | 4.077 | 16207.27 | 8698272.44 |
+| CompBolsaTIEEner/Sistema | hourly | 2024-08 | 200 |  | 31 | 1 | 2/744 | 9266360.52 | 9.266 | 4254586.29 | 11071926.39 |
+| CompBolsaTIEEner/Sistema | hourly | 2024-09 | 200 |  | 30 | 1 | 9/720 | 8312711.094 | 8.313 | 19080.55 | 10800855.65 |
+| CompBolsaTIEEner/Sistema | hourly | 2024-10 | 200 |  | 31 | 1 | 231/744 | 180929.272 | 0.181 | 10789.21 | 4843834.03 |
+| CompBolsaTIEEner/Sistema | hourly | 2024-11 | 200 |  | 30 | 1 | 130/720 | 4747191.835 | 4.747 | 7718.2300000000005 | 10988320.53 |
+| CompBolsaTIEEner/Sistema | hourly | 2024-12 | 200 |  | 31 | 1 | 7/744 | 8392019.582 | 8.392 | 3636944.38 | 10604880.59 |
+| CompBolsaTIEEner/Sistema | hourly | 2019-07 | 200 |  | 18 | 1 | 295/432 | 247542.062 | 0.248 | 498.15 | 1459754.22 |
+| VentBolsaTIEEner/Sistema | hourly | recent | 200 |  | 26 | 1 | 59/624 | 4077154.504 | 4.077 | 16207.27 | 8698272.44 |
+| VentBolsaTIEEner/Sistema | hourly | 2024-08 | 200 |  | 31 | 1 | 2/744 | 9266360.52 | 9.266 | 4254586.29 | 11071926.39 |
+| VentBolsaTIEEner/Sistema | hourly | 2024-09 | 200 |  | 30 | 1 | 9/720 | 8312711.094 | 8.313 | 19080.55 | 10800855.65 |
+| VentBolsaTIEEner/Sistema | hourly | 2024-10 | 200 |  | 31 | 1 | 231/744 | 180929.272 | 0.181 | 10789.21 | 4843834.03 |
+| VentBolsaTIEEner/Sistema | hourly | 2024-11 | 200 |  | 30 | 1 | 130/720 | 4747191.835 | 4.747 | 7718.2300000000005 | 10988320.53 |
+| VentBolsaTIEEner/Sistema | hourly | 2024-12 | 200 |  | 31 | 1 | 7/744 | 8392019.582 | 8.392 | 3636944.38 | 10604880.59 |
+| VentBolsaTIEEner/Sistema | hourly | 2019-07 | 200 |  | 18 | 1 | 295/432 | 247542.062 | 0.248 | 498.15 | 1459754.22 |
+| PorcVoluUtilDiar/Sistema | daily | recent | 200 |  | 30 | 1 | 0/30 | 0.79 |  | 0.77861 | 0.79924 |
+| PorcVoluUtilDiar/Sistema | daily | 2024-08 | 200 |  | 31 | 1 | 0/31 | 0.573 |  | 0.54517 | 0.5901 |
+| PorcVoluUtilDiar/Sistema | daily | 2024-09 | 200 |  | 30 | 1 | 0/30 | 0.516 |  | 0.49437 | 0.54532 |
+| PorcVoluUtilDiar/Sistema | daily | 2024-10 | 200 |  | 31 | 1 | 0/31 | 0.531 |  | 0.50353 | 0.55293 |
+| PorcVoluUtilDiar/Sistema | daily | 2024-11 | 200 |  | 30 | 1 | 0/30 | 0.626 |  | 0.55342 | 0.67145 |
+| PorcVoluUtilDiar/Sistema | daily | 2024-12 | 200 |  | 31 | 1 | 0/31 | 0.664 |  | 0.65458 | 0.68023 |
+| PorcVoluUtilDiar/Sistema | daily | 2019-07 | 200 |  | 31 | 1 | 0/31 | 0.729 |  | 0.71172 | 0.75355 |
+| VoluUtilDiarEner/Sistema | daily | recent | 200 |  | 30 | 1 | 0/30 | 13815284323.333 | 13815.284 | 13612601600.0 | 13984222800.0 |
+| VoluUtilDiarEner/Sistema | daily | 2024-08 | 200 |  | 31 | 1 | 0/31 | 9950324603.226 | 9950.325 | 9463121400.0 | 10243944900.0 |
+| VoluUtilDiarEner/Sistema | daily | 2024-09 | 200 |  | 30 | 1 | 0/30 | 8954693873.333 | 8954.694 | 8581586500.0 | 9465802900.0 |
+| VoluUtilDiarEner/Sistema | daily | 2024-10 | 200 |  | 31 | 1 | 0/31 | 9211870938.71 | 9211.871 | 8740533900.0 | 9598170500.0 |
+| VoluUtilDiarEner/Sistema | daily | 2024-11 | 200 |  | 30 | 1 | 0/30 | 10757279703.333 | 10757.280 | 9606651500.0 | 11527779700.0 |
+| VoluUtilDiarEner/Sistema | daily | 2024-12 | 200 |  | 31 | 1 | 0/31 | 11398401945.161 | 11398.402 | 11238017700.0 | 11678420700.0 |
+| VoluUtilDiarEner/Sistema | daily | 2019-07 | 200 |  | 31 | 1 | 0/31 | 12356332764.516 | 12356.333 | 12077571200.0 | 12787405300.0 |
+| CapaUtilDiarEner/Sistema | daily | recent | 200 |  | 30 | 1 | 0/30 | 17489195436.0 | 17489.195 | 17483245544.0 | 17496976064.0 |
+| CapaUtilDiarEner/Sistema | daily | 2024-08 | 200 |  | 31 | 1 | 0/31 | 17358380225.645 | 17358.380 | 17358205165.0 | 17359561885.0 |
+| CapaUtilDiarEner/Sistema | daily | 2024-09 | 200 |  | 30 | 1 | 0/30 | 17358505710.333 | 17358.506 | 17358205165.0 | 17358655983.0 |
+| CapaUtilDiarEner/Sistema | daily | 2024-10 | 200 |  | 31 | 1 | 0/31 | 17358655983.0 | 17358.656 | 17358655983.0 | 17358655983.0 |
+| CapaUtilDiarEner/Sistema | daily | 2024-11 | 200 |  | 30 | 1 | 0/30 | 17174316916.6 | 17174.317 | 17167219599.0 | 17358655983.0 |
+| CapaUtilDiarEner/Sistema | daily | 2024-12 | 200 |  | 31 | 1 | 0/31 | 17168413107.0 | 17168.413 | 17168413107.0 | 17168413107.0 |
+| CapaUtilDiarEner/Sistema | daily | 2019-07 | 200 |  | 31 | 1 | 0/31 | 16959038902.065 | 16959.039 | 16920877858.0 | 16969480496.0 |
+| AporEner/Sistema | daily | recent | 200 |  | 30 | 1 | 0/30 | 157227485.014 | 157.227 | 107513869.64 | 297238058.48 |
+| AporEner/Sistema | daily | 2024-08 | 200 |  | 31 | 1 | 0/31 | 145695722.581 | 145.696 | 94708600.0 | 217941800.0 |
+| AporEner/Sistema | daily | 2024-09 | 200 |  | 30 | 1 | 0/30 | 123329803.333 | 123.330 | 88334200.0 | 224118100.0 |
+| AporEner/Sistema | daily | 2024-10 | 200 |  | 31 | 1 | 0/31 | 154562809.677 | 154.563 | 108667400.0 | 251414500.0 |
+| AporEner/Sistema | daily | 2024-11 | 200 |  | 30 | 1 | 0/30 | 246481416.667 | 246.481 | 143955000.0 | 365055400.0 |
+| AporEner/Sistema | daily | 2024-12 | 200 |  | 31 | 1 | 0/31 | 146659245.161 | 146.659 | 109013100.0 | 209463300.0 |
+| AporEner/Sistema | daily | 2019-07 | 200 |  | 31 | 1 | 0/31 | 210509287.097 | 210.509 | 136799400.0 | 368347300.0 |
+| AporEnerMediHist/Sistema | daily | recent | 200 |  | 30 | 1 | 0/30 | 211987000.0 | 211.987 | 208780000.0 | 219470000.0 |
+| AporEnerMediHist/Sistema | daily | 2024-08 | 200 |  | 31 | 1 | 0/31 | 223310000.0 | 223.310 | 223310000.0 | 223310000.0 |
+| AporEnerMediHist/Sistema | daily | 2024-09 | 200 |  | 30 | 1 | 0/30 | 211820000.0 | 211.820 | 211820000.0 | 211820000.0 |
+| AporEnerMediHist/Sistema | daily | 2024-10 | 200 |  | 31 | 1 | 0/31 | 250190000.0 | 250.190 | 250190000.0 | 250190000.0 |
+| AporEnerMediHist/Sistema | daily | 2024-11 | 200 |  | 30 | 1 | 0/30 | 274140000.0 | 274.140 | 274140000.0 | 274140000.0 |
+| AporEnerMediHist/Sistema | daily | 2024-12 | 200 |  | 31 | 1 | 0/31 | 200930000.0 | 200.930 | 200930000.0 | 200930000.0 |
+| AporEnerMediHist/Sistema | daily | 2019-07 | 200 |  | 31 | 1 | 0/31 | 218130000.0 | 218.130 | 218130000.0 | 218130000.0 |
+| PorcApor/Sistema | daily | recent | 200 |  | 30 | 1 | 0/30 | 0.74 |  | 0.51496 | 1.42369 |
+| PorcApor/Sistema | daily | 2024-08 | 200 |  | 31 | 1 | 0/31 | 0.652 |  | 0.42411 | 0.97596 |
+| PorcApor/Sistema | daily | 2024-09 | 200 |  | 30 | 1 | 0/30 | 0.582 |  | 0.41702 | 1.05806 |
+| PorcApor/Sistema | daily | 2024-10 | 200 |  | 31 | 1 | 0/31 | 0.618 |  | 0.43434 | 1.00489 |
+| PorcApor/Sistema | daily | 2024-11 | 200 |  | 30 | 1 | 0/30 | 0.899 |  | 0.52511 | 1.33164 |
+| PorcApor/Sistema | daily | 2024-12 | 200 |  | 31 | 1 | 0/31 | 0.73 |  | 0.54254 | 1.04247 |
+| PorcApor/Sistema | daily | 2019-07 | 200 |  | 31 | 1 | 0/31 | 0.965 |  | 0.62715 | 1.68866 |
+| PrecBolsNaci/Sistema | hourly | recent | 200 |  | 28 | 1 | 0/672 | 18462.547 |  | 10584.4508 | 24696.72404 |
+| PrecBolsNaci/Sistema | hourly | 2024-08 | 200 |  | 31 | 1 | 0/744 | 13618.026 |  | 9480.7358 | 18851.58256 |
+| PrecBolsNaci/Sistema | hourly | 2024-09 | 200 |  | 30 | 1 | 0/720 | 20968.967 |  | 13836.95432 | 59971.29768 |
+| PrecBolsNaci/Sistema | hourly | 2024-10 | 200 |  | 31 | 1 | 0/744 | 36699.256 |  | 24197.00532 | 58970.48656 |
+| PrecBolsNaci/Sistema | hourly | 2024-11 | 200 |  | 30 | 1 | 0/720 | 25114.402 |  | 5430.4862 | 59021.7588 |
+| PrecBolsNaci/Sistema | hourly | 2024-12 | 200 |  | 31 | 1 | 0/744 | 17784.1 |  | 3897.70296 | 26108.7354 |
+| PrecBolsNaci/Sistema | hourly | 2019-07 | 200 |  | 31 | 1 | 0/744 | 2935.952 |  | 2531.83712 | 3619.5874400000002 |
+| PrecEscaAct/Sistema | daily | recent | 200 |  | 28 | 1 | 0/28 | 1146.811 |  | 1092.7582 | 1172.41437 |
+| PrecEscaAct/Sistema | daily | 2024-08 | 200 |  | 31 | 1 | 0/31 | 920.817 |  | 920.81738 | 920.81738 |
+| PrecEscaAct/Sistema | daily | 2024-09 | 200 |  | 30 | 1 | 0/30 | 932.49 |  | 932.49018 | 932.49018 |
+| PrecEscaAct/Sistema | daily | 2024-10 | 200 |  | 31 | 1 | 0/31 | 945.31 |  | 945.3104 | 945.3104 |
+| PrecEscaAct/Sistema | daily | 2024-11 | 200 |  | 30 | 1 | 0/30 | 936.06 |  | 936.05983 | 936.05983 |
+| PrecEscaAct/Sistema | daily | 2024-12 | 200 |  | 31 | 1 | 0/31 | 948.845 |  | 948.84506 | 948.84506 |
+| PrecEscaAct/Sistema | daily | 2019-07 | 200 |  | 31 | 1 | 0/31 | 696.677 |  | 696.67692 | 696.67692 |
+| DemaSIN/Sistema | daily | recent | 200 |  | 29 | 1 | 0/29 | 243149576.172 | 243.150 | 133890.0 | 266715196.42 |
+| DemaSIN/Sistema | daily | 2024-08 | 200 |  | 31 | 1 | 0/31 | 224934931.975 | 224.935 | 198791978.03 | 239298823.03 |
+| DemaSIN/Sistema | daily | 2024-09 | 200 |  | 30 | 1 | 0/30 | 228935812.597 | 228.936 | 196819545.88 | 242374687.84 |
+| DemaSIN/Sistema | daily | 2024-10 | 200 |  | 31 | 1 | 0/31 | 226582229.498 | 226.582 | 201765623.0 | 241010236.12 |
+| DemaSIN/Sistema | daily | 2024-11 | 200 |  | 30 | 1 | 0/30 | 220211948.009 | 220.212 | 193684982.64 | 234173195.42 |
+| DemaSIN/Sistema | daily | 2024-12 | 200 |  | 31 | 1 | 0/31 | 223078680.228 | 223.079 | 187020782.6 | 239011667.83 |
+| DemaSIN/Sistema | daily | 2019-07 | 200 |  | 31 | 1 | 0/31 | 198284421.572 | 198.284 | 175750068.97 | 208346126.09 |
+| ImpoMoneda/Enlace | hourly | recent | 200 |  | 14 | 1 | 267/336 | 3995180.722 |  | 61811.4 | 12409605.549999999 |
+| ImpoMoneda/Enlace | hourly | 2024-10 | 200 |  | 30 | 1 | 489/720 | 14384532.402 |  | 3322125.07 | 35727612.57 |
+| ExpoMoneda/Enlace | hourly | recent | 200 |  | 28 | 1 | 69/672 | 5040720368.455 |  | 9500246.9 | 14191493797.83 |
+| ExpoMoneda/Enlace | hourly | 2024-10 | 200 |  | 33 | 2 | 266/792 |  |  |  |  |
+| CompBolsaTIEEner/Agente | hourly | recent | 200 |  | 26 | 1 | 59/624 | 4077154.504 | 4.077 | 16207.27 | 8698272.44 |
+| CompBolsaTIEEner/Agente | hourly | 2024-10 | 200 |  | 31 | 1 | 231/744 | 180929.272 | 0.181 | 10789.21 | 4843834.03 |
+| VentBolsaTIEEner/Agente | hourly | recent | 200 |  | 147 | 12 | 2715/3528 |  |  |  |  |
+| VentBolsaTIEEner/Agente | hourly | 2024-10 | 200 |  | 138 | 11 | 2794/3312 |  |  |  |  |
+
+### Per entity code (Enlace and other multi-code answers)
+
+| metric/entity | window | code | days with values | blank cells | daily mean | GWh/day | min | max |
+|---|---|---|---|---|---|---|---|---|
+| ExpoEner/Enlace | 2024-08 | ECUADOR 230 | 31 | 2 | 9072606.56 | 9.073 | 4208540.23 | 10887289.06 |
+| ExpoEner/Enlace | 2024-08 | ECUADOR 138 | 8 | 27 | 204533.28 | 0.205 | 173791.88999999998 | 229287.15 |
+| ExpoEner/Enlace | 2024-09 | ECUADOR 138 | 30 | 330 | 123351.308 | 0.123 | 656.83 | 233159.07 |
+| ExpoEner/Enlace | 2024-09 | ECUADOR 230 | 30 | 9 | 8056064.241 | 8.056 | 18148.57 | 10405623.040000001 |
+| ExpoEner/Enlace | 2024-10 | ECUADOR 138 | 2 | 35 | 55518.385 | 0.056 | 1033.36 | 110003.41 |
+| ExpoEner/Enlace | 2024-10 | ECUADOR 230 | 31 | 231 | 174833.416 | 0.175 | 10643.37 | 4666133.72 |
+| ExpoEner/Enlace | 2024-11 | ECUADOR 230 | 30 | 130 | 4682817.372 | 4.683 | 7632.12 | 10842570.09 |
+| ExpoEner/Enlace | 2024-11 | ECUADOR 138 | 1 | 16 | 73.99 | 0.000 | 73.99 | 73.99 |
+| ExpoEner/Enlace | 2024-12 | ECUADOR 230 | 31 | 7 | 8211375.77 | 8.211 | 3349967.98 | 10453150.98 |
+| ExpoEner/Enlace | 2024-12 | ECUADOR 138 | 11 | 48 | 187057.845 | 0.187 | 112511.56999999999 | 241745.75 |
+| ExpoMoneda/Enlace | 2024-10 | ECUADOR 138 | 2 | 35 | 95977551.045 |  | 996685.43 | 190958416.66 |
+| ExpoMoneda/Enlace | 2024-10 | ECUADOR 230 | 31 | 231 | 286007709.272 |  | 10880224.6 | 7690209969.559999 |
+| VentBolsaTIEEner/Agente | recent | ENDG | 17 | 336 | 389669.655 | 0.390 | 1798.84 | 1896532.5899999999 |
+| VentBolsaTIEEner/Agente | recent | EPMG | 26 | 360 | 1387545.802 | 1.388 | 5061.56 | 4282749.7700000005 |
+| VentBolsaTIEEner/Agente | recent | ISGG | 26 | 406 | 1352591.276 | 1.353 | 370.19 | 4662605.22 |
+| VentBolsaTIEEner/Agente | recent | TCIG | 5 | 107 | 476179.152 | 0.476 | 179968.33 | 1040177.76 |
+| VentBolsaTIEEner/Agente | recent | EMUG | 11 | 237 | 207307.816 | 0.207 | 10409.66 | 489391.3 |
+| VentBolsaTIEEner/Agente | recent | EPSG | 24 | 439 | 586458.172 | 0.586 | 748.09 | 1818389.02 |
+| VentBolsaTIEEner/Agente | recent | TMFG | 14 | 308 | 251205.321 | 0.251 | 72.57 | 948627.78 |
+| VentBolsaTIEEner/Agente | recent | PRIG | 2 | 43 | 112500.0 | 0.113 | 90000.0 | 135000.0 |
+| VentBolsaTIEEner/Agente | recent | TBSG | 9 | 189 | 515741.738 | 0.516 | 340.96 | 987782.79 |
+| VentBolsaTIEEner/Agente | recent | GECG | 11 | 244 | 92348.983 | 0.092 | 245.71 | 306345.25 |
+| VentBolsaTIEEner/Agente | recent | SOCG | 1 | 23 | 1737.34 | 0.002 | 1737.34 | 1737.34 |
+| VentBolsaTIEEner/Agente | recent | NTCG | 1 | 23 | 664.81 | 0.001 | 664.81 | 664.81 |
+| VentBolsaTIEEner/Agente | 2024-10 | CHVG | 15 | 305 | 61150.029 | 0.061 | 1266.01 | 871159.6799999999 |
+| VentBolsaTIEEner/Agente | 2024-10 | EPMG | 22 | 433 | 69955.71 | 0.070 | 234.48 | 1386357.22 |
+| VentBolsaTIEEner/Agente | 2024-10 | EPSG | 22 | 475 | 9159.983 | 0.009 | 77.46 | 94385.25 |
+| VentBolsaTIEEner/Agente | 2024-10 | ISGG | 29 | 528 | 93393.435 | 0.093 | 1071.1 | 2491931.88 |
+| VentBolsaTIEEner/Agente | 2024-10 | ENDG | 25 | 493 | 7573.965 | 0.008 | 739.23 | 50408.340000000004 |
+| VentBolsaTIEEner/Agente | 2024-10 | TMNG | 3 | 67 | 3865.893 | 0.004 | 1111.34 | 8091.9400000000005 |
+| VentBolsaTIEEner/Agente | 2024-10 | TMVG | 7 | 160 | 1819.153 | 0.002 | 371.79 | 4606.67 |
+| VentBolsaTIEEner/Agente | 2024-10 | TBSG | 6 | 131 | 2357.845 | 0.002 | 719.74 | 4911.68 |
+| VentBolsaTIEEner/Agente | 2024-10 | TCBG | 3 | 69 | 1603.333 | 0.002 | 415.4 | 3218.18 |
+| VentBolsaTIEEner/Agente | 2024-10 | TEMG | 4 | 88 | 1782.507 | 0.002 | 84.85 | 4615.19 |
+| VentBolsaTIEEner/Agente | 2024-10 | TCIG | 2 | 45 | 1417.08 | 0.001 | 1410.66 | 1423.5 |
+
+### What each candidate should answer
+
+| metric/entity | in catalog | unit | MaxDays | question | name source |
+|---|---|---|---|---|---|
+| ExpoEner/Sistema | True | kWh | 31 | Colombia's total exports (kWh per hour). With the Venezuela link idle this is roughly Ecuador; 2024-10 should show the collapse to ~0.12 GWh/day seen from Ecuador | API_XM pydataxm/metricasAPI.json (2024-11-14) + README metric list |
+| ExpoEner/Enlace | True | kWh | 31 | Exports per interconnection link: which codes are the Ecuador circuits, and the per-link hourly ceiling actually reached | ListadoMetricas dumps on GitHub (danielbenavides-git/tesis data/raw/XM/catalogo_metricas_xm.csv; GNUTADEO/Tuxilo data/XM/CatalogoSINERGOX.csv) |
+| ImpoEner/Sistema | True | kWh | 31 | Colombia's imports, i.e. the reverse flow (Ecuador exporting to Colombia) | API_XM pydataxm/metricasAPI.json (2024-11-14) + README metric list |
+| ImpoEner/Enlace | True | kWh | 31 | Imports per link | ListadoMetricas dumps on GitHub (danielbenavides-git/tesis data/raw/XM/catalogo_metricas_xm.csv; GNUTADEO/Tuxilo data/XM/CatalogoSINERGOX.csv) |
+| CompBolsaTIEEner/Sistema | True | kWh | 31 | Energy bought in the Colombian pool to serve TIE (Ecuador) demand: the market-side view of exports | API_XM pydataxm/metricasAPI.json (2024-11-14) + README metric list |
+| VentBolsaTIEEner/Sistema | True | kWh | 31 | Energy sold in the pool under TIE: the other side of the same trade | API_XM pydataxm/metricasAPI.json (2024-11-14) + README metric list |
+| PorcVoluUtilDiar/Sistema | True | % | 31 | Aggregate Colombian useful storage, % (the state that drove the 2024 cutoff) | API_XM pydataxm/metricasAPI.json (2024-11-14) + README metric list |
+| VoluUtilDiarEner/Sistema | True | kWh | 31 | Aggregate useful storage in energy terms (kWh) | API_XM pydataxm/metricasAPI.json (2024-11-14) + README metric list |
+| CapaUtilDiarEner/Sistema | True | kWh | 31 | Aggregate useful capacity (kWh), the denominator of the % above | API_XM pydataxm/metricasAPI.json (2024-11-14) + README metric list |
+| AporEner/Sistema | True | kWh | 31 | Daily inflows in energy terms (kWh) | API_XM pydataxm/metricasAPI.json (2024-11-14) + README metric list |
+| AporEnerMediHist/Sistema | True | kWh | 31 | Historical mean inflows for the same days (kWh) | API_XM pydataxm/metricasAPI.json (2024-11-14) + README metric list |
+| PorcApor/Sistema | True | % | 31 | Inflows as % of the historical mean: Colombia's drought signal | API_XM pydataxm/metricasAPI.json (2024-11-14) + README metric list |
+| PrecBolsNaci/Sistema | True | COP/kWh | 31 | Colombian spot price (COP/kWh); TIE flows follow the price differential | API_XM pydataxm/metricasAPI.json (2024-11-14) + README metric list |
+| PrecEscaAct/Sistema | True | COP/kWh | 31 | Scarcity activation price (COP/kWh); spot above it marks Colombia's own scarcity | API_XM pydataxm/metricasAPI.json (2024-11-14) + README metric list |
+| DemaSIN/Sistema | True | kWh | 31 | Colombian national demand (kWh), to size the exportable surplus | API_XM pydataxm/metricasAPI.json (2024-11-14) + README metric list |
+| ImpoMoneda/Enlace | True | COP | 31 | discovered in ListadoMetricas: Importaciones Moneda | live ListadoMetricas |
+| ExpoMoneda/Enlace | True | COP | 31 | discovered in ListadoMetricas: Exportaciones Moneda | live ListadoMetricas |
+| CompBolsaTIEEner/Agente | True | kWh | 31 | discovered in ListadoMetricas: Compras Bolsa TIE Energía por Agente | live ListadoMetricas |
+| VentBolsaTIEEner/Agente | True | kWh | 31 | discovered in ListadoMetricas: Ventas Bolsa TIE Energía por Agente | live ListadoMetricas |
+
+### SIMEM (simem.co)
+
+Catalog `e007fb`: status 200, 381 datasets, 20 match exchange/Ecuador/storage terms.
+
+<details><summary>Matching catalog records</summary>
+
+- `{"idDataset": "8d3ccd", "nombreConjuntoDatos": "Proyección de embalse agregado de corto plazo", "fechaPublicacion": "2024-09-06T08:42:12.99", "fechaActualizacion": "2026-09-20T19:15:15.03", "inicioDato": "2024-08-26T00:00:00", "finDato": "2026-09-27T00:00:00", "fechaDescarga": "2025-02-21T15:30:24.49", "urlConexionAPI": "https://www.simem.coPublicData?startDate=2026-09-22&endDate=2026-09-22&datase`
+- `{"idDataset": "4A17B1", "nombreConjuntoDatos": "Magnitud de generación de seguridad del país importador", "fechaPublicacion": "2023-09-28T20:27:03.407", "fechaActualizacion": "2026-09-22T04:35:29.083", "inicioDato": "2021-09-06T00:00:00", "finDato": "2026-09-06T00:00:00", "fechaDescarga": null, "urlConexionAPI": "https://www.simem.coPublicData?startDate=2026-09-22&endDate=2026-09-22&datasetId=4A17`
+- `{"idDataset": "860c86", "nombreConjuntoDatos": "Estudio Interconexión Colombia Ecuador", "fechaPublicacion": "2023-09-30T22:56:28.613", "fechaActualizacion": "2026-08-10T18:47:03.05", "inicioDato": "2022-01-01T00:00:00", "finDato": "2025-01-01T00:00:00", "fechaDescarga": null, "urlConexionAPI": "https://www.simem.coPublicData?startDate=2026-09-22&endDate=2026-09-22&datasetId=860c86", "urlConjuntoD`
+- `{"idDataset": "1E0AC7", "nombreConjuntoDatos": "Compras en bolsa TIE en moneda", "fechaPublicacion": "2024-11-07T10:33:56.017", "fechaActualizacion": "2026-09-22T04:38:36.69", "inicioDato": "2021-01-01T00:00:00", "finDato": "2026-09-17T00:00:00", "fechaDescarga": null, "urlConexionAPI": "https://www.simem.coPublicData?startDate=2026-09-22&endDate=2026-09-22&datasetId=1E0AC7", "urlConjuntoDatos": "`
+- `{"idDataset": "7E5EA7", "nombreConjuntoDatos": "Ajuste Transacciones TIE", "fechaPublicacion": "2023-09-28T23:37:22.983", "fechaActualizacion": "2026-09-18T15:42:41.53", "inicioDato": "2022-01-01T00:00:00", "finDato": "2026-08-22T00:00:00", "fechaDescarga": "2024-10-17T17:41:55.523", "urlConexionAPI": "https://www.simem.coPublicData?startDate=2026-09-22&endDate=2026-09-22&datasetId=7E5EA7", "urlCo`
+- `{"idDataset": "842296", "nombreConjuntoDatos": "Energía calculada para plantas hidráulicas por reconciliación positiva asociada a la exportación hacia Ecuador", "fechaPublicacion": "2023-09-28T20:27:03.407", "fechaActualizacion": "2026-09-22T04:38:12.767", "inicioDato": "2021-09-06T00:00:00", "finDato": "2026-09-06T00:00:00", "fechaDescarga": null, "urlConexionAPI": "https://www.simem.coPublicData`
+- `{"idDataset": "6D6E23", "nombreConjuntoDatos": "Ventas en bolsa internacional en moneda", "fechaPublicacion": "2024-11-07T10:33:56.017", "fechaActualizacion": "2026-09-22T04:38:45.667", "inicioDato": "2021-01-01T00:00:00", "finDato": "2026-09-17T00:00:00", "fechaDescarga": null, "urlConexionAPI": "https://www.simem.coPublicData?startDate=2026-09-22&endDate=2026-09-22&datasetId=6D6E23", "urlConjunt`
+- `{"idDataset": "E93F85", "nombreConjuntoDatos": "Magnitud energía en bolsa internacional a cargo", "fechaPublicacion": "2024-11-07T10:33:56.017", "fechaActualizacion": "2026-09-22T04:39:40.617", "inicioDato": "2021-01-01T00:00:00", "finDato": "2026-09-17T00:00:00", "fechaDescarga": null, "urlConexionAPI": "https://www.simem.coPublicData?startDate=2026-09-22&endDate=2026-09-22&datasetId=E93F85", "ur`
+- `{"idDataset": "b9f2ec", "nombreConjuntoDatos": "Información de Transferencias Internacionales", "fechaPublicacion": "2023-10-05T17:03:50.45", "fechaActualizacion": "2026-09-22T08:30:32.09", "inicioDato": "2013-01-01T00:00:00", "finDato": "2026-09-21T00:00:00", "fechaDescarga": "2025-03-04T16:15:44.65", "urlConexionAPI": "https://www.simem.coPublicData?startDate=2026-09-22&endDate=2026-09-22&datase`
+- `{"idDataset": "11364C", "nombreConjuntoDatos": "Magnitud ventas en bolsa internacional en energía", "fechaPublicacion": "2024-11-07T10:33:56.017", "fechaActualizacion": "2026-09-22T04:39:17.4", "inicioDato": "2021-01-01T00:00:00", "finDato": "2026-09-17T00:00:00", "fechaDescarga": null, "urlConexionAPI": "https://www.simem.coPublicData?startDate=2026-09-22&endDate=2026-09-22&datasetId=11364C", "ur`
+- `{"idDataset": "7f16cb", "nombreConjuntoDatos": "Información de Transferencias Internacionales", "fechaPublicacion": "2023-10-05T16:01:29.07", "fechaActualizacion": "2026-09-22T08:28:28.8", "inicioDato": "2013-01-01T00:00:00", "finDato": "2026-09-21T00:00:00", "fechaDescarga": "2025-05-01T19:11:07.537", "urlConexionAPI": "https://www.simem.coPublicData?startDate=2026-09-22&endDate=2026-09-22&datase`
+- `{"idDataset": "C35A63", "nombreConjuntoDatos": "Precio de oferta en el nodo frontera para exportación", "fechaPublicacion": "2023-09-28T22:45:20.783", "fechaActualizacion": "2026-09-22T04:41:19.073", "inicioDato": "2013-01-01T00:00:00", "finDato": "2026-09-19T00:00:00", "fechaDescarga": null, "urlConexionAPI": "https://www.simem.coPublicData?startDate=2026-09-22&endDate=2026-09-22&datasetId=C35A63`
+- `{"idDataset": "6B9E0C", "nombreConjuntoDatos": "Generación ideal internacional Venezuela por recurso planta", "fechaPublicacion": "2023-09-28T20:27:03.407", "fechaActualizacion": "2026-09-22T04:37:59.79", "inicioDato": "2022-05-01T00:00:00", "finDato": "2026-09-19T00:00:00", "fechaDescarga": null, "urlConexionAPI": "https://www.simem.coPublicData?startDate=2026-09-22&endDate=2026-09-22&datasetId=6`
+- `{"idDataset": "d4049a", "nombreConjuntoDatos": "Importaciones Netas Energético Largo Plazo", "fechaPublicacion": "2023-10-11T09:04:15.97", "fechaActualizacion": "2026-09-15T18:21:01.84", "inicioDato": "2022-01-01T00:00:00", "finDato": "2031-08-01T00:00:00", "fechaDescarga": "2025-04-17T18:46:48.843", "urlConexionAPI": "https://www.simem.coPublicData?startDate=2026-09-22&endDate=2026-09-22&datasetI`
+- `{"idDataset": "A88E47", "nombreConjuntoDatos": "Ventas en bolsa TIE en moneda", "fechaPublicacion": "2024-11-07T10:33:56.017", "fechaActualizacion": "2026-09-22T04:38:14.023", "inicioDato": "2021-01-01T00:00:00", "finDato": "2026-09-17T00:00:00", "fechaDescarga": null, "urlConexionAPI": "https://www.simem.coPublicData?startDate=2026-09-22&endDate=2026-09-22&datasetId=A88E47", "urlConjuntoDatos": "`
+- `{"idDataset": "70E9A6", "nombreConjuntoDatos": "Deltas incremento nacional e internacional", "fechaPublicacion": "2025-07-07T14:18:36.45", "fechaActualizacion": "2026-09-22T04:37:40.477", "inicioDato": "2021-01-01T00:00:00", "finDato": "2026-09-19T00:00:00", "fechaDescarga": null, "urlConexionAPI": "https://www.simem.coPublicData?startDate=2026-09-22&endDate=2026-09-22&datasetId=70E9A6", "urlConju`
+- `{"idDataset": "4295B4", "nombreConjuntoDatos": "Compras en bolsa internacional en moneda", "fechaPublicacion": "2024-11-07T10:33:56.017", "fechaActualizacion": "2026-09-22T04:44:46.737", "inicioDato": "2021-01-01T00:00:00", "finDato": "2026-09-17T00:00:00", "fechaDescarga": null, "urlConexionAPI": "https://www.simem.coPublicData?startDate=2026-09-22&endDate=2026-09-22&datasetId=4295B4", "urlConjun`
+- `{"idDataset": "1088a6", "nombreConjuntoDatos": "Importaciones Netas Energético Mediano Plazo", "fechaPublicacion": "2023-09-30T11:57:45.303", "fechaActualizacion": "2026-09-20T19:23:08.98", "inicioDato": "2022-01-03T00:00:00", "finDato": "2028-09-11T00:00:00", "fechaDescarga": "2025-02-18T11:47:51.75", "urlConexionAPI": "https://www.simem.coPublicData?startDate=2026-09-22&endDate=2026-09-22&datase`
+- `{"idDataset": "31E0AF", "nombreConjuntoDatos": "Demanda comercial internacional", "fechaPublicacion": "2025-07-07T11:09:14.51", "fechaActualizacion": "2026-09-22T04:37:10.91", "inicioDato": "2021-01-01T00:00:00", "finDato": "2026-09-19T00:00:00", "fechaDescarga": null, "urlConexionAPI": "https://www.simem.coPublicData?startDate=2026-09-22&endDate=2026-09-22&datasetId=31E0AF", "urlConjuntoDatos": "`
+- `{"idDataset": "CDD16E", "nombreConjuntoDatos": "Generación ideal internacional Ecuador por planta", "fechaPublicacion": "2023-09-28T20:27:03.407", "fechaActualizacion": "2026-09-22T04:36:12.577", "inicioDato": "2021-01-01T00:00:00", "finDato": "2026-09-19T00:00:00", "fechaDescarga": null, "urlConexionAPI": "https://www.simem.coPublicData?startDate=2026-09-22&endDate=2026-09-22&datasetId=CDD16E", "`
+
+</details>
+
+| dataset | name | granularity | window | status | records | lastUpdate | message | record keys |
+|---|---|---|---|---|---|---|---|---|
+| b9f2ec | Información de Transferencias Internacionales | Diaria | recent | 200 | 28 | 2026-09-22 08:30:32 |  | CodigoEnlace, EnergiaImportadaProgramadaRedespacho, EnergiaImportadaRealEstimada, Fecha, PaisInterCambioInternacional |
+| b9f2ec | Información de Transferencias Internacionales | Diaria | 2024-10 | 200 | 62 | 2026-09-22 08:30:32 |  | CodigoEnlace, EnergiaImportadaProgramadaRedespacho, EnergiaImportadaRealEstimada, Fecha, PaisInterCambioInternacional |
+| b9f2ec | Información de Transferencias Internacionales | Diaria | 2019-07 | 200 | 62 | 2026-09-22 08:30:32 |  | CodigoEnlace, EnergiaImportadaProgramadaRedespacho, EnergiaImportadaRealEstimada, Fecha, PaisInterCambioInternacional |
+| 7f16cb | Información de Transferencias Internacionales | Diaria | recent | 200 | 68 | 2026-09-22 08:28:28 |  | CodigoEnlace, EnergiaExportadaProgramadaRedespachoDia, EnergiaExportadaRealEstimada, Fecha, PaisInterCambioInternacional |
+| 7f16cb | Información de Transferencias Internacionales | Diaria | 2024-10 | 200 | 62 | 2026-09-22 08:28:28 |  | CodigoEnlace, EnergiaExportadaProgramadaRedespachoDia, EnergiaExportadaRealEstimada, Fecha, PaisInterCambioInternacional |
+| 7f16cb | Información de Transferencias Internacionales | Diaria | 2019-07 | 200 | 62 | 2026-09-22 08:28:28 |  | CodigoEnlace, EnergiaExportadaProgramadaRedespachoDia, EnergiaExportadaRealEstimada, Fecha, PaisInterCambioInternacional |
+| 860c86 | Estudio Interconexión Colombia Ecuador | NA | recent | 200 | 0 | 2026-08-10 18:47:03 |  |  |
+| 860c86 | Estudio Interconexión Colombia Ecuador | NA | 2024-10 | 200 | 2918676 | 2026-08-10 18:47:03 |  |  |
+| 860c86 | Estudio Interconexión Colombia Ecuador | NA | 2019-07 | 200 | 0 | 2026-08-10 18:47:03 |  |  |
+| CDD16E | Generación ideal internacional Ecuador por planta | Horaria | recent | 200 | 4632 | 2026-09-22 04:36:12 |  | CodigoDuracion, CodigoPlanta, CodigoVariable, FechaHora, UnidadMedida, Valor, Version |
+| CDD16E | Generación ideal internacional Ecuador por planta | Horaria | 2024-10 | 200 | 43368 | 2026-09-22 04:36:12 |  | CodigoDuracion, CodigoPlanta, CodigoVariable, FechaHora, UnidadMedida, Valor, Version |
+| CDD16E | Generación ideal internacional Ecuador por planta | Horaria | 2019-07 | 200 | 0 | 2026-09-22 04:36:12 |  |  |
+| C35A63 | Precio de oferta en el nodo frontera para exportación | Horaria | recent | 200 | 1056 | 2026-09-22 04:41:19 |  | CodigoDuracion, CodigoPlanta, CodigoSICAgente, CodigoVariable, FechaHora, UnidadMedida, Valor, Version |
+| C35A63 | Precio de oferta en el nodo frontera para exportación | Horaria | 2024-10 | 200 | 10416 | 2026-09-22 04:41:19 |  | CodigoDuracion, CodigoPlanta, CodigoSICAgente, CodigoVariable, FechaHora, UnidadMedida, Valor, Version |
+| C35A63 | Precio de oferta en el nodo frontera para exportación | Horaria | 2019-07 | 200 | 1488 | 2026-09-22 04:41:19 |  | CodigoDuracion, CodigoPlanta, CodigoSICAgente, CodigoVariable, FechaHora, UnidadMedida, Valor, Version |
+| 31E0AF | Demanda comercial internacional | Diaria | recent | 200 | 22 | 2026-09-22 04:37:10 |  | CodigoDuracion, CodigoVariable, FechaInicio, UnidadMedida, Valor, Version |
+| 31E0AF | Demanda comercial internacional | Diaria | 2024-10 | 200 | 62 | 2026-09-22 04:37:10 |  | CodigoDuracion, CodigoVariable, FechaInicio, UnidadMedida, Valor, Version |
+| 31E0AF | Demanda comercial internacional | Diaria | 2019-07 | 200 | 0 | 2026-09-22 04:37:10 |  |  |
+| 4A17B1 | Magnitud de generación de seguridad del país importador | Diaria | recent | 200 | 0 | 2026-09-22 04:35:29 |  |  |
+| 4A17B1 | Magnitud de generación de seguridad del país importador | Diaria | 2024-10 | 200 | 144 | 2026-09-22 04:35:29 |  | CodigoDuracion, CodigoPlanta, CodigoVariable, FechaHora, UnidadMedida, Valor, Version |
+| 4A17B1 | Magnitud de generación de seguridad del país importador | Diaria | 2019-07 | 200 | 0 | 2026-09-22 04:35:29 |  |  |
+| 842296 | Energía calculada para plantas hidráulicas por reconciliación positiva asociada a la exportación hacia Ecuador | Horaria | recent | 200 | 0 | 2026-09-22 04:38:12 |  |  |
+| 842296 | Energía calculada para plantas hidráulicas por reconciliación positiva asociada a la exportación hacia Ecuador | Horaria | 2024-10 | 200 | 432 | 2026-09-22 04:38:12 |  | CodigoDuracion, CodigoPlanta, CodigoVariable, FechaHora, UnidadMedida, Valor, Version |
+| 842296 | Energía calculada para plantas hidráulicas por reconciliación positiva asociada a la exportación hacia Ecuador | Horaria | 2019-07 | 200 | 0 | 2026-09-22 04:38:12 |  |  |
+| 1088a6 | Importaciones Netas Energético Mediano Plazo | Semanal | recent | 200 | 478031 | 2026-09-20 19:23:08 |  | AnioEstudio, Caso, CodigoAreaOperativa, Etapa, FechaFin, FechaInicio, FechaPublicacion, ImpNetas, NombreCaso, SemanaEstudio |
+| 1088a6 | Importaciones Netas Energético Mediano Plazo | Semanal | 2024 | 200 | 336700 | 2026-09-20 19:23:08 |  | AnioEstudio, Caso, CodigoAreaOperativa, Etapa, FechaFin, FechaInicio, FechaPublicacion, ImpNetas, NombreCaso, SemanaEstudio |
+| 8d3ccd | Proyección de embalse agregado de corto plazo | Diaria | recent | 200 | 1944 | 2026-09-20 19:15:15 |  | AnioEstudio, AreaOperativa, Caso, CodigoVariable, EsProyeccion, Etapa, FechaEjecucion, FechaHora, NombreCaso, SemanaEstudio, Valor |
+| 8d3ccd | Proyección de embalse agregado de corto plazo | Diaria | 2024-10 | 200 | 3408 | 2026-09-20 19:15:15 |  | AnioEstudio, AreaOperativa, Caso, CodigoVariable, EsProyeccion, Etapa, FechaEjecucion, FechaHora, NombreCaso, SemanaEstudio, Valor |
+| 8d3ccd | Proyección de embalse agregado de corto plazo | Diaria | 2019-07 | 200 | 0 | 2026-09-20 19:15:15 |  |  |
+
 ## 11. Failures and skips
 
 | key | status | error |
@@ -1023,6 +1455,8 @@ File links:
 | opendata:ckan_bnee | 403 |  |
 | opendata:cenace_dataset_page | 403 |  |
 | opendata:arconel_bnee_1 |  | SSLError: HTTPSConnectionPool(host='www.controlrecursosyenergia.gob.ec', port=443): Max retries exceeded with url: /balance-nacional-de-energia-electrica/ (Caused by SSLError(SSLCertVerificationError(1, "[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is no |
+| robots:servapibi.xm.com.co | 404 |  |
+| robots:www.simem.co | 404 |  |
 
 ## Section errors
 
