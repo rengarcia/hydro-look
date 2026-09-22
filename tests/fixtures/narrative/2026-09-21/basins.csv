@@ -1,0 +1,2 @@
+basin,latitude,longitude,coordinate_status,source,notes
+paute,-2.6,-78.6,provisional,scripts/recon/capture.py,Phase 0 sampling point; not a verified catchment centroid or area average

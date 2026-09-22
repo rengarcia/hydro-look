@@ -43,6 +43,10 @@ jobs:
       # The public current-state document, built and discarded. It is what the site's tiles read,
       # so a change that leaves a reservoir without a level should be red here and not on the page.
       - run: npm run publish:api -- --dry-run
+      # The narrative payload, built from the committed documents and printed. No key and no
+      # network: `--dry-run` never calls the gateway. A document the payload builder can no longer
+      # read — a renamed field in forecast.json, say — fails here rather than on the daily run.
+      - run: npm run narrative -- --dry-run
       # The site itself. It renders at build time from data/curated and public/api, which means a
       # column renamed in a table is a broken build rather than a page that quietly prints a dash
       # for a week. No network: every number it needs is in the checkout.
