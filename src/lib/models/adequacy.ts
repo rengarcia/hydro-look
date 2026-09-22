@@ -442,6 +442,13 @@ export interface AdequacyHorizon {
   /** Mean over the horizon window, GWh/day, of unsuppressed demand. */
   demandGwhDay: number;
   hydroGwhDay: number;
+  /**
+   * Hydro's own calibrated band. §7's target 4 — national hydro generation a week out — is this
+   * term at seven days, so it gets an interval of its own rather than only a share of the
+   * requirement's.
+   */
+  hydroP10: number | null;
+  hydroP90: number | null;
   /** `demand − hydro`: what thermal, imports and the rest have to cover. */
   requirementGwhDay: number;
   /** The requirement's calibrated band, from this model's own out-of-sample residuals. */
@@ -494,7 +501,7 @@ export const TIER_LABELS_ES: Record<RiskTier, string> = {
   deficit: "Déficit",
 };
 
-/** Residual quantiles of the requirement, per horizon — what turns a point into a band. */
+/** Residual quantiles of one component, per horizon — what turns a point into a band. */
 export type RequirementCalibration = Map<number, { q10: number; q50: number; q90: number; n: number }>;
 
 export interface AdequacyInputs {
@@ -504,6 +511,8 @@ export interface AdequacyInputs {
   origin: IsoDate;
   horizonDays?: readonly number[];
   calibration?: RequirementCalibration;
+  /** The same, for the hydro term on its own (§7 target 4). */
+  hydroCalibration?: RequirementCalibration;
   demandOptions?: DemandOptions;
   hydroOptions?: HydroOptions;
 }
@@ -550,6 +559,9 @@ export function forecastAdequacy(inputs: AdequacyInputs): AdequacyForecast | nul
     // reason and for the same reason it is a clamp rather than a widening.
     const requirementP10 = residuals ? Math.min(requirement + residuals.q10, requirement) : null;
     const requirementP90 = residuals ? Math.max(requirement + residuals.q90, requirement) : null;
+    const hydroResiduals = inputs.hydroCalibration?.get(days);
+    const hydroP10 = hydroResiduals ? Math.min(hydroGwh + hydroResiduals.q10, hydroGwh) : null;
+    const hydroP90 = hydroResiduals ? Math.max(hydroGwh + hydroResiduals.q90, hydroGwh) : null;
 
     const supply = supplyFloor + inputs.ceilings.importGwhDay;
     const deficit = requirement - supply;
@@ -561,6 +573,8 @@ export function forecastAdequacy(inputs: AdequacyInputs): AdequacyForecast | nul
       targetDate: addDays(inputs.origin, days),
       demandGwhDay: demandGwh,
       hydroGwhDay: hydroGwh,
+      hydroP10,
+      hydroP90,
       requirementGwhDay: requirement,
       requirementP10,
       requirementP90,
@@ -599,6 +613,7 @@ export interface AdequacyBacktest {
   origins: IsoDate[];
   scores: ComponentScores[];
   calibration: RequirementCalibration;
+  hydroCalibration: RequirementCalibration;
 }
 
 export interface BacktestOptions {
@@ -704,21 +719,14 @@ export function backtestAdequacy(
   const used: IsoDate[] = [];
   // Residuals from strictly earlier origins only: an expanding window, never the whole record.
   const seen = new Map<number, number[]>(options.horizonDays.map((h) => [h, []]));
+  const seenHydro = new Map<number, number[]>(options.horizonDays.map((h) => [h, []]));
 
   for (const origin of origins) {
     const history = days.filter((d) => d.date <= origin);
     if (history.length < options.minHistoryDays) continue;
 
-    const calibration: RequirementCalibration = new Map();
-    for (const [horizon, residuals] of seen) {
-      if (residuals.length < options.minCalibrationOrigins) continue;
-      calibration.set(horizon, {
-        q10: quantile(residuals, 0.1)!,
-        q50: quantile(residuals, 0.5)!,
-        q90: quantile(residuals, 0.9)!,
-        n: residuals.length,
-      });
-    }
+    const calibration = calibrate(seen, options.minCalibrationOrigins);
+    const hydroCalibration = calibrate(seenHydro, options.minCalibrationOrigins);
 
     const forecast = forecastAdequacy({
       days: history,
@@ -727,6 +735,7 @@ export function backtestAdequacy(
       origin,
       horizonDays: options.horizonDays,
       calibration,
+      hydroCalibration,
       demandOptions: options.demandOptions,
       hydroOptions: options.hydroOptions,
     });
@@ -752,7 +761,10 @@ export function backtestAdequacy(
         horizonDays: horizon.horizonDays,
         error: horizon.hydroGwhDay - actual.hydro,
         baselineError: baseHydro - actual.hydro,
-        inBand: null,
+        inBand:
+          horizon.hydroP10 === null || horizon.hydroP90 === null
+            ? null
+            : actual.hydro >= horizon.hydroP10 && actual.hydro <= horizon.hydroP90,
       });
       points.requirement.push({
         origin,
@@ -767,6 +779,7 @@ export function backtestAdequacy(
 
       // Only now, after this origin has been scored, does its residual join the calibration set.
       seen.get(horizon.horizonDays)!.push(actual.requirement - horizon.requirementGwhDay);
+      seenHydro.get(horizon.horizonDays)!.push(actual.hydro - horizon.hydroGwhDay);
     }
   }
 
@@ -790,9 +803,19 @@ export function backtestAdequacy(
     }),
   });
 
+  return {
+    origins: used,
+    scores: [score("demand"), score("hydro"), score("requirement")],
+    calibration: calibrate(seen, options.minCalibrationOrigins),
+    hydroCalibration: calibrate(seenHydro, options.minCalibrationOrigins),
+  };
+}
+
+/** Residual quantiles per horizon, for the horizons with enough origins behind them. */
+function calibrate(seen: ReadonlyMap<number, number[]>, minOrigins: number): RequirementCalibration {
   const calibration: RequirementCalibration = new Map();
   for (const [horizon, residuals] of seen) {
-    if (residuals.length < options.minCalibrationOrigins) continue;
+    if (residuals.length < minOrigins) continue;
     calibration.set(horizon, {
       q10: quantile(residuals, 0.1)!,
       q50: quantile(residuals, 0.5)!,
@@ -800,8 +823,7 @@ export function backtestAdequacy(
       n: residuals.length,
     });
   }
-
-  return { origins: used, scores: [score("demand"), score("hydro"), score("requirement")], calibration };
+  return calibration;
 }
 
 /* ----------------------------------------------------------- crisis check */
@@ -889,6 +911,7 @@ export function crisisCheck(
       origin,
       horizonDays: options.horizonDays,
       calibration: backtest.calibration,
+      hydroCalibration: backtest.hydroCalibration,
       demandOptions: options.demandOptions,
       hydroOptions: options.hydroOptions,
     });
@@ -1011,6 +1034,8 @@ export function buildAdequacyDocument(inputs: DocumentInputs): AdequacyDocument 
       target_date: h.targetDate,
       demand_gwh_day: roundTo(h.demandGwhDay, 3),
       hydro_gwh_day: roundTo(h.hydroGwhDay, 3),
+      hydro_p10: roundOrNull(h.hydroP10, 3),
+      hydro_p90: roundOrNull(h.hydroP90, 3),
       requirement_gwh_day: roundTo(h.requirementGwhDay, 3),
       requirement_p10: roundOrNull(h.requirementP10, 3),
       requirement_p90: roundOrNull(h.requirementP90, 3),
@@ -1025,6 +1050,7 @@ export function buildAdequacyDocument(inputs: DocumentInputs): AdequacyDocument 
         demand_skill_vs_persistence: roundOrNull(score("demand", h.horizonDays)?.skillVsPersistence, 4),
         hydro_mae_gwh_day: roundOrNull(score("hydro", h.horizonDays)?.maeGwhDay, 3),
         hydro_skill_vs_persistence: roundOrNull(score("hydro", h.horizonDays)?.skillVsPersistence, 4),
+        hydro_coverage_p10_p90: roundOrNull(score("hydro", h.horizonDays)?.coverageP10P90, 4),
         requirement_mae_gwh_day: roundOrNull(score("requirement", h.horizonDays)?.maeGwhDay, 3),
         requirement_skill_vs_persistence: roundOrNull(score("requirement", h.horizonDays)?.skillVsPersistence, 4),
         requirement_coverage_p10_p90: roundOrNull(score("requirement", h.horizonDays)?.coverageP10P90, 4),

@@ -120,6 +120,7 @@ function main(): void {
     origin,
     horizonDays: DEFAULT_ADEQUACY_BACKTEST.horizonDays,
     calibration: backtest.calibration,
+    hydroCalibration: backtest.hydroCalibration,
   });
   if (!forecast) {
     console.error("the model could not be fitted on the committed data; nothing written");

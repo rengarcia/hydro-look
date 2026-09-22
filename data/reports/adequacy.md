@@ -1,6 +1,6 @@
 # Energy adequacy — what the model is, and what it was measured at
 
-Generated 2026-09-22T17:23:03Z from 3724 usable national-balance days, 2016-05-01 → 2026-09-21. Origin 2026-09-21.
+Generated 2026-09-22T18:30:21Z from 3724 usable national-balance days, 2016-05-01 → 2026-09-21. Origin 2026-09-21.
 
 This is section 7's target 3: expected deficit in GWh per day over the horizon, and the risk
 tiers read off it. It is the number the site's adequacy tile shows, and the `risk_tier` the
@@ -136,6 +136,18 @@ earlier iteration of this rung was scored with the *realised* load handed to it 
 the forecast one and read 28% at 7 days and 24% at 90. That number was borrowed from knowing
 the future demand; it is recorded here because the gap between it and the 9% above is exactly
 the trap that component-wise evaluation sets.
+
+This term at seven days is also §7's target 4, national hydro generation a week out, so it
+carries a band of its own, calibrated the same way as the requirement's: residual quantiles
+from strictly earlier origins, clamped to contain their centre. Coverage of that p10–p90:
+
+| Horizon | Origins with a band | Coverage |
+|---|---:|---:|
+| 7 d | 73 | 71% |
+| 14 d | 70 | 69% |
+| 30 d | 63 | 60% |
+| 60 d | 53 | 64% |
+| 90 d | 43 | 58% |
 
 Rungs that lost, scored on the same origins, the same window-mean target and the same
 exclusion of suppressed days as the shipped one:

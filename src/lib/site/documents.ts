@@ -91,6 +91,8 @@ export interface AdequacyHorizon {
   target_date: string;
   demand_gwh_day: number;
   hydro_gwh_day: number;
+  hydro_p10: number | null;
+  hydro_p90: number | null;
   requirement_gwh_day: number;
   deficit_gwh_day: number;
   deficit_p10: number | null;

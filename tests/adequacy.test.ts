@@ -329,6 +329,23 @@ describe("forecastAdequacy", () => {
     expect(horizon.requirementP90!).toBeGreaterThanOrEqual(horizon.requirementGwhDay);
   });
 
+  it("gives the hydro term a band of its own that contains its centre (§7 target 4)", () => {
+    const hydroCalibration = new Map([[7, { q10: -9, q50: -8, q90: -7, n: 30 }]]);
+    const out = forecastAdequacy({
+      days,
+      episodes: [],
+      ceilings,
+      origin: "2025-12-01",
+      horizonDays: [7],
+      hydroCalibration,
+    })!;
+    const horizon = out.horizons[0]!;
+    expect(horizon.hydroP10!).toBeCloseTo(horizon.hydroGwhDay - 9, 9);
+    expect(horizon.hydroP90!).toBe(horizon.hydroGwhDay);
+    // One band never borrows the other's calibration.
+    expect(horizon.requirementP10).toBeNull();
+  });
+
   it("declines rather than guessing when there is too little history", () => {
     expect(
       forecastAdequacy({ days: days.slice(0, 30), episodes: [], ceilings, origin: "2020-01-30" }),
@@ -345,7 +362,7 @@ describe("buildAdequacyDocument", () => {
     otherGwhDay: 2,
     basis: "test",
   };
-  const backtest = { origins: [], scores: [], calibration: new Map() };
+  const backtest = { origins: [], scores: [], calibration: new Map(), hydroCalibration: new Map() };
   const crisis = { episodes: [], calls: [] };
 
   function documentWith(basis: string) {
