@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-22T08:24:58Z",
+  "generated_at": "2026-09-22T08:48:43Z",
   "as_of": "2026-09-22",
   "ok": true,
   "status": "info",
@@ -18,9 +18,9 @@
     },
     {
       "feed": "ORDS historian (pointValues)",
-      "latest": null,
+      "latest": "2026-09-21",
       "limit_days": 3,
-      "state": "not_ingested"
+      "state": "current"
     },
     {
       "feed": "CENACE SMEC national balance",
@@ -49,7 +49,7 @@
   ],
   "tables": {
     "observations_daily": {
-      "rows": 55704
+      "rows": 77336
     },
     "national_balance_daily": {
       "rows": 58099
