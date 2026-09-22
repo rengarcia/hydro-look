@@ -33,18 +33,26 @@ for attempt in $(seq 1 "$ATTEMPTS"); do
   # would help nobody -- the failure is recorded in the document and in the step's exit code.
   npm run check -- --freshness --out public/api/status.json || CHECK_FAILED=1
 
+  # And the current-state document the site's tiles read. Like the status document it is a pure
+  # function of what was just written, so it belongs in this loop rather than in a later step:
+  # a run that lands rows and leaves latest.json describing yesterday would have the page and
+  # the tables disagreeing until the next ingest. Same reasoning on failure -- record it in the
+  # exit code, do not throw away rows that are already fetched and archived.
+  npm run publish:api || PUBLISH_FAILED=1
+
   git add data
   if [ -d public ]; then git add public; fi
   if git diff --cached --quiet; then
     echo "No data changes."
-    exit $(( ${APPLY_FAILED:-0} | ${CHECK_FAILED:-0} ))
+    exit $(( ${APPLY_FAILED:-0} | ${CHECK_FAILED:-0} | ${PUBLISH_FAILED:-0} ))
   fi
 
   git commit -m "$MESSAGE"
   if git push origin "HEAD:$BRANCH"; then
     echo "Pushed on attempt $attempt."
     if [ -n "${CHECK_FAILED:-}" ]; then echo "Quality checks failed; see public/api/status.json."; fi
-    exit $(( ${APPLY_FAILED:-0} | ${CHECK_FAILED:-0} ))
+    if [ -n "${PUBLISH_FAILED:-}" ]; then echo "latest.json could not be built; the previous one is left in place."; fi
+    exit $(( ${APPLY_FAILED:-0} | ${CHECK_FAILED:-0} | ${PUBLISH_FAILED:-0} ))
   fi
 
   echo "Push rejected (attempt $attempt); another run got there first. Re-applying onto the new tip."
