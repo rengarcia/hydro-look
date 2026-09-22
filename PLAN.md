@@ -1130,7 +1130,21 @@ mean, demand, spot and scarcity prices), from its own step in `covariates.yml`.
   prices 3, TIE settlement 5. Colombian storage fell to 49% of useful volume in September 2024
   with inflows at 58% of their mean: the state that explains a cutoff before the border shows it.
 
-The history backfill from 2016-05-01 was dispatched on 2026-09-22 (covariates run 35770747799).
+**The history is in, back to SMEC's first day, and it agrees with SMEC across all of it.** The
+backfill (covariates run 35770747799) asked every month from 2016-05-01: XM answered all of them,
+and eight of the nine system series are complete from that first day (3,794–3,796 days each). The
+scarcity activation price begins 2017-12-01, which is when CREG Resolution 140 of 2017 created it —
+a start date, not a gap. Over the full overlap, net flow on the two Ecuador circuits agrees with
+SMEC's net Colombian imports on **3,772 days at r = 0.99996, mean absolute difference 13 MWh/day,
+no day off by more than 1 GWh**; a one-day shift drops r to 0.92. Two sides of one border, metered
+by two operators in two countries, agree on the numbers and the dates for a decade.
+
+**That run also found a defect of ours.** It lost twenty months of Ecuador exchange rows, 2016-12
+to 2018-11: the both-directions check ran on every link in XM's answer, and the Venezuela link,
+CUATRICENTENARIO 1, does publish hours both ways in those years. It is neither stored nor what the
+rule is about; the check is now confined to the Ecuador circuits, March 2017's real answer is a
+regression test, and replaying all 125 archived months parses every one. The twenty months are
+being refetched by covariates run 35775149361, which resumes only incomplete months.
 
 Still listed: ML v2 if it beats v1 in backtests; ARCONEL BNEE monthly loader; CENACE Datos Abiertos per-plant
 validation; Colombia export availability via XM's open API — which Phase 6c has now made the
