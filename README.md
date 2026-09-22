@@ -14,8 +14,8 @@ with the response that produced it archived alongside it.
 | 0 · Reconnaissance and fixtures | done — `scripts/recon/RECON_REPORT.md` |
 | 1 · Full ingest (CELEC ORDS + CENACE SMEC + Información Operativa) | code complete; levels backfilled to 2014-09-20, CELEC Sur energy to 2015-11-01, hourly energy for Coca Codo Sinclair (2016-06-24→), Agoyán (2017-01-01→) and Manduriacu (2017-07-31→). What remains is the acceptance criterion *three consecutive green scheduled daily runs*: the schedule first fires 2026-09-22 12:15 UTC, so the earliest it can close is 2026-09-25 |
 | 2 · CENACE history and reconciliation | SMEC backfilled 2016-05-01 → 2026-09-20 (3,780 days, 0.40% missing) and reconciled against the ORDS per-plant energy; the Información Operativa cross-check needs ≥ 20 snapshot days and has 1 |
-| 3 · Additional reservoir levels | code complete 2026-09-22 — `ords-historian` pages the monthly aggregation with a Mazar control guard. No rows ingested yet: the daily run starts collecting the running month, the history needs one backfill dispatch |
-| 4 · Covariates and quality | reference tables (`plants`, `thresholds`, `rationing_episodes`) and the `npm run check` gates done, `public/api/status.json` published; ONI 1950-01 → 2026-07 and recent ERA5 ingested. Outstanding: verified basin centroids and the ERA5 climatology backfill |
+| 3 · Additional reservoir levels | **done 2026-09-22** — 21,632 historian rows: daily level and inflow for Coca Codo Sinclair (2016-03-07→), Agoyán (2016-07-05→) and Manduriacu (2017-08-01→). The Mazar control month matches `repDiaHid12m` on all 31 days to 0.0000 m. Outstanding: the mrid 30538 caudal-semantics overlap, which the daily run accumulates |
+| 4 · Covariates and quality | reference tables (`plants`, `thresholds`, `rationing_episodes`) and the `npm run check` gates done, `public/api/status.json` published; ONI 1950-01 → 2026-07 and ERA5 1990-01-01 → 2026-09-16 ingested. Outstanding: verified basin centroids — the 36 years of ERA5 cover the one provisional Paute point, not the fleet |
 | 5–7 · Modelling, site, extensions | planned — see `PLAN.md` |
 
 ## Where the data comes from
@@ -27,7 +27,7 @@ with the response that produced it archived alongside it.
 | CELEC ORDS `repDia*` (one day each) | level/inflow, power, turbined flow, units online, spill, plant factor, day-ahead plan, SNI total | per day, 2016 → |
 | CELEC ORDS `{code}EnerDia` | 24 hourly values per plant-day, for all seven dashboard plants | 2019-06 → |
 | CENACE SMEC `ResultadoInforme1.do` | the closed day's national balance in kWh by generation type, imports, exports, distribution demand | 2016-05-01 → |
-| CELEC ORDS `pointValuesMesH24` | daily level and inflow per mrid, a month per request — the only route to Coca Codo Sinclair, Agoyán and Manduriacu | not yet ingested |
+| CELEC ORDS `pointValuesMesH24` | daily level and inflow per mrid, a month per request — the only route to Coca Codo Sinclair, Agoyán and Manduriacu | 2016-03-07 → |
 | CENACE Información Operativa | live production, demand by distribution utility, last validated day | snapshot |
 
 Two things worth knowing before using any of it:
@@ -42,8 +42,10 @@ Two things worth knowing before using any of it:
   look identical, the loader checks Mazar — whose values the report endpoints already publish —
   before believing anything else in the run. The month's last local day used to come back null;
   that was the window's exclusive UTC end cutting a local day short, and the request now reaches
-  a day past the boundary. The report endpoints above are the backbone; the historian is the
-  route to Coca Codo Sinclair, Agoyán and Manduriacu levels.
+  a day past the boundary — the control month now returns 31 of 31 days where the narrow window
+  returned 30. The report endpoints above are the backbone; the historian is the route to
+  Coca Codo Sinclair, Agoyán and Manduriacu levels, and where the two routes overlap they agree
+  exactly: Mazar's level for 2026-08 is identical on all 31 days, to 0.0000 m.
 
 ## Running it
 

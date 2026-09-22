@@ -390,39 +390,38 @@ tefaceli's MW). Información Operativa parser for the header key/value list with
 Acceptance: `national_balance_daily` complete from the earliest date with < 1% missing days; SMEC vs
 Información Operativa closed-day totals agree within 2% on ≥ 20 days.
 
-**Phase 3 · Coca Codo Sinclair, Agoyán, Manduriacu levels and inflows — code complete 2026-09-22, awaiting its first run**
-Delivered: the `ords-historian` backfill source, `src/lib/sources/historian.ts`, the six target mrids plus the
-two Mazar control mrids in `registry.ts`, month arithmetic in `util/dates.ts`, and the historian month in the
-daily run. 13 new tests, no network. Three things the implementation settled:
+**Phase 3 · Coca Codo Sinclair, Agoyán, Manduriacu levels and inflows — done 2026-09-22 (run 35705227443)**
+`observations_daily` now holds **21,632 historian rows**, daily level and inflow for all three plants:
 
-- **The truncated last day was an exclusive window end, and it is fixed rather than worked around.** The
-  aggregation buckets by local day while `fechaFin` is an exclusive UTC instant, so a month's last local day —
-  which does not end until 05:00Z the following day — was still open when the window closed, and came back
-  null. That is precisely the 30-of-31 the August control probe saw. `pointValuesMesH24` now reaches one day
-  past the boundary; the extra day's own row is the incomplete one, and nulls are skipped, so nothing is
-  written twice. The archive key stays the month, so widening the window did not orphan earlier responses.
-- **An empty month is ambiguous, so one request per run resolves it before any other is believed.** Phase 0 got
-  nulls from these mrids and the 2026-09-22 probe got values from the same ones, so "empty" means either the
-  blank window of §2.1 or a plant that did not exist yet. Mazar settles it: `repDiaHid12m` publishes its level
-  for every month in range, so a blank control is the endpoint talking about itself. The walk spends its first
-  request there and abandons the run if it comes back empty. This matters more here than anywhere else in the
-  pipeline — these three plants have no second source, so a false "no data" against them is not something a
-  later cross-check could catch.
-- **The presence index could not tell the series apart.** All historian rows carry one source id
-  (`ords:pointValues`) and differ only by mrid, so the `date|source` pair the other backfills skip on would
-  have reported Agoyán's level as fetched the moment Mazar's was. The index now carries the mrid-qualified
-  form alongside it.
+| plant | cota (mrid) | caudal (mrid) | from |
+|---|---|---|---|
+| Coca Codo Sinclair | 3,734 days (100540) | 3,747 days (100037) | 2016-03-07 |
+| Agoyán | 3,726 days (140031) | 3,717 days (140537) | 2016-07-05 |
+| Manduriacu | 3,339 days (110031) | 3,338 days (110537) | 2017-08-01 |
 
-`mrids.csv` gains `sample_value`, `sample_date` and `validated_by` for the seven readings §2.1 attributes to a
-named date and run. Mazar's caudal row is deliberately left empty: the probe reported 37.62 and 38.22 but the
-record does not say which day each belongs to, and a guessed sample in a reference file is worse than none.
+Three things the run proved rather than assumed, all against the live service:
 
-**Still to happen: the data.** The daily run now asks for the running month on every pass, so the three plants
-begin accumulating from the next scheduled run without any dispatch; the history needs one
-`backfill --source ords-historian --from <date>`. Until one of those has run this phase is code, not data, and
-the acceptance criterion below is unmet. The caudal semantics check has its overlap built in — Mazar rides the
-daily run as the control, so mrid 30538 accumulates against `q_ingresado` day by day. The fallback to hourly
-`pointValues` stays unused: the monthly aggregation answers, and one request a month beats one a day.
+- **The mrid route and the report route are the same series, to the digit.** The Mazar control
+  month (2026-08, mrid 30031) is **identical to `repDiaHid12m` on all 31 days, maximum absolute
+  difference 0.0000 m**. Shifting it a day in either direction costs 0.30 m of mean error, so the
+  local-midnight convention of §4 is confirmed here the same way the jordanvt18 cross-check
+  confirmed it for the report endpoints: two independent routes, agreeing on the numbers *and*
+  the dates.
+- **The exclusive-window fix held.** The control month returned **31 of 31 days including
+  2026-08-31**, where the narrow window the probe still uses returned 30 of 31. That was the
+  hypothesis behind reaching a day past the boundary, and it is now measured.
+- **The blank window is narrower than Phase 0 suggested.** The run fetched from 08:31 UTC
+  (03:31 local) and the control answered immediately, so the guard never fired. Values are
+  therefore available at 02:14 and at 03:31 local-evening/early-morning alike; the three
+  Phase 0 runs between 23:37 and 00:09 UTC remain the only window seen blank.
+
+**What is not yet proven: the caudal semantics.** §2.1 asks for a month of overlap between mrid
+30538 and the report's `q_ingresado` for Mazar. The backfill spends its control request on cota
+(30031), so 30538 has no history yet; the daily run fetches all eight series, so the overlap
+accumulates from the next scheduled pass. What this run does establish is that the *cota* mrid and
+the report agree exactly, and `mridCota` and `mridCaud` are declared together in the same dashboard
+component — which makes the inflow reading very likely correct, but likely is not measured.
+
 Acceptance: daily level and inflow for the three plants; a documented semantics note per variable.
 
 **Phase 4 · Covariates, reference tables, quality gates — reference tables and gates done 2026-09-22; covariate history outstanding**
@@ -462,11 +461,15 @@ established. The freshness limits caught a second thing worth recording: ONI loo
 under a 45-day limit, but its label is the *centre* of a three-month mean, so the newest available
 value is always about two months back. The limit was wrong, not the feed; it is now 110 days.
 
-Still pending: `basins.csv` holds only the **provisional Paute sampling point** from Phase 0 and is
-not a verified catchment centroid, so the other basins and their verified areas and coordinates
-remain outstanding — it drives an Open-Meteo request per row, so a placeholder row is not harmless.
-The ERA5 climatology history has not been run (`--from 1990-01-01` for climatology, or `2022-01-01`
-for the initial model). Seasonal ensembles remain deferred. ONI is a centred three-month average and
+The **ERA5 climatology backfill ran on 2026-09-22** (run 35705234042): `weather_daily` now holds
+**13,408 ERA5 days, 1990-01-01 → 2026-09-16**, plus the rolling 16-day forecast.
+
+Still pending, and the reason the line above is narrower than it looks: that climatology covers the
+**one provisional Paute sampling point**, because `basins.csv` still holds only that. It is not a
+verified catchment centroid and it is not basin-average precipitation, so 36 years of it is 36 years
+of one point. The other basins, and verified areas and coordinates for all of them, remain
+outstanding — `basins.csv` drives one Open-Meteo request per row, so a placeholder row is not
+harmless. Seasonal ensembles remain deferred. ONI is a centred three-month average and
 the latest revised series; backtests must not assume its value was available at the beginning of its
 labelled month.
 
