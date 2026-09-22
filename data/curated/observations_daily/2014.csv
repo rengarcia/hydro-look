@@ -1,5 +1,5 @@
 date,site,variable,value,source,mrid,fetched_at,raw_ref
-2014-01-01,paute_cuenca,caudal_cuenca_m3s,113.935154,ords:csrCaudCuenAniosAvg,,2026-09-22T01:19:01Z,celec_ords/2027/01/csrCaudCuenAniosAvg.ndjson.gz#csrCaudCuenAniosAvg:2010-01-01:2027-01-01
+2014-01-01,paute_cuenca,caudal_cuenca_m3s,113.935154,ords:csrCaudCuenAniosAvg,,2026-09-22T01:23:43Z,celec_ords/2027/01/csrCaudCuenAniosAvg.ndjson.gz#csrCaudCuenAniosAvg:2010-01-01:2027-01-01
 2014-09-20,amaluza,caudal_m3s,69,ords:repDiaHid12m,,2026-09-22T01:19:38Z,celec_ords/2015/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2015-09-20
 2014-09-20,amaluza,cota_masl,1981.3,ords:repDiaHid12m,,2026-09-22T01:19:38Z,celec_ords/2015/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2015-09-20
 2014-09-20,mazar,caudal_m3s,28,ords:repDiaHid12m,,2026-09-22T01:19:38Z,celec_ords/2015/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2015-09-20

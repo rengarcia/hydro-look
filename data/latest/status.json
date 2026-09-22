@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-22T01:19:56Z",
-  "command": "backfill",
+  "generated_at": "2026-09-22T01:23:50Z",
+  "command": "daily",
   "source": "all",
   "errors": [],
   "notes": [],
@@ -18,7 +18,7 @@
       "files": 1
     },
     "operativa_snapshots": {
-      "rows": 47,
+      "rows": 94,
       "first_date": "2026-09-22",
       "last_date": "2026-09-22",
       "files": 1

@@ -3,7 +3,7 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2016-01-01,amaluza,cota_masl,1987.1,ords:repDiaHid12m,,2026-09-22T01:19:40Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
 2016-01-01,mazar,caudal_m3s,47,ords:repDiaHid12m,,2026-09-22T01:19:40Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
 2016-01-01,mazar,cota_masl,2145.01,ords:repDiaHid12m,,2026-09-22T01:19:40Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
-2016-01-01,paute_cuenca,caudal_cuenca_m3s,134.036958,ords:csrCaudCuenAniosAvg,,2026-09-22T01:19:01Z,celec_ords/2027/01/csrCaudCuenAniosAvg.ndjson.gz#csrCaudCuenAniosAvg:2010-01-01:2027-01-01
+2016-01-01,paute_cuenca,caudal_cuenca_m3s,134.036958,ords:csrCaudCuenAniosAvg,,2026-09-22T01:23:43Z,celec_ords/2027/01/csrCaudCuenAniosAvg.ndjson.gz#csrCaudCuenAniosAvg:2010-01-01:2027-01-01
 2016-01-02,amaluza,caudal_m3s,104,ords:repDiaHid12m,,2026-09-22T01:19:40Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
 2016-01-02,amaluza,cota_masl,1987.22,ords:repDiaHid12m,,2026-09-22T01:19:40Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
 2016-01-02,mazar,caudal_m3s,22,ords:repDiaHid12m,,2026-09-22T01:19:40Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
