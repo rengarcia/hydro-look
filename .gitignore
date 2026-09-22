@@ -5,3 +5,7 @@ __pycache__/
 .ruff_cache/
 *.duckdb
 recon-capture/
+node_modules/
+.next/
+out/
+*.tsbuildinfo
