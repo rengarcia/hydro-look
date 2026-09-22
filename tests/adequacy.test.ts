@@ -229,9 +229,9 @@ describe("fitHydro", () => {
     const nearNormal = near / demand.predict(addDays(origin, 1));
     const farNormal = far / demand.predict(addDays(origin, 90));
     // A dry fortnight is strong evidence about tomorrow and weaker about the quarter: the
-    // anomaly is half gone by the end of the longest published horizon.
+    // anomaly is half gone by the end of the longest published horizon, so the quarter-ahead
+    // forecast sits meaningfully closer to climatology than the day-ahead one.
     expect(nearNormal).toBeLessThan(farNormal);
-    expect(farNormal).toBeGreaterThan(nearNormal);
     expect((farNormal - nearNormal) / nearNormal).toBeGreaterThan(0.1);
   });
 
