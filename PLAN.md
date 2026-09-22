@@ -1,6 +1,6 @@
 # hydro-look — Plan v2
 
-**Status:** ingestion implemented; historical backfill running; Phase 4 covariate ingestion merged, first run queued; the `pointValues` null issue is resolved and Phase 3 is unblocked (probe of 2026-09-22 02:14 UTC). **Updated:** 2026-09-22. Supersedes the initial plan and the
+**Status:** ingestion implemented; historical backfill running; Phase 4 covariate ingestion merged, first run queued; the `pointValues` null issue is resolved and Phase 3 is unblocked (probe of 2026-09-22 02:14 UTC); the site is deployed on Vercel. **Updated:** 2026-09-22. Supersedes the initial plan and the
 follow-up research note ("CELEC dashboard covers 7 plants", "CENACE header has usable numbers").
 
 This version was built after reading the two community scrapers that already run daily against
@@ -864,7 +864,7 @@ threshold) ship. The backtest window is 2018-01 onward as §7 specifies, which i
 endpoints, and no upstream source publishes 2115 at all. It is forecast against because §7 asks
 for it and labelled `unverified` everywhere it appears.
 
-**Phase 6 · Site and JSON API — built 2026-09-22, not yet deployed**
+**Phase 6 · Site and JSON API — built and deployed 2026-09-22**
 Delivered as specified apart from one tile, and the exception is the point of the entry.
 
 `public/api/latest.json` is the third public document, beside `status.json` and `forecast.json`:
@@ -901,9 +901,9 @@ now — see Phase 6c below.** What the balance section shows remains the observe
 closed day's supply, labelled as description rather than forecast; the forecast is the section
 after it, and it carries its own skill scores and its own negatives.
 
-The remaining step is connecting a Vercel project to this repository; it cannot be done from a
-sandbox. `npm run build` produces `out/`, which any static host serves, so nothing about the
-deployment target is load-bearing.
+The site is deployed: a Vercel project was connected to this repository on 2026-09-22, outside
+the sandbox, which cannot reach Vercel. `npm run build` produces `out/`, which any static host
+serves, so nothing about the deployment target is load-bearing.
 
 **Phase 6c · Energy adequacy — §7 target 3 — done 2026-09-22**
 The identity is one line and every term in it is either forecast with a backtest below it or an
