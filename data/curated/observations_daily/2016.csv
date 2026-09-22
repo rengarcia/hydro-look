@@ -464,7 +464,6 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2016-03-06,molino,produccion_mwh,11919.554696,ords:repDiaEner12m,,2026-09-22T01:28:30Z,celec_ords/2016/05/repDiaEner12m.ndjson.gz#repDiaEner12m:2016-05-01
 2016-03-07,amaluza,caudal_m3s,145,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
 2016-03-07,amaluza,cota_masl,1982.34,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
-2016-03-07,coca_codo_sinclair,caudal_m3s,0,ords:pointValues,100037,2026-09-22T08:37:13Z,celec_ords/2016/03/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100037:2016-03-01
 2016-03-07,mazar,caudal_m3s,86,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
 2016-03-07,mazar,caudal_m3s,86.348019,ords:pointValues,30538,2026-09-22T12:18:16Z,celec_ords/2016/03/pointValuesMesH24.ndjson.gz#pointValuesMesH24:30538:2016-03-01
 2016-03-07,mazar,cota_masl,2134.58,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
@@ -1100,7 +1099,6 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2016-05-31,sopladora,produccion_mwh,2276.54,ords:repDiaEner12m,,2026-09-22T01:28:32Z,celec_ords/2016/10/repDiaEner12m.ndjson.gz#repDiaEner12m:2016-10-28
 2016-06-01,amaluza,caudal_m3s,153,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
 2016-06-01,amaluza,cota_masl,1990.34,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
-2016-06-01,coca_codo_sinclair,caudal_m3s,0,ords:pointValues,100037,2026-09-22T08:37:09Z,celec_ords/2016/06/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100037:2016-06-01
 2016-06-01,mazar,caudal_m3s,100,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
 2016-06-01,mazar,caudal_m3s,100.307817,ords:pointValues,30538,2026-09-22T12:18:12Z,celec_ords/2016/06/pointValuesMesH24.ndjson.gz#pointValuesMesH24:30538:2016-06-01
 2016-06-01,mazar,cota_masl,2153.52,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
@@ -1288,7 +1286,6 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2016-06-23,sopladora,produccion_mwh,0,ords:repDiaEner12m,,2026-09-22T01:28:32Z,celec_ords/2016/10/repDiaEner12m.ndjson.gz#repDiaEner12m:2016-10-28
 2016-06-24,amaluza,caudal_m3s,481,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
 2016-06-24,amaluza,cota_masl,1990.79,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
-2016-06-24,coca_codo_sinclair,caudal_m3s,0,ords:pointValues,100037,2026-09-22T08:37:09Z,celec_ords/2016/06/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100037:2016-06-01
 2016-06-24,coca_codo_sinclair,produccion_mwh,0,ords:ccsEnerDia,,2026-09-22T05:43:34Z,celec_ords/2016/06/ccsEnerDia.ndjson.gz#ccsEnerDia:2016-06-24
 2016-06-24,mazar,caudal_m3s,321,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
 2016-06-24,mazar,caudal_m3s,321.117354,ords:pointValues,30538,2026-09-22T12:18:12Z,celec_ords/2016/06/pointValuesMesH24.ndjson.gz#pointValuesMesH24:30538:2016-06-01
@@ -1298,7 +1295,6 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2016-06-24,sopladora,produccion_mwh,0,ords:repDiaEner12m,,2026-09-22T01:28:32Z,celec_ords/2016/10/repDiaEner12m.ndjson.gz#repDiaEner12m:2016-10-28
 2016-06-25,amaluza,caudal_m3s,353,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
 2016-06-25,amaluza,cota_masl,1990.79,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
-2016-06-25,coca_codo_sinclair,caudal_m3s,0,ords:pointValues,100037,2026-09-22T08:37:09Z,celec_ords/2016/06/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100037:2016-06-01
 2016-06-25,coca_codo_sinclair,produccion_mwh,0,ords:ccsEnerDia,,2026-09-22T05:43:35Z,celec_ords/2016/06/ccsEnerDia.ndjson.gz#ccsEnerDia:2016-06-25
 2016-06-25,mazar,caudal_m3s,189,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
 2016-06-25,mazar,caudal_m3s,189.099527,ords:pointValues,30538,2026-09-22T12:18:12Z,celec_ords/2016/06/pointValuesMesH24.ndjson.gz#pointValuesMesH24:30538:2016-06-01
@@ -1308,7 +1304,6 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2016-06-25,sopladora,produccion_mwh,0,ords:repDiaEner12m,,2026-09-22T01:28:32Z,celec_ords/2016/10/repDiaEner12m.ndjson.gz#repDiaEner12m:2016-10-28
 2016-06-26,amaluza,caudal_m3s,293,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
 2016-06-26,amaluza,cota_masl,1990.99,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
-2016-06-26,coca_codo_sinclair,caudal_m3s,0,ords:pointValues,100037,2026-09-22T08:37:09Z,celec_ords/2016/06/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100037:2016-06-01
 2016-06-26,coca_codo_sinclair,cota_masl,1224.5,ords:pointValues,100540,2026-09-22T08:34:07Z,celec_ords/2016/06/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100540:2016-06-01
 2016-06-26,coca_codo_sinclair,produccion_mwh,3292.032,ords:ccsEnerDia,,2026-09-22T05:43:37Z,celec_ords/2016/06/ccsEnerDia.ndjson.gz#ccsEnerDia:2016-06-26
 2016-06-26,mazar,caudal_m3s,175.60635,ords:pointValues,30538,2026-09-22T12:18:12Z,celec_ords/2016/06/pointValuesMesH24.ndjson.gz#pointValuesMesH24:30538:2016-06-01
@@ -1319,7 +1314,6 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2016-06-26,sopladora,produccion_mwh,1346.571,ords:repDiaEner12m,,2026-09-22T01:28:32Z,celec_ords/2016/10/repDiaEner12m.ndjson.gz#repDiaEner12m:2016-10-28
 2016-06-27,amaluza,caudal_m3s,304,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
 2016-06-27,amaluza,cota_masl,1991.19,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
-2016-06-27,coca_codo_sinclair,caudal_m3s,0,ords:pointValues,100037,2026-09-22T08:37:09Z,celec_ords/2016/06/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100037:2016-06-01
 2016-06-27,coca_codo_sinclair,cota_masl,1225,ords:pointValues,100540,2026-09-22T08:34:07Z,celec_ords/2016/06/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100540:2016-06-01
 2016-06-27,coca_codo_sinclair,produccion_mwh,5866.943,ords:ccsEnerDia,,2026-09-22T05:43:38Z,celec_ords/2016/06/ccsEnerDia.ndjson.gz#ccsEnerDia:2016-06-27
 2016-06-27,mazar,caudal_m3s,153.919728,ords:pointValues,30538,2026-09-22T12:18:12Z,celec_ords/2016/06/pointValuesMesH24.ndjson.gz#pointValuesMesH24:30538:2016-06-01
@@ -1668,7 +1662,6 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2016-07-25,agoyan,cota_masl,1650.78,ords:pointValues,140031,2026-09-22T08:40:08Z,celec_ords/2016/07/pointValuesMesH24.ndjson.gz#pointValuesMesH24:140031:2016-07-01
 2016-07-25,amaluza,caudal_m3s,158,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
 2016-07-25,amaluza,cota_masl,1989.7,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
-2016-07-25,coca_codo_sinclair,caudal_m3s,0,ords:pointValues,100037,2026-09-22T08:37:08Z,celec_ords/2016/07/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100037:2016-07-01
 2016-07-25,coca_codo_sinclair,cota_masl,1220.8,ords:pointValues,100540,2026-09-22T08:34:06Z,celec_ords/2016/07/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100540:2016-07-01
 2016-07-25,coca_codo_sinclair,produccion_mwh,10398.151,ords:ccsEnerDia,,2026-09-22T05:44:11Z,celec_ords/2016/07/ccsEnerDia.ndjson.gz#ccsEnerDia:2016-07-25
 2016-07-25,mazar,caudal_m3s,50,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
@@ -1707,7 +1700,6 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2016-07-28,agoyan,cota_masl,1650.74,ords:pointValues,140031,2026-09-22T08:40:08Z,celec_ords/2016/07/pointValuesMesH24.ndjson.gz#pointValuesMesH24:140031:2016-07-01
 2016-07-28,amaluza,caudal_m3s,225,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
 2016-07-28,amaluza,cota_masl,1990.9,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
-2016-07-28,coca_codo_sinclair,caudal_m3s,0,ords:pointValues,100037,2026-09-22T08:37:08Z,celec_ords/2016/07/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100037:2016-07-01
 2016-07-28,coca_codo_sinclair,cota_masl,1218.6,ords:pointValues,100540,2026-09-22T08:34:06Z,celec_ords/2016/07/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100540:2016-07-01
 2016-07-28,coca_codo_sinclair,produccion_mwh,13224.2,ords:ccsEnerDia,,2026-09-22T05:44:15Z,celec_ords/2016/07/ccsEnerDia.ndjson.gz#ccsEnerDia:2016-07-28
 2016-07-28,mazar,caudal_m3s,104,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
@@ -1720,7 +1712,6 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2016-07-29,agoyan,cota_masl,1650.71,ords:pointValues,140031,2026-09-22T08:40:08Z,celec_ords/2016/07/pointValuesMesH24.ndjson.gz#pointValuesMesH24:140031:2016-07-01
 2016-07-29,amaluza,caudal_m3s,392,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
 2016-07-29,amaluza,cota_masl,1991.16,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
-2016-07-29,coca_codo_sinclair,caudal_m3s,0,ords:pointValues,100037,2026-09-22T08:37:08Z,celec_ords/2016/07/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100037:2016-07-01
 2016-07-29,coca_codo_sinclair,cota_masl,1227.4,ords:pointValues,100540,2026-09-22T08:34:06Z,celec_ords/2016/07/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100540:2016-07-01
 2016-07-29,coca_codo_sinclair,produccion_mwh,11774.96,ords:ccsEnerDia,,2026-09-22T05:44:16Z,celec_ords/2016/07/ccsEnerDia.ndjson.gz#ccsEnerDia:2016-07-29
 2016-07-29,mazar,caudal_m3s,265.849275,ords:pointValues,30538,2026-09-22T12:18:11Z,celec_ords/2016/07/pointValuesMesH24.ndjson.gz#pointValuesMesH24:30538:2016-07-01
@@ -1733,7 +1724,6 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2016-07-30,agoyan,cota_masl,1650.57,ords:pointValues,140031,2026-09-22T08:40:08Z,celec_ords/2016/07/pointValuesMesH24.ndjson.gz#pointValuesMesH24:140031:2016-07-01
 2016-07-30,amaluza,caudal_m3s,434,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
 2016-07-30,amaluza,cota_masl,1991.24,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
-2016-07-30,coca_codo_sinclair,caudal_m3s,0,ords:pointValues,100037,2026-09-22T08:37:08Z,celec_ords/2016/07/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100037:2016-07-01
 2016-07-30,coca_codo_sinclair,cota_masl,1229.1,ords:pointValues,100540,2026-09-22T08:34:06Z,celec_ords/2016/07/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100540:2016-07-01
 2016-07-30,coca_codo_sinclair,produccion_mwh,10832.105,ords:ccsEnerDia,,2026-09-22T05:44:17Z,celec_ords/2016/07/ccsEnerDia.ndjson.gz#ccsEnerDia:2016-07-30
 2016-07-30,mazar,caudal_m3s,315.862617,ords:pointValues,30538,2026-09-22T12:18:11Z,celec_ords/2016/07/pointValuesMesH24.ndjson.gz#pointValuesMesH24:30538:2016-07-01
@@ -2188,7 +2178,6 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2016-09-03,agoyan,cota_masl,1647.49,ords:pointValues,140031,2026-09-22T08:40:05Z,celec_ords/2016/09/pointValuesMesH24.ndjson.gz#pointValuesMesH24:140031:2016-09-01
 2016-09-03,amaluza,caudal_m3s,149,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
 2016-09-03,amaluza,cota_masl,1989.74,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
-2016-09-03,coca_codo_sinclair,caudal_m3s,0,ords:pointValues,100037,2026-09-22T08:37:05Z,celec_ords/2016/09/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100037:2016-09-01
 2016-09-03,coca_codo_sinclair,cota_masl,1229.5,ords:pointValues,100540,2026-09-22T08:34:03Z,celec_ords/2016/09/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100540:2016-09-01
 2016-09-03,coca_codo_sinclair,produccion_mwh,0,ords:ccsEnerDia,,2026-09-22T05:44:59Z,celec_ords/2016/09/ccsEnerDia.ndjson.gz#ccsEnerDia:2016-09-03
 2016-09-03,mazar,caudal_m3s,59,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
@@ -2201,7 +2190,6 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2016-09-04,agoyan,cota_masl,1645.48,ords:pointValues,140031,2026-09-22T08:40:05Z,celec_ords/2016/09/pointValuesMesH24.ndjson.gz#pointValuesMesH24:140031:2016-09-01
 2016-09-04,amaluza,caudal_m3s,129,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
 2016-09-04,amaluza,cota_masl,1989.37,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
-2016-09-04,coca_codo_sinclair,caudal_m3s,0,ords:pointValues,100037,2026-09-22T08:37:05Z,celec_ords/2016/09/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100037:2016-09-01
 2016-09-04,coca_codo_sinclair,cota_masl,1229.5,ords:pointValues,100540,2026-09-22T08:34:03Z,celec_ords/2016/09/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100540:2016-09-01
 2016-09-04,coca_codo_sinclair,produccion_mwh,0,ords:ccsEnerDia,,2026-09-22T05:45:00Z,celec_ords/2016/09/ccsEnerDia.ndjson.gz#ccsEnerDia:2016-09-04
 2016-09-04,mazar,caudal_m3s,41,ords:repDiaHid12m,,2026-09-22T01:28:15Z,celec_ords/2016/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2016-09-20
@@ -3382,7 +3370,6 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2016-12-04,agoyan,cota_masl,1645.65,ords:pointValues,140031,2026-09-22T08:40:01Z,celec_ords/2016/12/pointValuesMesH24.ndjson.gz#pointValuesMesH24:140031:2016-12-01
 2016-12-04,amaluza,caudal_m3s,65,ords:repDiaHid12m,,2026-09-22T01:28:16Z,celec_ords/2017/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2017-09-20
 2016-12-04,amaluza,cota_masl,1980.35,ords:repDiaHid12m,,2026-09-22T01:28:16Z,celec_ords/2017/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2017-09-20
-2016-12-04,coca_codo_sinclair,caudal_m3s,0,ords:pointValues,100037,2026-09-22T08:37:01Z,celec_ords/2016/12/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100037:2016-12-01
 2016-12-04,coca_codo_sinclair,cota_masl,1226.8,ords:pointValues,100540,2026-09-22T08:33:59Z,celec_ords/2016/12/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100540:2016-12-01
 2016-12-04,coca_codo_sinclair,produccion_mwh,19998.523,ords:ccsEnerDia,,2026-09-22T05:46:50Z,celec_ords/2016/12/ccsEnerDia.ndjson.gz#ccsEnerDia:2016-12-04
 2016-12-04,mazar,caudal_m3s,25.751423,ords:pointValues,30538,2026-09-22T12:18:05Z,celec_ords/2016/12/pointValuesMesH24.ndjson.gz#pointValuesMesH24:30538:2016-12-01
@@ -3551,7 +3538,6 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2016-12-17,agoyan,cota_masl,1648.94,ords:pointValues,140031,2026-09-22T08:40:01Z,celec_ords/2016/12/pointValuesMesH24.ndjson.gz#pointValuesMesH24:140031:2016-12-01
 2016-12-17,amaluza,caudal_m3s,45,ords:repDiaHid12m,,2026-09-22T01:28:16Z,celec_ords/2017/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2017-09-20
 2016-12-17,amaluza,cota_masl,1980.62,ords:repDiaHid12m,,2026-09-22T01:28:16Z,celec_ords/2017/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2017-09-20
-2016-12-17,coca_codo_sinclair,caudal_m3s,0,ords:pointValues,100037,2026-09-22T08:37:01Z,celec_ords/2016/12/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100037:2016-12-01
 2016-12-17,coca_codo_sinclair,cota_masl,1225.5,ords:pointValues,100540,2026-09-22T08:33:59Z,celec_ords/2016/12/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100540:2016-12-01
 2016-12-17,coca_codo_sinclair,produccion_mwh,19633.533,ords:ccsEnerDia,,2026-09-22T05:47:05Z,celec_ords/2016/12/ccsEnerDia.ndjson.gz#ccsEnerDia:2016-12-17
 2016-12-17,mazar,caudal_m3s,40,ords:repDiaHid12m,,2026-09-22T01:28:16Z,celec_ords/2017/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2017-09-20
@@ -3651,7 +3637,6 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2016-12-24,mazar,produccion_mwh,891.420103,ords:repDiaEner12m,,2026-09-22T01:28:33Z,celec_ords/2017/04/repDiaEner12m.ndjson.gz#repDiaEner12m:2017-04-26
 2016-12-24,molino,produccion_mwh,5420.108999,ords:repDiaEner12m,,2026-09-22T01:28:33Z,celec_ords/2017/04/repDiaEner12m.ndjson.gz#repDiaEner12m:2017-04-26
 2016-12-24,sopladora,produccion_mwh,3054.577237,ords:repDiaEner12m,,2026-09-22T01:28:33Z,celec_ords/2017/04/repDiaEner12m.ndjson.gz#repDiaEner12m:2017-04-26
-2016-12-25,agoyan,caudal_m3s,0,ords:pointValues,140537,2026-09-22T08:42:54Z,celec_ords/2016/12/pointValuesMesH24.ndjson.gz#pointValuesMesH24:140537:2016-12-01
 2016-12-25,agoyan,cota_masl,1646.94,ords:pointValues,140031,2026-09-22T08:40:01Z,celec_ords/2016/12/pointValuesMesH24.ndjson.gz#pointValuesMesH24:140031:2016-12-01
 2016-12-25,amaluza,caudal_m3s,145,ords:repDiaHid12m,,2026-09-22T01:28:16Z,celec_ords/2017/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2017-09-20
 2016-12-25,amaluza,cota_masl,1980.18,ords:repDiaHid12m,,2026-09-22T01:28:16Z,celec_ords/2017/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2017-09-20
@@ -3732,7 +3717,6 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2016-12-31,agoyan,cota_masl,1649.17,ords:pointValues,140031,2026-09-22T08:40:01Z,celec_ords/2016/12/pointValuesMesH24.ndjson.gz#pointValuesMesH24:140031:2016-12-01
 2016-12-31,amaluza,caudal_m3s,93,ords:repDiaHid12m,,2026-09-22T01:28:16Z,celec_ords/2017/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2017-09-20
 2016-12-31,amaluza,cota_masl,1982.28,ords:repDiaHid12m,,2026-09-22T01:28:16Z,celec_ords/2017/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2017-09-20
-2016-12-31,coca_codo_sinclair,caudal_m3s,0,ords:pointValues,100037,2026-09-22T08:37:01Z,celec_ords/2016/12/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100037:2016-12-01
 2016-12-31,coca_codo_sinclair,cota_masl,1229.6,ords:pointValues,100540,2026-09-22T08:33:59Z,celec_ords/2016/12/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100540:2016-12-01
 2016-12-31,mazar,caudal_m3s,17.788144,ords:pointValues,30538,2026-09-22T12:18:05Z,celec_ords/2016/12/pointValuesMesH24.ndjson.gz#pointValuesMesH24:30538:2016-12-01
 2016-12-31,mazar,caudal_m3s,18,ords:repDiaHid12m,,2026-09-22T01:28:16Z,celec_ords/2017/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2017-09-20

@@ -1699,7 +1699,6 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2021-03-19,agoyan,produccion_mwh,3612.85,ords:agoEnerDia,,2026-09-22T03:17:33Z,celec_ords/2021/03/agoEnerDia.ndjson.gz#agoEnerDia:2021-03-19
 2021-03-19,amaluza,caudal_m3s,196,ords:repDiaHid12m,,2026-09-22T01:28:22Z,celec_ords/2021/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2021-09-20
 2021-03-19,amaluza,cota_masl,1990.53,ords:repDiaHid12m,,2026-09-22T01:28:22Z,celec_ords/2021/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2021-09-20
-2021-03-19,coca_codo_sinclair,caudal_m3s,0,ords:pointValues,100037,2026-09-22T08:35:53Z,celec_ords/2021/03/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100037:2021-03-01
 2021-03-19,coca_codo_sinclair,cota_masl,1223.67,ords:pointValues,100540,2026-09-22T08:32:53Z,celec_ords/2021/03/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100540:2021-03-01
 2021-03-19,coca_codo_sinclair,produccion_mwh,13173.576,ords:ccsEnerDia,,2026-09-22T06:17:56Z,celec_ords/2021/03/ccsEnerDia.ndjson.gz#ccsEnerDia:2021-03-19
 2021-03-19,delsitanisagua,caudal_m3s,41,ords:repDiaHid12m,,2026-09-22T01:28:22Z,celec_ords/2021/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2021-09-20

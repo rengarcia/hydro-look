@@ -330,9 +330,6 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2013-11-24,mazar,caudal_m3s,33.442,ords:pointValues,30538,2026-09-22T13:54:14Z,celec_ords/2013/11/pointValuesMesH24.ndjson.gz#pointValuesMesH24:30538:2013-11-01
 2013-11-25,mazar,caudal_m3s,27.912,ords:pointValues,30538,2026-09-22T13:54:14Z,celec_ords/2013/11/pointValuesMesH24.ndjson.gz#pointValuesMesH24:30538:2013-11-01
 2013-11-26,mazar,caudal_m3s,34.307,ords:pointValues,30538,2026-09-22T13:54:14Z,celec_ords/2013/11/pointValuesMesH24.ndjson.gz#pointValuesMesH24:30538:2013-11-01
-2013-11-27,mazar,caudal_m3s,23221.102017,ords:pointValues,30538,2026-09-22T13:54:14Z,celec_ords/2013/11/pointValuesMesH24.ndjson.gz#pointValuesMesH24:30538:2013-11-01
-2013-11-28,mazar,caudal_m3s,0,ords:pointValues,30538,2026-09-22T13:54:14Z,celec_ords/2013/11/pointValuesMesH24.ndjson.gz#pointValuesMesH24:30538:2013-11-01
-2013-11-29,mazar,caudal_m3s,0,ords:pointValues,30538,2026-09-22T13:54:14Z,celec_ords/2013/11/pointValuesMesH24.ndjson.gz#pointValuesMesH24:30538:2013-11-01
 2013-12-01,mazar,caudal_m3s,29.701,ords:pointValues,30538,2026-09-22T13:54:13Z,celec_ords/2013/12/pointValuesMesH24.ndjson.gz#pointValuesMesH24:30538:2013-12-01
 2013-12-02,mazar,caudal_m3s,15.801,ords:pointValues,30538,2026-09-22T13:54:13Z,celec_ords/2013/12/pointValuesMesH24.ndjson.gz#pointValuesMesH24:30538:2013-12-01
 2013-12-03,mazar,caudal_m3s,17.96,ords:pointValues,30538,2026-09-22T13:54:13Z,celec_ords/2013/12/pointValuesMesH24.ndjson.gz#pointValuesMesH24:30538:2013-12-01

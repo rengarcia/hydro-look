@@ -101,6 +101,9 @@ export function widestBands(thresholds: Rows): Map<string, Band> {
  * tight bound would cry wolf every drought. What it does catch is the failure that matters —
  * a parser reading the wrong column, or a unit change — which lands orders of magnitude out.
  */
+/** Mirrors the parser's ceiling: the gate and the rule it backs up must not disagree. */
+const INFLOW_CEILING_M3S = 10_000;
+
 export function checkObservationRanges(observations: Rows, bands: Map<string, Band>): Finding[] {
   const out: Finding[] = [];
   const check = "range:observations_daily";
@@ -139,6 +142,25 @@ export function checkObservationRanges(observations: Rows, bands: Map<string, Ba
       value < 0
     ) {
       out.push({ check, level: "fail", message: `${site}/${variable} on ${row["date"]} is negative (${value})` });
+    } else if (variable === "caudal_m3s" && (value > INFLOW_CEILING_M3S || (value === 0 && row["source"] === "ords:pointValues"))) {
+      // The parser drops both of these on the way in, so anything reaching the table came by a
+      // route that rule does not cover — which is the case worth failing on. They are one fault
+      // seen twice: the historian gave Mazar 23,221.10 m3/s on 2013-11-27 and then 0.00 on the two
+      // days after, and its 82 zeros sit below every one of those series' own non-zero minimums,
+      // the lowest of which is 10.40. Neither is a river.
+      //
+      // The zero half is asked only of the historian, because only there does it mean anything.
+      // The 12-month reports publish whole m3/s, so their 0 is `round(x)` for x below 0.5 — on
+      // 2024-11-08 `repDiaHid12m` published 0 and the historian published 0.142 for the same day.
+      // Failing that row would fail the truest reading in the drought.
+      out.push({
+        check,
+        level: "fail",
+        message:
+          value === 0
+            ? `${site}/${variable} on ${row["date"]} is zero on ${row["source"]}, which publishes decimals, so it is a missing reading rather than a stopped river`
+            : `${site}/${variable} on ${row["date"]} is ${value}, above the ${INFLOW_CEILING_M3S} m3/s no Ecuadorian intake sees`,
+      });
     } else if (variable === "nivel_pct_banda" || variable === "factor_planta_pct") {
       // These percentages are the same reading as the level above, divided by a declared band,
       // so they inherit its looseness and this rule has to match the one for cota. Mazar sat

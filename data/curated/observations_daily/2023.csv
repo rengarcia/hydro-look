@@ -577,7 +577,6 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2023-01-27,agoyan,produccion_mwh,2227.88,ords:agoEnerDia,,2026-09-22T03:30:27Z,celec_ords/2023/01/agoEnerDia.ndjson.gz#agoEnerDia:2023-01-27
 2023-01-27,amaluza,caudal_m3s,149,ords:repDiaHid12m,,2026-09-22T01:28:24Z,celec_ords/2023/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2023-09-20
 2023-01-27,amaluza,cota_masl,1979.74,ords:repDiaHid12m,,2026-09-22T01:28:24Z,celec_ords/2023/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2023-09-20
-2023-01-27,coca_codo_sinclair,caudal_m3s,0,ords:pointValues,100037,2026-09-22T08:35:23Z,celec_ords/2023/01/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100037:2023-01-01
 2023-01-27,coca_codo_sinclair,cota_masl,1227.3,ords:pointValues,100540,2026-09-22T08:32:25Z,celec_ords/2023/01/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100540:2023-01-01
 2023-01-27,coca_codo_sinclair,produccion_mwh,16271.357,ords:ccsEnerDia,,2026-09-22T06:31:27Z,celec_ords/2023/01/ccsEnerDia.ndjson.gz#ccsEnerDia:2023-01-27
 2023-01-27,delsitanisagua,caudal_m3s,17,ords:repDiaHid12m,,2026-09-22T01:28:24Z,celec_ords/2023/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2023-09-20
@@ -2799,7 +2798,6 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2023-05-08,agoyan,produccion_mwh,3253.85,ords:agoEnerDia,,2026-09-22T03:32:22Z,celec_ords/2023/05/agoEnerDia.ndjson.gz#agoEnerDia:2023-05-08
 2023-05-08,amaluza,caudal_m3s,175,ords:repDiaHid12m,,2026-09-22T01:28:24Z,celec_ords/2023/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2023-09-20
 2023-05-08,amaluza,cota_masl,1984.23,ords:repDiaHid12m,,2026-09-22T01:28:24Z,celec_ords/2023/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2023-09-20
-2023-05-08,coca_codo_sinclair,caudal_m3s,0,ords:pointValues,100037,2026-09-22T08:35:18Z,celec_ords/2023/05/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100037:2023-05-01
 2023-05-08,coca_codo_sinclair,cota_masl,1224.2,ords:pointValues,100540,2026-09-22T08:32:20Z,celec_ords/2023/05/pointValuesMesH24.ndjson.gz#pointValuesMesH24:100540:2023-05-01
 2023-05-08,coca_codo_sinclair,produccion_mwh,20505.016,ords:ccsEnerDia,,2026-09-22T06:33:28Z,celec_ords/2023/05/ccsEnerDia.ndjson.gz#ccsEnerDia:2023-05-08
 2023-05-08,delsitanisagua,caudal_m3s,29,ords:repDiaHid12m,,2026-09-22T01:28:24Z,celec_ords/2023/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2023-09-20
@@ -4938,7 +4936,6 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2023-08-13,coca_codo_sinclair,produccion_mwh,24711.596,ords:ccsEnerDia,,2026-09-22T06:35:24Z,celec_ords/2023/08/ccsEnerDia.ndjson.gz#ccsEnerDia:2023-08-13
 2023-08-13,delsitanisagua,caudal_m3s,40,ords:repDiaHid12m,,2026-09-22T01:28:24Z,celec_ords/2023/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2023-09-20
 2023-08-13,delsitanisagua,cota_masl,1490.66,ords:repDiaHid12m,,2026-09-22T01:28:24Z,celec_ords/2023/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2023-09-20
-2023-08-13,manduriacu,caudal_m3s,0,ords:pointValues,110537,2026-09-22T08:46:46Z,celec_ords/2023/08/pointValuesMesH24.ndjson.gz#pointValuesMesH24:110537:2023-08-01
 2023-08-13,manduriacu,cota_masl,490.2,ords:pointValues,110031,2026-09-22T08:44:04Z,celec_ords/2023/08/pointValuesMesH24.ndjson.gz#pointValuesMesH24:110031:2023-08-01
 2023-08-13,manduriacu,produccion_mwh,568.26,ords:manEnerDia,,2026-09-22T07:12:41Z,celec_ords/2023/08/manEnerDia.ndjson.gz#manEnerDia:2023-08-13
 2023-08-13,mazar,caudal_m3s,71.832632,ords:pointValues,30538,2026-09-22T12:16:29Z,celec_ords/2023/08/pointValuesMesH24.ndjson.gz#pointValuesMesH24:30538:2023-08-01
@@ -5334,7 +5331,6 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2023-08-31,coca_codo_sinclair,produccion_mwh,18833.943,ords:ccsEnerDia,,2026-09-22T06:35:45Z,celec_ords/2023/08/ccsEnerDia.ndjson.gz#ccsEnerDia:2023-08-31
 2023-08-31,delsitanisagua,caudal_m3s,25,ords:repDiaHid12m,,2026-09-22T01:28:24Z,celec_ords/2023/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2023-09-20
 2023-08-31,delsitanisagua,cota_masl,1488.7,ords:repDiaHid12m,,2026-09-22T01:28:24Z,celec_ords/2023/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2023-09-20
-2023-08-31,manduriacu,caudal_m3s,0,ords:pointValues,110537,2026-09-22T08:46:46Z,celec_ords/2023/08/pointValuesMesH24.ndjson.gz#pointValuesMesH24:110537:2023-08-01
 2023-08-31,manduriacu,cota_masl,490.2,ords:pointValues,110031,2026-09-22T08:44:04Z,celec_ords/2023/08/pointValuesMesH24.ndjson.gz#pointValuesMesH24:110031:2023-08-01
 2023-08-31,manduriacu,produccion_mwh,482.72,ords:manEnerDia,,2026-09-22T07:13:02Z,celec_ords/2023/08/manEnerDia.ndjson.gz#manEnerDia:2023-08-31
 2023-08-31,mazar,caudal_m3s,34.588444,ords:pointValues,30538,2026-09-22T12:16:29Z,celec_ords/2023/08/pointValuesMesH24.ndjson.gz#pointValuesMesH24:30538:2023-08-01

@@ -183,13 +183,58 @@ describe("the historian and live endpoints", () => {
     expect(find(result.observations, "2018-10-01", "mazar", "cota_masl")?.value).toBe(2144.64);
   });
 
-  it("keeps a zero inflow, which is a reading", () => {
+  // This one nearly went the other way. The historian's zeros are sentinels, so the obvious move
+  // was to reject every zero inflow — and on the reports that would have deleted the most
+  // informative day in the series. They publish whole m3/s, so a reported 0 is `round(x)` for any
+  // x below 0.5: on 2024-11-08, at the worst of the rationing drought, `repDiaHid12m` gave Mazar 0
+  // and the historian gave 0.142 for the same day. The rule belongs to the route that publishes
+  // decimals, and the test for it is below.
+  it("keeps a zero inflow from the reports, which round whole m3/s", () => {
     const body = JSON.stringify({
-      items: [{ loctimestamp: "2020-01-01T05:00:00Z", nivelmaz: 2100, q_ingresadomaz: 0, limmaz: 2153, min_maz: 2100, qmax_maz: 800 }],
+      items: [{ loctimestamp: "2024-11-08T05:00:00Z", nivelmaz: 2100, q_ingresadomaz: 0, limmaz: 2153, min_maz: 2100, qmax_maz: 800 }],
     });
     const result = parseRepDiaHid12m(body);
-    expect(find(result.observations, "2020-01-01", "mazar", "caudal_m3s")?.value).toBe(0);
+    expect(find(result.observations, "2024-11-08", "mazar", "caudal_m3s")?.value).toBe(0);
     expect(result.notes).toEqual([]);
+  });
+
+  it("drops an inflow in five figures, which no Ecuadorian intake sees", () => {
+    // Verbatim from the historian response for 2013-11 that the 2005 walk reached
+    // (celec_ords/2013/11/pointValuesMesH24.ndjson.gz): 23,221.10 m3/s between neighbours of
+    // 34.31 and 0.00, against a maximum of 867 in the same series.
+    const body = JSON.stringify({
+      items: [
+        { loctimestamp: "2013-11-26T05:00:00Z", valueedit: 34.31 },
+        { loctimestamp: "2013-11-27T05:00:00Z", valueedit: 23221.1 },
+      ],
+    });
+    const result = parsePointValues(body, "mazar", "caudal_m3s", 30538);
+
+    expect(find(result.observations, "2013-11-27", "mazar", "caudal_m3s")).toBeUndefined();
+    expect(result.notes?.join(" ")).toMatch(/inflow 23221.1 exceeds 10000 m3\/s/);
+    // The day before it stands: the rule rejects the fault, not the neighbourhood.
+    expect(find(result.observations, "2013-11-26", "mazar", "caudal_m3s")?.value).toBe(34.31);
+  });
+
+  it("drops a historian zero, which is a sentinel on a route that publishes decimals", () => {
+    // Verbatim shape of 2010-02, where nine consecutive days came back 0.00 in a series whose
+    // smallest real reading anywhere is 0.142.
+    const body = JSON.stringify({
+      items: [
+        { loctimestamp: "2010-02-01T05:00:00Z", valueedit: 0 },
+        { loctimestamp: "2010-02-02T05:00:00Z", valueedit: 41.2 },
+      ],
+    });
+    const asInflow = parsePointValues(body, "mazar", "caudal_m3s", 30538);
+    expect(find(asInflow.observations, "2010-02-01", "mazar", "caudal_m3s")).toBeUndefined();
+    expect(asInflow.notes?.join(" ")).toMatch(/is zero on a route that publishes decimals/);
+    expect(find(asInflow.observations, "2010-02-02", "mazar", "caudal_m3s")?.value).toBe(41.2);
+
+    // A cota of zero is just as wrong, but it is wrong in a way this rule has not measured, and
+    // the range gate already bounds levels against a declared band. Silently borrowing the inflow
+    // threshold for it would be a guess wearing a rule's clothes.
+    const asLevel = parsePointValues(body, "mazar", "cota_masl", 30031);
+    expect(find(asLevel.observations, "2010-02-01", "mazar", "cota_masl")?.value).toBe(0);
   });
 
   it("reads the yearly basin flow, including the 2024 drought", () => {
