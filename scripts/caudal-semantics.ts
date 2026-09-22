@@ -25,6 +25,12 @@
  *    stops. Inflow has no ceiling and keeps a long right tail. Measuring how often each series
  *    sits within 1% of its own maximum separates the two shapes without knowing any plant's
  *    design flow, and it applies to the three plants the direct comparison cannot reach.
+ * 3. **Agreement with the plant's own generation.** Water through the turbines makes the
+ *    electricity, at a head that barely moves day to day, so turbined flow and daily generation
+ *    are very nearly the same number twice. Inflow is not: it arrives with the rain, and what is
+ *    generated from it is an operator's decision. This one also reaches the three plants
+ *    directly — their generation is ingested from `{code}EnerDia` — so the answer for them is
+ *    measured rather than inherited from Mazar.
  *
  *   npm run crosscheck:caudal     writes data/crosschecks/caudal-semantics.md and .json
  *
@@ -59,7 +65,9 @@ const SEPARATION = 10;
 const CEILING_BAND = 0.01;
 
 interface Candidate {
-  /** How the report endpoint names the quantity. */
+  /** Which of the two flows this is — the thing the run has to decide between. */
+  quantity: "inflow" | "turbined flow";
+  /** Which endpoint publishes it, since two of them publish inflow. */
   meaning: string;
   site: SiteId;
   variable: string;
@@ -72,12 +80,13 @@ interface Candidate {
  * "identical" looks like in this table.
  */
 const CANDIDATES: Candidate[] = [
-  { meaning: "inflow, 12-month report", site: "mazar", variable: "caudal_m3s", source: "ords:repDiaHid12m" },
-  { meaning: "inflow, per-day report", site: "mazar", variable: "caudal_m3s", source: "ords:repDiaNivQIng" },
-  { meaning: "turbined flow", site: "mazar", variable: "q_turbinado_m3s", source: "ords:repDiaPotQTurb" },
+  { quantity: "inflow", meaning: "inflow, 12-month report", site: "mazar", variable: "caudal_m3s", source: "ords:repDiaHid12m" },
+  { quantity: "inflow", meaning: "inflow, per-day report", site: "mazar", variable: "caudal_m3s", source: "ords:repDiaNivQIng" },
+  { quantity: "turbined flow", meaning: "turbined flow", site: "mazar", variable: "q_turbinado_m3s", source: "ords:repDiaPotQTurb" },
 ];
 
 const REFERENCE: Candidate = {
+  quantity: "inflow",
   meaning: "level (known identical)",
   site: "mazar",
   variable: "cota_masl",
@@ -90,6 +99,7 @@ interface Series {
 }
 
 interface Comparison {
+  quantity: string;
   meaning: string;
   source: string;
   offset_days: number;
@@ -101,6 +111,14 @@ interface Comparison {
   /** Share of days agreeing to within 0.1% of the report's value. */
   agree_pct: number;
   mean_ratio: number;
+  correlation: number;
+}
+
+interface GenerationAgreement {
+  site: SiteId;
+  series: string;
+  mrid: number | null;
+  days: number;
   correlation: number;
 }
 
@@ -156,6 +174,7 @@ function compare(ours: Series, theirs: Series, candidate: Candidate, offset: num
   const ratios = pairs.filter((p) => p.theirs !== 0).map((p) => p.ours / p.theirs);
 
   return {
+    quantity: candidate.quantity,
     meaning: candidate.meaning,
     source: candidate.source,
     offset_days: offset,
@@ -168,6 +187,22 @@ function compare(ours: Series, theirs: Series, candidate: Candidate, offset: num
     mean_ratio: ratios.length === 0 ? 0 : round(ratios.reduce((a, b) => a + b, 0) / ratios.length, 4),
     correlation: varOurs === 0 || varTheirs === 0 ? 0 : round(cov / Math.sqrt(varOurs * varTheirs), 4),
   };
+}
+
+/** Pearson correlation over the days two series share; 0 when either never varies. */
+function correlate(a: Map<IsoDate, number>, b: Map<IsoDate, number>): { days: number; r: number } {
+  const pairs: [number, number][] = [];
+  for (const [date, x] of a) {
+    const y = b.get(date);
+    if (y !== undefined) pairs.push([x, y]);
+  }
+  const n = pairs.length || 1;
+  const mx = pairs.reduce((s2, p) => s2 + p[0], 0) / n;
+  const my = pairs.reduce((s2, p) => s2 + p[1], 0) / n;
+  const cov = pairs.reduce((s2, p) => s2 + (p[0] - mx) * (p[1] - my), 0);
+  const vx = pairs.reduce((s2, p) => s2 + (p[0] - mx) ** 2, 0);
+  const vy = pairs.reduce((s2, p) => s2 + (p[1] - my) ** 2, 0);
+  return { days: pairs.length, r: vx === 0 || vy === 0 ? 0 : round(cov / Math.sqrt(vx * vy), 4) };
 }
 
 function ceiling(label: string, mrid: number | null, values: Map<IsoDate, number>): CeilingProfile {
@@ -218,19 +253,31 @@ function main(): void {
     0,
   );
 
-  /** Best offset per candidate meaning, and whether the overlap is long enough to mean it. */
+  /**
+   * The question is which *quantity* mrid 30538 is, so the ranking is by quantity: two
+   * endpoints publish inflow and whichever of them fits better is still only evidence for
+   * inflow. Within a quantity the best offset wins; a long overlap that only fits at a
+   * non-zero offset is a dating difference, and the verdict has to say so rather than let it
+   * read as a match.
+   */
   const best = new Map<string, Comparison>();
   for (const result of comparisons) {
-    const current = best.get(result.meaning);
-    if (!current || result.mean_abs_diff < current.mean_abs_diff) best.set(result.meaning, result);
+    if (result.compared < MIN_DAYS_FOR_VERDICT) continue;
+    const current = best.get(result.quantity);
+    if (!current || result.mean_abs_diff < current.mean_abs_diff) best.set(result.quantity, result);
   }
-  const ranked = [...best.values()]
-    .filter((r) => r.compared >= MIN_DAYS_FOR_VERDICT)
-    .sort((a, b) => a.mean_abs_diff - b.mean_abs_diff);
-  const short = [...best.values()].filter((r) => r.compared < MIN_DAYS_FOR_VERDICT);
+  const perMeaning = new Map<string, Comparison>();
+  for (const result of comparisons) {
+    const current = perMeaning.get(result.meaning);
+    if (!current || result.mean_abs_diff < current.mean_abs_diff) perMeaning.set(result.meaning, result);
+  }
+  const ranked = [...best.values()].sort((a, b) => a.mean_abs_diff - b.mean_abs_diff);
+  const short = [...perMeaning.values()].filter((r) => r.compared < MIN_DAYS_FOR_VERDICT);
 
   const winner = ranked[0];
   const runnerUp = ranked[1];
+  const howClose = (r: Comparison) =>
+    r.mean_abs_diff === 0 ? "identically" : `to within ${r.mean_abs_diff} m³/s on average`;
   let verdict: string;
   let settled = false;
   if (!winner) {
@@ -239,21 +286,21 @@ function main(): void {
       `mrid ${mazarCaudalMrid} means. Backfill the historian control and the per-day reports over the same span.`;
   } else if (!runnerUp) {
     verdict =
-      `Only one candidate has ${MIN_DAYS_FOR_VERDICT} shared days (${winner.meaning}, mean absolute ` +
-      `difference ${winner.mean_abs_diff} m³/s over ${winner.compared} days). A single candidate cannot be ` +
-      `separated from the one it was not compared against; backfill the other before reading this as an answer.`;
+      `Only ${winner.quantity} has ${MIN_DAYS_FOR_VERDICT} shared days (${winner.meaning}, matching ` +
+      `${howClose(winner)} over ${winner.compared} days). One quantity cannot be separated from the one it ` +
+      `was not compared against; backfill the other before reading this as an answer.`;
   } else if (runnerUp.mean_abs_diff < winner.mean_abs_diff * SEPARATION) {
     verdict =
-      `Not separated: ${winner.meaning} is off by ${winner.mean_abs_diff} m³/s and ${runnerUp.meaning} by ` +
+      `Not separated: ${winner.quantity} matches ${howClose(winner)} and ${runnerUp.quantity} by ` +
       `${runnerUp.mean_abs_diff}, closer than the ${SEPARATION}x this check asks for before naming one. ` +
       `mrid ${mazarCaudalMrid} stays undeclared.`;
   } else {
     settled = true;
+    const offset = winner.offset_days === 0 ? "the same day" : `${winner.offset_days > 0 ? "+" : ""}${winner.offset_days} d`;
     verdict =
-      `mrid ${mazarCaudalMrid} is **${winner.meaning}**: ${winner.mean_abs_diff} m³/s mean absolute difference ` +
-      `over ${winner.compared} days at offset ${winner.offset_days >= 0 ? "+" : ""}${winner.offset_days}, ` +
-      `against ${runnerUp.mean_abs_diff} for ${runnerUp.meaning} — ` +
-      `${round(runnerUp.mean_abs_diff / (winner.mean_abs_diff || 1e-9), 1)}x worse.`;
+      `mrid ${mazarCaudalMrid} is **${winner.quantity}**. It follows ${winner.meaning} ${howClose(winner)} over ` +
+      `${winner.compared} days, dated to ${offset}, while ${runnerUp.quantity} is ${runnerUp.mean_abs_diff} m³/s ` +
+      `out at its own best offset — and correlates at r=${runnerUp.correlation}, which is to say not at all.`;
   }
 
   // The shape check, on every plant. Mazar's two report series calibrate it: one is known
@@ -269,6 +316,30 @@ function main(): void {
     if (values.size > 0) profiles.push(ceiling(`mazar/${candidate.variable} (${candidate.meaning})`, null, values));
   }
 
+  // Third reading: does the series track the plant's own generation? Turbined flow does,
+  // almost by definition. Mazar's two report series calibrate both ends of the scale.
+  const generation: GenerationAgreement[] = [];
+  const produccion = (site: SiteId): Map<IsoDate, number> => {
+    let best = new Map<IsoDate, number>();
+    for (const [key, values] of all) {
+      const [rowSite, variable] = key.split("|");
+      if (rowSite === site && variable === "produccion_mwh" && values.size > best.size) best = values;
+    }
+    return best;
+  };
+  for (const series of HISTORIAN_SERIES.filter((s2) => s2.variable === "caudal_m3s")) {
+    const values = pick(series.site, "caudal_m3s", HISTORIAN_SOURCE, series.mrid);
+    if (values.size === 0) continue;
+    const { days, r } = correlate(values, produccion(series.site));
+    generation.push({ site: series.site, series: `${series.site}/caudal_m3s (historian)`, mrid: series.mrid, days, correlation: r });
+  }
+  for (const candidate of CANDIDATES) {
+    const values = pick(candidate.site, candidate.variable, candidate.source);
+    if (values.size === 0) continue;
+    const { days, r } = correlate(values, produccion(candidate.site));
+    generation.push({ site: candidate.site, series: `mazar/${candidate.variable} (${candidate.meaning})`, mrid: null, days, correlation: r });
+  }
+
   const dates = [...historian.values.keys()].sort();
   const report = {
     generated_at: nowUtc(),
@@ -281,6 +352,7 @@ function main(): void {
     reference,
     short_overlap: short,
     ceiling_profiles: profiles,
+    generation_agreement: generation,
   };
 
   const lines = [
@@ -341,6 +413,31 @@ function main(): void {
     ...profiles.map(
       (p) => `| ${p.series} | ${p.mrid ?? "—"} | ${p.days} | ${p.p50} | ${p.p99} | ${p.max} | ${p.on_ceiling_pct}% |`,
     ),
+    "",
+    "## Does the series track the plant's own generation?",
+    "",
+    "Turbined flow and daily generation are the same quantity measured twice, at a head that barely",
+    "moves. Inflow is not: it arrives with the rain, and how much of it is generated is a decision.",
+    "This reading needs no second flow series, so unlike the direct comparison it reaches Coca Codo",
+    "Sinclair, Agoyán and Manduriacu — their generation comes from `{code}EnerDia`.",
+    "",
+    "**This reading is weaker than it was designed to be, and the calibration row is what says so.**",
+    "Mazar's own turbined flow correlates with Mazar's own generation at r≈0.45, not the near-1 the",
+    "argument above predicts. The likely reason is visible in another test: `repDiaPotQTurb`'s",
+    "`potencia_mw` times 24 does not match daily energy at any offset (mean error ~1,000 MWh on a",
+    "~2,000 MWh day), so that endpoint looks like an instantaneous reading rather than a daily mean —",
+    "and an instant of flow cannot track a whole day of energy. Until that is settled, the top of",
+    "this scale is not anchored, and a plant scoring 0.5 cannot be called turbined on the strength of",
+    "it. Read the table only for what it still shows: the two Mazar inflow series and Coca Codo",
+    "Sinclair and Agoyán sit near zero, which is a reservoir decoupling inflow from a generation",
+    "decision. Manduriacu at 0.53 is the expected shape for run-of-river *inflow* too — its inflow",
+    "and its generation are the same water on the same day — so it is not evidence either way. The",
+    "ceiling reading above and the direct comparison carry the verdict; this one corroborates and",
+    "does not decide.",
+    "",
+    "| series | mrid | days vs generation | r |",
+    "|---|---|---|---|",
+    ...generation.map((g) => `| ${g.series} | ${g.mrid ?? "—"} | ${g.days} | ${g.correlation} |`),
     "",
   ];
 

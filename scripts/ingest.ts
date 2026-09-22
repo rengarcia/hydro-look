@@ -40,7 +40,7 @@ import {
   WEATHER_DAILY,
   ENSO_MONTHLY,
 } from "../src/lib/contracts/tables.ts";
-import { ENERGY_MODULES, HISTORIAN_SERIES, type EnergyPlantCode } from "../src/lib/registry.ts";
+import { DATA_DATE_OFFSET_DAYS, ENERGY_MODULES, HISTORIAN_SERIES, type EnergyPlantCode } from "../src/lib/registry.ts";
 import { walkHistorian } from "../src/lib/sources/historian.ts";
 import { parseOptions, type BackfillSource, type Options } from "../src/lib/options.ts";
 import { DATA_CURATED, DATA_LATEST } from "../src/lib/util/paths.ts";
@@ -283,7 +283,12 @@ async function main(): Promise<void> {
       if (runs("ords-daily")) {
         outer: for (const date of eachDay(from, to)) {
           for (const report of DAILY_REPORTS) {
-            if (present.has(`${date}|${report.source}`)) continue;
+            // Ask by the date the endpoint answers to, but skip by the date the answer is
+            // stored under: repDiaNivQIng returns the previous day's reading, so a run that
+            // checked the requested date would find nothing stored and re-fetch the whole
+            // range on every dispatch.
+            const stored = addDays(date, DATA_DATE_OFFSET_DAYS[report.source] ?? 0);
+            if (present.has(`${stored}|${report.source}`)) continue;
             const call = {
               repDiaNivQIng: () => ords.repDiaNivQIng(batch, date),
               repDiaPotQTurb: () => ords.repDiaPotQTurb(batch, date),

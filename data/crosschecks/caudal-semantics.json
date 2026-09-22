@@ -1,0 +1,267 @@
+{
+ "generated_at": "2026-09-22T12:41:49Z",
+ "mrid": 30538,
+ "historian_days": 4282,
+ "historian_span": "2015-01-01 .. 2026-09-21",
+ "settled": true,
+ "verdict": "mrid 30538 is **inflow**. It follows inflow, per-day report identically over 113 days, dated to the same day, while turbined flow is 50.66 m³/s out at its own best offset — and correlates at r=-0.0567, which is to say not at all.",
+ "comparisons": [
+  {
+   "quantity": "inflow",
+   "meaning": "inflow, 12-month report",
+   "source": "ords:repDiaHid12m",
+   "offset_days": -1,
+   "compared": 4282,
+   "mean_abs_diff": 37.2547,
+   "median_abs_diff": 17.611,
+   "p95_abs_diff": 143.9533,
+   "max_abs_diff": 771.1239,
+   "agree_pct": 0.23,
+   "mean_ratio": 1.177,
+   "correlation": 0.6613
+  },
+  {
+   "quantity": "inflow",
+   "meaning": "inflow, 12-month report",
+   "source": "ords:repDiaHid12m",
+   "offset_days": 0,
+   "compared": 4281,
+   "mean_abs_diff": 0.2491,
+   "median_abs_diff": 0.2489,
+   "p95_abs_diff": 0.4736,
+   "max_abs_diff": 0.5,
+   "agree_pct": 16.84,
+   "mean_ratio": 1,
+   "correlation": 1
+  },
+  {
+   "quantity": "inflow",
+   "meaning": "inflow, 12-month report",
+   "source": "ords:repDiaHid12m",
+   "offset_days": 1,
+   "compared": 4280,
+   "mean_abs_diff": 37.2814,
+   "median_abs_diff": 17.6046,
+   "p95_abs_diff": 145.5751,
+   "max_abs_diff": 770.5998,
+   "agree_pct": 0.14,
+   "mean_ratio": 1.1393,
+   "correlation": 0.6612
+  },
+  {
+   "quantity": "inflow",
+   "meaning": "inflow, per-day report",
+   "source": "ords:repDiaNivQIng",
+   "offset_days": -1,
+   "compared": 113,
+   "mean_abs_diff": 33.9946,
+   "median_abs_diff": 18.7821,
+   "p95_abs_diff": 121.6673,
+   "max_abs_diff": 279.8961,
+   "agree_pct": 0.88,
+   "mean_ratio": 1.1302,
+   "correlation": 0.4642
+  },
+  {
+   "quantity": "inflow",
+   "meaning": "inflow, per-day report",
+   "source": "ords:repDiaNivQIng",
+   "offset_days": 0,
+   "compared": 113,
+   "mean_abs_diff": 0,
+   "median_abs_diff": 0,
+   "p95_abs_diff": 0,
+   "max_abs_diff": 0,
+   "agree_pct": 100,
+   "mean_ratio": 1,
+   "correlation": 1
+  },
+  {
+   "quantity": "inflow",
+   "meaning": "inflow, per-day report",
+   "source": "ords:repDiaNivQIng",
+   "offset_days": 1,
+   "compared": 113,
+   "mean_abs_diff": 34.662,
+   "median_abs_diff": 18.7968,
+   "p95_abs_diff": 121.6673,
+   "max_abs_diff": 279.8961,
+   "agree_pct": 0.88,
+   "mean_ratio": 1.1367,
+   "correlation": 0.4579
+  },
+  {
+   "quantity": "turbined flow",
+   "meaning": "turbined flow",
+   "source": "ords:repDiaPotQTurb",
+   "offset_days": -1,
+   "compared": 112,
+   "mean_abs_diff": 50.66,
+   "median_abs_diff": 39.2725,
+   "p95_abs_diff": 157.6718,
+   "max_abs_diff": 248.8672,
+   "agree_pct": 0,
+   "mean_ratio": 1.3152,
+   "correlation": -0.0567
+  },
+  {
+   "quantity": "turbined flow",
+   "meaning": "turbined flow",
+   "source": "ords:repDiaPotQTurb",
+   "offset_days": 0,
+   "compared": 113,
+   "mean_abs_diff": 53.5195,
+   "median_abs_diff": 46.3254,
+   "p95_abs_diff": 157.8753,
+   "max_abs_diff": 220.9242,
+   "agree_pct": 0,
+   "mean_ratio": 1.4042,
+   "correlation": -0.0655
+  },
+  {
+   "quantity": "turbined flow",
+   "meaning": "turbined flow",
+   "source": "ords:repDiaPotQTurb",
+   "offset_days": 1,
+   "compared": 113,
+   "mean_abs_diff": 57.2576,
+   "median_abs_diff": 49.787,
+   "p95_abs_diff": 153.8508,
+   "max_abs_diff": 231.3342,
+   "agree_pct": 2.65,
+   "mean_ratio": 1.486,
+   "correlation": -0.2146
+  }
+ ],
+ "reference": {
+  "quantity": "inflow",
+  "meaning": "level (known identical)",
+  "source": "ords:repDiaHid12m",
+  "offset_days": 0,
+  "compared": 31,
+  "mean_abs_diff": 0,
+  "median_abs_diff": 0,
+  "p95_abs_diff": 0,
+  "max_abs_diff": 0,
+  "agree_pct": 100,
+  "mean_ratio": 1,
+  "correlation": 1
+ },
+ "short_overlap": [],
+ "ceiling_profiles": [
+  {
+   "series": "mazar/caudal_m3s (historian)",
+   "mrid": 30538,
+   "days": 4282,
+   "p50": 61.32,
+   "p99": 438.46,
+   "max": 867.12,
+   "on_ceiling_pct": 0.02
+  },
+  {
+   "series": "coca_codo_sinclair/caudal_m3s (historian)",
+   "mrid": 100037,
+   "days": 3747,
+   "p50": 245,
+   "p99": 1025,
+   "max": 1933,
+   "on_ceiling_pct": 0.03
+  },
+  {
+   "series": "agoyan/caudal_m3s (historian)",
+   "mrid": 140537,
+   "days": 3717,
+   "p50": 105,
+   "p99": 490,
+   "max": 1065,
+   "on_ceiling_pct": 0.03
+  },
+  {
+   "series": "manduriacu/caudal_m3s (historian)",
+   "mrid": 110537,
+   "days": 3338,
+   "p50": 158.3,
+   "p99": 563.18,
+   "max": 834,
+   "on_ceiling_pct": 0.03
+  },
+  {
+   "series": "mazar/caudal_m3s (inflow, 12-month report)",
+   "mrid": null,
+   "days": 4384,
+   "p50": 61,
+   "p99": 438,
+   "max": 867,
+   "on_ceiling_pct": 0.02
+  },
+  {
+   "series": "mazar/caudal_m3s (inflow, per-day report)",
+   "mrid": null,
+   "days": 113,
+   "p50": 67.15,
+   "p99": 248.87,
+   "max": 345.49,
+   "on_ceiling_pct": 0.88
+  },
+  {
+   "series": "mazar/q_turbinado_m3s (turbined flow)",
+   "mrid": null,
+   "days": 113,
+   "p50": 79.91,
+   "p99": 128.98,
+   "max": 129.18,
+   "on_ceiling_pct": 1.77
+  }
+ ],
+ "generation_agreement": [
+  {
+   "site": "mazar",
+   "series": "mazar/caudal_m3s (historian)",
+   "mrid": 30538,
+   "days": 3977,
+   "correlation": 0.0004
+  },
+  {
+   "site": "coca_codo_sinclair",
+   "series": "coca_codo_sinclair/caudal_m3s (historian)",
+   "mrid": 100037,
+   "days": 3736,
+   "correlation": -0.0744
+  },
+  {
+   "site": "agoyan",
+   "series": "agoyan/caudal_m3s (historian)",
+   "mrid": 140537,
+   "days": 3538,
+   "correlation": 0.1189
+  },
+  {
+   "site": "manduriacu",
+   "series": "manduriacu/caudal_m3s (historian)",
+   "mrid": 110537,
+   "days": 3338,
+   "correlation": 0.5265
+  },
+  {
+   "site": "mazar",
+   "series": "mazar/caudal_m3s (inflow, 12-month report)",
+   "mrid": null,
+   "days": 3977,
+   "correlation": 0.0004
+  },
+  {
+   "site": "mazar",
+   "series": "mazar/caudal_m3s (inflow, per-day report)",
+   "mrid": null,
+   "days": 113,
+   "correlation": -0.1744
+  },
+  {
+   "site": "mazar",
+   "series": "mazar/q_turbinado_m3s (turbined flow)",
+   "mrid": null,
+   "days": 112,
+   "correlation": 0.4476
+  }
+ ]
+}

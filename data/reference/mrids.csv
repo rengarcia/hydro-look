@@ -1,6 +1,6 @@
 plant,variable,mrid,unit,band_min,band_max,ords_module_energy,sample_value,sample_date,validated_by,evidence,discovered_on
 Mazar,cota,30031,masl,2098,2153,sardommaz,2139.14,2026-09-20,probe-ords run 35678724137 (2026-09-22T02:14Z),CELEC-wide bundle main-es2015.bb8d1c1f9fb35745e7e5.js: component 'Energía Mazar' sets this.mridCota=30031; chart title 'Cota Mazar min:2098 max:2153',2026-09-21
-Mazar,caudal,30538,m3/s,,,sardommaz,,,,same component: this.mridCaud=30538 (semantics inflow vs turbined still to verify),2026-09-21
+Mazar,caudal,30538,m3/s,,,sardommaz,75.263828,2026-09-19,crosscheck:caudal (backfill run 35726093961),"same component: this.mridCaud=30538; validated by crosscheck:caudal 2026-09-22: 4,281 days identical to repDiaHid12m q_ingresado (r=1.0000; the report is round(this) on every day), vs r=-0.06 against repDiaPotQTurb turbined flow",2026-09-21
 Mazar,unidades,30503,count,,,sardommaz,,,,same component: this.mridUnid=30503 (units in operation),2026-09-21
 Molino (Amaluza),cota,24019,masl,1975,1991,sardommol,,,,component 'Energía Molino': this.mridCota=24019; chart title 'Cota Amaluza min:1975 max:1991',2026-09-21
 Molino (Amaluza),caudal,24811,m3/s,,,sardommol,,,,same component: this.mridCaud=24811,2026-09-21
@@ -13,11 +13,11 @@ Minas San Francisco,cota,650919,masl,783.33,792.86,sardommsf,,,,component 'Energ
 Minas San Francisco,caudal,650538,m3/s,,,sardommsf,,,,same component: this.mridCaud=650538,2026-09-21
 Minas San Francisco,unidades,650503,count,,,sardommsf,,,,same component: this.mridUnid=650503,2026-09-21
 Agoyán,cota,140031,masl,,,sardomago,1645.77,2026-09-20,probe-ords run 35678724137 (2026-09-22T02:14Z),component 'Energía Agoyan': this.mridCota=140031 (no band in chart title),2026-09-21
-Agoyán,caudal,140537,m3/s,,,sardomago,80,2026-09-20,probe-ords run 35678724137 (2026-09-22T02:14Z),same component: this.mridCaud=140537,2026-09-21
+Agoyán,caudal,140537,m3/s,,,sardomago,80,2026-09-20,probe-ords run 35678724137 (2026-09-22T02:14Z),"same component: this.mridCaud=140537; inflow by the same declaration as Mazar's 30538, which is measured; corroborated here by the long right tail (p99 well below max, 0.03% of days on the ceiling) that turbined flow does not have",2026-09-21
 Agoyán,unidades,140503,count,,,sardomago,,,,same component: this.mridUnid=140503,2026-09-21
 Manduriacu,cota,110031,masl,,,sardomman,492.2,2026-09-20,probe-ords run 35678724137 (2026-09-22T02:14Z),component 'Energía Manduriacu': this.mridCota=110031,2026-09-21
-Manduriacu,caudal,110537,m3/s,,,sardomman,67.3,2026-09-20,probe-ords run 35678724137 (2026-09-22T02:14Z),same component: this.mridCaud=110537,2026-09-21
+Manduriacu,caudal,110537,m3/s,,,sardomman,67.3,2026-09-20,probe-ords run 35678724137 (2026-09-22T02:14Z),"same component: this.mridCaud=110537; inflow by the same declaration as Mazar's 30538, which is measured; corroborated here by the long right tail (p99 well below max, 0.03% of days on the ceiling) that turbined flow does not have",2026-09-21
 Manduriacu,unidades,110503,count,,,sardomman,,,,same component: this.mridUnid=110503,2026-09-21
 Coca Codo Sinclair,cota,100540,masl,,,sardomccs,1220.5,2026-09-20,probe-ords run 35678724137 (2026-09-22T02:14Z),component 'Energía Coca Codo Sinclair': this.mridCota=100540 (note: cota/caudal suffixes differ from the other plants),2026-09-21
-Coca Codo Sinclair,caudal,100037,m3/s,,,sardomccs,220,2026-09-20,probe-ords run 35678724137 (2026-09-22T02:14Z),same component: this.mridCaud=100037,2026-09-21
+Coca Codo Sinclair,caudal,100037,m3/s,,,sardomccs,220,2026-09-20,probe-ords run 35678724137 (2026-09-22T02:14Z),"same component: this.mridCaud=100037; inflow by the same declaration as Mazar's 30538, which is measured; corroborated here by the long right tail (p99 well below max, 0.03% of days on the ceiling) that turbined flow does not have",2026-09-21
 Coca Codo Sinclair,unidades,100503,count,,,sardomccs,,,,same component: this.mridUnid=100503,2026-09-21

@@ -13,9 +13,9 @@ with the response that produced it archived alongside it.
 |---|---|
 | 0 · Reconnaissance and fixtures | done — `scripts/recon/RECON_REPORT.md` |
 | 1 · Full ingest (CELEC ORDS + CENACE SMEC + Información Operativa) | code complete; levels backfilled to 2014-09-20, CELEC Sur energy to 2015-11-01, hourly energy for Coca Codo Sinclair (2016-06-24→), Agoyán (2017-01-01→) and Manduriacu (2017-07-31→). What remains is the acceptance criterion *three consecutive green scheduled daily runs*: the schedule first fires 2026-09-22 12:15 UTC, so the earliest it can close is 2026-09-25 |
-| 2 · CENACE history and reconciliation | SMEC backfilled 2016-05-01 → 2026-09-20 (3,780 days, 0.40% missing) and reconciled against the ORDS per-plant energy; the Información Operativa cross-check needs ≥ 20 snapshot days and has 1 |
-| 3 · Additional reservoir levels | **done 2026-09-22** — 21,632 historian rows: daily level and inflow for Coca Codo Sinclair (2016-03-07→), Agoyán (2016-07-05→) and Manduriacu (2017-08-01→). The Mazar control month matches `repDiaHid12m` on all 31 days to 0.0000 m. Outstanding: the mrid 30538 caudal-semantics overlap, which the daily run accumulates |
-| 4 · Covariates and quality | reference tables (`plants`, `thresholds`, `rationing_episodes`) and the `npm run check` gates done, `public/api/status.json` published; ONI 1950-01 → 2026-07 and ERA5 1990-01-01 → 2026-09-16 ingested. Outstanding: verified basin centroids — the 36 years of ERA5 cover the one provisional Paute point, not the fleet |
+| 2 · CENACE history and reconciliation | SMEC backfilled 2016-05-01 → 2026-09-20 (3,780 days, 0.40% missing) and reconciled against the ORDS per-plant energy. The fifteen missing days were re-asked on 2026-09-22 and none recovered, so 0.40% is this source's floor. Outstanding: the Información Operativa cross-check needs ≥ 20 snapshot days and has 1 |
+| 3 · Additional reservoir levels | **done 2026-09-22** — 21,632 historian rows: daily level and inflow for Coca Codo Sinclair (2016-03-07→), Agoyán (2016-07-05→) and Manduriacu (2017-08-01→). The Mazar control month matches `repDiaHid12m` on all 31 days to 0.0000 m, and the caudal semantics are now settled on 4,281 days rather than assumed: `mridCaud` is inflow, not turbined flow (`data/crosschecks/caudal-semantics.md`) |
+| 4 · Covariates and quality | reference tables (`plants`, `thresholds`, `rationing_episodes`) and the `npm run check` gates done, `public/api/status.json` published; ONI 1950-01 → 2026-07 and ERA5 1990-01-01 → 2026-09-16 ingested. Outstanding: verified basin centroids — the 36 years of ERA5 cover the one provisional Paute point, not the fleet. A probe on 2026-09-22 found six of seven dam coordinates on Wikidata but no reachable source of catchment boundaries (HydroSHEDS answers 403); see `PLAN.md` §2.4 |
 | 5–7 · Modelling, site, extensions | planned — see `PLAN.md` |
 
 ## Where the data comes from
@@ -30,8 +30,19 @@ with the response that produced it archived alongside it.
 | CELEC ORDS `pointValuesMesH24` | daily level and inflow per mrid, a month per request — the only route to Coca Codo Sinclair, Agoyán and Manduriacu | 2016-03-07 → |
 | CENACE Información Operativa | live production, demand by distribution utility, last validated day | snapshot |
 
-Two things worth knowing before using any of it:
+Four things worth knowing before using any of it:
 
+- **`repDiaNivQIng` answers with the previous day's numbers.** Asked for date D it returns rows
+  stamped D whose level and inflow are D−1's, identical to what `repDiaHid12m` publishes for D−1 —
+  measured on 113 consecutive days and on captures from 2016, 2019, 2022, 2024 and 2026. Rows from
+  it are therefore stored under the day they describe, not the day they are stamped. The other
+  per-day reports are not shifted; `DATA_DATE_OFFSET_DAYS` in `src/lib/registry.ts` says which are
+  known to be, which are known not to be, and which are untested.
+- **The historian's flow mrids are inflow, and carry more precision than the reports.**
+  `mridCaud` (30538 for Mazar) is `q_ingresado`, agreeing with `repDiaHid12m` on 4,281 days at
+  r = 1.0000; the only difference is that the report rounds to whole m³/s and the historian does
+  not, so the report is exactly `round(historian)` on every one of those days. Turbined flow, the
+  other candidate, correlates at r = −0.06.
 - **`volutilalm` is not a volume.** The ORDS publishes it as "% de volumen útil", but it is
   exactly `(cota − min) / (max − min)`. It is stored here as `nivel_pct_banda` and must not be
   read as stored water.

@@ -172,6 +172,33 @@ export function siteFromLabel(label: string): SiteId {
   return site;
 }
 
+/**
+ * Endpoints whose rows describe a different day from the one they are stamped with.
+ *
+ * `repDiaNivQIng?fecha=D` answers with `"fecha":"D T05:00:00Z"` — local midnight of D, the date
+ * asked for — and values that belong to **D−1**. It is not a rounding difference or a partial
+ * day: the numbers are `repDiaHid12m`'s previous-day numbers exactly, to every decimal the
+ * report publishes. Measured on 113 consecutive days of 2026 for level and inflow at Mazar,
+ * Amaluza and Minas San Francisco (level 113/113 identical at D−1 against 0/113 at D), and on
+ * the Phase 0 fixtures for 2016-06-15, 2019-06-15, 2022-01-15, 2024-10-15 and 2026-09-20, so it
+ * is a decade-long property of the endpoint rather than something recent.
+ *
+ * Which side is wrong is not a judgement call either. `repDiaHid12m`'s dating is confirmed
+ * twice over: against jordanvt18's independent scrape of the historian on 1,668 days, and
+ * against our own historian walk on 4,281. Two routes with explicit local-midnight timestamps
+ * agree; `repDiaNivQIng` is the one out of step, so its rows are stored under the day they
+ * describe and the raw response keeps its own `fecha` in the archive.
+ *
+ * The family does not share the habit, which is why this is a list and not a rule:
+ * `repDiaVolAlm` (level, 112/112 at offset 0) and `repDiaEnerAyerHoy` (energy against
+ * `repDiaEner12m`, 112/112) are dated correctly despite the "Ayer" in that one's name.
+ * `repDiaPotQTurb` and `repDiaRegAyer` publish nothing a second source covers, so they are
+ * untested and assumed correct — stated here so the assumption is visible.
+ */
+export const DATA_DATE_OFFSET_DAYS: Record<string, number> = {
+  "ords:repDiaNivQIng": -1,
+};
+
 /** `repDiaRegAyer` reports four plants as columns rather than rows. */
 export const REG_AYER_COLUMN_TO_SITE: Record<string, SiteId> = {
   minas: "minas_san_francisco",

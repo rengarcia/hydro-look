@@ -78,9 +78,20 @@ describe("ingest write path", () => {
     expect(bands.added).toBeGreaterThan(0);
 
     const rows = parseCsv(readFileSync(join(root, "curated", "observations_daily", "2026.csv"), "utf8"));
-    const mazarLevels = rows.filter((r) => r["date"] === "2026-09-20" && r["site"] === "mazar" && r["variable"] === "cota_masl");
-    expect(mazarLevels.map((r) => r["source"]).sort()).toEqual(["ords:repDiaNivQIng", "ords:repDiaVolAlm"]);
-    expect(mazarLevels[0]!["raw_ref"]).toMatch(/^celec_ords\/2026\/09\/repDia.*#repDia/);
+    const mazarLevelsOn = (date: string) =>
+      rows.filter((r) => r["date"] === date && r["site"] === "mazar" && r["variable"] === "cota_masl");
+    // Both one-day reports were fetched for 2026-09-20 and they land on different days, which is
+    // the point: repDiaVolAlm describes the date it is stamped with and repDiaNivQIng does not.
+    expect(mazarLevelsOn("2026-09-20").map((r) => r["source"]).sort()).toEqual(["ords:repDiaVolAlm"]);
+    // 2026-09-19 also carries the trailing-year row from repDiaHid12m, which is the pair the
+    // shift was measured against; what matters is that repDiaNivQIng is here and not a day later.
+    expect(mazarLevelsOn("2026-09-19").map((r) => r["source"]).sort()).toEqual([
+      "ords:repDiaHid12m",
+      "ords:repDiaNivQIng",
+    ]);
+    // The row moved; the response it came from is still archived under the month it was asked for.
+    const nivQIng = mazarLevelsOn("2026-09-19").find((r) => r["source"] === "ords:repDiaNivQIng")!;
+    expect(nivQIng["raw_ref"]).toMatch(/^celec_ords\/2026\/09\/repDiaNivQIng.*#repDiaNivQIng:2026-09-20/);
 
     const balance = parseCsv(readFileSync(join(root, "curated", "national_balance_daily", "2026.csv"), "utf8"));
     expect(balance.find((r) => r["concepto"] === "generacion_hidraulica")?.["dia_kwh"]).toBe("76808654.928");
