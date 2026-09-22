@@ -703,31 +703,39 @@ looked like the national answer, says it too. It is a figure from one paper cove
 area, not Ecuador's Pfafstetter units, and no amount of re-asking it will produce a catchment. The
 search for a boundary set with upstream topology starts again from SENAGUA or MAATE directly.
 
-**Delsitanisagua is settled: the OSM point is the intake, and it is the one to use.** Two readings
-agree and neither is a judgement call. OSM tags node/2489320895 `waterway=dam`, while the Wikidata
-coordinate carries no structure at all; and the two sit **526 m apart vertically** — 1,495 m against
-969 m — across the 8.18 km between them. Water enters a run-of-river scheme at the intake and
-leaves at the machines, so the higher end is the intake. The catchment for the `zamora` basin is
-therefore delineated at **-3.9803332, -79.0172129**, not at the Wikidata point, which is the
-powerhouse and would have added several kilometres of river the plant never sees.
+**Delsitanisagua's 8.18 km disagreement was never real.** It was this probe choosing the wrong
+element, and the correction is worth more than the finding it replaces. OSM maps at least two
+Delsitanisagua structures; the matcher took whichever the server listed first and got
+node/2489320895, a `waterway=dam` carrying no QID, 8.18 km from Wikidata and some 500 m above it.
+Ranking name matches by QID instead (run 35739164652) finds **way/690695824, "Central
+Hidroeléctrica Delsitanisagua", `wikidata=Q65196191`, `power=plant`, 180 MW** — the same QID the
+SPARQL query returned — **0.1 km from the Wikidata point and 22 m below it**. The two sources never
+disagreed about anything: they name one entity and place it in the same spot.
 
-What carries that conclusion is the *direction*, and it is worth being exact about why, because the
-magnitude does not carry it. These are terrain readings from a DEM, not water levels: they say what
-the ground does at two coordinates, and a powerhouse on a scheme like this can be partly
-underground. So 526 m is not this plant's gross head and should not be quoted as one — it is far
-larger than any figure a headrace of 8 km on the Zamora would imply, which is what a valley wall
-between two river points looks like to a DEM. The argument needs none of that: the structure tag
-says one point is a dam, the height says that point is upstream, and an intake is what a dam
-upstream of a powerhouse is. Half a kilometre of relief is simply too much to be either source's
-error, which is the only thing the size is asked to show.
+**But agreeing about the powerhouse is not the same as knowing the pour point.** What both sources
+confirm is where the *machines* are, and a catchment is defined at the intake. node/2489320895 is
+still the best candidate for that intake — it is tagged `waterway=dam`, it is upstream, and it sits
+about 500 m higher, which on a run-of-river scheme is the right shape — but it carries no QID, no
+operator and a name that is also a locality in that valley, so nothing yet ties it to this scheme
+rather than to something else called Delsitanisagua. It is a lead to confirm, not a coordinate to
+use, and `basins.csv` gets neither point until it is confirmed. (The earlier reading in this
+section, that the 526 m gap proved intake-versus-powerhouse, was sound reasoning resting on a
+premise the fixed matcher removed. The two elevations it compared belong to two structures that
+were never the two sources' rival claims.)
 
-**Two more pour points are now confirmed by identity rather than by proximity.** The OSM elements
-for Coca Codo Sinclair (way/310742588) and Marcel Laniado (way/550243261) carry
-`wikidata=Q19277520` and `wikidata=Q19381026` — the same QIDs the SPARQL query returned — so the
-two sources are not two opinions that happen to agree, they are one entity described twice. Coca
-Codo Sinclair's pair agrees to **0.11 km and 1 m of elevation**, and its element is tagged
-`waterway=dam`: the best pour point in the set. Mazar's element carries its QID too, but is tagged
-`power=plant`, so its 0.69 km is plant-to-dam on a reservoir scheme rather than a disagreement.
+**Three pour points are now confirmed by identity rather than by proximity, and one improved a lot.**
+The QID ranking does not only prevent errors, it finds better elements. Mazar now matches
+**way/311803060, "Presa Mazar", `wikidata=Q1751861`, `waterway=dam`, at 0.04 km and 0 m** — the dam
+itself, where before it matched a `power=plant` node 0.69 km away. Agoyán matches node/8432673468
+by QID at **0.37 km and −9 m**. Coca Codo Sinclair's way/310742588 carries `wikidata=Q19277520` and
+`waterway=dam` and agrees to **0.11 km and 1 m**. Those three are dams or plants identified by the
+same QID two ways, at the same place, at the same height: the pour points this repository may mark
+`verified`.
+
+**The distance bound earned its keep immediately.** Overpass did not answer for Marcel Laniado this
+run, and Nominatim offered "Embalse Daule Peripa" — 16.36 km away and carrying `wikidata=Q23886712`,
+a *different* QID from the Q19381026 the SPARQL query returned. It is the reservoir, not the dam.
+The bound rejected it and said why, where the previous run would have seated it in the table.
 
 **Minas San Francisco has now failed six runs**, and for the first time the failure is informative:
 Nominatim answered both aliases (10 and 9 results) with no name match at all, so this is no longer
