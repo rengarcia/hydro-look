@@ -214,6 +214,7 @@ All dates are local (`America/Guayaquil`, UTC−5, no DST); every row carries `f
 | `weather_daily` | basin × date × kind | `precip_mm, temp_mean_c, kind{era5, forecast}, issued_at` |
 | `enso_monthly` | month | `oni` |
 | `forecast_runs`, `forecast_values` | run × target × horizon | quantiles p10/p50/p90, model id, features hash |
+| `narrative_snapshots` | ingest run | `run_id, generated_at, forecast_run_id, features_hash, risk_tier (copied from the adequacy calc, not model-chosen), outlook_es, drivers[], confidence, model_id, prompt_version, input_tokens, output_tokens, cost_usd (from `providerMetadata.gateway.cost`), status{ok, skipped, failed}` — see Phase 6b |
 
 Storage: git is the database. Raw responses are archived as one gzipped NDJSON bundle per
 source-month (`data/raw/<source>/YYYY/MM/<endpoint>.ndjson.gz`, one record per request, deduped by
@@ -241,11 +242,12 @@ src/lib/
   contracts/    tables.ts (zod schemas; a failed parse writes nothing)
   features/     hydrology.ts (water balance, cota↔volume)   calendar.ts
   models/       baselines.ts  water-balance.ts  backtest.ts
+  narrative/    payload.ts (stats → compact JSON)  prompt.ts  generate.ts (AI Gateway call, zod schema)
 src/app/        Next.js App Router pages, server components reading data/curated + public/api
 scripts/        ingest.ts (daily | backfill --from --source | latest | --dry-run)
                 recon/capture.py (Phase-0 discovery, kept as-is)
 data/  raw/  curated/  reference/
-public/api/     latest.json  forecast.json  status.json  (served by Vercel, stable public URLs)
+public/api/     latest.json  forecast.json  narrative.json  status.json  (served by Vercel, stable public URLs)
 tests/  fixtures/<source>/*  (recorded Phase-0 responses)  *.test.ts
 .github/workflows/  daily.yml  backfill.yml  ci.yml  recon.yml
 ```
@@ -265,6 +267,12 @@ tests/  fixtures/<source>/*  (recorded Phase-0 responses)  *.test.ts
   GitHub issue. Freshness per table is published in `api/status.json`.
 - **Testing:** every parser has fixture-based tests (recorded in Phase 0); contracts run on every
   ingest; a `--dry-run` mode prints what would be written.
+- **AI narrative (Phase 6b):** one call per successful ingest run, made from the Actions job through
+  the **Vercel AI Gateway** with the AI SDK (`generateObject`, model chosen by a string in config).
+  The gateway key is an Actions secret; Vercel still holds no credentials and the site never calls a
+  model at request time. The output is a committed `narrative.json` next to `forecast.json`. The
+  sandbox cannot reach the gateway (A4), so the module is developed against a recorded response
+  fixture and a `--no-narrative` flag skips the call.
 
 ---
 
@@ -367,6 +375,36 @@ Static page: reservoir gauges vs bands, inflow vs climatology band, national mix
 forecast fan charts, adequacy tile, data freshness, download links, method notes, disclaimer
 ("not an official source"). Spanish first.
 
+**Phase 6b · AI narrative panel via Vercel AI Gateway (1 S, after Phase 5 and 6)**
+Implements decision 8. The model interprets; it never forecasts.
+1. `narrative/payload.ts` builds a small deterministic payload from data already computed in code:
+   current cota and distance to the 2153 / 2115 / 2098 bands per reservoir, 7/14/30-day slopes
+   (m/day), days-to-threshold at the current slope, the same calendar window in each prior year
+   (analog years, from the 2014→ history), the Phase 5 p10/p50/p90 at 7/14/30 days, the adequacy
+   `risk_tier` from §7, the 16-day basin precipitation forecast total vs climatology, and the current
+   ONI phase. Roughly 1–2 k tokens; the raw daily series is not sent.
+2. `narrative/generate.ts` calls the gateway with `generateObject` and a zod schema
+   `{ outlook_es: string, drivers: string[], confidence: 'low'|'medium'|'high' }`. The risk tier is an
+   *input* the model must explain, not an output it may choose, so the site never shows two competing
+   risk signals. Prompt text is versioned (`prompt_version`) and the payload hashed, so a rerun on the
+   same data is a no-op.
+3. The daily workflow runs it as the last step after a green ingest and forecast, `continue-on-error`,
+   writes `public/api/narrative.json` and appends a `narrative_snapshots` row with tokens and
+   `cost_usd` read from `providerMetadata.gateway.cost`. On a 429 (free-tier per-model rate limit)
+   retry once after a short wait, then mark the row `skipped`; the site keeps the previous narrative
+   and shows its `generated_at`.
+4. Site: the panel renders the narrative beside the computed numbers it was written from (bands,
+   slopes, days-to-threshold, fan chart) so the basis is always visible, with the disclaimer that the
+   text is model-generated and the forecast is the statistical one from §7.
+Gateway facts to plan around (verify on the Vercel docs at build time): a monthly free credit per team
+(USD 5 at the time of writing, requires a payment method on file), a subset of the catalog on the
+free tier with lower per-model rate limits, list-price token billing with zero markup drawn from
+prepaid credits, and switching provider or model is a string change. At one call per day the free
+credit covers this many times over; the `cost_usd` column is there to prove it.
+Acceptance: `narrative.json` regenerated daily for seven consecutive runs; a fixture test asserting
+the payload builder against a known day; the schema rejects any output that names a level or date
+not present in the payload; monthly gateway spend visible from the snapshots table.
+
 **Phase 7 · Hardening and extensions (ongoing)**
 ML v2 if it beats v1 in backtests; ARCONEL BNEE monthly loader; CENACE Datos Abiertos per-plant
 validation; Colombia export availability via XM's open API; public-records request template to
@@ -420,6 +458,8 @@ regime differences between Amazon- and Pacific-slope basins.
 | Few crisis episodes → overconfident models | Baselines first, probabilistic outputs, explicit scenario inputs, backtest report published with the forecast. |
 | Unit errors between sources | Reconciliation tests: SMEC vs InformacionOperativa closed day, SMEC hydro vs sum of plant production mrids, ORDS vs mirrors. |
 | Self-signed TLS | Fingerprint pinning; mismatch fails the run. |
+| AI narrative contradicts the numbers or invents a forecast | Model receives only computed stats and the §7 forecast, risk tier is an input, schema-validated output, numbers rendered next to the text, previous snapshot kept on failure (Phase 6b). |
+| Gateway rate limit / credit exhaustion | One call per ingest run, payload hash makes reruns free, `continue-on-error` so the ingest never fails because of the narrative, spend logged per call. |
 
 ---
 
@@ -434,7 +474,7 @@ regime differences between Amazon- and Pacific-slope basins.
 | 5 | Transparency request to CENACE/CELEC for pre-2022 series | Deferred; stays optional in Phase 7. |
 | 6 | Stack (revisited 2026-09-22 against a Next.js/Vercel/Postgres proposal) | **TypeScript ingestion in GitHub Actions, git as the store, Next.js on Vercel as a pure frontend.** No database: the data is daily-grain (~70k rows across every table), year-partitioned CSV keeps commits small, and a DB would be a second place for the numbers to drift. Secrets stay in Actions; Vercel gets no credentials. |
 | 7 | Ingestion scope for the first build | **Full ingest**, not the three-reservoir MVP subset: every verified ORDS report endpoint, per-plant hourly energy for all seven plants, SMEC back to its earliest date, and the Información Operativa snapshot. |
-| 8 | AI narrative panel (from the same proposal) | Accepted as a later phase, with the constraint that the model never extrapolates the series: slopes, days-to-threshold and analog years are computed in code, the model only writes the narrative over that payload, one call per ingestion run, cost logged with the snapshot. |
+| 8 | AI narrative panel (from the same proposal; scoped 2026-09-22 as Phase 6b) | Accepted, via the **Vercel AI Gateway** with the AI SDK, called from the Actions ingest job (not from Vercel, not at page load). The model never extrapolates the series: slopes, days-to-threshold, analog years and the §7 forecast are computed in code and the adequacy risk tier is passed in; the model only writes the narrative over that payload. One call per ingestion run, output committed as `narrative.json`, cost logged per call in `narrative_snapshots`. |
 | 9 | `pointValues*` / mrid route | Demoted to a fallback for Coca Codo Sinclair, Agoyán and Manduriacu only (Phase 3). The report endpoints carry every other reservoir and go back to 2015-09-20; the mrid route returned all-null in all three Phase-0 runs. |
 
 ## Appendix A · Phase-0 capture checklist (exact targets; executed by `scripts/recon/capture.py`, results in `scripts/recon/RECON_REPORT.md`)
@@ -472,3 +512,6 @@ openssl s_client -connect smec.cenace.gob.ec:443 -cipher 'DEFAULT@SECLEVEL=1' </
   (SMEC timing calibration), `data/historico.json` (2026-08-01 → 2026-09-20).
 - Ecuador open-data portal listing for CENACE (quarterly net generation by plant); ARCONEL BNEE
   publication rule (20th of month n+2); press chronology of the 2023 and 2024 rationing episodes.
+- Vercel AI Gateway docs (model strings in the AI SDK, free monthly credit and free-tier limits,
+  zero-markup billing, `providerMetadata.gateway.cost`) and Vercel cron limits on Hobby (once per day),
+  which is why scheduling stays in GitHub Actions.
