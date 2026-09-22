@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-22T17:03:53Z",
+  "generated_at": "2026-09-22T17:23:12Z",
   "as_of": "2026-09-22",
   "disclaimer": "No es una fuente oficial. Cada número es una copia de lo que publicaron CELEC o CENACE, con la respuesta que lo produjo archivada junto a él.",
   "reservoirs": [
@@ -377,60 +377,60 @@
     }
   ],
   "national": {
-    "date": "2026-09-20",
+    "date": "2026-09-21",
     "supply_gwh": [
       {
         "concept": "generacion_hidraulica",
-        "gwh": 76.809,
-        "pct": 76.64
+        "gwh": 85.983,
+        "pct": 78.81
       },
       {
         "concept": "generacion_motores_bunker",
-        "gwh": 9.174,
-        "pct": 9.15
+        "gwh": 9.05,
+        "pct": 8.3
       },
       {
         "concept": "generacion_vapor_bunker",
-        "gwh": 5.117,
-        "pct": 5.11
+        "gwh": 5.167,
+        "pct": 4.74
       },
       {
         "concept": "generacion_turbinas_diesel",
-        "gwh": 4.437,
-        "pct": 4.43
+        "gwh": 4.418,
+        "pct": 4.05
       },
       {
         "concept": "generacion_turbinas_gas",
-        "gwh": 2.712,
-        "pct": 2.71
+        "gwh": 2.711,
+        "pct": 2.48
       },
       {
         "concept": "generacion_otros_tipos",
-        "gwh": 1.806,
-        "pct": 1.8
+        "gwh": 1.632,
+        "pct": 1.5
       },
       {
         "concept": "total_importacion",
-        "gwh": 0.168,
-        "pct": 0.17
+        "gwh": 0.137,
+        "pct": 0.13
       }
     ],
-    "total_generation_gwh": 100.054,
-    "total_import_gwh": 0.168,
-    "total_export_gwh": 0.146,
-    "distribution_demand_gwh": 88.689,
-    "transport_losses_gwh": 0.406,
-    "hydro_share_pct": 76.64,
-    "thermal_share_pct": 21.39,
-    "import_share_pct": 0.17
+    "total_generation_gwh": 108.961,
+    "total_import_gwh": 0.137,
+    "total_export_gwh": 0.134,
+    "distribution_demand_gwh": 98.889,
+    "transport_losses_gwh": -0.607,
+    "hydro_share_pct": 78.81,
+    "thermal_share_pct": 19.57,
+    "import_share_pct": 0.13
   },
   "adequacy": {
-    "origin_date": "2026-09-20",
+    "origin_date": "2026-09-21",
     "tier": "holgado",
     "worst_tier": "holgado",
     "worst_tier_horizon_days": 60,
     "worst_deficit_gwh_day": 0,
-    "run_id": "2026-09-20-adequacy-1-a7f87a2c"
+    "run_id": "2026-09-21-adequacy-1-3a236765"
   },
   "see_also": {
     "forecast": "/api/forecast.json",

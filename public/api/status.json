@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-22T14:36:49Z",
+  "generated_at": "2026-09-22T17:23:10Z",
   "as_of": "2026-09-22",
   "ok": true,
   "status": "warn",
@@ -24,7 +24,7 @@
     },
     {
       "feed": "CENACE SMEC national balance",
-      "latest": "2026-09-20",
+      "latest": "2026-09-21",
       "limit_days": 4,
       "state": "current"
     },
@@ -45,6 +45,18 @@
       "latest": "2026-07-01",
       "limit_days": 110,
       "state": "current"
+    },
+    {
+      "feed": "Mazar level forecast",
+      "latest": "2026-09-21",
+      "limit_days": 3,
+      "state": "current"
+    },
+    {
+      "feed": "National adequacy",
+      "latest": "2026-09-21",
+      "limit_days": 3,
+      "state": "current"
     }
   ],
   "tables": {
@@ -52,10 +64,10 @@
       "rows": 89122
     },
     "national_balance_daily": {
-      "rows": 58099
+      "rows": 58114
     },
     "operativa_snapshots": {
-      "rows": 141
+      "rows": 188
     },
     "operating_bands": {
       "rows": 7
@@ -65,6 +77,18 @@
     },
     "enso_monthly": {
       "rows": 919
+    },
+    "forecast_runs": {
+      "rows": 1
+    },
+    "adequacy_runs": {
+      "rows": 2
+    },
+    "adequacy_values": {
+      "rows": 10
+    },
+    "forecast_values": {
+      "rows": 5
     }
   },
   "findings": [
@@ -76,6 +100,6 @@
   ],
   "counts": {
     "warn": 1,
-    "info": 10
+    "info": 13
   }
 }

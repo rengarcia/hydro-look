@@ -1,6 +1,6 @@
 # Energy adequacy — what the model is, and what it was measured at
 
-Generated 2026-09-22T17:03:51Z from 3723 usable national-balance days, 2016-05-01 → 2026-09-20. Origin 2026-09-20.
+Generated 2026-09-22T17:23:03Z from 3724 usable national-balance days, 2016-05-01 → 2026-09-21. Origin 2026-09-21.
 
 This is section 7's target 3: expected deficit in GWh per day over the horizon, and the risk
 tiers read off it. It is the number the site's adequacy tile shows, and the `risk_tier` the
@@ -35,7 +35,7 @@ and in each case the obvious quantity is wrong:
 
 ## Which days the model is allowed to see
 
-3723 of 3780 balance days are usable (98.49%).
+3724 of 3781 balance days are usable (98.49%).
 
 `parse/smec.ts` already rejects pages served before their metering arrived, by requiring
 distribution demand to be at least 20% of generation. That gate is one-sided: it catches a
@@ -102,7 +102,7 @@ cuts.
 | 60 d | 65 | 2.14 | -0.61 | 2.10 | -1.9% |
 | 90 d | 55 | 2.31 | -0.62 | 2.20 | -5.0% |
 
-Growth fitted at the live origin: 6.60% a year, over 1202 unsuppressed days, anchored on the last 14 of them at a factor of 1.0833.
+Growth fitted at the live origin: 6.60% a year, over 1202 unsuppressed days, anchored on the last 14 of them at a factor of 1.0815.
 
 **This rung does not beat the baseline, and the comparison is not the point.** Over a window
 mean a trailing 28-day mean is a very strong predictor of load — load is that persistent at
