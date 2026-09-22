@@ -15,6 +15,7 @@
     "crosscheck": "tsx scripts/crosscheck.ts",
     "crosscheck:caudal": "tsx scripts/caudal-semantics.ts",
     "probe:ords": "tsx scripts/probe-ords.ts",
+    "probe:basins": "tsx scripts/probe-basins.ts",
     "check": "tsx scripts/check.ts"
   },
   "dependencies": {

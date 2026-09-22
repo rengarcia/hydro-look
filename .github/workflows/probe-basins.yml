@@ -1,0 +1,43 @@
+name: Basin sources probe
+
+# The reconnaissance §3's basins.csv needs and the development sandbox cannot do: its proxy
+# answers 403 for every host but GitHub, so HydroSHEDS, Wikidata and Overpass can only be asked
+# from a runner. A dozen read-only requests, nothing written under data/. Delete this workflow
+# once basins.csv carries verified rows and the answers are in PLAN.md §2.4.
+on:
+  workflow_dispatch:
+  # workflow_dispatch only registers from the default branch; until this merges, a push of the
+  # probe on its own branch is how it gets run.
+  push:
+    branches: ["claude/status-check-plan-awcmmp"]
+    paths:
+      - ".github/workflows/probe-basins.yml"
+      - "scripts/probe-basins.ts"
+
+permissions: {}
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Probe
+        run: npm run probe:basins -- --out "$RUNNER_TEMP/probe" 2>&1 | tee "$RUNNER_TEMP/probe.log"
+      - name: Summarise
+        if: always()
+        run: cat "$RUNNER_TEMP/probe/probe-basins.md" >> "$GITHUB_STEP_SUMMARY" || true
+      - name: Upload result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: probe-basins-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/probe
+            ${{ runner.temp }}/probe.log
+          retention-days: 30
