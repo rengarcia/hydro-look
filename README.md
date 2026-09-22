@@ -13,7 +13,7 @@ with the response that produced it archived alongside it.
 |---|---|
 | 0 · Reconnaissance and fixtures | done — `scripts/recon/RECON_REPORT.md` |
 | 1 · Full ingest (CELEC ORDS + CENACE SMEC + Información Operativa) | code complete; levels backfilled to 2014-09-20 and CELEC Sur energy to 2015-11-01; hourly plant energy still to run for Mazar, Molino, Minas San Francisco and Sopladora |
-| 2 · CENACE history and reconciliation | SMEC backfilled 2016-05-01 → 2026-09-20; reconciliation pending |
+| 2 · CENACE history and reconciliation | SMEC backfilled 2016-05-01 → 2026-09-20 and reconciled against the ORDS per-plant energy; the Información Operativa cross-check still needs ≥ 20 snapshot days |
 | 3 · Additional reservoir levels | unblocked 2026-09-22 — the historian returns values; ingestion not written yet |
 | 4 · Covariates and quality | weather/ENSO ingested — ONI 1950-01 → 2026-07, recent ERA5 and a 16-day forecast; climatology backfill, provisional Paute point, deployment and verified references pending |
 | 5–7 · Modelling, site, extensions | planned — see `PLAN.md` |
