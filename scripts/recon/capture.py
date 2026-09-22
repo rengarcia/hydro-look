@@ -844,6 +844,61 @@ def section_ords_reports(rec: Recorder) -> dict:
     return out
 
 
+def _probe_json(rec: "Recorder", out: dict, key: str, url: str, params=None, method: str = "GET", json_body=None) -> None:
+    r_, r = rec.fetch(key, url, params=params, save_as=f"celec_ords/{key.replace(':', '_')}.txt", method=method, json_body=json_body)
+    info = {"status": r_.get("status"), "error": r_.get("error"), "content_type": r_.get("content_type"), "bytes": r_.get("bytes")}
+    if r is not None:
+        try:
+            d = r.json()
+            items = d.get("items", d.get("cv_1", [])) if isinstance(d, dict) else d
+            info["top_keys"] = sorted(d.keys()) if isinstance(d, dict) else type(d).__name__
+            if isinstance(items, list):
+                info["n_items"] = len(items)
+                if items and isinstance(items[0], dict):
+                    info["item_keys"] = sorted(items[0].keys())
+                    ts = [i.get("loctimestamp") or i.get("fecha") for i in items if isinstance(i, dict)]
+                    ts = [t for t in ts if t]
+                    info["ts_min"], info["ts_max"] = (min(ts), max(ts)) if ts else (None, None)
+                    nums = [v for i in items for v in i.values() if isinstance(v, (int, float))]
+                    info["n_numeric"] = len(nums)
+                    info["sample"] = items[:2]
+        except Exception:  # noqa: BLE001
+            info["head"] = r.text[:300]
+    out[key] = info
+
+
+def section_ords_history(rec: Recorder) -> dict:
+    """How far back the report endpoints and per-plant hourly energy go (paging by `fecha`)."""
+    now_ec = dt.datetime.now(TZ_EC)
+    out: dict = {}
+    for y in (2025, 2024, 2023, 2022, 2021, 2020, 2018, 2016):
+        _probe_json(rec, out, f"ords:hist:repDiaHid12m:{y}", f"{ORDS_MODULE}/repDiaHid12m", params={"fecha": f"20/09/{y} 00:00:00"})
+    for y in (2026, 2025, 2024, 2023, 2022, 2021):
+        _probe_json(rec, out, f"ords:hist:repDiaEner12m:{y}-03", f"{ORDS_MODULE}/repDiaEner12m", params={"fecha": f"20/03/{y} 00:00:00"})
+    for ep in ("repDiaNivQIng", "repDiaPotQTurb", "repDiaEnerAyerHoy", "repDiaRegAyer"):
+        for d in ("15/10/2024", "15/01/2022", "15/06/2019", "15/06/2016"):
+            _probe_json(rec, out, f"ords:hist:{ep}:{d.replace('/', '-')}", f"{ORDS_MODULE}/{ep}", params={"fecha": f"{d} 00:00:00"})
+    for code, module in ORDS_MODULES.items():
+        if code == "csr":
+            continue
+        for d in ("15/10/2024", "15/01/2022", "15/06/2019"):
+            _probe_json(rec, out, f"ords:hist:{code}EnerDia:{d.replace('/', '-')}", f"{ORDS_BASE}/csr/{module}/{code}EnerDia", params={"fecha": f"{d} 00:00:00"})
+    _probe_json(rec, out, "ords:hist:repDiaVolAlm:2024-10-15", f"{ORDS_MODULE}/repDiaVolAlm", method="POST", json_body={"v_loctimestamp": "2024-10-15T05:00:00Z"})
+    _probe_json(rec, out, "ords:hist:csrCaudCuenAniosAvg", f"{ORDS_MODULE}/csrCaudCuenAniosAvg", params={"fechaInicio": "2016-01-01T00:00:00.000Z", "fechaFin": "2026-10-01T00:00:00.000Z"})
+    r_, r = rec.fetch("ords:hist:mesh24_recheck_30031", f"{ORDS_MODULE}/pointValuesMesH24", params=month_window(now_ec.year, now_ec.month), save_as="celec_ords/mesh24_recheck_30031.json")
+    out["mesh24_recheck"] = {"captured_utc": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"), "status": r_.get("status"), "n_nonnull": _nonnull(r)}
+    return out
+
+
+def _r_ords_history(rec, findings, started):
+    c = _section(findings, "ords_history")
+    if not c:
+        return ""
+    rows = [[k, v.get("status") or v.get("error"), v.get("n_items"), v.get("ts_min"), v.get("ts_max"), v.get("n_numeric"), json.dumps((v.get("sample") or [None])[0], ensure_ascii=False, default=str)[:220]] for k, v in c.items() if k != "mesh24_recheck"]
+    rc = c.get("mesh24_recheck", {})
+    return "\n".join(["## 4e. ORDS history depth of report and energy endpoints", "", f"pointValuesMesH24 re-check at {rc.get('captured_utc')}: non-null = **{rc.get('n_nonnull')}**", "", md_table(["endpoint / fecha", "status", "items", "ts min", "ts max", "numeric cells", "first item"], rows), ""])
+
+
 def section_ords_new_mrids(rec: Recorder) -> dict:
     now_ec = dt.datetime.now(TZ_EC)
     out: dict = {}
@@ -890,7 +945,7 @@ def _r_ords_new_mrids(rec, findings, started):
     return "\n".join(["## 4d. New mrids from the CELEC-wide bundle (current month, MesH24)", "", md_table(["plant/var/mrid", "status", "items", "non-null", "min", "max"], [[k, v.get("status"), v.get("n_items"), v.get("n_nonnull"), v.get("min"), v.get("max")] for k, v in c.items()]), ""])
 
 
-REPORT_SECTIONS = [("header", _r_header)] + [("1. Every request", _r_1), ("2. robots.txt verdicts", _r_2), ("3. TLS", _r_4), ("4. CELEC ORDS", _r_5), ("4a", _r_ords_matrix), ("4b", _r_ords_catalog), ("4c", _r_ords_reports), ("4d", _r_ords_new_mrids), ("5. CELEC dashboards (Angular bundles)", _r_6), ("6. CENACE SMEC daily balance", _r_7), ("7. CENACE Información Operativa", _r_8), ("8. Covariates", _r_9), ("9. Open-data portals", _r_10), ("10. Community mirrors", _r_11), ("11. Failures and skips", _r_13), ("section errors", _r_failures)]
+REPORT_SECTIONS = [("header", _r_header)] + [("1. Every request", _r_1), ("2. robots.txt verdicts", _r_2), ("3. TLS", _r_4), ("4. CELEC ORDS", _r_5), ("4a", _r_ords_matrix), ("4b", _r_ords_catalog), ("4c", _r_ords_reports), ("4d", _r_ords_new_mrids), ("4e", _r_ords_history), ("5. CELEC dashboards (Angular bundles)", _r_6), ("6. CENACE SMEC daily balance", _r_7), ("7. CENACE Información Operativa", _r_8), ("8. Covariates", _r_9), ("9. Open-data portals", _r_10), ("10. Community mirrors", _r_11), ("11. Failures and skips", _r_13), ("section errors", _r_failures)]
 
 
 SECTIONS = {
@@ -900,6 +955,7 @@ SECTIONS = {
     "ords_catalog": section_ords_catalog,
     "ords_reports": section_ords_reports,
     "ords_new_mrids": section_ords_new_mrids,
+    "ords_history": section_ords_history,
     "celec_web": section_celec_web,
     "smec": section_smec,
     "operativa": section_operativa,

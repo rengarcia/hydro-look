@@ -64,5 +64,7 @@ jobs:
             echo "No fixture changes."
           else
             git commit -m "Phase 0: capture reconnaissance fixtures and report (run ${{ github.run_id }})"
-            git push
+            # re-runs check out an older commit; rebase onto the branch tip before pushing
+            git pull --rebase origin "${{ github.ref_name }}"
+            git push origin "HEAD:${{ github.ref_name }}"
           fi

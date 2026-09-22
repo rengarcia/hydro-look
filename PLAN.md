@@ -47,89 +47,107 @@ fixes the exact API contracts, and their published data gives us ready-made vali
 
 ---
 
-## 2. Source inventory
+## 2. Source inventory (updated with Phase 0 results, runs of 2026-09-21)
 
-### 2.1 Verified (from code running daily in production elsewhere)
+Phase 0 ran twice from GitHub Actions (`scripts/recon/RECON_REPORT.md`, fixtures under `tests/fixtures/`).
+Everything below marked **verified** was fetched and parsed in those runs.
 
-**S1 · CELEC SUR ORDS (reservoir levels, flows, production)**
+### 2.1 CELEC ORDS — the same service, but the useful endpoints are not the ones the dashboards use
 
-```
-base:    https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr
-hourly:  {base}/pointValues          ?mrid=&fechaInicio=&fechaFin=&fecha=
-daily:   {base}/pointValuesMesH24    ?mrid=&fechaInicio=&fechaFin=&fecha=
-```
+Base `https://generacioncsr.celec.gob.ec:8443/ords/csr/`. No authentication. Valid Sectigo certificate since
+2026-09-17 (normal TLS verification works; pinning is no longer required, keep the fingerprint as a fallback
+check). An OpenAPI catalog is public at `open-api-catalog/<module>/` for eight modules:
+`sardomcsr` (CELEC Sur) and one energy module per plant (`sardommaz`, `sardommol`, `sardomsop`, `sardommsf`,
+`sardomago`, `sardomman`, `sardomccs`). All parameters go as query strings; `fecha` is `dd/MM/yyyy HH:mm:ss`.
 
-| Parameter | Format | Note |
-|---|---|---|
-| `mrid` | int | SCADA measurement point |
-| `fechaInicio`, `fechaFin` | `YYYY-MM-DDTHH:MM:SS.000Z` | ISO-8601 UTC with milliseconds (JS `Date.toJSON()`) |
-| `fecha` | `dd/MM/yyyy HH:mm:ss` | reference date, required |
+**Verified, returning data (primary sources from now on):**
 
-Response: `{"items":[{"loctimestamp":"2026-09-21T23:00:00Z","valueedit":2138.66, ...}]}`, newest first,
-`valueedit` may be `null`. `MesH24` returns one value per day at `05:00Z` = 00:00 America/Guayaquil.
-Data exists from 2022-01 (jordanvt18 backfilled from there). Port 8443 serves a self-signed
-certificate. Both scrapers pause 0.5 s between calls; the service has tolerated daily use for months.
-
-Known mrids (validated against operating ranges by jordanvt18, Aug 2026):
-
-| Plant / reservoir | cota (masl) | caudal (m³/s) | Declared band (masl) |
+| Endpoint (module `sardomcsr` unless noted) | Grain | What it returns | Backfill |
 |---|---|---|---|
-| Mazar | 30031 | 30538 | min 2098 · critical 2115 · max 2153 |
-| Amaluza (Molino / Paute) | 24019 | 24811 | min 1975 · max 1991 |
-| Sopladora | 90919 | 90537 | min 1312 · max 1318 |
+| `repDiaHid12m?fecha=` | daily, 365 rows ending the day before `fecha` | level, inflow (`q_ingresado`), operating limit, min, max flow for Mazar, Molino/Amaluza, Minas San Francisco, Delsitanisagua | one request per year, paging back with `fecha` (depth being probed in run 3) |
+| `repDiaEner12m?fecha=` | daily, 184 rows | daily energy (MWh) for Minas SF, Mazar, Molino, Sopladora, Delsitanisagua, Alazán | one request per 6 months |
+| `repDiaNivQIng?fecha=` | one day | level and inflow for Minas SF, Mazar, Amaluza, Sopladora intake chamber | per day |
+| `repDiaPotQTurb?fecha=` | one day | power, units online, turbined flow per plant (Minas SF, Mazar, Molino, Sopladora) | per day |
+| `repDiaEnerAyerHoy?fecha=` | one day | yesterday's energy and today's planned energy per plant **and for the SNI** (national total, 104,862 MWh on 2026-09-19) | per day |
+| `repDiaRegAyer?fecha=` | one day | annual accumulated GWh, spilled volume (hm³), spilled energy, plant factor per plant | per day |
+| `repDiaVolAlm` (POST `{"v_loctimestamp": …}`) | one instant | level, band, **% useful volume stored** for Minas SF, Mazar, Amaluza | per day |
+| `csrEstUnidades` | now | unit status per plant (22 units) | no |
+| `csrProdLineaLast2h` | now | live values: daily energy so far, reservoir level, inflow per plant, Paute basin flow | no |
+| `sardom{maz,mol,sop,msf,ago,man,ccs}/{code}EnerDia?fecha=` | hourly, 24 rows for the local day | energy per hour (MWh) for each of the seven plants, Coca Codo Sinclair included | per plant-day (7 × ~1,700 requests for 2022→, or fewer if `EnerMes` comes back) |
+| `csrEnerDia?fecha=` | hourly | CELEC Sur total (= Mazar + Molino + Sopladora + Minas SF) | per day |
 
-Data-quality facts already known from the 2022→2026 series: Mazar spent 392 days above the declared
-max (so 2153 is an operating reference, not a physical cap) and 66 days below critical in 2024;
-Amaluza 7 days below min; no nulls or non-positive values.
+Values seen on 2026-09-20: Mazar 2,139.1 masl with 75 m³/s inflow and 73.8% useful volume; Minas SF 790.3 masl
+and 56.8%; per-plant daily energy Mazar 1,462 MWh, Molino 10,507, Sopladora 6,013, Minas SF 2,672, Agoyán 2,961,
+Manduriacu 451, Coca Codo Sinclair 25,087 (64% of that day's national hydro of 76.8 GWh in SMEC).
 
-**S2 · CENACE SMEC daily energy balance (national mix, closed day)**
+**Verified but returning `null` values in both runs (open issue, see §8):** `pointValues`, `pointValuesMesH24`
+and every `*Mes*`/`*Anio*` aggregation, including `{code}EnerMes` and `csrCaudCuenMesAvg`. Seven request styles
+(our headers, requests defaults, the two community scrapers' headers, browser-like headers, local-midnight
+windows, with and without the legacy TLS adapter) all got the timestamp skeleton with `valueedit: null`, for
+2026-09 as well as for January 2015–2022. The community scrapers got values from the same endpoints at 18:08 and
+23:10 UTC that day; our runs were at 23:37 and 23:56 UTC. Working hypothesis: an evening window in which the
+historian's aggregated/edited values are unavailable. Run 3 and a later re-run will settle it. The mrid map is
+nevertheless complete (`data/reference/mrids.csv`): the CELEC-wide bundle declares `mridCota`, `mridCaud`
+and `mridUnid` for all seven plants plus the Paute basin flow (24812). These mrids are the only route to
+**levels and inflows of Coca Codo Sinclair, Agoyán and Manduriacu**; the report endpoints cover the other four
+reservoirs plus Delsitanisagua.
 
-```
-https://smec.cenace.gob.ec/SMEC/ResultadoInforme1.do?fecha=YYYY/MM/DD
-```
+Semantics: `csrProdLineaLast2h` lists "Q Mazar" next to "Nivel Embalse" with the same value the caudal mrid
+30538 returns, and `repDiaNivQIng` calls the daily figure `q_ingresado` (inflow). Treat the caudal mrids as
+inflow, confirm with a month of overlap in Phase 3.
 
-HTML table; rows are `td.bordegris[align=left]` labels followed by a value cell, column
-"Energía Activa en el Día (kWh)". Rows confirmed by tefaceli: Generación Hidráulica, Generación
-Vapor Bunker, Generación Turbinas a Gas, Generación Turbinas a Diesel, Generación Motores Bunker,
-Generación de Otros Tipos, Importación de Colombia. Report for day D is available by ~11:15 local on
-D+1 (empirically calibrated: not ready at 05:00). TLS: self-signed and weak ciphers → custom adapter.
-Likely more rows exist (exports, Peru, demand, losses); inventory in Phase 0.
+### 2.2 CENACE SMEC daily energy balance — verified, complete, deep history
 
-**S3 · CENACE Información Operativa (intraday snapshot)**
+`https://smec.cenace.gob.ec/SMEC/ResultadoInforme1.do?fecha=YYYY/MM/DD`, HTML, 15 rows (16 before 2019, with
+"Turbinas a Nafta"): Hidráulica, Vapor Bunker, Turbinas a Gas, Turbinas a Diesel, Motores Bunker, Otros Tipos,
+Total Generación, Importación Colombia, Importación Perú, Total Importación, Exportación Colombia, Exportación
+Perú, Total Exportación, **Demanda Distribución**, Total Pérdidas Transporte. Seven columns per row: day kWh,
+% vs the same weekday a year earlier, month-to-date kWh and %, year-to-date kWh and %, last-365-days kWh. The
+header carries the weekday ("Tipo Día"). Every probed date from **2016-05-01** to yesterday returned a full
+report; the earliest date is still to be found by binary search in Phase 2. The report for the current day is
+published incomplete (1 row at 19:00 local) and complete on D+1 (tefaceli's calibration: ready by 11:15 local).
+TLS: self-signed certificate expired in 2009, weak ciphers → `SECLEVEL=1` adapter plus fingerprint pinning
+(`3ac3888f…`, in `tests/fixtures/tls/fingerprints.json`). robots.txt: none. Other report numbers (2–12) are the
+SIMEC login page or errors; the SMEC root redirects to a login. `Total Pérdidas Transporte` can be negative
+(2024-10-15), so it is a balance residual, not a measurement.
 
-`https://www.cenace.gob.ec/info-operativa/InformacionOperativa.htm` — static HTML with embedded
-Plotly charts and a text header (daily totals by type, imports/exports, demand MW by distributor,
-month-to-date, year-to-date, monthly peak day). Values for the current day accumulate during the
-day. Use: (a) capture the header once after 00:30 local for the closed day as a cross-check of S2,
-(b) optional intraday snapshots for a "right now" tile. Your earlier fetch was refused by robots
-rules; Phase 0 reads `robots.txt` and we comply.
+### 2.3 CENACE Información Operativa — verified, secondary
 
-**S4 · Community mirrors (validation only)**
+`https://www.cenace.gob.ec/info-operativa/InformacionOperativa.htm` (266 KB, 18 Plotly charts). The server omits
+its intermediate certificate; the fix is to append the Sectigo intermediate published in the leaf's AIA field to
+the trust bundle (done generically in `capture.py`). The visible text is a clean key/value list: real-time
+production for today (cumulative: 84,258 MWh at 18:59 local on a day that closed near 105 GWh), current demand
+by utility (19 companies, MW), then **"INFORMACIÓN OPERATIVA DIARIA"** for the last validated day (two days
+back on a Monday evening: Saturday 2026-09-19, total 104,277 MWh, hydro 80,537, thermal 21,151, non-conventional
+2,432, export 125, import 158), month-to-date (MWh) and year-to-date (GWh) blocks, and the dates of the monthly
+and historical peak demand. Thousands are separated by thin spaces. Footer: "Datos preliminares del SCADA,
+sujetos a revisión y validación." Use: daily cross-check of SMEC, demand by utility, real-time tile.
 
-- `https://raw.githubusercontent.com/jordanvt18/cotas-embalses-ecuador/main/docs/datos/cotas_historico.csv`
-  and `.../docs/estado.json` — reachable even from the sandbox.
-- `https://raw.githubusercontent.com/tefaceli/scraper-mazar/main/data/historico.json`.
+### 2.4 Covariates — verified
 
-### 2.2 To verify in Phase 0
+Open-Meteo archive (ERA5, daily precipitation and temperature), 16-day forecast, and the seasonal API with
+ensemble members (`precipitation_sum_member01…`) all answered for a Paute-basin point. Their `robots.txt`
+disallows crawlers; API use is governed by their terms (free non-commercial, attribution), so the scraper
+treats those hosts as exempt and documents it. NOAA ONI is available from PSL (`oni.data`) and CPC
+(`oni.ascii.txt`), 1950→.
 
-| Id | Source | What we need to learn |
-|---|---|---|
-| S5 | CELEC-wide dashboard `generacioncsr.celec.gob.ec/graficasproduccionCELEC/` | mrids for cota / caudal / producción of Mazar, Amaluza, Sopladora, Minas San Francisco, Agoyán, Manduriacu, Coca Codo Sinclair; whether Pisayambo (Pucará) or Daule-Peripa appear; what "Descargar CSV" calls. |
-| S6 | ORDS metadata catalog `.../ords/csr/metadata-catalog/` and module root `.../ords/csr/sardomcsr/` | Whether a handler lists measurement points with names (would replace bundle grepping). |
-| S7 | SMEC other reports `ResultadoInforme{2..N}.do` and the SMEC menu | Demand, exports, hydrology or reservoir reports. |
-| S8 | CENACE Datos Abiertos "Producción de Energía Eléctrica del Parque Generador" (quarterly CSV/XLSX, last update seen 2025-05) | Per-plant net generation history for validation; whether it is still updated. |
-| S9 | ARCONEL BNEE (monthly, published the 20th of month n+2) | Monthly demand, effective thermal capacity; file format. |
-| S10 | CENACE annual reports (1999→ generation by type; "Paute Integral" daily variables) | One-off extraction for long baselines. |
-| S11 | Open-Meteo archive/forecast/seasonal, NOAA ONI | Reachable from Actions (assumed yes). |
-| S12 | `robots.txt` on cenace.gob.ec, smec.cenace.gob.ec, celec.gob.ec | Compliance. |
+### 2.5 Open-data portals
 
-### 2.3 Ruled out
+- `datosabiertos.gob.ec` returns **403** to GitHub runners for every path, including the CKAN API, with or
+  without `www`. Needs a run from your machine or is dropped; it is only a validation source.
+- ARCONEL `arconel.gob.ec/balance-nacional-de-energia-electrica/` works and links the latest BNEE workbook
+  (`BNEE_junio_2026_revACH.xls`); the monthly archive is not linked from that page and must be discovered.
+- `controlrecursosyenergia.gob.ec` serves a certificate for another hostname; skip.
 
-SIMEM (credentials only for market participants). Electricity Maps (no Ecuador parser). INAMHI (no
-API; monthly PDFs and annual books; data by email request). web.archive.org Save Page Now (401
-anonymous; optional later with free S3 keys).
+### 2.6 Community mirrors — verified, validation only
 
----
+`raw.githubusercontent.com` serves jordanvt18's `estado.json` and CSVs and tefaceli's `historico.json` /
+`en_vivo.json`, reachable even from the sandbox.
+
+### 2.7 Ruled out
+
+SIMEM (credentials), Electricity Maps (no Ecuador parser), INAMHI (no API), web.archive.org Save Page Now
+(401 anonymous), the ORDS metadata catalog (401) and module root (404).
 
 ## 3. Reference data to encode (`data/reference/`)
 
@@ -154,8 +172,11 @@ checked against ARCONEL's effective-power table.
 The seven dashboard plants total ≈3,750 MW, roughly three quarters of Ecuador's hydro capacity;
 CCS alone was 46–48% of hydro output this year (press, citing CELEC).
 
-**`thresholds.csv`** — declared operating bands per reservoir (table in S1), with the source URL
-and the date read, so a change of rules is a commit.
+**`thresholds.csv`** — declared operating bands per reservoir with the source and the date read, so a change
+of rules is a commit. Phase 0 found three overlapping declarations: the dashboard chart titles (Mazar
+2098–2153, Amaluza 1975–1991, Sopladora 1312–1318, Minas SF 783.33–792.86), `repDiaVolAlm` (Mazar min 2100,
+Amaluza min 1970, Minas SF 783.33–792.86) and `repDiaHid12m` (`lim`/`min`: Mazar 2100–2153, Molino 1960–1991,
+Minas SF 750–793, Delsitanisagua 1469–1491, plus `qmax` per plant). Record all three with their source.
 
 **`rationing_episodes.csv`** — one row per episode, with start, end, scope, max hours/day, and a
 press URL per row. Seed (dates to confirm against the linked articles in Phase 0):
@@ -225,9 +246,10 @@ tests/  fixtures/<source>/*.json|html  (recorded responses)
   after each successful ingest. `backfill.yml` is `workflow_dispatch` with `--from` and `--source`.
 - **Politeness:** identified User-Agent with a contact URL, ≤1 request/s, retries with backoff on
   5xx only, one request per (mrid, month) for backfill, robots.txt respected.
-- **TLS:** fingerprint pinning for `generacioncsr.celec.gob.ec:8443`; `SECLEVEL=1` adapter with
-  pinning for `smec.cenace.gob.ec`; normal verification everywhere else. Fingerprints stored in
-  `data/reference/tls_pins.json` with the date captured; a mismatch fails loudly and opens an issue.
+- **TLS:** normal verification for the ORDS (valid Sectigo certificate since 2026-09-17; keep its fingerprint
+  as a secondary check); `SECLEVEL=1` adapter with fingerprint pinning for `smec.cenace.gob.ec`; certifi plus the
+  AIA-published intermediate for `www.cenace.gob.ec`. Fingerprints live in `data/reference/tls_pins.json` with
+  the date captured; a mismatch fails loudly and opens an issue.
 - **Failure handling:** each source ingests independently (`continue-on-error` per step); a failed
   or schema-drifted parse writes nothing, keeps the raw archive, and the workflow opens/updates a
   GitHub issue. Freshness per table is published in `api/status.json`.
@@ -240,7 +262,7 @@ tests/  fixtures/<source>/*.json|html  (recorded responses)
 
 Each phase ends with a pushed, green state. Effort is in coding sessions (S) plus your time.
 
-**Phase 0 · Reconnaissance and fixtures (your machine, ~1 h; then 1 S)**
+**Phase 0 · Reconnaissance and fixtures — done in GitHub Actions on 2026-09-21 (runs 1–2), run 3 pending**
 Because the sandbox is blocked, you run `scripts/recon/capture.py` (written first, network-free
 tested) which saves raw responses into `tests/fixtures/` and a `recon_report.md`:
 1. ORDS: `pointValuesMesH24` for the six known mrids for the current month and for 2022-01;
@@ -257,27 +279,30 @@ tested) which saves raw responses into `tests/fixtures/` and a `recon_report.md`
 Acceptance: fixtures committed; `mrids.csv` has candidates for all seven plants with sample values;
 `recon_report.md` answers every "verify" in §2.2 and §3.
 
-**Phase 1 · Skeleton + CELEC SUR ingestion + backfill (2 S)**
-Package, CLI, raw archive, `reservoir_daily` contract, ORDS client with pinning, daily and backfill
-modes for the six known mrids from 2022-01-01, `daily.yml` and `ci.yml`.
-Acceptance: full 2022→today series for Mazar/Amaluza/Sopladora cota and caudal; cross-check against
-jordanvt18 reports zero mismatches > 0.01 m on overlapping dates (differences listed if any); daily
-workflow green three days in a row.
+**Phase 1 · Skeleton + CELEC report endpoints + backfill (2 S)**
+Package, CLI, raw archive, `reservoir_daily` contract, ORDS client, and loaders for `repDiaHid12m` (levels
+and inflows, four reservoirs, paged back a year per request), `repDiaEner12m`, `repDiaNivQIng`,
+`repDiaVolAlm`, `repDiaRegAyer`, `repDiaEnerAyerHoy` (SNI daily total) and `{code}EnerDia` for the seven
+plants; `daily.yml` and `ci.yml`. The `pointValues` client is written too but only for the three plants the
+reports do not cover, and it must tolerate all-null responses.
+Acceptance: levels and inflows for Mazar, Amaluza, Minas SF and Delsitanisagua from the earliest date the
+reports serve; daily energy for all seven plants from 2022-01-01; cross-check against jordanvt18's
+2022→2026 Mazar/Amaluza/Sopladora levels with differences listed; daily workflow green three days in a row.
 
 **Phase 2 · CENACE SMEC ingestion + backfill (1–2 S)**
-Parser for every row inventoried in Phase 0, contract, backfill 2022-01-01→today (≈1,700 requests
-at 1/s, one dispatch run), unit reconciliation test (kWh/24/1000 ≈ tefaceli MW for Aug–Sep 2026).
-InformacionOperativa header parser as a secondary source with the closed-day flag.
-Acceptance: `national_balance_daily` complete from 2022 with < 1% missing days; S2 vs S3 closed-day
-totals agree within 2% on ≥ 20 days.
+Parser for the 15/16 rows × 7 columns, contract, binary search for the earliest available date, backfill
+from there (≈3,800 requests at 1/s from 2016, in dispatch runs), reconciliation tests (SMEC hydro vs the sum
+of the seven plants' `EnerDia`; SMEC totals vs the Información Operativa validated-day block; kWh/24/1000 vs
+tefaceli's MW). Información Operativa parser for the header key/value list with the closed-day flag.
+Acceptance: `national_balance_daily` complete from the earliest date with < 1% missing days; SMEC vs
+Información Operativa closed-day totals agree within 2% on ≥ 20 days.
 
-**Phase 3 · CELEC-wide plants (1–2 S, depends on Phase 0 mrids)**
-Validate each candidate mrid (range check against the plant's declared band, correlation with S2
-hydro total for production mrids), add to `mrids.csv`, backfill, extend contracts. Confirm the
-caudal semantics (inflow vs turbined) by checking the water balance sign on Mazar: with inflow,
-Δcota should correlate positively with caudal minus turbined flow implied by production.
-Acceptance: seven plants × {cota, caudal, producción} daily since the earliest month the ORDS
-serves; a documented semantics note per variable.
+**Phase 3 · Coca Codo Sinclair, Agoyán, Manduriacu levels and inflows (1 S, blocked on the null issue)**
+Their mrids are known (`data/reference/mrids.csv`); once `pointValuesMesH24` returns values in a run,
+backfill them and confirm the caudal semantics with a month of overlap between mrid 30538 and
+`q_ingresado` for Mazar. If the aggregation endpoints stay null, fall back to hourly `pointValues` sampled
+once a day at a time of day that works, and record the working window.
+Acceptance: daily level and inflow for the three plants; a documented semantics note per variable.
 
 **Phase 4 · Covariates, reference tables, quality gates (1 S)**
 Open-Meteo ERA5 daily precipitation per basin from 2022 (and 1990→ for climatology), 16-day
@@ -336,6 +361,8 @@ regime differences between Amazon- and Pacific-slope basins.
 
 | Risk | Mitigation |
 |---|---|
+| `pointValues*` and monthly aggregations return null in the evening runs (open) | Primary ingestion moved to the report and hourly-energy endpoints, which returned data; re-probe at other times of day (run 3 and a scheduled re-run); only three plants' levels depend on it. |
+| `datosabiertos.gob.ec` blocks GitHub runners (403) | Validation-only source; fetch from your machine if wanted. |
 | ORDS or SMEC changes or gets locked (the ORDS has no auth today) | Raw archive + independent sources per table; the community mirrors as a fallback; open an issue automatically on schema drift. |
 | CELEC-wide mrids not discoverable from the bundle | DevTools capture (your original plan) is the fallback; Phase 1–2 do not depend on them. |
 | Sandbox cannot reach sources | All network-dependent discovery in Phase 0 on your machine; parsers developed against fixtures; Actions does the real runs. |
@@ -356,7 +383,7 @@ regime differences between Amazon- and Pacific-slope basins.
 | 4 | History provenance | Backfill everything from the ORDS; community mirrors are used for cross-checks only. |
 | 5 | Transparency request to CENACE/CELEC for pre-2022 series | Deferred; stays optional in Phase 7. |
 
-## Appendix A · Phase-0 capture checklist (exact targets)
+## Appendix A · Phase-0 capture checklist (exact targets; executed by `scripts/recon/capture.py`, results in `scripts/recon/RECON_REPORT.md`)
 
 ```
 # ORDS (self-signed on 8443)
