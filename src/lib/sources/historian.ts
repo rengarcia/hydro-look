@@ -15,6 +15,16 @@
  *
  * The walk therefore spends its first request on the control and stops the whole run if it
  * comes back empty. Everything after that is ordinary paging.
+ *
+ * Being checkable is not a reason to skip collecting a series, though, and that distinction
+ * cost Phase 3 its last open question. Mazar's inflow mrid is carried for exactly the same
+ * reason as its level mrid — the reports publish both, so both can be checked — but only the
+ * first was ever fetched, because the walk used the control list as a gate and then moved on
+ * to the targets. With no history for mrid 30538 there was nothing to compare against
+ * `repDiaHid12m`, and whether `mridCaud` means inflow or turbined flow stayed a guess for the
+ * three plants that have no second source to guess with. Only the *gate* is now skipped; every
+ * other control is walked like a target, and first, because it is the shortest walk of the run
+ * and the one a spent budget must not be the reason to drop.
  */
 
 import { HISTORIAN_CONTROLS, HISTORIAN_TARGETS, type HistorianSeries } from "../registry.ts";
@@ -77,12 +87,12 @@ export async function walkHistorian(opts: HistorianWalkOptions): Promise<Histori
     return result;
   }
 
-  // The control goes first, and on a closed month: the running month is partly unpublished by
+  // The gate goes first, and on a closed month: the running month is partly unpublished by
   // definition, so its blankness would prove nothing.
-  const control = controls[0];
+  const gate = controls[0];
   const controlMonth = months.find((ym) => monthEnd(ym) < opts.today) ?? months[0]!;
-  if (control) {
-    const added = await opts.fetchMonth(control, controlMonth);
+  if (gate) {
+    const added = await opts.fetchMonth(gate, controlMonth);
     if (added === null) {
       result.outcome = "budget-spent";
       return result;
@@ -90,7 +100,7 @@ export async function walkHistorian(opts: HistorianWalkOptions): Promise<Histori
     if (added === 0) {
       result.outcome = "control-blank";
       result.notes.push(
-        `ords-historian: the ${control.site} control (mrid ${control.mrid}) returned no values for ` +
+        `ords-historian: the ${gate.site} control (mrid ${gate.mrid}) returned no values for ` +
           `${monthLabel(controlMonth)}, a month repDiaHid12m covers in full, so the historian is blank at this ` +
           `hour; the other series were skipped rather than record a false "no data" for plants with no second source`,
       );
@@ -99,10 +109,12 @@ export async function walkHistorian(opts: HistorianWalkOptions): Promise<Histori
       );
       return result;
     }
-    result.logs.push(`ords-historian: control ${label(control)} answered for ${monthLabel(controlMonth)} (${added} days)`);
+    result.logs.push(`ords-historian: control ${label(gate)} answered for ${monthLabel(controlMonth)} (${added} days)`);
   }
 
-  for (const series of targets) {
+  // The remaining controls lead: they are the series a cross-check needs history for, and a
+  // budget spent on the long target walks first would keep postponing them a run at a time.
+  for (const series of [...controls.slice(1), ...targets]) {
     let empty = 0;
     let newest = "";
     let oldest = "";

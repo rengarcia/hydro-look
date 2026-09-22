@@ -102,6 +102,16 @@ export const ENERGY_BACKFILL_ONLY_CODES: EnergyPlantCode[] = ["ago", "man", "ccs
  * "the historian is answering null right now" from "this plant has no data that far back".
  * Without that distinction a run made inside the blank window of §2.1 would record a false
  * "no data" for exactly the three plants we have no second source for.
+ *
+ * A control earns its place twice over, and the order below says which job comes first. The
+ * first one is the run's **gate**: one request, on a closed month, and a blank answer ends the
+ * run. The rest are walked like targets, because the same property that makes a control usable
+ * as a gate — the reports publish it too — is what makes its history the only way to settle
+ * what a series *means*. Mazar's inflow mrid is here for that second job: the report endpoints
+ * publish Mazar's inflow as `q_ingresado` and its turbined flow through `repDiaPotQTurb`, and
+ * only a run of days against both says which one `mridCaud` is. The three plants with no
+ * second source inherit the answer, since their mrids are declared the same way in the same
+ * dashboard component.
  */
 export interface HistorianSeries {
   site: SiteId;
@@ -112,6 +122,7 @@ export interface HistorianSeries {
 }
 
 export const HISTORIAN_SERIES: readonly HistorianSeries[] = [
+  // The gate first: level, the one series proven identical to the reports day for day.
   { site: "mazar", variable: "cota_masl", mrid: 30031, control: true },
   { site: "mazar", variable: "caudal_m3s", mrid: 30538, control: true },
   { site: "coca_codo_sinclair", variable: "cota_masl", mrid: 100540 },
