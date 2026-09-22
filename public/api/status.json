@@ -1,0 +1,74 @@
+{
+  "generated_at": "2026-09-22T08:24:58Z",
+  "as_of": "2026-09-22",
+  "ok": true,
+  "status": "info",
+  "feeds": [
+    {
+      "feed": "ORDS levels and inflows (repDiaHid12m)",
+      "latest": "2026-09-20",
+      "limit_days": 3,
+      "state": "current"
+    },
+    {
+      "feed": "ORDS CELEC Sur energy (repDiaEner12m)",
+      "latest": "2026-09-20",
+      "limit_days": 3,
+      "state": "current"
+    },
+    {
+      "feed": "ORDS historian (pointValues)",
+      "latest": null,
+      "limit_days": 3,
+      "state": "not_ingested"
+    },
+    {
+      "feed": "CENACE SMEC national balance",
+      "latest": "2026-09-20",
+      "limit_days": 4,
+      "state": "current"
+    },
+    {
+      "feed": "CENACE Información Operativa",
+      "latest": "2026-09-22",
+      "limit_days": 3,
+      "state": "current"
+    },
+    {
+      "feed": "Open-Meteo ERA5",
+      "latest": "2026-09-15",
+      "limit_days": 10,
+      "state": "current"
+    },
+    {
+      "feed": "NOAA ONI",
+      "latest": "2026-07-01",
+      "limit_days": 110,
+      "state": "current"
+    }
+  ],
+  "tables": {
+    "observations_daily": {
+      "rows": 55704
+    },
+    "national_balance_daily": {
+      "rows": 58099
+    },
+    "operativa_snapshots": {
+      "rows": 94
+    },
+    "operating_bands": {
+      "rows": 7
+    },
+    "weather_daily": {
+      "rows": 46
+    },
+    "enso_monthly": {
+      "rows": 919
+    }
+  },
+  "findings": [],
+  "counts": {
+    "info": 10
+  }
+}

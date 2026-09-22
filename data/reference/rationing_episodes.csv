@@ -1,0 +1,7 @@
+start,end,end_status,kind,hydro_related,scope,max_hours_per_day,status,source_url,verified_on,note,source
+2023-10-27,2023-12-31,approximate,rationing,yes,national,4,unverified,,,"first drought cuts; 3-4 h/day at the start, longer later. End month recorded as 2023-12 in the seed, day unknown","PLAN.md section 3 seed (press, recorded 2026-09-21)"
+2024-04-15,2024-05-31,approximate,rationing,yes,national,13,unverified,,,"April 2024 cuts, up to 8-13 h/day. End month recorded as 2024-05 in the seed, day unknown","PLAN.md section 3 seed (press, recorded 2026-09-21)"
+2024-06-19,2024-06-19,exact,blackout,no,national,,unverified,,,"transmission failure, not a hydro shortage; exclude from any drought model","PLAN.md section 3 seed (press, recorded 2026-09-21)"
+2024-09-18,2024-09-19,exact,scheduled_outage,no,national,,unverified,,,"scheduled maintenance, not a hydro shortage; exclude from any drought model","PLAN.md section 3 seed (press, recorded 2026-09-21)"
+2024-09-23,2024-12-20,exact,rationing,yes,national,14,unverified,,,the long drought episode; up to 14 h/day in October-November,"PLAN.md section 3 seed (press, recorded 2026-09-21)"
+2025-01-01,,open,restrictions_lifted,yes,industry,,unverified,,,marks the end of the 2024 episode rather than an episode itself; the seed records no cuts since,"PLAN.md section 3 seed (press, recorded 2026-09-21)"

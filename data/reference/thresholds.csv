@@ -1,0 +1,12 @@
+site,cota_min_masl,cota_max_masl,qmax_m3s,declaration,source,observed_from,observed_to,evidence
+amaluza,1975,1991,,dashboard chart title,celec dashboard bundle,2026-09-21,2026-09-21,data/reference/mrids.csv
+amaluza,1960,1991,1000,report endpoint,ords:repDiaHid12m,2014-09-20,2026-09-20,data/curated/operating_bands.csv
+amaluza,1970,1991,,report endpoint,ords:repDiaVolAlm,2026-09-21,2026-09-21,data/curated/operating_bands.csv
+delsitanisagua,1469,1491,1200,report endpoint,ords:repDiaHid12m,2018-08-31,2026-09-20,data/curated/operating_bands.csv
+mazar,2098,2153,,dashboard chart title,celec dashboard bundle,2026-09-21,2026-09-21,data/reference/mrids.csv
+mazar,2100,2153,800,report endpoint,ords:repDiaHid12m,2014-09-20,2026-09-20,data/curated/operating_bands.csv
+mazar,2100,2153,,report endpoint,ords:repDiaVolAlm,2026-09-21,2026-09-21,data/curated/operating_bands.csv
+minas_san_francisco,783.33,792.86,,dashboard chart title,celec dashboard bundle,2026-09-21,2026-09-21,data/reference/mrids.csv
+minas_san_francisco,750,793,600,report endpoint,ords:repDiaHid12m,2018-10-01,2026-09-20,data/curated/operating_bands.csv
+minas_san_francisco,783.33,792.86,,report endpoint,ords:repDiaVolAlm,2026-09-21,2026-09-21,data/curated/operating_bands.csv
+sopladora,1312,1318,,dashboard chart title,celec dashboard bundle,2026-09-21,2026-09-21,data/reference/mrids.csv

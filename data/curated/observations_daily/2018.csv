@@ -2770,7 +2770,6 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2018-10-01,mazar,caudal_m3s,24,ords:repDiaHid12m,,2026-09-22T01:28:19Z,celec_ords/2019/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2019-09-20
 2018-10-01,mazar,cota_masl,2144.64,ords:repDiaHid12m,,2026-09-22T01:28:19Z,celec_ords/2019/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2019-09-20
 2018-10-01,mazar,produccion_mwh,2052.252455,ords:repDiaEner12m,,2026-09-22T01:28:37Z,celec_ords/2018/10/repDiaEner12m.ndjson.gz#repDiaEner12m:2018-10-18
-2018-10-01,minas_san_francisco,caudal_m3s,-4999995,ords:repDiaHid12m,,2026-09-22T01:28:19Z,celec_ords/2019/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2019-09-20
 2018-10-01,molino,produccion_mwh,13461.902688,ords:repDiaEner12m,,2026-09-22T01:28:37Z,celec_ords/2018/10/repDiaEner12m.ndjson.gz#repDiaEner12m:2018-10-18
 2018-10-01,sopladora,produccion_mwh,7138.559469,ords:repDiaEner12m,,2026-09-22T01:28:37Z,celec_ords/2018/10/repDiaEner12m.ndjson.gz#repDiaEner12m:2018-10-18
 2018-10-02,agoyan,produccion_mwh,1828.06,ords:agoEnerDia,,2026-09-22T03:00:29Z,celec_ords/2018/10/agoEnerDia.ndjson.gz#agoEnerDia:2018-10-02
@@ -2870,7 +2869,6 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2018-10-10,mazar,caudal_m3s,49,ords:repDiaHid12m,,2026-09-22T01:28:19Z,celec_ords/2019/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2019-09-20
 2018-10-10,mazar,cota_masl,2145.14,ords:repDiaHid12m,,2026-09-22T01:28:19Z,celec_ords/2019/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2019-09-20
 2018-10-10,mazar,produccion_mwh,871.93175,ords:repDiaEner12m,,2026-09-22T01:28:37Z,celec_ords/2018/10/repDiaEner12m.ndjson.gz#repDiaEner12m:2018-10-18
-2018-10-10,minas_san_francisco,caudal_m3s,-3999996,ords:repDiaHid12m,,2026-09-22T01:28:19Z,celec_ords/2019/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2019-09-20
 2018-10-10,molino,produccion_mwh,9354.053585,ords:repDiaEner12m,,2026-09-22T01:28:37Z,celec_ords/2018/10/repDiaEner12m.ndjson.gz#repDiaEner12m:2018-10-18
 2018-10-10,sopladora,produccion_mwh,5125.235216,ords:repDiaEner12m,,2026-09-22T01:28:37Z,celec_ords/2018/10/repDiaEner12m.ndjson.gz#repDiaEner12m:2018-10-18
 2018-10-11,agoyan,produccion_mwh,3172.31,ords:agoEnerDia,,2026-09-22T03:00:39Z,celec_ords/2018/10/agoEnerDia.ndjson.gz#agoEnerDia:2018-10-11

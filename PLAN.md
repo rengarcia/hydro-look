@@ -425,24 +425,51 @@ daily run as the control, so mrid 30538 accumulates against `q_ingresado` day by
 `pointValues` stays unused: the monthly aggregation answers, and one request a month beats one a day.
 Acceptance: daily level and inflow for the three plants; a documented semantics note per variable.
 
-**Phase 4 · Covariates, reference tables, quality gates (1 S)**
-In progress, independently of the Phase 1–2 backfill. Implemented: `ingest covariates`,
-Open-Meteo ERA5 (explicit model selection; six-day publication buffer), 16-day forecasts,
-NOAA PSL ONI, schema/range validation, raw archives, year-partitioned CSV and the scheduled/manual
-`covariates.yml` workflow. Historical weather is resumable by complete basin-day, fetched in yearly
-windows; forecast collections retain separate timestamps and raw responses. Old staged ingestion
-batches remain applicable while the existing backfill runs.
+**Phase 4 · Covariates, reference tables, quality gates — reference tables and gates done 2026-09-22; covariate history outstanding**
+Implemented earlier: `ingest covariates`, Open-Meteo ERA5 (explicit model selection; six-day
+publication buffer), 16-day forecasts, NOAA PSL ONI, schema/range validation, raw archives,
+year-partitioned CSV and the scheduled/manual `covariates.yml` workflow. Historical weather is
+resumable by complete basin-day, fetched in yearly windows; forecast collections retain separate
+timestamps and raw responses.
 
-`basins.csv` currently contains only the **provisional Paute sampling point** used in Phase 0;
-it is not a verified catchment centroid. Other basins, verified areas/coordinates, plant and
-rationing references, freshness gates and the public `api/status.json` remain pending.
-Covariate data has not been published to the repository; the new workflow needs deployment and
-an initial history run (`--from 1990-01-01` for climatology, or `2022-01-01` for the initial model).
-Seasonal ensembles remain deferred. ONI is a centred three-month average and the latest revised
-series; backtests must not assume its value was available at the beginning of its labelled month.
+Added 2026-09-22 — the reference tables and the gates:
 
-Validation on 2026-09-22: all 71 tests, TypeScript checks and lint pass. A live daily dry run
-validated 46 weather rows and 919 ONI rows, with no project data or staging files written.
+- **`plants.csv`, `thresholds.csv`, `rationing_episodes.csv`.** `thresholds.csv` is *derived*
+  from files already in this repository (`operating_bands.csv` and `mrids.csv`), so it needs no
+  outside confirmation, and it records all three declarations rather than reconciling them: Mazar's
+  floor is 2098 by the chart title and 2100 by both report endpoints, Amaluza's is 1975, 1970 or
+  1960 depending on who is asked. `plants.csv` and `rationing_episodes.csv` carry the §3 research,
+  which came from press, and every row of it says so — `capacity_status: unverified`, `verified_on`
+  empty, `status: unverified`, `source_url` empty. Two rationing rows are marked
+  `hydro_related: no`: the 2024-06-19 transmission failure and the 2024-09-18/19 maintenance
+  outage look exactly like rationing in the demand series and would poison a drought model.
+- **`npm run check`**, in CI on every push and after every ingest. The split is deliberate:
+  shape, range and reference checks are a function of the files alone and belong in CI, while
+  freshness is a function of the clock and would turn every pull request red as the data aged.
+  A feed that has never produced a row is reported, not failed, so the historian does not fail
+  the gate before its first run.
+- **`public/api/status.json`**, written after each ingest by the same command, always including
+  freshness because a viewer cannot pass a flag.
+
+**The gate found a real defect on its first run, in data that had been committed for a day.** On
+2018-10-01 and 2018-10-10 — the two days before Minas San Francisco's level series begins, with
+`nivelmsf` null on both — the ORDS publishes `q_ingresadomsf` as **-4,999,995** and **-3,999,996**,
+against single digits either side and nothing else negative in 14,619 inflow readings. Inflow has
+no negative branch, so whatever those numbers mean upstream they are not m³/s. Both parsers that
+read `q_ingresado` now drop a negative value with a note, the two rows are removed from the table,
+and the raw responses stay archived so they can be reprocessed if their meaning is ever
+established. The freshness limits caught a second thing worth recording: ONI looked 83 days stale
+under a 45-day limit, but its label is the *centre* of a three-month mean, so the newest available
+value is always about two months back. The limit was wrong, not the feed; it is now 110 days.
+
+Still pending: `basins.csv` holds only the **provisional Paute sampling point** from Phase 0 and is
+not a verified catchment centroid, so the other basins and their verified areas and coordinates
+remain outstanding — it drives an Open-Meteo request per row, so a placeholder row is not harmless.
+The ERA5 climatology history has not been run (`--from 1990-01-01` for climatology, or `2022-01-01`
+for the initial model). Seasonal ensembles remain deferred. ONI is a centred three-month average and
+the latest revised series; backtests must not assume its value was available at the beginning of its
+labelled month.
+
 
 Original phase scope:
 Open-Meteo ERA5 daily precipitation per basin from 2022 (and 1990→ for climatology), 16-day
