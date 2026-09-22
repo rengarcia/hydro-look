@@ -176,6 +176,13 @@ export const forecastValueRow = z.object({
   ensemble_p10: nullableNumber,
   ensemble_p90: nullableNumber,
   ensemble_n: z.number().int().nonnegative(),
+  /**
+   * The model whose median this row publishes. Since MODEL_VERSION 2 a run can publish its
+   * 7-day row from M4 and the rest from M3, so the run's `model_id` no longer names every row.
+   * Optional because rows written before the column existed carry it empty, which means the
+   * run's own `model_id`.
+   */
+  model_id: z.string().min(1).optional(),
 }).refine((r) => r.p10 <= r.p50 && r.p50 <= r.p90, { message: "quantiles must not cross" });
 export type ForecastValueRow = z.infer<typeof forecastValueRow>;
 
@@ -313,7 +320,8 @@ export const FORECAST_RUNS: TableSpec<ForecastRunRow> = {
 
 export const FORECAST_VALUES: TableSpec<ForecastValueRow> = {
   name: "forecast_values",
-  columns: ["run_id", "origin_date", "horizon_days", "target_date", "p10", "p50", "p90", "ensemble_p10", "ensemble_p90", "ensemble_n"],
+  // `model_id` is last so every earlier header is a prefix of this one.
+  columns: ["run_id", "origin_date", "horizon_days", "target_date", "p10", "p50", "p90", "ensemble_p10", "ensemble_p90", "ensemble_n", "model_id"],
   key: ["run_id", "horizon_days"],
   partitionBy: "origin_date",
   schema: forecastValueRow,

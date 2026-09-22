@@ -50,6 +50,20 @@ export interface ReportInputs {
    * identical; otherwise its section stands alone and says which run it came from.
    */
   m4?: { snapshot: M4Snapshot; ladderOrigins: readonly string[] } | null;
+  /**
+   * What `forecast.json` publishes at the horizon M4 earned: the switch made, or the reason this
+   * run fell back to the shipped model. Absent means every horizon publishes the shipped model.
+   */
+  published?: PublishedSwitch | null;
+}
+
+export interface PublishedSwitch {
+  /** True when the horizon publishes `modelId`; false when it fell back to the shipped model. */
+  published: boolean;
+  modelId: string;
+  horizonDays: number;
+  /** Why it fell back; null when published. */
+  reason: string | null;
 }
 
 function table(headers: readonly string[], rows: readonly (readonly string[])[]): string {
@@ -138,8 +152,12 @@ export function renderBacktestReport(inputs: ReportInputs): string {
     );
   }
   lines.push("");
+  if (inputs.published) {
+    lines.push(publishedLine(inputs.published, m4, inputs.shippedModelId));
+    lines.push("");
+  }
   if (m4) {
-    lines.push(m4VerdictLine(m4, decisions));
+    lines.push(m4VerdictLine(m4, decisions, inputs.published ?? null));
     lines.push("");
   }
 
@@ -194,7 +212,7 @@ export function renderBacktestReport(inputs: ReportInputs): string {
   lines.push(table(headers, scoreRows(tableScores, H, (h) => f(h.biasM))));
   lines.push("");
 
-  if (m4) lines.push(...renderM4Section(m4, decisions, m4Aligned, inputs.m4!.ladderOrigins.length));
+  if (m4) lines.push(...renderM4Section(m4, decisions, m4Aligned, inputs.m4!.ladderOrigins.length, inputs.published ?? null));
 
   if (inputs.variant) {
     lines.push("## Does conditioning the analogue years on ENSO phase help?");
@@ -374,7 +392,42 @@ function m4Summary(decisions: readonly M4Decision[]) {
   return { byModel, everywhere, clearly, anyWins };
 }
 
-function m4VerdictLine(snapshot: M4Snapshot, decisions: readonly M4Decision[]): string {
+/**
+ * The per-horizon switch, stated where the verdict is: which horizon publishes M4 and why, or
+ * why this run did not. A reader of the verdict should not have to reach the M4 section to learn
+ * that one row of `forecast.json` comes from another model.
+ */
+function publishedLine(published: PublishedSwitch, snapshot: M4Snapshot | null, shippedId: string): string {
+  const h = published.horizonDays;
+  if (!published.published) {
+    return (
+      `**${h} days would publish ${published.modelId}, but this run falls back to ${shippedId}:** ` +
+      `${published.reason ?? "no reason recorded"} Every horizon of \`forecast.json\` is ${shippedId} until the ` +
+      "M4 backtest covers the ladder again, and the document says so in `horizon_switch`."
+    );
+  }
+  const score = snapshot?.scores.find((s) => s.modelId === published.modelId)?.horizons.find((x) => x.horizonDays === h);
+  const reference = snapshot?.scores.find((s) => s.modelId === snapshot.referenceId)?.horizons.find((x) => x.horizonDays === h);
+  const paired = snapshot?.paired.find((p) => p.modelId === published.modelId)?.horizons.find((x) => x.horizonDays === h);
+  const numbers =
+    score && reference
+      ? ` (MAE ${f(score.maeM, 2)} m against ${f(reference.maeM, 2)} m, ${pct(score.skillVsPersistence)} better than ` +
+        `persistence; band coverage ${pct(score.coverageP10P90)} against ${pct(reference.coverageP10P90)}` +
+        (paired ? `; paired difference ${signed(paired.maeDifferenceM)} m, 90% interval [${signed(paired.low90)}, ${signed(paired.high90)}]` : "") +
+        ")"
+      : "";
+  return (
+    `**${h} days publishes ${published.modelId}; every other horizon publishes ${shippedId}.** The ladder's rule ships ` +
+    "a rung where it beats the one before it — a lower MAE and a band no worse calibrated — and the M4 backtest " +
+    `below shows ${published.modelId} doing that at ${h} days and nowhere else${numbers}. So \`forecast.json\` ` +
+    `publishes its median at ${h} days, banded by its own out-of-sample residuals from that same run, and names the ` +
+    `model on the row; 14–90 days, the three named scenarios and days-to-threshold stay ${shippedId}, which alone ` +
+    "simulates a daily path. If the M4 snapshot stops covering the ladder's origins, the daily run falls back to " +
+    `${shippedId} at ${h} days and says so.`
+  );
+}
+
+function m4VerdictLine(snapshot: M4Snapshot, decisions: readonly M4Decision[], published: PublishedSwitch | null): string {
   const { everywhere, clearly, anyWins } = m4Summary(decisions);
   const lead = `**M4 (gradient-boosted quantile trees) was run on the same backtest** (\`${snapshot.command}\`, ${snapshot.origins.length} origins).`;
   if (clearly.length > 0) {
@@ -392,12 +445,21 @@ function m4VerdictLine(snapshot: M4Snapshot, decisions: readonly M4Decision[]): 
   }
   if (anyWins.length > 0) {
     const cells = anyWins.map((d) => `${d.modelId} at ${d.horizonDays} d`).join(", ");
-    return `${lead} It beats ${snapshot.referenceId} only in places — ${cells} — and nowhere across all horizons, so M3 still ships.`;
+    const tail = published?.published
+      ? `so M3 ships everywhere except ${published.horizonDays} days, where ${published.modelId} does (above).`
+      : "so M3 still ships.";
+    return `${lead} It beats ${snapshot.referenceId} only in places — ${cells} — and nowhere across all horizons, ${tail}`;
   }
   return `${lead} It does not beat ${snapshot.referenceId} at any horizon in any of its three forms, and is recorded as a measured negative.`;
 }
 
-function renderM4Section(snapshot: M4Snapshot, decisions: readonly M4Decision[], aligned: boolean, ladderOrigins: number): string[] {
+function renderM4Section(
+  snapshot: M4Snapshot,
+  decisions: readonly M4Decision[],
+  aligned: boolean,
+  ladderOrigins: number,
+  published: PublishedSwitch | null,
+): string[] {
   const H = snapshot.horizonDays;
   const headers = ["model", ...H.map((h) => `h=${h}`)];
   const g = snapshot.settings.gbm;
@@ -571,10 +633,21 @@ function renderM4Section(snapshot: M4Snapshot, decisions: readonly M4Decision[],
         "of them.** That is not the margin the ladder rule was written to reward, and `forecast.json` keeps M3.",
     );
   } else if (anyWins.length > 0) {
-    out.push(
-      `**M4 wins only in places** (${anyWins.map((d) => `${d.modelId} at ${d.horizonDays} d${d.intervalExcludesZero ? " †" : ""}`).join(", ")}) ` +
-        "and no variant wins everywhere, so `forecast.json` keeps M3.",
-    );
+    const cells = anyWins.map((d) => `${d.modelId} at ${d.horizonDays} d${d.intervalExcludesZero ? " †" : ""}`).join(", ");
+    if (published?.published) {
+      out.push(
+        `**M4 wins only in places** (${cells}) and no variant wins everywhere, so \`forecast.json\` switches by ` +
+          `horizon rather than wholesale: **${published.horizonDays} days publishes ${published.modelId}**, and every other ` +
+          "horizon, the scenarios and days-to-threshold publish M3.",
+      );
+    } else if (published) {
+      out.push(
+        `**M4 wins only in places** (${cells}) and no variant wins everywhere. \`forecast.json\` would publish ` +
+          `${published.modelId} at ${published.horizonDays} days, but this run fell back to M3: ${published.reason ?? ""}`,
+      );
+    } else {
+      out.push(`**M4 wins only in places** (${cells}) and no variant wins everywhere, so \`forecast.json\` keeps M3.`);
+    }
   } else {
     out.push("**M4 does not beat M3 at any horizon in any of its three designs.** Recorded as a measured negative.");
   }
@@ -680,12 +753,14 @@ const M4_FINDINGS: readonly string[] = [
     "tail and the two M3-informed designs called seven days out. A ten-day call from 1.7 m above the line is " +
     "short-range extrapolation, not early warning. Every design also raised one false alarm (the P50 from " +
     "2023-11-01, at 2115.6 m, put a crossing a week out that did not come until April).",
-  "**What `forecast.json` would do with it, if adopted — proposed, not shipped.** Switch by horizon, not " +
-    "wholesale: publish `M4-gbm-m3-residual`'s median at seven days (the horizon where the gain is clear and " +
-    "the band no worse, and the design that stays anchored on M3 when the trees have nothing to add), banded " +
-    "like every rung by its own out-of-sample residuals from this harness, and keep M3 for 14–90 days, for the " +
-    "three named scenarios and for the days-to-threshold distribution, which need a daily simulated path M4 " +
-    "does not produce. The document would name the model per horizon. It is not made here: the ladder keeps a " +
-    "rung that beats the one before it, and this one does so at one horizon of five; and the daily job would " +
-    "have to run a 7-day-only M4 backtest (about 315 boosted fits, to earn the band) on every push.",
+  "**What `forecast.json` does with it (adopted 2026-09-22).** It switches by horizon, not wholesale: " +
+    "`M4-gbm-m3-residual`'s median is published at seven days — the horizon where the gain is clear and the " +
+    "band no worse, from the design that stays anchored on M3 when the trees have nothing to add — and M3 at " +
+    "14–90 days, for the three named scenarios and for the days-to-threshold distribution, which need a daily " +
+    "simulated path M4 does not produce. The daily run fits that one design at the live origin for seven days " +
+    "only (three boosted fits, with the settings and features this snapshot was scored with — the switch is " +
+    "refused if they differ), and bands it with the residual quantiles this snapshot recorded for it at seven " +
+    "days, the same rule that bands M3. The 7-day entry names its model, its band's source and the backtest it " +
+    "rests on, and carries what M3 would have published beside it. When the ladder gains an origin this " +
+    "snapshot lacks, or a rerun no longer shows the win, seven days falls back to M3 and `forecast.json` says so.",
 ];

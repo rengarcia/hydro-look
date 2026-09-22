@@ -100,4 +100,19 @@ describe("the M4 section of the backtest report", () => {
     expect(report).toContain("was scored on 2 origins");
     expect(report).toContain("the ladder above now has 3");
   });
+
+  it("states plainly which horizon publishes M4, or why this run fell back to M3", () => {
+    const published = renderBacktestReport({
+      ...inputs(snapshot(ORIGINS)),
+      published: { published: true, modelId: "M4-gbm-m3-residual", horizonDays: 7, reason: null },
+    });
+    expect(published).toContain("**7 days publishes M4-gbm-m3-residual; every other horizon publishes M3-water-balance.**");
+
+    const fellBack = renderBacktestReport({
+      ...inputs(snapshot(ORIGINS.slice(0, 2))),
+      published: { published: false, modelId: "M4-gbm-m3-residual", horizonDays: 7, reason: "the snapshot is stale." },
+    });
+    expect(fellBack).toContain("**7 days would publish M4-gbm-m3-residual, but this run falls back to M3-water-balance:** the snapshot is stale.");
+    expect(fellBack).not.toContain("7 days publishes M4");
+  });
 });

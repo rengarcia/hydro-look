@@ -122,6 +122,14 @@ function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
   const ninety = forecast.backtest.horizons.find((h) => h.horizon_days === 90);
   const sixty = forecast.backtest.horizons.find((h) => h.horizon_days === 60);
   const critical = forecast.days_to_threshold.thresholds.find((t) => t.status === "unverified");
+  // Since 2026-09-22 the 7-day row can come from M4 while the rest are M3; each row names its
+  // model, and older documents that do not are all `model.id`.
+  const modelOf = (h: { model?: string }) => h.model ?? forecast.model.id;
+  const switched = forecast.forecast.filter((h) => modelOf(h) !== forecast.model.id);
+  const switchedScore = switched[0]
+    ? forecast.backtest.horizons.find((b) => b.horizon_days === switched[0]!.horizon_days)
+    : undefined;
+  const fellBack = forecast.horizon_switch?.status === "fallback" ? forecast.horizon_switch : null;
 
   return (
     <section id="mazar">
@@ -144,6 +152,12 @@ function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
           <li>
             <span className="swatch" style={{ background: "var(--series-1)", opacity: 0.35 }} /> Banda p10–p90
           </li>
+          {switched.length > 0 ? (
+            <li>
+              <span className="swatch" style={{ border: "2px solid var(--series-1)", borderRadius: "50%" }} />{" "}
+              {switched.map((h) => h.horizon_days).join(", ")} días: otro modelo ({modelOf(switched[0]!)})
+            </li>
+          ) : null}
           <li>
             <span className="swatch line" style={{ background: "var(--critical)" }} /> Mínimos declarados
           </li>
@@ -155,6 +169,7 @@ function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
           horizons={forecast.forecast}
           thresholds={thresholds}
           label={`Cota de Mazar: ${FAN_HISTORY_DAYS} días observados y pronóstico a 90 días`}
+          primaryModel={forecast.model.id}
         />
       </div>
 
@@ -164,6 +179,15 @@ function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
             Pronóstico emitido el {longDate(forecast.origin_date)} desde una cota de {num(forecast.current.level_masl, 2)} m.
             «Acierto frente a persistencia» compara el error del modelo con el de suponer que la cota no cambia:
             0 % es empatar, negativo es perder.
+            {switched.length > 0 ? (
+              <>
+                {" "}
+                La fila de {switched.map((h) => h.horizon_days).join(", ")} días viene de otro modelo,{" "}
+                <code>{modelOf(switched[0]!)}</code> (árboles de gradiente que corrigen el error del balance de agua), porque
+                en el respaldo es el único que le gana a la persistencia a una semana; su banda sale de sus propios errores
+                fuera de muestra. El resto de horizontes, los escenarios y los días hasta el umbral son del balance de agua.
+              </>
+            ) : null}
           </caption>
           <thead>
             <tr>
@@ -181,7 +205,9 @@ function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
               const score = forecast.backtest.horizons.find((b) => b.horizon_days === h.horizon_days);
               return (
                 <tr key={h.horizon_days}>
-                  <th scope="row">{h.horizon_days} días</th>
+                  <th scope="row">
+                    {h.horizon_days} días{modelOf(h) !== forecast.model.id ? " ·" : ""}
+                  </th>
                   <td>{longDate(h.target_date)}</td>
                   <td className="num">{num(h.p10, 2)}</td>
                   <td className="num">{num(h.p50, 2)}</td>
@@ -200,8 +226,22 @@ function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
         2018-01 el modelo es{" "}
         {sixty ? <strong>{pct(sixty.skill_vs_persistence * 100, 1)} mejor que la persistencia a 60 días</strong> : null}
         {ninety ? <> y {pct(ninety.skill_vs_persistence * 100, 1)} a 90</> : null}, y <strong>indistinguible de ella por
-        debajo del mes</strong>. Para menos de treinta días, suponer que la cota no cambia es tan bueno como esto. La
-        banda p10–p90 cubre entre el 72 % y el 80 % de los casos según el horizonte, por debajo del 80 % nominal.
+        debajo del mes</strong>. Para menos de treinta días, suponer que la cota no cambia es tan bueno como esto
+        {switchedScore ? (
+          <>
+            , salvo a {switchedScore.horizon_days} días, donde se publica el otro modelo:{" "}
+            {pct(switchedScore.skill_vs_persistence * 100, 1)} mejor que la persistencia en el mismo respaldo
+          </>
+        ) : null}
+        . La banda p10–p90 cubre entre el 72 % y el 80 % de los casos según el horizonte, por debajo del 80 % nominal.
+        {fellBack ? (
+          <>
+            {" "}
+            Hoy los {fellBack.horizon_days} días vuelven al balance de agua: <code>{fellBack.candidate_model}</code> no se
+            publica cuando su respaldo no cubre los mismos orígenes que el del balance de agua (el motivo está en{" "}
+            <code>horizon_switch</code> de forecast.json).
+          </>
+        ) : null}
       </p>
 
       {critical ? <Crossings threshold={critical} note={forecast.days_to_threshold.note} /> : null}
@@ -726,7 +766,8 @@ function Narrative({ narrative, forecast }: { narrative: NarrativeDocument | nul
 
       <p className="note">
         <strong>El texto lo generó un modelo de lenguaje; el pronóstico es el estadístico.</strong> Las cifras de la
-        cota futura son las del modelo de balance de agua de la sección de Mazar, con su respaldo medido, y el nivel de
+        cota futura son las de la sección de Mazar (el balance de agua y, donde la tabla lo indica, el modelo que corrige
+        su error a 7 días), con su respaldo medido, y el nivel de
         riesgo lo calcula el modelo de suficiencia: el modelo de lenguaje los describe, no los produce.
         {stale ? (
           <>

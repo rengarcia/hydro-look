@@ -131,6 +131,11 @@ export interface PayloadForecastHorizon {
   skill_vs_persistence: number | null;
   /** Share of backtest outcomes that fell inside p10–p90, against a nominal 0.8. */
   coverage_p10_p90: number | null;
+  /**
+   * The model this horizon's quantiles and skill come from. The 7-day row can be M4 while the
+   * rest are M3, and a text that called every row "the water balance" would misattribute it.
+   */
+  model_id: string;
 }
 
 export interface PayloadForecast {
@@ -468,6 +473,8 @@ function forecastBlock(forecast: ForecastDocument): PayloadForecast {
         p90: h.p90,
         skill_vs_persistence: score ? roundTo(score.skill_vs_persistence, 3) : null,
         coverage_p10_p90: score ? roundTo(score.coverage_p10_p90, 2) : null,
+        // Documents written before the per-horizon switch name one model for every row.
+        model_id: h.model ?? forecast.model.id,
       };
     });
 

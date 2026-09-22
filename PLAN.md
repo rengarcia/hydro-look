@@ -917,12 +917,22 @@ design is 0.8–1.6 m worse than M3, with an interval wholly above zero, and its
 only 36–50%. On the crisis check no median called either 2024 crossing; the direct designs' p10
 called April ten days out from 1.7 m above the line, which M3 missed at every quantile, and one of
 them then missed October; each design raised one false alarm (2023-11-01). Under the ladder's
-rule M4 is kept for seven days only, **as a proposal**: `forecast.json` still publishes M3 at
-every horizon. Switching the 7-day median to the residual design costs ~315 boosted fits a day
-and leaves the scenarios and days-to-threshold on M3, which alone simulates a daily path. The
-backtest takes ~6.5 minutes, so it is its own command (`npm run backtest:m4`), and the daily
-forecast renders its committed snapshot into `data/reports/backtest.md`, marking it stale once
-the ladder gains an origin the snapshot lacks. Target 1 (probabilistic Mazar cota) and target 2 (days to threshold)
+rule M4 is kept for seven days only.
+
+**Adopted the same day, at seven days only.** `forecast.json` publishes `M4-gbm-m3-residual`'s
+median at 7 days and M3 at 14–90 days, for the three named scenarios and for days-to-threshold,
+which need the daily simulated path only M3 produces. The daily run fits that one design at the
+live origin — three boosted fits, ~5 s — with exactly the settings and features the snapshot was
+scored with, and refuses to publish if they differ. The band is the median widened by the model's
+own residual quantiles at 7 days over the 105 origins (q10 −3.45 m, q90 +2.68 m), clamped to
+contain the median as M3's is. The entry names its model, its band's source and the backtest it
+rests on (MAE 2.03 vs 2.29 m, paired interval [−0.45, −0.07]) and carries M3's figure beside it;
+`horizon_switch` says whether the switch was made and why; `forecast_values` gained a `model_id`
+column; the model version is 2; the fan chart marks the 7-day point as another model's. When the
+ladder gains an origin the snapshot lacks, seven days falls back to M3 — and the daily modelling
+step, seeing that as the only reason, reruns `npm run backtest:m4` (~6.5 min, once a month) and
+forecasts again. Any other fallback reason is left for a person to read. The CI dry-run went from
+22.5 s to 27.3 s. Target 1 (probabilistic Mazar cota) and target 2 (days to threshold)
 ship here; target 3 shipped in Phase 6c, and target 4 — national hydro generation a week out —
 ships as that model's hydro term at seven days, which since 2026-09-22 carries a calibrated
 p10–p90 of its own (`hydro_p10`/`hydro_p90` in `adequacy.json`). It beats a trailing 28-day mean

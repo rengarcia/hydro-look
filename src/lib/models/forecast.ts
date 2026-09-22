@@ -37,8 +37,11 @@ import type { ForecastContext } from "./types.ts";
 /** Levels arrive at 0.01 m; publishing more digits than that publishes arithmetic, not readings. */
 const LEVEL_DIGITS = 2;
 
-/** Bumped when the method changes in a way that makes old rows incomparable to new ones. */
-export const MODEL_VERSION = "1";
+/**
+ * Bumped when the method changes in a way that makes old rows incomparable to new ones.
+ * 2: the 7-day row may come from `M4-gbm-m3-residual` rather than M3 (see `m4-live.ts`).
+ */
+export const MODEL_VERSION = "2";
 
 /** How far the days-to-threshold simulation runs before it gives up and says "not within". */
 export const THRESHOLD_HORIZON_DAYS = 365;
@@ -74,6 +77,40 @@ export interface HorizonOutput {
   analogYears: number[];
   /** Median backtest residual at this horizon: the model's bias, published rather than absorbed. */
   medianResidualM: number | null;
+  /** The model whose median is published at this horizon. */
+  modelId: string;
+  bandSource: string;
+  /** Extra fields a horizon published from another model carries into its forecast entry. */
+  detail: Record<string, unknown> | null;
+}
+
+/**
+ * One horizon published from a model other than the run's own. The p10/p90 must already be the
+ * banded ones; `buildForecast` keeps what M3 would have published beside them.
+ */
+export interface HorizonOverride {
+  horizonDays: number;
+  modelId: string;
+  p10: number;
+  p50: number;
+  p90: number;
+  medianResidualM: number | null;
+  bandSource: string;
+  /** The published model's backtest numbers at this horizon, as the `backtest` block states them. */
+  backtest: {
+    n: number;
+    mae_m: number;
+    skill_vs_persistence: number | null;
+    coverage_p10_p90: number | null;
+    ensemble_coverage_p10_p90: number | null;
+  };
+  detail: Record<string, unknown>;
+}
+
+/** Which horizons publish another model, and `forecast.json`'s account of why (or why not). */
+export interface HorizonSwitch {
+  overrides: HorizonOverride[];
+  summary: Record<string, unknown>;
 }
 
 export interface ForecastInputs {
@@ -88,6 +125,8 @@ export interface ForecastInputs {
   modelLabel: string;
   backtestOrigins: number;
   options?: WaterBalanceOptions;
+  /** Horizons published from another model; absent, every horizon is the run's own model. */
+  horizonSwitch?: HorizonSwitch;
 }
 
 export interface ForecastOutput {
@@ -132,6 +171,7 @@ export function buildForecast(inputs: ForecastInputs): ForecastOutput | null {
   if (!fit) return null;
 
   const perHorizon = inputs.calibration.get(inputs.modelId) ?? new Map();
+  const overrides = new Map((inputs.horizonSwitch?.overrides ?? []).map((o) => [o.horizonDays, o]));
 
   const horizons: HorizonOutput[] = [];
   for (const horizonDays of inputs.horizonDays) {
@@ -152,17 +192,46 @@ export function buildForecast(inputs: ForecastInputs): ForecastOutput | null {
     const p10 = residuals ? Math.min(centre + residuals.q10, centre) : (quantile(ends, 0.1) ?? centre);
     const p90 = residuals ? Math.max(centre + residuals.q90, centre) : (quantile(ends, 0.9) ?? centre);
 
-    horizons.push({
-      horizonDays,
-      targetDate: addDays(origin, horizonDays),
+    const own = {
       p10: roundTo(p10, LEVEL_DIGITS),
       p50: roundTo(centre, LEVEL_DIGITS),
       p90: roundTo(p90, LEVEL_DIGITS),
+      medianResidualM: roundOrNull(residuals?.q50, LEVEL_DIGITS),
+    };
+    // A horizon published from another model replaces the quantiles only. The analogue
+    // ensemble stays M3's and is labelled so; what M3 would have published is kept beside the
+    // replacement, so a reader can see the size of the switch.
+    const override = overrides.get(horizonDays);
+    const published = override
+      ? {
+          p10: roundTo(override.p10, LEVEL_DIGITS),
+          p50: roundTo(override.p50, LEVEL_DIGITS),
+          p90: roundTo(override.p90, LEVEL_DIGITS),
+          medianResidualM: roundOrNull(override.medianResidualM, LEVEL_DIGITS),
+        }
+      : own;
+    horizons.push({
+      horizonDays,
+      targetDate: addDays(origin, horizonDays),
+      ...published,
       ensembleP10: roundOrNull(quantile(ends, 0.1), LEVEL_DIGITS),
       ensembleP90: roundOrNull(quantile(ends, 0.9), LEVEL_DIGITS),
       ensembleN: ends.length,
       analogYears: paths.map((p) => p.year),
-      medianResidualM: roundOrNull(residuals?.q50, LEVEL_DIGITS),
+      modelId: override?.modelId ?? inputs.modelId,
+      bandSource: override?.bandSource ?? `${inputs.modelId} out-of-sample residuals at ${horizonDays} d, this run's ladder backtest`,
+      detail: override
+        ? {
+            ...override.detail,
+            would_have_published: {
+              model: inputs.modelId,
+              p10: own.p10,
+              p50: own.p50,
+              p90: own.p90,
+              median_backtest_residual_m: own.medianResidualM,
+            },
+          }
+        : null,
     });
   }
   if (horizons.length === 0) return null;
@@ -219,6 +288,10 @@ export function buildForecast(inputs: ForecastInputs): ForecastOutput | null {
     originLevel,
     horizons: [...inputs.horizonDays],
     options,
+    // Which model each horizon publishes, and the evidence it stood on, are inputs too: the same
+    // data with the seven-day switch made or refused is a different run.
+    horizonModels: horizons.map((h) => [h.horizonDays, h.modelId]),
+    horizonSwitch: inputs.horizonSwitch?.summary ?? null,
   });
   const runId = `${origin}-${inputs.site}-${MODEL_VERSION}-${featuresHash.slice(0, 8)}`;
   const generatedAt = nowUtc();
@@ -257,6 +330,7 @@ export function buildForecast(inputs: ForecastInputs): ForecastOutput | null {
     ensemble_p10: h.ensembleP10,
     ensemble_p90: h.ensembleP90,
     ensemble_n: h.ensembleN,
+    model_id: h.modelId,
   }));
 
   const shipped = inputs.scores.find((s) => s.modelId === inputs.modelId);
@@ -281,7 +355,11 @@ export function buildForecast(inputs: ForecastInputs): ForecastOutput | null {
       version: MODEL_VERSION,
       features_hash: featuresHash,
       backtest_origins: inputs.backtestOrigins,
+      // `id` is the run's own model, which every horizon publishes unless this list says
+      // otherwise; each forecast entry below also names its model.
+      horizon_models: horizons.map((h) => ({ horizon_days: h.horizonDays, model_id: h.modelId })),
     },
+    horizon_switch: inputs.horizonSwitch?.summary ?? null,
     current: {
       level_masl: roundTo(originLevel, LEVEL_DIGITS),
       observed_on: origin,
@@ -310,6 +388,9 @@ export function buildForecast(inputs: ForecastInputs): ForecastOutput | null {
       p90: h.p90,
       ensemble: { p10: h.ensembleP10, p90: h.ensembleP90, n: h.ensembleN, years: h.analogYears },
       median_backtest_residual_m: h.medianResidualM,
+      model: h.modelId,
+      band_source: h.bandSource,
+      ...(h.detail ?? {}),
     })),
     days_to_threshold: {
       horizon_days: THRESHOLD_HORIZON_DAYS,
@@ -338,15 +419,32 @@ export function buildForecast(inputs: ForecastInputs): ForecastOutput | null {
     },
     backtest: {
       report: "data/reports/backtest.md",
+      // The skill of what is published at each horizon: a switched horizon carries its own
+      // model's backtest, not M3's, so the site's skill column describes the number beside it.
       horizons:
-        shipped?.horizons.map((h) => ({
-          horizon_days: h.horizonDays,
-          n: h.n,
-          mae_m: roundTo(h.maeM, 3),
-          skill_vs_persistence: roundOrNull(h.skillVsPersistence, 4),
-          coverage_p10_p90: roundOrNull(h.coverageP10P90, 4),
-          ensemble_coverage_p10_p90: roundOrNull(h.ensembleCoverage, 4),
-        })) ?? [],
+        shipped?.horizons.map((h) => {
+          const override = overrides.get(h.horizonDays);
+          if (override) {
+            return {
+              horizon_days: h.horizonDays,
+              model: override.modelId,
+              n: override.backtest.n,
+              mae_m: roundTo(override.backtest.mae_m, 3),
+              skill_vs_persistence: roundOrNull(override.backtest.skill_vs_persistence, 4),
+              coverage_p10_p90: roundOrNull(override.backtest.coverage_p10_p90, 4),
+              ensemble_coverage_p10_p90: roundOrNull(override.backtest.ensemble_coverage_p10_p90, 4),
+            };
+          }
+          return {
+            horizon_days: h.horizonDays,
+            model: inputs.modelId,
+            n: h.n,
+            mae_m: roundTo(h.maeM, 3),
+            skill_vs_persistence: roundOrNull(h.skillVsPersistence, 4),
+            coverage_p10_p90: roundOrNull(h.coverageP10P90, 4),
+            ensemble_coverage_p10_p90: roundOrNull(h.ensembleCoverage, 4),
+          };
+        }) ?? [],
     },
   };
 

@@ -18,6 +18,13 @@ export interface ForecastHorizon {
   p90: number;
   median_backtest_residual_m: number | null;
   ensemble: { p10: number; p90: number; n: number; years: number[] };
+  /**
+   * The model whose median this row publishes. Since 2026-09-22 the 7-day row can come from
+   * M4 while the rest are M3; absent in documents written before then, which were all
+   * `model.id`.
+   */
+  model?: string;
+  band_source?: string;
 }
 
 export interface ForecastThreshold {
@@ -54,6 +61,8 @@ export interface CrossingThreshold {
 
 export interface BacktestHorizon {
   horizon_days: number;
+  /** Whose backtest this row is: the model published at this horizon. Absent before 2026-09-22. */
+  model?: string;
   n: number;
   mae_m: number;
   skill_vs_persistence: number;
@@ -67,6 +76,8 @@ export interface ForecastDocument {
   site: string;
   disclaimer: string;
   model: { id: string; label: string; version: string; backtest_origins: number };
+  /** Whether the 7-day row publishes M4 this run, and why not when it does not. */
+  horizon_switch?: { horizon_days: number; candidate_model: string; published_model: string; status: string; reason: string } | null;
   current: {
     level_masl: number;
     observed_on: string;

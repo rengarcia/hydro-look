@@ -15,7 +15,10 @@
  * changes enough to matter — the snapshot records its own origin set, and the report only
  * splices M4 into the ladder's tables when the two origin sets are identical.
  *
- * Nothing here changes what `forecast.json` publishes.
+ * The snapshot is also what `npm run forecast` stands on when it publishes
+ * `M4-gbm-m3-residual`'s median at seven days: the band comes from the residual quantiles
+ * recorded here, and the switch falls back to M3 as soon as the ladder has an origin this
+ * snapshot lacks — so rerun this at least monthly, after each new origin's week has passed.
  */
 
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -186,6 +189,14 @@ function main(): void {
       originsConsidered: calls.get(shipped.id)!.p50.length,
     },
     m3AnchorMaxAbsDifferenceM,
+    // What the daily forecast bands a published M4 median with (see `m4-live.ts`): the same
+    // residual quantiles the harness hands M3's live band, from this run's own origins.
+    calibration: [...run.calibration].map(([modelId, perHorizon]) => ({
+      modelId,
+      horizons: [...perHorizon]
+        .sort(([a], [b]) => a - b)
+        .map(([horizonDays, c]) => ({ horizonDays, q10: c.q10, q50: c.q50, q90: c.q90, n: c.n })),
+    })),
   };
 
   for (const decision of m4Decisions(snapshot)) {

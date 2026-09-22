@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-22T19:04:46Z",
-  "run_id": "2026-09-21-mazar-1-1c43d784",
+  "generated_at": "2026-09-22T19:58:37Z",
+  "run_id": "2026-09-21-mazar-2-3eaa4e38",
   "origin_date": "2026-09-21",
   "site": "mazar",
   "variable": "cota_masl",
@@ -9,9 +9,46 @@
   "model": {
     "id": "M3-water-balance",
     "label": "Water balance with a fitted release rule and analogue inflow years",
-    "version": "1",
-    "features_hash": "1c43d7840613ac80",
-    "backtest_origins": 105
+    "version": "2",
+    "features_hash": "3eaa4e3838164077",
+    "backtest_origins": 105,
+    "horizon_models": [
+      {
+        "horizon_days": 7,
+        "model_id": "M4-gbm-m3-residual"
+      },
+      {
+        "horizon_days": 14,
+        "model_id": "M3-water-balance"
+      },
+      {
+        "horizon_days": 30,
+        "model_id": "M3-water-balance"
+      },
+      {
+        "horizon_days": 60,
+        "model_id": "M3-water-balance"
+      },
+      {
+        "horizon_days": 90,
+        "model_id": "M3-water-balance"
+      }
+    ]
+  },
+  "horizon_switch": {
+    "horizon_days": 7,
+    "candidate_model": "M4-gbm-m3-residual",
+    "published_model": "M4-gbm-m3-residual",
+    "status": "published",
+    "reason": "M4-gbm-m3-residual beats M3-water-balance at 7 d under the ladder's rule (lower MAE, band no worse calibrated) in the committed M4 backtest, which covers exactly this run's ladder origins.",
+    "other_horizons_model": "M3-water-balance",
+    "scenarios_and_days_to_threshold_model": "M3-water-balance",
+    "snapshot": {
+      "path": "data/reports/m4-backtest.json",
+      "generated_at": "2026-09-22T19:56:51Z",
+      "origins": 105,
+      "command": "npm run backtest:m4"
+    }
   },
   "current": {
     "level_masl": 2138.37,
@@ -57,9 +94,9 @@
     {
       "horizon_days": 7,
       "target_date": "2026-09-28",
-      "p10": 2130.9,
-      "p50": 2135.2,
-      "p90": 2137.55,
+      "p10": 2131.86,
+      "p50": 2135.31,
+      "p90": 2137.99,
       "ensemble": {
         "p10": 2131.8,
         "p90": 2144.64,
@@ -83,7 +120,40 @@
           2025
         ]
       },
-      "median_backtest_residual_m": 0.13
+      "median_backtest_residual_m": -0.25,
+      "model": "M4-gbm-m3-residual",
+      "band_source": "M4-gbm-m3-residual out-of-sample residuals at 7 d over 105 origins of `npm run backtest:m4` (data/reports/m4-backtest.json, 2026-09-22T19:56:51Z): median + the 10th and 90th percentile of actual − forecast, clamped to contain the median",
+      "backtest_skill": {
+        "source": "data/reports/m4-backtest.json",
+        "snapshot_generated_at": "2026-09-22T19:56:51Z",
+        "origins": 105,
+        "n": 105,
+        "mae_m": 2.034,
+        "skill_vs_persistence": 0.1122,
+        "coverage_p10_p90": 0.7634,
+        "reference_model": "M3-water-balance",
+        "reference_mae_m": 2.292,
+        "reference_coverage_p10_p90": 0.7419,
+        "paired_mae_difference_m": -0.258,
+        "paired_90_interval_m": [
+          -0.453,
+          -0.068
+        ]
+      },
+      "own_quantiles": {
+        "p10": 2131.91,
+        "p90": 2138.68,
+        "note": "The model's own quantile regressions before widening; they cover too little to publish."
+      },
+      "m3_anchor_p50": 2135.12,
+      "ensemble_note": "This row's `ensemble` is M3-water-balance's analogue inflow years, which this model corrects; it is not this row's band.",
+      "would_have_published": {
+        "model": "M3-water-balance",
+        "p10": 2130.9,
+        "p50": 2135.2,
+        "p90": 2137.55,
+        "median_backtest_residual_m": 0.13
+      }
     },
     {
       "horizon_days": 14,
@@ -114,7 +184,9 @@
           2025
         ]
       },
-      "median_backtest_residual_m": -0.19
+      "median_backtest_residual_m": -0.19,
+      "model": "M3-water-balance",
+      "band_source": "M3-water-balance out-of-sample residuals at 14 d, this run's ladder backtest"
     },
     {
       "horizon_days": 30,
@@ -144,7 +216,9 @@
           2025
         ]
       },
-      "median_backtest_residual_m": 0.19
+      "median_backtest_residual_m": 0.19,
+      "model": "M3-water-balance",
+      "band_source": "M3-water-balance out-of-sample residuals at 30 d, this run's ladder backtest"
     },
     {
       "horizon_days": 60,
@@ -174,7 +248,9 @@
           2025
         ]
       },
-      "median_backtest_residual_m": 0
+      "median_backtest_residual_m": 0,
+      "model": "M3-water-balance",
+      "band_source": "M3-water-balance out-of-sample residuals at 60 d, this run's ladder backtest"
     },
     {
       "horizon_days": 90,
@@ -203,7 +279,9 @@
           2025
         ]
       },
-      "median_backtest_residual_m": 0.16
+      "median_backtest_residual_m": 0.16,
+      "model": "M3-water-balance",
+      "band_source": "M3-water-balance out-of-sample residuals at 90 d, this run's ladder backtest"
     }
   ],
   "days_to_threshold": {
@@ -438,14 +516,16 @@
     "horizons": [
       {
         "horizon_days": 7,
+        "model": "M4-gbm-m3-residual",
         "n": 105,
-        "mae_m": 2.292,
-        "skill_vs_persistence": -0.0005,
-        "coverage_p10_p90": 0.7419,
-        "ensemble_coverage_p10_p90": 0.6095
+        "mae_m": 2.034,
+        "skill_vs_persistence": 0.1122,
+        "coverage_p10_p90": 0.7634,
+        "ensemble_coverage_p10_p90": 0.619
       },
       {
         "horizon_days": 14,
+        "model": "M3-water-balance",
         "n": 105,
         "mae_m": 3.616,
         "skill_vs_persistence": -0.0122,
@@ -454,6 +534,7 @@
       },
       {
         "horizon_days": 30,
+        "model": "M3-water-balance",
         "n": 104,
         "mae_m": 5.851,
         "skill_vs_persistence": 0.001,
@@ -462,6 +543,7 @@
       },
       {
         "horizon_days": 60,
+        "model": "M3-water-balance",
         "n": 103,
         "mae_m": 7.253,
         "skill_vs_persistence": 0.2445,
@@ -470,6 +552,7 @@
       },
       {
         "horizon_days": 90,
+        "model": "M3-water-balance",
         "n": 102,
         "mae_m": 7.305,
         "skill_vs_persistence": 0.3482,

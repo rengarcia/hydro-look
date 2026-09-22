@@ -1,6 +1,6 @@
 # Backtest — mazar level forecast
 
-Generated 2026-09-22T19:04:49Z from the committed tables; no network. Origins are the first of each month, each one refitting every model on the data before it. 105 origins scored per horizon, 93 of them with a calibrated band (the first twelve are the calibration's warm-up).
+Generated 2026-09-22T19:58:40Z from the committed tables; no network. Origins are the first of each month, each one refitting every model on the data before it. 105 origins scored per horizon, 93 of them with a calibrated band (the first twelve are the calibration's warm-up).
 
 Level history: 4385 days, 2014-09-20 → 2026-09-21.
 
@@ -10,7 +10,9 @@ Level history: 4385 days, 2014-09-20 → 2026-09-21.
 
 It is not the only rung that beats persistence — M2-seasonal-anomaly-decay does too at the long horizons — but it is chosen because it is at least as good as all of them at *every* horizon, and because its state is interpretable: a storage curve, a release rule and a set of named analogue years, each of which can be inspected and argued with.
 
-**M4 (gradient-boosted quantile trees) was run on the same backtest** (`npm run backtest:m4`, 105 origins). It beats M3-water-balance only in places — M4-gbm-direct at 7 d, M4-gbm-direct at 14 d, M4-gbm-direct-m3 at 7 d, M4-gbm-direct-m3 at 14 d, M4-gbm-m3-residual at 7 d — and nowhere across all horizons, so M3 still ships.
+**7 days publishes M4-gbm-m3-residual; every other horizon publishes M3-water-balance.** The ladder's rule ships a rung where it beats the one before it — a lower MAE and a band no worse calibrated — and the M4 backtest below shows M4-gbm-m3-residual doing that at 7 days and nowhere else (MAE 2.03 m against 2.29 m, 11.2% better than persistence; band coverage 76.3% against 74.2%; paired difference −0.26 m, 90% interval [−0.45, −0.07]). So `forecast.json` publishes its median at 7 days, banded by its own out-of-sample residuals from that same run, and names the model on the row; 14–90 days, the three named scenarios and days-to-threshold stay M3-water-balance, which alone simulates a daily path. If the M4 snapshot stops covering the ladder's origins, the daily run falls back to M3-water-balance at 7 days and says so.
+
+**M4 (gradient-boosted quantile trees) was run on the same backtest** (`npm run backtest:m4`, 105 origins). It beats M3-water-balance only in places — M4-gbm-direct at 7 d, M4-gbm-direct at 14 d, M4-gbm-direct-m3 at 7 d, M4-gbm-direct-m3 at 14 d, M4-gbm-m3-residual at 7 d — and nowhere across all horizons, so M3 ships everywhere except 7 days, where M4-gbm-m3-residual does (above).
 
 ## Mean absolute error, metres
 
@@ -24,7 +26,7 @@ It is not the only rung that beats persistence — M2-seasonal-anomaly-decay doe
 | M4-gbm-direct-m3 | 2.050 | 3.441 | 5.736 | 8.083 | 8.857 |
 | M4-gbm-m3-residual | 2.034 | 3.463 | 5.809 | 8.278 | 8.335 |
 
-The M4 rows come from `npm run backtest:m4` (run 2026-09-22T18:58:02Z), which refits them at the same 105 origins through the same harness; they are rendered from its committed snapshot because refitting about 4,700 boosted models does not belong in the daily run. See [M4](#m4--gradient-boosted-quantile-trees) below.
+The M4 rows come from `npm run backtest:m4` (run 2026-09-22T19:56:51Z), which refits them at the same 105 origins through the same harness; they are rendered from its committed snapshot because refitting about 4,700 boosted models does not belong in the daily run. See [M4](#m4--gradient-boosted-quantile-trees) below.
 
 ## Skill against persistence (1 − MAE/MAE₀)
 
@@ -171,7 +173,7 @@ The ladder's rule: a horizon is won when the MAE is below M3-water-balance's *an
 | M4-gbm-direct-m3 | wins | wins | loses (band) | loses (MAE) | loses (MAE) |
 | M4-gbm-m3-residual | wins † | loses (band) | loses (band) | loses (MAE) | loses (MAE) |
 
-**M4 wins only in places** (M4-gbm-direct at 7 d †, M4-gbm-direct at 14 d, M4-gbm-direct-m3 at 7 d, M4-gbm-direct-m3 at 14 d, M4-gbm-m3-residual at 7 d †) and no variant wins everywhere, so `forecast.json` keeps M3.
+**M4 wins only in places** (M4-gbm-direct at 7 d †, M4-gbm-direct at 14 d, M4-gbm-direct-m3 at 7 d, M4-gbm-direct-m3 at 14 d, M4-gbm-m3-residual at 7 d †) and no variant wins everywhere, so `forecast.json` switches by horizon rather than wholesale: **7 days publishes M4-gbm-m3-residual**, and every other horizon, the scenarios and days-to-threshold publish M3.
 
 ### The crisis check at M4's resolution
 
@@ -222,9 +224,9 @@ False alarms (P50 named a crossing within thirty days that did not come within s
 
 **Crisis check.** No design's P50 called either 2024 crossing, and neither did M3's. The P10 of the two direct designs called April 2024 ten days out, from an origin at 2116.7 m — a crossing no quantile of M3 called, because no analogue year was that dry — but `M4-gbm-direct` then missed October, which M3's dry tail and the two M3-informed designs called seven days out. A ten-day call from 1.7 m above the line is short-range extrapolation, not early warning. Every design also raised one false alarm (the P50 from 2023-11-01, at 2115.6 m, put a crossing a week out that did not come until April).
 
-**What `forecast.json` would do with it, if adopted — proposed, not shipped.** Switch by horizon, not wholesale: publish `M4-gbm-m3-residual`'s median at seven days (the horizon where the gain is clear and the band no worse, and the design that stays anchored on M3 when the trees have nothing to add), banded like every rung by its own out-of-sample residuals from this harness, and keep M3 for 14–90 days, for the three named scenarios and for the days-to-threshold distribution, which need a daily simulated path M4 does not produce. The document would name the model per horizon. It is not made here: the ladder keeps a rung that beats the one before it, and this one does so at one horizon of five; and the daily job would have to run a 7-day-only M4 backtest (about 315 boosted fits, to earn the band) on every push.
+**What `forecast.json` does with it (adopted 2026-09-22).** It switches by horizon, not wholesale: `M4-gbm-m3-residual`'s median is published at seven days — the horizon where the gain is clear and the band no worse, from the design that stays anchored on M3 when the trees have nothing to add — and M3 at 14–90 days, for the three named scenarios and for the days-to-threshold distribution, which need a daily simulated path M4 does not produce. The daily run fits that one design at the live origin for seven days only (three boosted fits, with the settings and features this snapshot was scored with — the switch is refused if they differ), and bands it with the residual quantiles this snapshot recorded for it at seven days, the same rule that bands M3. The 7-day entry names its model, its band's source and the backtest it rests on, and carries what M3 would have published beside it. When the ladder gains an origin this snapshot lacks, or a rerun no longer shows the win, seven days falls back to M3 and `forecast.json` says so.
 
-Runtime: 395 s, single-threaded, for the whole run on the machine that produced this snapshot, which is why it is its own command and not part of the CI dry-run or the daily forecast. To refresh it: `npm run backtest:m4`, then `npm run forecast` to render it here.
+Runtime: 391 s, single-threaded, for the whole run on the machine that produced this snapshot, which is why it is its own command and not part of the CI dry-run or the daily forecast. To refresh it: `npm run backtest:m4`, then `npm run forecast` to render it here.
 
 ## Does conditioning the analogue years on ENSO phase help?
 

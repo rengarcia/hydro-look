@@ -216,6 +216,18 @@ export interface M4Snapshot {
   };
   /** Largest |M4 residual anchor − shipped M3 median| over the origins: zero if the M3 feature is M3. */
   m3AnchorMaxAbsDifferenceM: number | null;
+  /**
+   * Each model's out-of-sample residual quantiles (actual − p50) per horizon over every scored
+   * origin: the harness's own `calibration`, which is what a live forecast turns a median into a
+   * band with — exactly as `forecast.json` bands M3. Absent from snapshots written before
+   * 2026-09-22, which therefore cannot band a published M4 median.
+   */
+  calibration?: M4Calibration[];
+}
+
+export interface M4Calibration {
+  modelId: string;
+  horizons: { horizonDays: number; q10: number; q50: number; q90: number; n: number }[];
 }
 
 export interface M4Decision {
