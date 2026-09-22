@@ -1,5 +1,5 @@
 {
- "started_utc": "2026-09-21T23:55:46+00:00",
+ "started_utc": "2026-09-22T00:05:25+00:00",
  "sections": [
   "tls",
   "ords_matrix",
@@ -7,6 +7,7 @@
   "ords_catalog",
   "ords_reports",
   "ords_new_mrids",
+  "ords_history",
   "celec_web",
   "smec",
   "operativa",
@@ -1143,7 +1144,7 @@
    "status": 200,
    "error": null,
    "content_type": "application/json",
-   "bytes": 751,
+   "bytes": 760,
    "top_keys": [
     "count",
     "hasMore",
@@ -1172,14 +1173,14 @@
      "fecha": "2026-09-20T05:00:00Z",
      "central": "Mazar",
      "potencia": 0,
-     "unidlinea": 2,
+     "unidlinea": null,
      "q_turbinado": 0
     },
     {
      "fecha": "2026-09-20T05:00:00Z",
      "central": "Molino",
      "potencia": 633.9145737,
-     "unidlinea": 9,
+     "unidlinea": null,
      "q_turbinado": 100.12457
     }
    ]
@@ -1567,7 +1568,7 @@
    "status": 200,
    "error": null,
    "content_type": "application/json",
-   "bytes": 2155,
+   "bytes": 2147,
    "top_keys": [
     "count",
     "hasMore",
@@ -1586,7 +1587,7 @@
     {
      "id": 1,
      "loctimestamp": "2026-09-21T05:00:00Z",
-     "valueedit": 2008.60662
+     "valueedit": 2166.986801
     },
     {
      "id": 2,
@@ -1604,7 +1605,7 @@
    "status": 200,
    "error": null,
    "content_type": "application/json",
-   "bytes": 835,
+   "bytes": 832,
    "top_keys": [
     "count",
     "hasMore",
@@ -1623,20 +1624,20 @@
    "sample": [
     {
      "id": 4,
-     "loctimestamp": "2026-09-21T23:00:00Z",
-     "valueedit": 11569177.07,
+     "loctimestamp": "2026-09-22T00:00:00Z",
+     "valueedit": 11569335.45,
      "magnitud": "EnerMaz"
     },
     {
      "id": 8,
-     "loctimestamp": "2026-09-21T23:00:00Z",
-     "valueedit": 191785975.97,
+     "loctimestamp": "2026-09-22T00:00:00Z",
+     "valueedit": 191786982,
      "magnitud": "EnerMol"
     },
     {
      "id": 12,
-     "loctimestamp": "2026-09-21T23:00:00Z",
-     "valueedit": 23906401.57,
+     "loctimestamp": "2026-09-22T00:00:00Z",
+     "valueedit": 23906885.13,
      "magnitud": "EnerSop"
     }
    ]
@@ -1645,7 +1646,7 @@
    "status": 200,
    "error": null,
    "content_type": "application/json",
-   "bytes": 768,
+   "bytes": 770,
    "top_keys": [
     "count",
     "hasMore",
@@ -1665,19 +1666,19 @@
     {
      "id": 1,
      "loctimestamp": "2026-09-21T05:00:00Z",
-     "valueedit": 2008.60662,
+     "valueedit": 2166.986801,
      "magnitud": "EnerMaz"
     },
     {
      "id": 5,
      "loctimestamp": "2026-09-21T05:00:00Z",
-     "valueedit": 12374.128645,
+     "valueedit": 13380.162209,
      "magnitud": "EnerMol"
     },
     {
      "id": 9,
      "loctimestamp": "2026-09-21T05:00:00Z",
-     "valueedit": 6684.947155,
+     "valueedit": 7168.505487,
      "magnitud": "EnerSop"
     }
    ]
@@ -1686,7 +1687,7 @@
    "status": 200,
    "error": null,
    "content_type": "application/json",
-   "bytes": 6434,
+   "bytes": 6423,
    "top_keys": [
     "count",
     "hasMore",
@@ -1708,8 +1709,8 @@
     {
      "id": 1,
      "hora": 1,
-     "loctimestamp": "2026-09-21T23:00:00Z",
-     "valueedit": 158.372618,
+     "loctimestamp": "2026-09-22T00:00:00Z",
+     "valueedit": 158.380181,
      "magnitud": "Energía Diaria",
      "units": "MWh"
     },
@@ -1841,7 +1842,7 @@
    "status": 200,
    "error": null,
    "content_type": "application/json",
-   "bytes": 2157,
+   "bytes": 2156,
    "top_keys": [
     "count",
     "hasMore",
@@ -2437,6 +2438,2499 @@
      "valueedit": null
     }
    ]
+  }
+ },
+ "ords_history": {
+  "ords:hist:repDiaHid12m:2025": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 135584,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 365,
+   "item_keys": [
+    "limdel",
+    "limmaz",
+    "limmol",
+    "limmsf",
+    "loctimestamp",
+    "min_del",
+    "min_maz",
+    "min_mol",
+    "min_msf",
+    "niveldel",
+    "nivelmaz",
+    "nivelmol",
+    "nivelmsf",
+    "q_ingresadodel",
+    "q_ingresadomaz",
+    "q_ingresadomol",
+    "q_ingresadomsf",
+    "qmax_del",
+    "qmax_maz",
+    "qmax_mol",
+    "qmax_msf"
+   ],
+   "ts_min": "2024-09-20T05:00:00Z",
+   "ts_max": "2025-09-19T05:00:00Z",
+   "n_numeric": 7300,
+   "sample": [
+    {
+     "loctimestamp": "2024-09-20T05:00:00Z",
+     "nivelmsf": 786.92,
+     "q_ingresadomsf": 11,
+     "limmsf": 793,
+     "min_msf": 750,
+     "qmax_msf": 600,
+     "nivelmaz": 2117.96,
+     "q_ingresadomaz": 9,
+     "limmaz": 2153,
+     "min_maz": 2100,
+     "qmax_maz": 800,
+     "nivelmol": 1982.43,
+     "q_ingresadomol": 123,
+     "limmol": 1991,
+     "min_mol": 1960,
+     "qmax_mol": 1000,
+     "niveldel": 1487.85,
+     "q_ingresadodel": 31,
+     "limdel": 1491,
+     "min_del": 1469,
+     "qmax_del": 1200
+    },
+    {
+     "loctimestamp": "2024-09-21T05:00:00Z",
+     "nivelmsf": 787.67,
+     "q_ingresadomsf": 14,
+     "limmsf": 793,
+     "min_msf": 750,
+     "qmax_msf": 600,
+     "nivelmaz": 2116.46,
+     "q_ingresadomaz": 25,
+     "limmaz": 2153,
+     "min_maz": 2100,
+     "qmax_maz": 800,
+     "nivelmol": 1981.97,
+     "q_ingresadomol": 39,
+     "limmol": 1991,
+     "min_mol": 1960,
+     "qmax_mol": 1000,
+     "niveldel": 1489.31,
+     "q_ingresadodel": 37,
+     "limdel": 1491,
+     "min_del": 1469,
+     "qmax_del": 1200
+    }
+   ]
+  },
+  "ords:hist:repDiaHid12m:2024": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 135939,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 366,
+   "item_keys": [
+    "limdel",
+    "limmaz",
+    "limmol",
+    "limmsf",
+    "loctimestamp",
+    "min_del",
+    "min_maz",
+    "min_mol",
+    "min_msf",
+    "niveldel",
+    "nivelmaz",
+    "nivelmol",
+    "nivelmsf",
+    "q_ingresadodel",
+    "q_ingresadomaz",
+    "q_ingresadomol",
+    "q_ingresadomsf",
+    "qmax_del",
+    "qmax_maz",
+    "qmax_mol",
+    "qmax_msf"
+   ],
+   "ts_min": "2023-09-20T05:00:00Z",
+   "ts_max": "2024-09-19T05:00:00Z",
+   "n_numeric": 7320,
+   "sample": [
+    {
+     "loctimestamp": "2023-09-20T05:00:00Z",
+     "nivelmsf": 787.88,
+     "q_ingresadomsf": 8,
+     "limmsf": 793,
+     "min_msf": 750,
+     "qmax_msf": 600,
+     "nivelmaz": 2147.4,
+     "q_ingresadomaz": 25,
+     "limmaz": 2153,
+     "min_maz": 2100,
+     "qmax_maz": 800,
+     "nivelmol": 1980.98,
+     "q_ingresadomol": 65,
+     "limmol": 1991,
+     "min_mol": 1960,
+     "qmax_mol": 1000,
+     "niveldel": 1489.14,
+     "q_ingresadodel": 19,
+     "limdel": 1491,
+     "min_del": 1469,
+     "qmax_del": 1200
+    },
+    {
+     "loctimestamp": "2023-09-21T05:00:00Z",
+     "nivelmsf": 787.22,
+     "q_ingresadomsf": 7,
+     "limmsf": 793,
+     "min_msf": 750,
+     "qmax_msf": 600,
+     "nivelmaz": 2146.85,
+     "q_ingresadomaz": 22,
+     "limmaz": 2153,
+     "min_maz": 2100,
+     "qmax_maz": 800,
+     "nivelmol": 1979.27,
+     "q_ingresadomol": 89,
+     "limmol": 1991,
+     "min_mol": 1960,
+     "qmax_mol": 1000,
+     "niveldel": 1486.8,
+     "q_ingresadodel": 21,
+     "limdel": 1491,
+     "min_del": 1469,
+     "qmax_del": 1200
+    }
+   ]
+  },
+  "ords:hist:repDiaHid12m:2023": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 135717,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 365,
+   "item_keys": [
+    "limdel",
+    "limmaz",
+    "limmol",
+    "limmsf",
+    "loctimestamp",
+    "min_del",
+    "min_maz",
+    "min_mol",
+    "min_msf",
+    "niveldel",
+    "nivelmaz",
+    "nivelmol",
+    "nivelmsf",
+    "q_ingresadodel",
+    "q_ingresadomaz",
+    "q_ingresadomol",
+    "q_ingresadomsf",
+    "qmax_del",
+    "qmax_maz",
+    "qmax_mol",
+    "qmax_msf"
+   ],
+   "ts_min": "2022-09-20T05:00:00Z",
+   "ts_max": "2023-09-19T05:00:00Z",
+   "n_numeric": 7300,
+   "sample": [
+    {
+     "loctimestamp": "2022-09-20T05:00:00Z",
+     "nivelmsf": 787.95,
+     "q_ingresadomsf": 12,
+     "limmsf": 793,
+     "min_msf": 750,
+     "qmax_msf": 600,
+     "nivelmaz": 2149.29,
+     "q_ingresadomaz": 31,
+     "limmaz": 2153,
+     "min_maz": 2100,
+     "qmax_maz": 800,
+     "nivelmol": 1985.75,
+     "q_ingresadomol": 88,
+     "limmol": 1991,
+     "min_mol": 1960,
+     "qmax_mol": 1000,
+     "niveldel": 1490.82,
+     "q_ingresadodel": 26,
+     "limdel": 1491,
+     "min_del": 1469,
+     "qmax_del": 1200
+    },
+    {
+     "loctimestamp": "2022-09-21T05:00:00Z",
+     "nivelmsf": 787.78,
+     "q_ingresadomsf": 11,
+     "limmsf": 793,
+     "min_msf": 750,
+     "qmax_msf": 600,
+     "nivelmaz": 2148.74,
+     "q_ingresadomaz": 33,
+     "limmaz": 2153,
+     "min_maz": 2100,
+     "qmax_maz": 800,
+     "nivelmol": 1984.97,
+     "q_ingresadomol": 65,
+     "limmol": 1991,
+     "min_mol": 1960,
+     "qmax_mol": 1000,
+     "niveldel": 1490.81,
+     "q_ingresadodel": 25,
+     "limdel": 1491,
+     "min_del": 1469,
+     "qmax_del": 1200
+    }
+   ]
+  },
+  "ords:hist:repDiaHid12m:2022": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 135971,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 365,
+   "item_keys": [
+    "limdel",
+    "limmaz",
+    "limmol",
+    "limmsf",
+    "loctimestamp",
+    "min_del",
+    "min_maz",
+    "min_mol",
+    "min_msf",
+    "niveldel",
+    "nivelmaz",
+    "nivelmol",
+    "nivelmsf",
+    "q_ingresadodel",
+    "q_ingresadomaz",
+    "q_ingresadomol",
+    "q_ingresadomsf",
+    "qmax_del",
+    "qmax_maz",
+    "qmax_mol",
+    "qmax_msf"
+   ],
+   "ts_min": "2021-09-20T05:00:00Z",
+   "ts_max": "2022-09-19T05:00:00Z",
+   "n_numeric": 7300,
+   "sample": [
+    {
+     "loctimestamp": "2021-09-20T05:00:00Z",
+     "nivelmsf": 788.49,
+     "q_ingresadomsf": 10,
+     "limmsf": 793,
+     "min_msf": 750,
+     "qmax_msf": 600,
+     "nivelmaz": 2148.26,
+     "q_ingresadomaz": 33,
+     "limmaz": 2153,
+     "min_maz": 2100,
+     "qmax_maz": 800,
+     "nivelmol": 1985.84,
+     "q_ingresadomol": 92,
+     "limmol": 1991,
+     "min_mol": 1960,
+     "qmax_mol": 1000,
+     "niveldel": 1490.84,
+     "q_ingresadodel": 42,
+     "limdel": 1491,
+     "min_del": 1469,
+     "qmax_del": 1200
+    },
+    {
+     "loctimestamp": "2021-09-21T05:00:00Z",
+     "nivelmsf": 788.47,
+     "q_ingresadomsf": 19,
+     "limmsf": 793,
+     "min_msf": 750,
+     "qmax_msf": 600,
+     "nivelmaz": 2148.27,
+     "q_ingresadomaz": 111,
+     "limmaz": 2153,
+     "min_maz": 2100,
+     "qmax_maz": 800,
+     "nivelmol": 1986.47,
+     "q_ingresadomol": 137,
+     "limmol": 1991,
+     "min_mol": 1960,
+     "qmax_mol": 1000,
+     "niveldel": 1490.63,
+     "q_ingresadodel": 146,
+     "limdel": 1491,
+     "min_del": 1469,
+     "qmax_del": 1200
+    }
+   ]
+  },
+  "ords:hist:repDiaHid12m:2021": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 135881,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 365,
+   "item_keys": [
+    "limdel",
+    "limmaz",
+    "limmol",
+    "limmsf",
+    "loctimestamp",
+    "min_del",
+    "min_maz",
+    "min_mol",
+    "min_msf",
+    "niveldel",
+    "nivelmaz",
+    "nivelmol",
+    "nivelmsf",
+    "q_ingresadodel",
+    "q_ingresadomaz",
+    "q_ingresadomol",
+    "q_ingresadomsf",
+    "qmax_del",
+    "qmax_maz",
+    "qmax_mol",
+    "qmax_msf"
+   ],
+   "ts_min": "2020-09-20T05:00:00Z",
+   "ts_max": "2021-09-19T05:00:00Z",
+   "n_numeric": 7300,
+   "sample": [
+    {
+     "loctimestamp": "2020-09-20T05:00:00Z",
+     "nivelmsf": 791.12,
+     "q_ingresadomsf": 31,
+     "limmsf": 793,
+     "min_msf": 750,
+     "qmax_msf": 600,
+     "nivelmaz": 2146.38,
+     "q_ingresadomaz": 51,
+     "limmaz": 2153,
+     "min_maz": 2100,
+     "qmax_maz": 800,
+     "nivelmol": 1984.87,
+     "q_ingresadomol": 83,
+     "limmol": 1991,
+     "min_mol": 1960,
+     "qmax_mol": 1000,
+     "niveldel": 1489.12,
+     "q_ingresadodel": 33,
+     "limdel": 1491,
+     "min_del": 1469,
+     "qmax_del": 1200
+    },
+    {
+     "loctimestamp": "2020-09-21T05:00:00Z",
+     "nivelmsf": 790.78,
+     "q_ingresadomsf": 18,
+     "limmsf": 793,
+     "min_msf": 750,
+     "qmax_msf": 600,
+     "nivelmaz": 2146.28,
+     "q_ingresadomaz": 43,
+     "limmaz": 2153,
+     "min_maz": 2100,
+     "qmax_maz": 800,
+     "nivelmol": 1984.31,
+     "q_ingresadomol": 34,
+     "limmol": 1991,
+     "min_mol": 1960,
+     "qmax_mol": 1000,
+     "niveldel": 1488.68,
+     "q_ingresadodel": 25,
+     "limdel": 1491,
+     "min_del": 1469,
+     "qmax_del": 1200
+    }
+   ]
+  },
+  "ords:hist:repDiaHid12m:2020": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 136265,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 366,
+   "item_keys": [
+    "limdel",
+    "limmaz",
+    "limmol",
+    "limmsf",
+    "loctimestamp",
+    "min_del",
+    "min_maz",
+    "min_mol",
+    "min_msf",
+    "niveldel",
+    "nivelmaz",
+    "nivelmol",
+    "nivelmsf",
+    "q_ingresadodel",
+    "q_ingresadomaz",
+    "q_ingresadomol",
+    "q_ingresadomsf",
+    "qmax_del",
+    "qmax_maz",
+    "qmax_mol",
+    "qmax_msf"
+   ],
+   "ts_min": "2019-09-20T05:00:00Z",
+   "ts_max": "2020-09-19T05:00:00Z",
+   "n_numeric": 7320,
+   "sample": [
+    {
+     "loctimestamp": "2019-09-20T05:00:00Z",
+     "nivelmsf": 788.42,
+     "q_ingresadomsf": 15,
+     "limmsf": 793,
+     "min_msf": 750,
+     "qmax_msf": 600,
+     "nivelmaz": 2151.78,
+     "q_ingresadomaz": 56,
+     "limmaz": 2153,
+     "min_maz": 2100,
+     "qmax_maz": 800,
+     "nivelmol": 1987.9,
+     "q_ingresadomol": 85,
+     "limmol": 1991,
+     "min_mol": 1960,
+     "qmax_mol": 1000,
+     "niveldel": 1469.44,
+     "q_ingresadodel": 30,
+     "limdel": 1491,
+     "min_del": 1469,
+     "qmax_del": 1200
+    },
+    {
+     "loctimestamp": "2019-09-21T05:00:00Z",
+     "nivelmsf": 788.57,
+     "q_ingresadomsf": 14,
+     "limmsf": 793,
+     "min_msf": 750,
+     "qmax_msf": 600,
+     "nivelmaz": 2151.35,
+     "q_ingresadomaz": 52,
+     "limmaz": 2153,
+     "min_maz": 2100,
+     "qmax_maz": 800,
+     "nivelmol": 1987.45,
+     "q_ingresadomol": 153,
+     "limmol": 1991,
+     "min_mol": 1960,
+     "qmax_mol": 1000,
+     "niveldel": 1469.75,
+     "q_ingresadodel": 29,
+     "limdel": 1491,
+     "min_del": 1469,
+     "qmax_del": 1200
+    }
+   ]
+  },
+  "ords:hist:repDiaHid12m:2018": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 136609,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 365,
+   "item_keys": [
+    "limdel",
+    "limmaz",
+    "limmol",
+    "limmsf",
+    "loctimestamp",
+    "min_del",
+    "min_maz",
+    "min_mol",
+    "min_msf",
+    "niveldel",
+    "nivelmaz",
+    "nivelmol",
+    "nivelmsf",
+    "q_ingresadodel",
+    "q_ingresadomaz",
+    "q_ingresadomol",
+    "q_ingresadomsf",
+    "qmax_del",
+    "qmax_maz",
+    "qmax_mol",
+    "qmax_msf"
+   ],
+   "ts_min": "2017-09-20T05:00:00Z",
+   "ts_max": "2018-09-19T05:00:00Z",
+   "n_numeric": 3730,
+   "sample": [
+    {
+     "loctimestamp": "2017-09-20T05:00:00Z",
+     "nivelmsf": null,
+     "q_ingresadomsf": null,
+     "limmsf": null,
+     "min_msf": null,
+     "qmax_msf": null,
+     "nivelmaz": 2151.24,
+     "q_ingresadomaz": 30,
+     "limmaz": 2153,
+     "min_maz": 2100,
+     "qmax_maz": 800,
+     "nivelmol": 1989.35,
+     "q_ingresadomol": 144,
+     "limmol": 1991,
+     "min_mol": 1960,
+     "qmax_mol": 1000,
+     "niveldel": null,
+     "q_ingresadodel": null,
+     "limdel": null,
+     "min_del": null,
+     "qmax_del": null
+    },
+    {
+     "loctimestamp": "2017-09-21T05:00:00Z",
+     "nivelmsf": null,
+     "q_ingresadomsf": null,
+     "limmsf": null,
+     "min_msf": null,
+     "qmax_msf": null,
+     "nivelmaz": 2151.09,
+     "q_ingresadomaz": 29,
+     "limmaz": 2153,
+     "min_maz": 2100,
+     "qmax_maz": 800,
+     "nivelmol": 1988.57,
+     "q_ingresadomol": 57,
+     "limmol": 1991,
+     "min_mol": 1960,
+     "qmax_mol": 1000,
+     "niveldel": null,
+     "q_ingresadodel": null,
+     "limdel": null,
+     "min_del": null,
+     "qmax_del": null
+    }
+   ]
+  },
+  "ords:hist:repDiaHid12m:2016": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 137096,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 366,
+   "item_keys": [
+    "limdel",
+    "limmaz",
+    "limmol",
+    "limmsf",
+    "loctimestamp",
+    "min_del",
+    "min_maz",
+    "min_mol",
+    "min_msf",
+    "niveldel",
+    "nivelmaz",
+    "nivelmol",
+    "nivelmsf",
+    "q_ingresadodel",
+    "q_ingresadomaz",
+    "q_ingresadomol",
+    "q_ingresadomsf",
+    "qmax_del",
+    "qmax_maz",
+    "qmax_mol",
+    "qmax_msf"
+   ],
+   "ts_min": "2015-09-20T05:00:00Z",
+   "ts_max": "2016-09-19T05:00:00Z",
+   "n_numeric": 3660,
+   "sample": [
+    {
+     "loctimestamp": "2015-09-20T05:00:00Z",
+     "nivelmsf": null,
+     "q_ingresadomsf": null,
+     "limmsf": null,
+     "min_msf": null,
+     "qmax_msf": null,
+     "nivelmaz": 2149.3,
+     "q_ingresadomaz": 70,
+     "limmaz": 2153,
+     "min_maz": 2100,
+     "qmax_maz": 800,
+     "nivelmol": 1982.71,
+     "q_ingresadomol": 56,
+     "limmol": 1991,
+     "min_mol": 1960,
+     "qmax_mol": 1000,
+     "niveldel": null,
+     "q_ingresadodel": null,
+     "limdel": null,
+     "min_del": null,
+     "qmax_del": null
+    },
+    {
+     "loctimestamp": "2015-09-21T05:00:00Z",
+     "nivelmsf": null,
+     "q_ingresadomsf": null,
+     "limmsf": null,
+     "min_msf": null,
+     "qmax_msf": null,
+     "nivelmaz": 2149.11,
+     "q_ingresadomaz": 45,
+     "limmaz": 2153,
+     "min_maz": 2100,
+     "qmax_maz": 800,
+     "nivelmol": 1982.69,
+     "q_ingresadomol": 57,
+     "limmol": 1991,
+     "min_mol": 1960,
+     "qmax_mol": 1000,
+     "niveldel": null,
+     "q_ingresadodel": null,
+     "limdel": null,
+     "min_del": null,
+     "qmax_del": null
+    }
+   ]
+  },
+  "ords:hist:repDiaEner12m:2026-03": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 49613,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 181,
+   "item_keys": [
+    "enerala",
+    "enerdel",
+    "enermaz",
+    "enermol",
+    "enermsf",
+    "enersop",
+    "loctimestamp",
+    "maxenerala",
+    "maxenerdel",
+    "maxenermaz",
+    "maxenermol",
+    "maxenermsf",
+    "maxenersop"
+   ],
+   "ts_min": "2025-09-20T05:00:00Z",
+   "ts_max": "2026-03-19T05:00:00Z",
+   "n_numeric": 2172,
+   "sample": [
+    {
+     "loctimestamp": "2025-09-20T05:00:00Z",
+     "enermsf": 1988.5,
+     "enermaz": 2740.217886,
+     "enermol": 17718.655962,
+     "enersop": 9847.866126,
+     "enerdel": 4126.38,
+     "enerala": 141.602364,
+     "maxenermsf": 25000,
+     "maxenermaz": 25000,
+     "maxenermol": 25000,
+     "maxenersop": 25000,
+     "maxenerdel": 25000,
+     "maxenerala": 500
+    },
+    {
+     "loctimestamp": "2025-09-21T05:00:00Z",
+     "enermsf": 794.75,
+     "enermaz": 2337.336824,
+     "enermol": 15485.756352,
+     "enersop": 8873.481523,
+     "enerdel": 3995.67,
+     "enerala": 141.034342,
+     "maxenermsf": 25000,
+     "maxenermaz": 25000,
+     "maxenermol": 25000,
+     "maxenersop": 25000,
+     "maxenerdel": 25000,
+     "maxenerala": 500
+    }
+   ]
+  },
+  "ords:hist:repDiaEner12m:2025-03": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 47788,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 181,
+   "item_keys": [
+    "enerala",
+    "enerdel",
+    "enermaz",
+    "enermol",
+    "enermsf",
+    "enersop",
+    "loctimestamp",
+    "maxenerala",
+    "maxenerdel",
+    "maxenermaz",
+    "maxenermol",
+    "maxenermsf",
+    "maxenersop"
+   ],
+   "ts_min": "2024-09-20T05:00:00Z",
+   "ts_max": "2025-03-19T05:00:00Z",
+   "n_numeric": 1762,
+   "sample": [
+    {
+     "loctimestamp": "2024-09-20T05:00:00Z",
+     "enermsf": 265,
+     "enermaz": 2380.811196,
+     "enermol": 19961.580458,
+     "enersop": 6341.590003,
+     "enerdel": null,
+     "enerala": null,
+     "maxenermsf": 25000,
+     "maxenermaz": 25000,
+     "maxenermol": 25000,
+     "maxenersop": 25000,
+     "maxenerdel": null,
+     "maxenerala": null
+    },
+    {
+     "loctimestamp": "2024-09-21T05:00:00Z",
+     "enermsf": 279.25,
+     "enermaz": 2311.841341,
+     "enermol": 14430.527922,
+     "enersop": 7583.414321,
+     "enerdel": null,
+     "enerala": null,
+     "maxenermsf": 25000,
+     "maxenermaz": 25000,
+     "maxenermol": 25000,
+     "maxenersop": 25000,
+     "maxenerdel": null,
+     "maxenerala": null
+    }
+   ]
+  },
+  "ords:hist:repDiaEner12m:2024-03": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 48262,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 182,
+   "item_keys": [
+    "enerala",
+    "enerdel",
+    "enermaz",
+    "enermol",
+    "enermsf",
+    "enersop",
+    "loctimestamp",
+    "maxenerala",
+    "maxenerdel",
+    "maxenermaz",
+    "maxenermol",
+    "maxenermsf",
+    "maxenersop"
+   ],
+   "ts_min": "2023-09-20T05:00:00Z",
+   "ts_max": "2024-03-19T05:00:00Z",
+   "n_numeric": 1456,
+   "sample": [
+    {
+     "loctimestamp": "2023-09-20T05:00:00Z",
+     "enermsf": 387.25,
+     "enermaz": 1824.223745,
+     "enermol": 12584.078573,
+     "enersop": 6388.651049,
+     "enerdel": null,
+     "enerala": null,
+     "maxenermsf": 25000,
+     "maxenermaz": 25000,
+     "maxenermol": 25000,
+     "maxenersop": 25000,
+     "maxenerdel": null,
+     "maxenerala": null
+    },
+    {
+     "loctimestamp": "2023-09-21T05:00:00Z",
+     "enermsf": 644.25,
+     "enermaz": 2268.161297,
+     "enermol": 17021.170735,
+     "enersop": 6888.480457,
+     "enerdel": null,
+     "enerala": null,
+     "maxenermsf": 25000,
+     "maxenermaz": 25000,
+     "maxenermol": 25000,
+     "maxenersop": 25000,
+     "maxenerdel": null,
+     "maxenerala": null
+    }
+   ]
+  },
+  "ords:hist:repDiaEner12m:2023-03": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 48200,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 181,
+   "item_keys": [
+    "enerala",
+    "enerdel",
+    "enermaz",
+    "enermol",
+    "enermsf",
+    "enersop",
+    "loctimestamp",
+    "maxenerala",
+    "maxenerdel",
+    "maxenermaz",
+    "maxenermol",
+    "maxenermsf",
+    "maxenersop"
+   ],
+   "ts_min": "2022-09-20T05:00:00Z",
+   "ts_max": "2023-03-19T05:00:00Z",
+   "n_numeric": 1448,
+   "sample": [
+    {
+     "loctimestamp": "2022-09-20T05:00:00Z",
+     "enermsf": 859.39,
+     "enermaz": 3160.548689,
+     "enermol": 18371.423717,
+     "enersop": 10022.117184,
+     "enerdel": null,
+     "enerala": null,
+     "maxenermsf": 25000,
+     "maxenermaz": 25000,
+     "maxenermol": 25000,
+     "maxenersop": 25000,
+     "maxenerdel": null,
+     "maxenerala": null
+    },
+    {
+     "loctimestamp": "2022-09-21T05:00:00Z",
+     "enermsf": 737.84,
+     "enermaz": 2694.357896,
+     "enermol": 17989.040324,
+     "enersop": 9599.654632,
+     "enerdel": null,
+     "enerala": null,
+     "maxenermsf": 25000,
+     "maxenermaz": 25000,
+     "maxenermol": 25000,
+     "maxenersop": 25000,
+     "maxenerdel": null,
+     "maxenerala": null
+    }
+   ]
+  },
+  "ords:hist:repDiaEner12m:2022-03": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 48487,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 181,
+   "item_keys": [
+    "enerala",
+    "enerdel",
+    "enermaz",
+    "enermol",
+    "enermsf",
+    "enersop",
+    "loctimestamp",
+    "maxenerala",
+    "maxenerdel",
+    "maxenermaz",
+    "maxenermol",
+    "maxenermsf",
+    "maxenersop"
+   ],
+   "ts_min": "2021-09-20T05:00:00Z",
+   "ts_max": "2022-03-19T05:00:00Z",
+   "n_numeric": 1448,
+   "sample": [
+    {
+     "loctimestamp": "2021-09-20T05:00:00Z",
+     "enermsf": 734.52,
+     "enermaz": 2026.993425,
+     "enermol": 12474.416132,
+     "enersop": 6763.670643,
+     "enerdel": null,
+     "enerala": null,
+     "maxenermsf": 25000,
+     "maxenermaz": 25000,
+     "maxenermol": 25000,
+     "maxenersop": 25000,
+     "maxenerdel": null,
+     "maxenerala": null
+    },
+    {
+     "loctimestamp": "2021-09-21T05:00:00Z",
+     "enermsf": 805.68,
+     "enermaz": 2368.65252,
+     "enermol": 13834.935302,
+     "enersop": 7766.134207,
+     "enerdel": null,
+     "enerala": null,
+     "maxenermsf": 25000,
+     "maxenermaz": 25000,
+     "maxenermol": 25000,
+     "maxenersop": 25000,
+     "maxenerdel": null,
+     "maxenerala": null
+    }
+   ]
+  },
+  "ords:hist:repDiaEner12m:2021-03": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 48384,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 181,
+   "item_keys": [
+    "enerala",
+    "enerdel",
+    "enermaz",
+    "enermol",
+    "enermsf",
+    "enersop",
+    "loctimestamp",
+    "maxenerala",
+    "maxenerdel",
+    "maxenermaz",
+    "maxenermol",
+    "maxenermsf",
+    "maxenersop"
+   ],
+   "ts_min": "2020-09-20T05:00:00Z",
+   "ts_max": "2021-03-19T05:00:00Z",
+   "n_numeric": 1448,
+   "sample": [
+    {
+     "loctimestamp": "2020-09-20T05:00:00Z",
+     "enermsf": 2095.12,
+     "enermaz": 1821.945103,
+     "enermol": 10121.933625,
+     "enersop": 5260.870777,
+     "enerdel": null,
+     "enerala": null,
+     "maxenermsf": 25000,
+     "maxenermaz": 25000,
+     "maxenermol": 25000,
+     "maxenersop": 25000,
+     "maxenerdel": null,
+     "maxenerala": null
+    },
+    {
+     "loctimestamp": "2020-09-21T05:00:00Z",
+     "enermsf": 2212.28,
+     "enermaz": 1907.335644,
+     "enermol": 14296.36082,
+     "enersop": 7573.045189,
+     "enerdel": null,
+     "enerala": null,
+     "maxenermsf": 25000,
+     "maxenermaz": 25000,
+     "maxenermol": 25000,
+     "maxenersop": 25000,
+     "maxenerdel": null,
+     "maxenerala": null
+    }
+   ]
+  },
+  "ords:hist:repDiaNivQIng:15-10-2024": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 707,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 4,
+   "item_keys": [
+    "embalse",
+    "fecha",
+    "nivel",
+    "q_ingresado"
+   ],
+   "ts_min": "2024-10-15T05:00:00Z",
+   "ts_max": "2024-10-15T05:00:00Z",
+   "n_numeric": 8,
+   "sample": [
+    {
+     "fecha": "2024-10-15T05:00:00Z",
+     "embalse": "Minas San Francisco",
+     "nivel": 785.38,
+     "q_ingresado": 12.6308611
+    },
+    {
+     "fecha": "2024-10-15T05:00:00Z",
+     "embalse": "Mazar",
+     "nivel": 2115.245,
+     "q_ingresado": 81.46514593
+    }
+   ]
+  },
+  "ords:hist:repDiaNivQIng:15-01-2022": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 709,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 4,
+   "item_keys": [
+    "embalse",
+    "fecha",
+    "nivel",
+    "q_ingresado"
+   ],
+   "ts_min": "2022-01-15T05:00:00Z",
+   "ts_max": "2022-01-15T05:00:00Z",
+   "n_numeric": 8,
+   "sample": [
+    {
+     "fecha": "2022-01-15T05:00:00Z",
+     "embalse": "Minas San Francisco",
+     "nivel": 790.14,
+     "q_ingresado": 15.76845
+    },
+    {
+     "fecha": "2022-01-15T05:00:00Z",
+     "embalse": "Mazar",
+     "nivel": 2141.56,
+     "q_ingresado": 39.91971852
+    }
+   ]
+  },
+  "ords:hist:repDiaNivQIng:15-06-2019": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 711,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 4,
+   "item_keys": [
+    "embalse",
+    "fecha",
+    "nivel",
+    "q_ingresado"
+   ],
+   "ts_min": "2019-06-15T05:00:00Z",
+   "ts_max": "2019-06-15T05:00:00Z",
+   "n_numeric": 8,
+   "sample": [
+    {
+     "fecha": "2019-06-15T05:00:00Z",
+     "embalse": "Minas San Francisco",
+     "nivel": 786.49,
+     "q_ingresado": 33.5885185
+    },
+    {
+     "fecha": "2019-06-15T05:00:00Z",
+     "embalse": "Mazar",
+     "nivel": 2153.6,
+     "q_ingresado": 167.38227916
+    }
+   ]
+  },
+  "ords:hist:repDiaNivQIng:15-06-2016": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 599,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 3,
+   "item_keys": [
+    "embalse",
+    "fecha",
+    "nivel",
+    "q_ingresado"
+   ],
+   "ts_min": "2016-06-15T05:00:00Z",
+   "ts_max": "2016-06-15T05:00:00Z",
+   "n_numeric": 5,
+   "sample": [
+    {
+     "fecha": "2016-06-15T05:00:00Z",
+     "embalse": "Mazar",
+     "nivel": 2153.81,
+     "q_ingresado": 183.81728491
+    },
+    {
+     "fecha": "2016-06-15T05:00:00Z",
+     "embalse": "Amaluza",
+     "nivel": 1991.0001221,
+     "q_ingresado": 369.1
+    }
+   ]
+  },
+  "ords:hist:repDiaPotQTurb:15-10-2024": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 746,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 4,
+   "item_keys": [
+    "central",
+    "fecha",
+    "potencia",
+    "q_turbinado",
+    "unidlinea"
+   ],
+   "ts_min": "2024-10-15T05:00:00Z",
+   "ts_max": "2024-10-15T05:00:00Z",
+   "n_numeric": 9,
+   "sample": [
+    {
+     "fecha": "2024-10-15T05:00:00Z",
+     "central": "Minas San Francisco",
+     "potencia": 101.55,
+     "unidlinea": 3,
+     "q_turbinado": 35.85
+    },
+    {
+     "fecha": "2024-10-15T05:00:00Z",
+     "central": "Mazar",
+     "potencia": 116.6872673,
+     "unidlinea": null,
+     "q_turbinado": 82.21221
+    }
+   ]
+  },
+  "ords:hist:repDiaPotQTurb:15-01-2022": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 769,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 4,
+   "item_keys": [
+    "central",
+    "fecha",
+    "potencia",
+    "q_turbinado",
+    "unidlinea"
+   ],
+   "ts_min": "2022-01-15T05:00:00Z",
+   "ts_max": "2022-01-15T05:00:00Z",
+   "n_numeric": 9,
+   "sample": [
+    {
+     "fecha": "2022-01-15T05:00:00Z",
+     "central": "Minas San Francisco",
+     "potencia": 0,
+     "unidlinea": 3,
+     "q_turbinado": 0
+    },
+    {
+     "fecha": "2022-01-15T05:00:00Z",
+     "central": "Mazar",
+     "potencia": 131.125351,
+     "unidlinea": null,
+     "q_turbinado": 99.28537
+    }
+   ]
+  },
+  "ords:hist:repDiaPotQTurb:15-06-2019": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 760,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 4,
+   "item_keys": [
+    "central",
+    "fecha",
+    "potencia",
+    "q_turbinado",
+    "unidlinea"
+   ],
+   "ts_min": "2019-06-15T05:00:00Z",
+   "ts_max": "2019-06-15T05:00:00Z",
+   "n_numeric": 9,
+   "sample": [
+    {
+     "fecha": "2019-06-15T05:00:00Z",
+     "central": "Minas San Francisco",
+     "potencia": 0,
+     "unidlinea": 3,
+     "q_turbinado": 0
+    },
+    {
+     "fecha": "2019-06-15T05:00:00Z",
+     "central": "Mazar",
+     "potencia": 64.905777,
+     "unidlinea": null,
+     "q_turbinado": 81.73751
+    }
+   ]
+  },
+  "ords:hist:repDiaPotQTurb:15-06-2016": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 644,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 3,
+   "item_keys": [
+    "central",
+    "fecha",
+    "potencia",
+    "q_turbinado",
+    "unidlinea"
+   ],
+   "ts_min": "2016-06-15T05:00:00Z",
+   "ts_max": "2016-06-15T05:00:00Z",
+   "n_numeric": 5,
+   "sample": [
+    {
+     "fecha": "2016-06-15T05:00:00Z",
+     "central": "Mazar",
+     "potencia": 169.1263199,
+     "unidlinea": null,
+     "q_turbinado": 118.18114
+    },
+    {
+     "fecha": "2016-06-15T05:00:00Z",
+     "central": "Molino",
+     "potencia": 810.6079026,
+     "unidlinea": null,
+     "q_turbinado": 153.078865
+    }
+   ]
+  },
+  "ords:hist:repDiaEnerAyerHoy:15-10-2024": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 784,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 5,
+   "item_keys": [
+    "central",
+    "enerayer",
+    "enerplanhoy",
+    "fecha"
+   ],
+   "ts_min": "2024-10-14T05:00:00Z",
+   "ts_max": "2024-10-14T05:00:00Z",
+   "n_numeric": 10,
+   "sample": [
+    {
+     "fecha": "2024-10-14T05:00:00Z",
+     "central": "Minas",
+     "enerayer": 1599.74,
+     "enerplanhoy": 500.8
+    },
+    {
+     "fecha": "2024-10-14T05:00:00Z",
+     "central": "Mazar",
+     "enerayer": 81.611587,
+     "enerplanhoy": 495
+    }
+   ]
+  },
+  "ords:hist:repDiaEnerAyerHoy:15-01-2022": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 795,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 5,
+   "item_keys": [
+    "central",
+    "enerayer",
+    "enerplanhoy",
+    "fecha"
+   ],
+   "ts_min": "2022-01-14T05:00:00Z",
+   "ts_max": "2022-01-14T05:00:00Z",
+   "n_numeric": 10,
+   "sample": [
+    {
+     "fecha": "2022-01-14T05:00:00Z",
+     "central": "Minas",
+     "enerayer": 483.45,
+     "enerplanhoy": 1439.8
+    },
+    {
+     "fecha": "2022-01-14T05:00:00Z",
+     "central": "Mazar",
+     "enerayer": 3607.215528,
+     "enerplanhoy": 2634.98767
+    }
+   ]
+  },
+  "ords:hist:repDiaEnerAyerHoy:15-06-2019": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 786,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 5,
+   "item_keys": [
+    "central",
+    "enerayer",
+    "enerplanhoy",
+    "fecha"
+   ],
+   "ts_min": "2019-06-14T05:00:00Z",
+   "ts_max": "2019-06-14T05:00:00Z",
+   "n_numeric": 10,
+   "sample": [
+    {
+     "fecha": "2019-06-14T05:00:00Z",
+     "central": "Minas",
+     "enerayer": 0,
+     "enerplanhoy": 0
+    },
+    {
+     "fecha": "2019-06-14T05:00:00Z",
+     "central": "Mazar",
+     "enerayer": 1815.569387,
+     "enerplanhoy": 3618.39522
+    }
+   ]
+  },
+  "ords:hist:repDiaEnerAyerHoy:15-06-2016": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 765,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 5,
+   "item_keys": [
+    "central",
+    "enerayer",
+    "enerplanhoy",
+    "fecha"
+   ],
+   "ts_min": "2016-06-14T05:00:00Z",
+   "ts_max": "2016-06-15T05:00:00Z",
+   "n_numeric": 10,
+   "sample": [
+    {
+     "fecha": "2016-06-15T05:00:00Z",
+     "central": "Minas",
+     "enerayer": 0,
+     "enerplanhoy": 0
+    },
+    {
+     "fecha": "2016-06-14T05:00:00Z",
+     "central": "Mazar",
+     "enerayer": 3901.343826,
+     "enerplanhoy": 4080
+    }
+   ]
+  },
+  "ords:hist:repDiaRegAyer:15-10-2024": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 1008,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 4,
+   "item_keys": [
+    "descr",
+    "loctimestamp",
+    "mazar",
+    "minas",
+    "molino",
+    "sopladora"
+   ],
+   "ts_min": "2024-10-15T05:00:00Z",
+   "ts_max": "2024-10-15T05:00:00Z",
+   "n_numeric": 16,
+   "sample": [
+    {
+     "loctimestamp": "2024-10-15T05:00:00Z",
+     "descr": "Energía Anual Acum. (GWh)",
+     "minas": 669,
+     "mazar": 466,
+     "molino": 3517,
+     "sopladora": 1755
+    },
+    {
+     "loctimestamp": "2024-10-15T05:00:00Z",
+     "descr": "Volumen Vertido (Hm3)",
+     "minas": 0,
+     "mazar": 0,
+     "molino": 0,
+     "sopladora": 0.0234627502
+    }
+   ]
+  },
+  "ords:hist:repDiaRegAyer:15-01-2022": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 1000,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 4,
+   "item_keys": [
+    "descr",
+    "loctimestamp",
+    "mazar",
+    "minas",
+    "molino",
+    "sopladora"
+   ],
+   "ts_min": "2022-01-15T05:00:00Z",
+   "ts_max": "2022-01-15T05:00:00Z",
+   "n_numeric": 16,
+   "sample": [
+    {
+     "loctimestamp": "2022-01-15T05:00:00Z",
+     "descr": "Energía Anual Acum. (GWh)",
+     "minas": 23,
+     "mazar": 49,
+     "molino": 249,
+     "sopladora": 130
+    },
+    {
+     "loctimestamp": "2022-01-15T05:00:00Z",
+     "descr": "Volumen Vertido (Hm3)",
+     "minas": 0,
+     "mazar": 0,
+     "molino": 0,
+     "sopladora": 0.509261609
+    }
+   ]
+  },
+  "ords:hist:repDiaRegAyer:15-06-2019": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 1053,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 4,
+   "item_keys": [
+    "descr",
+    "loctimestamp",
+    "mazar",
+    "minas",
+    "molino",
+    "sopladora"
+   ],
+   "ts_min": "2019-06-15T05:00:00Z",
+   "ts_max": "2019-06-15T05:00:00Z",
+   "n_numeric": 16,
+   "sample": [
+    {
+     "loctimestamp": "2019-06-15T05:00:00Z",
+     "descr": "Energía Anual Acum. (GWh)",
+     "minas": 487,
+     "mazar": 342,
+     "molino": 2554,
+     "sopladora": 1096
+    },
+    {
+     "loctimestamp": "2019-06-15T05:00:00Z",
+     "descr": "Volumen Vertido (Hm3)",
+     "minas": 3.4044102,
+     "mazar": 5.952875638032,
+     "molino": 9.140184,
+     "sopladora": 1.38884235
+    }
+   ]
+  },
+  "ords:hist:repDiaRegAyer:15-06-2016": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 996,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 4,
+   "item_keys": [
+    "descr",
+    "loctimestamp",
+    "mazar",
+    "minas",
+    "molino",
+    "sopladora"
+   ],
+   "ts_min": "2016-06-15T05:00:00Z",
+   "ts_max": "2016-06-15T05:00:00Z",
+   "n_numeric": 11,
+   "sample": [
+    {
+     "loctimestamp": "2016-06-15T05:00:00Z",
+     "descr": "Energía Anual Acum. (GWh)",
+     "minas": null,
+     "mazar": 386,
+     "molino": 2840,
+     "sopladora": 83
+    },
+    {
+     "loctimestamp": "2016-06-15T05:00:00Z",
+     "descr": "Volumen Vertido (Hm3)",
+     "minas": null,
+     "mazar": 8.003795724036,
+     "molino": 11.273112,
+     "sopladora": null
+    }
+   ]
+  },
+  "ords:hist:mazEnerDia:15-10-2024": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 1659,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 24,
+   "item_keys": [
+    "loctimestamp",
+    "valueedit"
+   ],
+   "ts_min": "2024-10-15T06:00:00Z",
+   "ts_max": "2024-10-16T05:00:00Z",
+   "n_numeric": 24,
+   "sample": [
+    {
+     "loctimestamp": "2024-10-16T05:00:00Z",
+     "valueedit": 0
+    },
+    {
+     "loctimestamp": "2024-10-16T04:00:00Z",
+     "valueedit": 0
+    }
+   ]
+  },
+  "ords:hist:mazEnerDia:15-01-2022": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 1795,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 24,
+   "item_keys": [
+    "loctimestamp",
+    "valueedit"
+   ],
+   "ts_min": "2022-01-15T06:00:00Z",
+   "ts_max": "2022-01-16T05:00:00Z",
+   "n_numeric": 24,
+   "sample": [
+    {
+     "loctimestamp": "2022-01-16T05:00:00Z",
+     "valueedit": 65.505113
+    },
+    {
+     "loctimestamp": "2022-01-16T04:00:00Z",
+     "valueedit": 65.5075
+    }
+   ]
+  },
+  "ords:hist:mazEnerDia:15-06-2019": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 1804,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 24,
+   "item_keys": [
+    "loctimestamp",
+    "valueedit"
+   ],
+   "ts_min": "2019-06-15T06:00:00Z",
+   "ts_max": "2019-06-16T05:00:00Z",
+   "n_numeric": 24,
+   "sample": [
+    {
+     "loctimestamp": "2019-06-16T05:00:00Z",
+     "valueedit": 110.035673
+    },
+    {
+     "loctimestamp": "2019-06-16T04:00:00Z",
+     "valueedit": 152.162479
+    }
+   ]
+  },
+  "ords:hist:molEnerDia:15-10-2024": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 1737,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 24,
+   "item_keys": [
+    "loctimestamp",
+    "valueedit"
+   ],
+   "ts_min": "2024-10-15T06:00:00Z",
+   "ts_max": "2024-10-16T05:00:00Z",
+   "n_numeric": 24,
+   "sample": [
+    {
+     "loctimestamp": "2024-10-16T05:00:00Z",
+     "valueedit": 261.434827
+    },
+    {
+     "loctimestamp": "2024-10-16T04:00:00Z",
+     "valueedit": 212.835521
+    }
+   ]
+  },
+  "ords:hist:molEnerDia:15-01-2022": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 1813,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 24,
+   "item_keys": [
+    "loctimestamp",
+    "valueedit"
+   ],
+   "ts_min": "2022-01-15T06:00:00Z",
+   "ts_max": "2022-01-16T05:00:00Z",
+   "n_numeric": 24,
+   "sample": [
+    {
+     "loctimestamp": "2022-01-16T05:00:00Z",
+     "valueedit": 258.50343
+    },
+    {
+     "loctimestamp": "2022-01-16T04:00:00Z",
+     "valueedit": 342.692278
+    }
+   ]
+  },
+  "ords:hist:molEnerDia:15-06-2019": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 1815,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 24,
+   "item_keys": [
+    "loctimestamp",
+    "valueedit"
+   ],
+   "ts_min": "2019-06-15T06:00:00Z",
+   "ts_max": "2019-06-16T05:00:00Z",
+   "n_numeric": 24,
+   "sample": [
+    {
+     "loctimestamp": "2019-06-16T05:00:00Z",
+     "valueedit": 509.090386
+    },
+    {
+     "loctimestamp": "2019-06-16T04:00:00Z",
+     "valueedit": 606.195047
+    }
+   ]
+  },
+  "ords:hist:sopEnerDia:15-10-2024": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 1739,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 24,
+   "item_keys": [
+    "loctimestamp",
+    "valueedit"
+   ],
+   "ts_min": "2024-10-15T06:00:00Z",
+   "ts_max": "2024-10-16T05:00:00Z",
+   "n_numeric": 24,
+   "sample": [
+    {
+     "loctimestamp": "2024-10-16T05:00:00Z",
+     "valueedit": 154.749457
+    },
+    {
+     "loctimestamp": "2024-10-16T04:00:00Z",
+     "valueedit": 120.292607
+    }
+   ]
+  },
+  "ords:hist:sopEnerDia:15-01-2022": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 1814,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 24,
+   "item_keys": [
+    "loctimestamp",
+    "valueedit"
+   ],
+   "ts_min": "2022-01-15T06:00:00Z",
+   "ts_max": "2022-01-16T05:00:00Z",
+   "n_numeric": 24,
+   "sample": [
+    {
+     "loctimestamp": "2022-01-16T05:00:00Z",
+     "valueedit": 135.498441
+    },
+    {
+     "loctimestamp": "2022-01-16T04:00:00Z",
+     "valueedit": 182.556303
+    }
+   ]
+  },
+  "ords:hist:sopEnerDia:15-06-2019": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 1817,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 24,
+   "item_keys": [
+    "loctimestamp",
+    "valueedit"
+   ],
+   "ts_min": "2019-06-15T06:00:00Z",
+   "ts_max": "2019-06-16T05:00:00Z",
+   "n_numeric": 24,
+   "sample": [
+    {
+     "loctimestamp": "2019-06-16T05:00:00Z",
+     "valueedit": 294.081005
+    },
+    {
+     "loctimestamp": "2019-06-16T04:00:00Z",
+     "valueedit": 310.332937
+    }
+   ]
+  },
+  "ords:hist:msfEnerDia:15-10-2024": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 1679,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 24,
+   "item_keys": [
+    "loctimestamp",
+    "valueedit"
+   ],
+   "ts_min": "2024-10-15T06:00:00Z",
+   "ts_max": "2024-10-16T05:00:00Z",
+   "n_numeric": 24,
+   "sample": [
+    {
+     "loctimestamp": "2024-10-16T05:00:00Z",
+     "valueedit": 21.62
+    },
+    {
+     "loctimestamp": "2024-10-16T04:00:00Z",
+     "valueedit": 21.63
+    }
+   ]
+  },
+  "ords:hist:msfEnerDia:15-01-2022": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 1663,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 24,
+   "item_keys": [
+    "loctimestamp",
+    "valueedit"
+   ],
+   "ts_min": "2022-01-15T06:00:00Z",
+   "ts_max": "2022-01-16T05:00:00Z",
+   "n_numeric": 24,
+   "sample": [
+    {
+     "loctimestamp": "2022-01-16T05:00:00Z",
+     "valueedit": 20.13
+    },
+    {
+     "loctimestamp": "2022-01-16T04:00:00Z",
+     "valueedit": 20.12
+    }
+   ]
+  },
+  "ords:hist:msfEnerDia:15-06-2019": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 1601,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 24,
+   "item_keys": [
+    "loctimestamp",
+    "valueedit"
+   ],
+   "ts_min": "2019-06-15T06:00:00Z",
+   "ts_max": "2019-06-16T05:00:00Z",
+   "n_numeric": 24,
+   "sample": [
+    {
+     "loctimestamp": "2019-06-16T05:00:00Z",
+     "valueedit": 0
+    },
+    {
+     "loctimestamp": "2019-06-16T04:00:00Z",
+     "valueedit": 0
+    }
+   ]
+  },
+  "ords:hist:agoEnerDia:15-10-2024": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 2024,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 24,
+   "item_keys": [
+    "loctimestamp",
+    "valueedit"
+   ],
+   "ts_min": "2024-10-15T06:00:00Z",
+   "ts_max": "2024-10-16T05:00:00Z",
+   "n_numeric": 24,
+   "sample": [
+    {
+     "loctimestamp": "2024-10-16T05:00:00Z",
+     "valueedit": 77.3830206283
+    },
+    {
+     "loctimestamp": "2024-10-16T04:00:00Z",
+     "valueedit": 88.1053200592
+    }
+   ]
+  },
+  "ords:hist:agoEnerDia:15-01-2022": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 1820,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 24,
+   "item_keys": [
+    "loctimestamp",
+    "valueedit"
+   ],
+   "ts_min": "2022-01-15T06:00:00Z",
+   "ts_max": "2022-01-16T05:00:00Z",
+   "n_numeric": 24,
+   "sample": [
+    {
+     "loctimestamp": "2022-01-16T05:00:00Z",
+     "valueedit": 145.65
+    },
+    {
+     "loctimestamp": "2022-01-16T04:00:00Z",
+     "valueedit": 146.87
+    }
+   ]
+  },
+  "ords:hist:agoEnerDia:15-06-2019": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 1819,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 24,
+   "item_keys": [
+    "loctimestamp",
+    "valueedit"
+   ],
+   "ts_min": "2019-06-15T06:00:00Z",
+   "ts_max": "2019-06-16T05:00:00Z",
+   "n_numeric": 24,
+   "sample": [
+    {
+     "loctimestamp": "2019-06-16T05:00:00Z",
+     "valueedit": 95.59
+    },
+    {
+     "loctimestamp": "2019-06-16T04:00:00Z",
+     "valueedit": 95.06
+    }
+   ]
+  },
+  "ords:hist:manEnerDia:15-10-2024": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 1727,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 24,
+   "item_keys": [
+    "loctimestamp",
+    "valueedit"
+   ],
+   "ts_min": "2024-10-15T06:00:00Z",
+   "ts_max": "2024-10-16T05:00:00Z",
+   "n_numeric": 24,
+   "sample": [
+    {
+     "loctimestamp": "2024-10-16T05:00:00Z",
+     "valueedit": 0
+    },
+    {
+     "loctimestamp": "2024-10-16T04:00:00Z",
+     "valueedit": 0
+    }
+   ]
+  },
+  "ords:hist:manEnerDia:15-01-2022": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 1802,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 24,
+   "item_keys": [
+    "loctimestamp",
+    "valueedit"
+   ],
+   "ts_min": "2022-01-15T06:00:00Z",
+   "ts_max": "2022-01-16T05:00:00Z",
+   "n_numeric": 24,
+   "sample": [
+    {
+     "loctimestamp": "2022-01-16T05:00:00Z",
+     "valueedit": 64
+    },
+    {
+     "loctimestamp": "2022-01-16T04:00:00Z",
+     "valueedit": 64
+    }
+   ]
+  },
+  "ords:hist:manEnerDia:15-06-2019": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 1817,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 24,
+   "item_keys": [
+    "loctimestamp",
+    "valueedit"
+   ],
+   "ts_min": "2019-06-15T06:00:00Z",
+   "ts_max": "2019-06-16T05:00:00Z",
+   "n_numeric": 24,
+   "sample": [
+    {
+     "loctimestamp": "2019-06-16T05:00:00Z",
+     "valueedit": 45
+    },
+    {
+     "loctimestamp": "2019-06-16T04:00:00Z",
+     "valueedit": 50.85
+    }
+   ]
+  },
+  "ords:hist:ccsEnerDia:15-10-2024": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 1868,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 24,
+   "item_keys": [
+    "loctimestamp",
+    "valueedit"
+   ],
+   "ts_min": "2024-10-15T06:00:00Z",
+   "ts_max": "2024-10-16T05:00:00Z",
+   "n_numeric": 24,
+   "sample": [
+    {
+     "loctimestamp": "2024-10-16T05:00:00Z",
+     "valueedit": 621.154
+    },
+    {
+     "loctimestamp": "2024-10-16T04:00:00Z",
+     "valueedit": 682.773
+    }
+   ]
+  },
+  "ords:hist:ccsEnerDia:15-01-2022": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 1866,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 24,
+   "item_keys": [
+    "loctimestamp",
+    "valueedit"
+   ],
+   "ts_min": "2022-01-15T06:00:00Z",
+   "ts_max": "2022-01-16T05:00:00Z",
+   "n_numeric": 24,
+   "sample": [
+    {
+     "loctimestamp": "2022-01-16T05:00:00Z",
+     "valueedit": 869.861
+    },
+    {
+     "loctimestamp": "2022-01-16T04:00:00Z",
+     "valueedit": 900.959
+    }
+   ]
+  },
+  "ords:hist:ccsEnerDia:15-06-2019": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 1870,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 24,
+   "item_keys": [
+    "loctimestamp",
+    "valueedit"
+   ],
+   "ts_min": "2019-06-15T06:00:00Z",
+   "ts_max": "2019-06-16T05:00:00Z",
+   "n_numeric": 24,
+   "sample": [
+    {
+     "loctimestamp": "2019-06-16T05:00:00Z",
+     "valueedit": 686.38
+    },
+    {
+     "loctimestamp": "2019-06-16T04:00:00Z",
+     "valueedit": 756.913
+    }
+   ]
+  },
+  "ords:hist:repDiaVolAlm:2024-10-15": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 413,
+   "top_keys": [
+    "cv_1"
+   ],
+   "n_items": 3,
+   "item_keys": [
+    "embalse",
+    "volact",
+    "volembmax",
+    "volembmin",
+    "volutilalm"
+   ],
+   "ts_min": null,
+   "ts_max": null,
+   "n_numeric": 12,
+   "sample": [
+    {
+     "embalse": "Minas San Francisco",
+     "volact": 785.77,
+     "volembmax": 792.86,
+     "volembmin": 783.33,
+     "volutilalm": 25.60335781741868
+    },
+    {
+     "embalse": "Mazar",
+     "volact": 2116.333,
+     "volembmax": 2153,
+     "volembmin": 2100,
+     "volutilalm": 30.816981132075473
+    }
+   ]
+  },
+  "ords:hist:csrCaudCuenAniosAvg": {
+   "status": 200,
+   "error": null,
+   "content_type": "application/json",
+   "bytes": 1937,
+   "top_keys": [
+    "count",
+    "hasMore",
+    "items",
+    "limit",
+    "links",
+    "offset"
+   ],
+   "n_items": 17,
+   "item_keys": [
+    "loctimestamp",
+    "valueedit"
+   ],
+   "ts_min": "2010-01-01T05:00:00Z",
+   "ts_max": "2026-01-01T05:00:00Z",
+   "n_numeric": 17,
+   "sample": [
+    {
+     "loctimestamp": "2026-01-01T05:00:00Z",
+     "valueedit": 112.74875851500789
+    },
+    {
+     "loctimestamp": "2025-01-01T05:00:00Z",
+     "valueedit": 163.5772369063927
+    }
+   ]
+  },
+  "mesh24_recheck": {
+   "captured_utc": "2026-09-22T00:09:03+00:00",
+   "status": 200,
+   "n_nonnull": 0
   }
  },
  "celec_web": {
@@ -7456,7 +9950,7 @@
   }
  },
  "operativa": {
-  "captured_local": "2026-09-21T18:59-05:00",
+  "captured_local": "2026-09-21T19:10-05:00",
   "ca_bundle": {
    "host": "www.cenace.gob.ec",
    "aia_urls": [
@@ -7466,36 +9960,36 @@
   },
   "status": 200,
   "error": null,
-  "bytes": 266613,
-  "saved": "tests/fixtures/cenace_operativa/InformacionOperativa_2026-09-21T1859.html",
+  "bytes": 266582,
+  "saved": "tests/fixtures/cenace_operativa/InformacionOperativa_2026-09-21T1910.html",
   "n_plotly_newplot": 18,
   "title": "Información Operativa - CENACE",
-  "text_head": "Información Operativa - CENACE\nOperador Nacional de Electricidad - CENACE\nPRODUCCIÓN TIEMPO REAL\nDEMANDA TIEMPO REAL\nINFORMACIÓN OPERATIVA DIARIA\nACUMULADA MENSUAL\nACUMULADA ANUAL\nPRODUCCIÓN EN TIEMPO REAL\nLunes, 21 de septiembre de 2026\nPRODUCCIÓN ENERGÉTICA (MWh)\nPRODUCCIÓN TOTAL\n84 258\nEXPORTACIÓN\n131\nIMPORTACIÓN\n129\nHIDRÁULICA\n63 737\nTÉRMICA\n19 568\nR. NO CONVENCIONAL\n718\nDETALLE DE PRODUCCIÓN (MWh)\nCURVA DE GENERACIÓN (MW)\nDEMANDAS EMPRESAS ELÉCTRICAS DE DISTRIBUCIÓN\nLunes, 21 de septiembre de 2026\nDEMANDA (MW)\nDEMANDA TOTAL\n4 950\nANTERIOR\n4 546\nDEMANDA CNEL\n3 490\nEMPRESAS ELÉCTRICAS\n1 459\nDEMANDAS SNI (MW)\nEMELNORTE\n136 MW\nE.E. REGIONAL SUR\n100 MW\nE.E. QUITO\n663 MW\nCNEL LOS RÍOS\n110 MW\nCNEL EL ORO\n311 MW\nELEPCO\n100 MW\nE.E. RIOBAMBA\n76 MW\nCNEL LOS BOLÍVAR\n22 MW\nCNEL MANABÍ\n433 MW\nE.E. AMBATO\n140 MW\nCNEL ESMERALDAS\n125 MW\nCNEL SANTA ELENA\n108 MW\nCNEL GUAYAQUIL\n1 167 MW\nCNEL MILAGRO\n244 MW\nCNEL SANTO DOMINGO\n167 MW\nCNEL SUCUMBÍOS\n147 MW\nE.E. CENTRO SUR\n220 MW\nE.E. AZOGUES\n24 MW\nCNEL GUAYAS LOS RÍOS\n657 MW\nDEMANDAS POR EMPRESAS (MW)\nINFORMACIÓN OPERATIVA DIARIA\nSábado, 19 de septiembre de 2026\nPRODUCCIÓN ENERGÉTICA (MWh)\nPRODUCCIÓN TOTAL\n104 277\nEXPORTACIÓN\n125\nIMPORTACIÓN\n158\nHIDRÁULICA\n80 537\nTÉRMICA\n21 151\nR. NO CONVENCIONAL\n2 432\nDETALLE DE PRODUCCIÓN (MWh)\nCURVA DE GENERACIÓN (MW)\nINFORMACIÓN OPERATIVA MENSUAL\nSeptiembre de 2026 (hasta el día 19)\nPRODUCCIÓN ENERGÉTICA (MWh)\nPRODUCCIÓN TOTAL\n2 045 109\nEXPORTACIÓN\n1 817\nIMPORTACIÓN\n40 702\nHIDRÁULICA\n1 583 200\nTÉRMICA\n377 922\nR. NO CONVENCIONAL\n43 286\nDETALLE DE PRODUCCIÓN (MWh)\nCURVA DE GENERACIÓN (MW)\nDemanda máxima mensual: Miércoles, 02 de septiembre de 2026\nINFORMACIÓN OPERATIVA ANUAL\n2026 (hasta el día 19 de septiembre)\nPRODUCCIÓN ENERGÉTICA (GWh)\nPRODUCCIÓN TOTAL\n26 943\nEXPORTACIÓN\n25\nIMPORTACIÓN\n276\nHIDRÁULICA\n20 866\nTÉRMICA\n5 494\nR. NO CONVENCIONAL\n307\nDETALLE DE PRODUCCIÓN (GWh)\nCURVA DE GENERACIÓN (MW)\nDemanda máxima histórica: Miércoles, 15 de julio de 2026\nDatos preliminares del SCADA, sujetos a revisión y validación.",
+  "text_head": "Información Operativa - CENACE\nOperador Nacional de Electricidad - CENACE\nPRODUCCIÓN TIEMPO REAL\nDEMANDA TIEMPO REAL\nINFORMACIÓN OPERATIVA DIARIA\nACUMULADA MENSUAL\nACUMULADA ANUAL\nPRODUCCIÓN EN TIEMPO REAL\nLunes, 21 de septiembre de 2026\nPRODUCCIÓN ENERGÉTICA (MWh)\nPRODUCCIÓN TOTAL\n86 915\nEXPORTACIÓN\n142\nIMPORTACIÓN\n129\nHIDRÁULICA\n65 849\nTÉRMICA\n20 106\nR. NO CONVENCIONAL\n727\nDETALLE DE PRODUCCIÓN (MWh)\nCURVA DE GENERACIÓN (MW)\nDEMANDAS EMPRESAS ELÉCTRICAS DE DISTRIBUCIÓN\nLunes, 21 de septiembre de 2026\nDEMANDA (MW)\nDEMANDA TOTAL\n5 014\nANTERIOR\n4 924\nDEMANDA CNEL\n3 537\nEMPRESAS ELÉCTRICAS\n1 476\nDEMANDAS SNI (MW)\nEMELNORTE\n138 MW\nE.E. REGIONAL SUR\n105 MW\nE.E. QUITO\n662 MW\nCNEL LOS RÍOS\n115 MW\nCNEL EL ORO\n303 MW\nELEPCO\n99 MW\nE.E. RIOBAMBA\n78 MW\nCNEL LOS BOLÍVAR\n23 MW\nCNEL MANABÍ\n443 MW\nE.E. AMBATO\n143 MW\nCNEL ESMERALDAS\n128 MW\nCNEL SANTA ELENA\n113 MW\nCNEL GUAYAQUIL\n1 177 MW\nCNEL MILAGRO\n250 MW\nCNEL SANTO DOMINGO\n167 MW\nCNEL SUCUMBÍOS\n150 MW\nE.E. CENTRO SUR\n228 MW\nE.E. AZOGUES\n24 MW\nCNEL GUAYAS LOS RÍOS\n668 MW\nDEMANDAS POR EMPRESAS (MW)\nINFORMACIÓN OPERATIVA DIARIA\nSábado, 19 de septiembre de 2026\nPRODUCCIÓN ENERGÉTICA (MWh)\nPRODUCCIÓN TOTAL\n104 277\nEXPORTACIÓN\n125\nIMPORTACIÓN\n158\nHIDRÁULICA\n80 537\nTÉRMICA\n21 151\nR. NO CONVENCIONAL\n2 432\nDETALLE DE PRODUCCIÓN (MWh)\nCURVA DE GENERACIÓN (MW)\nINFORMACIÓN OPERATIVA MENSUAL\nSeptiembre de 2026 (hasta el día 19)\nPRODUCCIÓN ENERGÉTICA (MWh)\nPRODUCCIÓN TOTAL\n2 045 109\nEXPORTACIÓN\n1 817\nIMPORTACIÓN\n40 702\nHIDRÁULICA\n1 583 200\nTÉRMICA\n377 922\nR. NO CONVENCIONAL\n43 286\nDETALLE DE PRODUCCIÓN (MWh)\nCURVA DE GENERACIÓN (MW)\nDemanda máxima mensual: Miércoles, 02 de septiembre de 2026\nINFORMACIÓN OPERATIVA ANUAL\n2026 (hasta el día 19 de septiembre)\nPRODUCCIÓN ENERGÉTICA (GWh)\nPRODUCCIÓN TOTAL\n26 943\nEXPORTACIÓN\n25\nIMPORTACIÓN\n276\nHIDRÁULICA\n20 866\nTÉRMICA\n5 494\nR. NO CONVENCIONAL\n307\nDETALLE DE PRODUCCIÓN (GWh)\nCURVA DE GENERACIÓN (MW)\nDemanda máxima histórica: Miércoles, 15 de julio de 2026\nDatos preliminares del SCADA, sujetos a revisión y validación.",
   "lines_with_mw": [
    "PRODUCCIÓN ENERGÉTICA (MWh)",
    "DETALLE DE PRODUCCIÓN (MWh)",
    "CURVA DE GENERACIÓN (MW)",
    "DEMANDA (MW)",
    "DEMANDAS SNI (MW)",
-   "136 MW",
-   "100 MW",
-   "663 MW",
-   "110 MW",
-   "311 MW",
-   "100 MW",
-   "76 MW",
-   "22 MW",
-   "433 MW",
-   "140 MW",
-   "125 MW",
-   "108 MW",
-   "1 167 MW",
-   "244 MW",
+   "138 MW",
+   "105 MW",
+   "662 MW",
+   "115 MW",
+   "303 MW",
+   "99 MW",
+   "78 MW",
+   "23 MW",
+   "443 MW",
+   "143 MW",
+   "128 MW",
+   "113 MW",
+   "1 177 MW",
+   "250 MW",
    "167 MW",
-   "147 MW",
-   "220 MW",
+   "150 MW",
+   "228 MW",
    "24 MW",
-   "657 MW",
+   "668 MW",
    "DEMANDAS POR EMPRESAS (MW)",
    "PRODUCCIÓN ENERGÉTICA (MWh)",
    "DETALLE DE PRODUCCIÓN (MWh)",
@@ -7628,7 +10122,7 @@
    },
    {
     "tag": "div",
-    "id": "ba326baa-f517-43be-a27b-4ecc4df7d1f3",
+    "id": "b2b11f76-404c-4c16-99f8-56f0af254bae",
     "class": [
      "plotly-graph-div"
     ]
@@ -7642,7 +10136,7 @@
    },
    {
     "tag": "div",
-    "id": "ace21887-84bb-4aa0-9ede-d277c7f0fa96",
+    "id": "5af0fb7f-3859-443c-a3a8-5862bd473600",
     "class": [
      "plotly-graph-div"
     ]
@@ -7656,7 +10150,7 @@
    },
    {
     "tag": "div",
-    "id": "034fc9c4-0dad-4495-ae62-641b72381122",
+    "id": "91a31a32-1604-4549-b9e6-70e35bc0c392",
     "class": [
      "plotly-graph-div"
     ]
@@ -7684,7 +10178,7 @@
    },
    {
     "tag": "div",
-    "id": "01c8a6dd-8b28-47e4-9e22-eef9a5d7c64b",
+    "id": "c48086ea-e6e4-43cb-a9a1-c27e4c466e30",
     "class": [
      "plotly-graph-div"
     ]
@@ -8026,7 +10520,7 @@
    },
    {
     "tag": "div",
-    "id": "8b027996-04eb-4023-a512-feaf46180b0b",
+    "id": "8b52daaf-7d0d-49a4-8853-c77eba6af837",
     "class": [
      "plotly-graph-div"
     ]
@@ -8044,7 +10538,7 @@
   "open_meteo:archive": {
    "status": 200,
    "error": null,
-   "bytes": 1059,
+   "bytes": 1060,
    "keys": [
     "daily",
     "daily_units",
@@ -8065,7 +10559,7 @@
   "open_meteo:forecast": {
    "status": 200,
    "error": null,
-   "bytes": 582,
+   "bytes": 584,
    "keys": [
     "daily",
     "daily_units",
@@ -8085,7 +10579,7 @@
   "open_meteo:seasonal": {
    "status": 200,
    "error": null,
-   "bytes": 55754,
+   "bytes": 55753,
    "keys": [
     "daily",
     "daily_units",
