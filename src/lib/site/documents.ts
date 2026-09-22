@@ -8,6 +8,8 @@
  * the HTML for a week before anybody notices.
  */
 
+import type { NarrativePayload } from "../narrative/payload.ts";
+
 export interface ForecastHorizon {
   horizon_days: number;
   target_date: string;
@@ -145,6 +147,8 @@ export interface AdequacyDocument {
     share_of_cuts_that_were_flagged: number | null;
   };
   crisis_check: { episodes: AdequacyEpisode[] };
+  /** The tier definitions in Spanish, as the document states them. */
+  tiers?: { definition: Record<string, string> };
 }
 
 export interface StatusFeed {
@@ -162,4 +166,26 @@ export interface StatusDocument {
   feeds: StatusFeed[];
   tables: Record<string, { rows: number }>;
   findings: { check: string; level: string; message: string }[];
+}
+
+/**
+ * `narrative.json`, as far as the panel reads it. `basis` is the payload the text was written
+ * from, and the panel renders from it rather than from today's `latest.json`: when a later run
+ * is skipped or rejected the page keeps the older text, and the numbers beside it have to be the
+ * ones it was written about, not the ones that have arrived since.
+ *
+ * The type is imported, not restated, and only as a type: the site must never pull the AI SDK
+ * or the payload builder's file reads into the bundle.
+ */
+export interface NarrativeDocument {
+  generated_at: string;
+  model: string;
+  prompt_version: string;
+  origin_date: string;
+  risk_tier: string | null;
+  outlook_es: string;
+  drivers: string[];
+  confidence: "low" | "medium" | "high";
+  disclaimer: string;
+  basis: NarrativePayload;
 }

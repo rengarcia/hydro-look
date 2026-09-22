@@ -368,3 +368,66 @@ export const ADEQUACY_VALUES: TableSpec<AdequacyValueRow> = {
   partitionBy: "origin_date",
   schema: adequacyValueRow,
 };
+
+/**
+ * One attempt at the AI narrative (Phase 6b), whatever became of it.
+ *
+ * A row is written for every attempt that reached the gateway or was refused by it — `ok`,
+ * `rejected`, `skipped`, `failed` — and not for a rerun the payload hash made a no-op, nor for a
+ * run without a key. That makes the table the spend log decision 8 asks for (monthly gateway
+ * spend is the sum of `cost_usd` by month) and the audit trail for the validator: a rejected
+ * row keeps the text and, in `reason`, the figures it invented.
+ *
+ * `risk_tier` is copied from the payload, which copied it from `adequacy.json`; it is here so
+ * the row says which tier the text was asked to explain, not because the model chose it.
+ * `drivers_json` is a JSON array in one cell because a CSV has no lists, and the text columns
+ * are quoted by `toCsv` like any other cell containing a comma.
+ */
+export const narrativeSnapshotRow = z.object({
+  run_id: z.string().min(1),
+  generated_at: isoTimestamp,
+  origin_date: isoDate,
+  status: z.enum(["ok", "skipped", "rejected", "failed"]),
+  model_id: z.string().min(1),
+  prompt_version: z.string().min(1),
+  payload_hash: z.string().regex(/^[0-9a-f]{64}$/, "expected a sha256 hex digest"),
+  forecast_run_id: z.string(),
+  adequacy_run_id: z.string(),
+  risk_tier: z.union([z.enum(["holgado", "vigilancia", "ajustado", "deficit"]), z.literal("")]),
+  confidence: z.union([z.enum(["low", "medium", "high"]), z.literal("")]),
+  input_tokens: z.number().int().nonnegative().nullable(),
+  output_tokens: z.number().int().nonnegative().nullable(),
+  cost_usd: z.number().finite().nonnegative().nullable(),
+  outlook_es: z.string(),
+  drivers_json: z.string(),
+  reason: z.string(),
+}).refine((r) => r.status !== "ok" || (r.outlook_es !== "" && r.confidence !== ""), {
+  message: "an ok snapshot must carry its text and confidence",
+});
+export type NarrativeSnapshotRow = z.infer<typeof narrativeSnapshotRow>;
+
+export const NARRATIVE_SNAPSHOTS: TableSpec<NarrativeSnapshotRow> = {
+  name: "narrative_snapshots",
+  columns: [
+    "run_id",
+    "generated_at",
+    "origin_date",
+    "status",
+    "model_id",
+    "prompt_version",
+    "payload_hash",
+    "forecast_run_id",
+    "adequacy_run_id",
+    "risk_tier",
+    "confidence",
+    "input_tokens",
+    "output_tokens",
+    "cost_usd",
+    "outlook_es",
+    "drivers_json",
+    "reason",
+  ],
+  key: ["run_id"],
+  partitionBy: "generated_at",
+  schema: narrativeSnapshotRow,
+};

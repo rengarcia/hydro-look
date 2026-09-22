@@ -63,12 +63,29 @@ jobs:
       # is a modelling failure and never a source outage — and `continue-on-error` keeps it
       # from burying an ingest that has already succeeded and pushed.
       - name: Model and commit
+        id: models
         if: always() && !inputs.dry_run
         continue-on-error: true
         run: bash .github/scripts/model-and-push.sh "Models $(date -u +%Y-%m-%d) (run ${{ github.run_id }})"
         env:
           BRANCH: ${{ github.ref_name }}
           LOG: ${{ runner.temp }}/forecast.log
+
+      # Phase 6b, last: one model-written paragraph over the numbers the step above just pushed.
+      # Only after a green ingest and a green model step — a narrative over yesterday's forecast
+      # would be the one thing on the page describing the wrong day. It makes the run's only paid
+      # call (Vercel AI Gateway), which is why it is `continue-on-error` and why the key is the
+      # only secret this workflow reads: without it the command logs one line and writes nothing,
+      # and a rerun on unchanged data is a no-op by payload hash. See narrative-and-push.sh.
+      - name: Narrative and commit
+        if: steps.models.outcome == 'success' && !inputs.dry_run
+        continue-on-error: true
+        run: bash .github/scripts/narrative-and-push.sh "Narrative $(date -u +%Y-%m-%d) (run ${{ github.run_id }})"
+        env:
+          BRANCH: ${{ github.ref_name }}
+          STAGE_DIR: ${{ runner.temp }}/narrative
+          LOG: ${{ runner.temp }}/narrative.log
+          AI_GATEWAY_API_KEY: ${{ secrets.AI_GATEWAY_API_KEY }}
 
       - name: Upload run log
         if: always()
@@ -78,6 +95,7 @@ jobs:
           path: |
             ${{ runner.temp }}/ingest.log
             ${{ runner.temp }}/forecast.log
+            ${{ runner.temp }}/narrative.log
           retention-days: 14
 
       # A source that changes shape must be loud: the run fails, the raw response is already

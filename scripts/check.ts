@@ -23,6 +23,7 @@ import {
   ADEQUACY_VALUES,
   FORECAST_RUNS,
   FORECAST_VALUES,
+  NARRATIVE_SNAPSHOTS,
   NATIONAL_BALANCE_DAILY,
   OBSERVATIONS_DAILY,
   OPERATING_BANDS,
@@ -137,6 +138,10 @@ function main(): void {
   const adequacyRuns = readTable(ADEQUACY_RUNS.name);
   const adequacyValues = readTable(ADEQUACY_VALUES.name);
   const forecastValues = readTable(FORECAST_VALUES.name);
+  // Shape only, and no freshness rule: the narrative runs with `continue-on-error` and without
+  // a key it never runs at all, so a stale narrative must not turn the ingest's gate red. The
+  // page shows the narrative's own date instead.
+  const narrativeSnapshots = readTable(NARRATIVE_SNAPSHOTS.name);
 
   const thresholds = readReference("thresholds.csv");
   const findings: Finding[] = [];
@@ -152,6 +157,7 @@ function main(): void {
     [ADEQUACY_RUNS as TableSpec<unknown>, adequacyRuns],
     [ADEQUACY_VALUES as TableSpec<unknown>, adequacyValues],
     [FORECAST_VALUES as TableSpec<unknown>, forecastValues],
+    [NARRATIVE_SNAPSHOTS as TableSpec<unknown>, narrativeSnapshots],
   ];
   for (const [spec, table] of tables) {
     findings.push(...checkTableShape(spec, table.rows, table.header));
