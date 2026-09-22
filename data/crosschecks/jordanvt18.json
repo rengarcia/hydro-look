@@ -1,0 +1,350 @@
+{
+  "generated_at": "2026-09-22T02:22:13Z",
+  "mirror": "https://raw.githubusercontent.com/jordanvt18/cotas-embalses-ecuador/main/data/raw/cotas_historico.csv",
+  "notable_diff_m": 0.5,
+  "results": [
+    {
+      "site": "amaluza",
+      "source": "ords:repDiaHid12m",
+      "offset_days": -1,
+      "compared": 1667,
+      "mean_abs_diff_m": 0.6459,
+      "p95_abs_diff_m": 1.81,
+      "max_abs_diff_m": 5.97,
+      "exact": 52,
+      "worst": [
+        {
+          "date": "2022-04-13",
+          "ours": 1989.72,
+          "theirs": 1983.75,
+          "diff": 5.97
+        },
+        {
+          "date": "2024-06-16",
+          "ours": 1990.61,
+          "theirs": 1984.95,
+          "diff": 5.66
+        },
+        {
+          "date": "2023-04-19",
+          "ours": 1986.13,
+          "theirs": 1980.99,
+          "diff": 5.14
+        },
+        {
+          "date": "2023-04-16",
+          "ours": 1984.75,
+          "theirs": 1979.64,
+          "diff": 5.11
+        },
+        {
+          "date": "2022-06-24",
+          "ours": 1990.52,
+          "theirs": 1985.76,
+          "diff": 4.76
+        },
+        {
+          "date": "2026-03-13",
+          "ours": 1989.55,
+          "theirs": 1985.2,
+          "diff": 4.35
+        },
+        {
+          "date": "2022-04-08",
+          "ours": 1988.79,
+          "theirs": 1984.52,
+          "diff": 4.27
+        },
+        {
+          "date": "2023-04-15",
+          "ours": 1979.64,
+          "theirs": 1983.86,
+          "diff": -4.22
+        },
+        {
+          "date": "2024-03-23",
+          "ours": 1984.02,
+          "theirs": 1979.81,
+          "diff": 4.21
+        },
+        {
+          "date": "2026-07-17",
+          "ours": 1990.7,
+          "theirs": 1987.31,
+          "diff": 3.39
+        }
+      ]
+    },
+    {
+      "site": "amaluza",
+      "source": "ords:repDiaHid12m",
+      "offset_days": 0,
+      "compared": 1668,
+      "mean_abs_diff_m": 0,
+      "p95_abs_diff_m": 0,
+      "max_abs_diff_m": 0.01,
+      "exact": 1668,
+      "worst": []
+    },
+    {
+      "site": "amaluza",
+      "source": "ords:repDiaHid12m",
+      "offset_days": 1,
+      "compared": 1668,
+      "mean_abs_diff_m": 0.642,
+      "p95_abs_diff_m": 1.83,
+      "max_abs_diff_m": 5.97,
+      "exact": 51,
+      "worst": [
+        {
+          "date": "2022-04-12",
+          "ours": 1983.75,
+          "theirs": 1989.72,
+          "diff": -5.97
+        },
+        {
+          "date": "2024-06-15",
+          "ours": 1984.95,
+          "theirs": 1990.61,
+          "diff": -5.66
+        },
+        {
+          "date": "2023-04-18",
+          "ours": 1980.99,
+          "theirs": 1986.13,
+          "diff": -5.14
+        },
+        {
+          "date": "2023-04-15",
+          "ours": 1979.64,
+          "theirs": 1984.75,
+          "diff": -5.11
+        },
+        {
+          "date": "2022-06-23",
+          "ours": 1985.76,
+          "theirs": 1990.52,
+          "diff": -4.76
+        },
+        {
+          "date": "2026-03-12",
+          "ours": 1985.2,
+          "theirs": 1989.55,
+          "diff": -4.35
+        },
+        {
+          "date": "2022-04-07",
+          "ours": 1984.52,
+          "theirs": 1988.79,
+          "diff": -4.27
+        },
+        {
+          "date": "2023-04-14",
+          "ours": 1983.86,
+          "theirs": 1979.64,
+          "diff": 4.22
+        },
+        {
+          "date": "2024-03-22",
+          "ours": 1979.81,
+          "theirs": 1984.02,
+          "diff": -4.21
+        },
+        {
+          "date": "2026-07-16",
+          "ours": 1987.31,
+          "theirs": 1990.7,
+          "diff": -3.39
+        }
+      ]
+    },
+    {
+      "site": "amaluza",
+      "source": "ords:repDiaNivQIng",
+      "offset_days": -1,
+      "compared": 1,
+      "mean_abs_diff_m": 0.003,
+      "p95_abs_diff_m": 0.003,
+      "max_abs_diff_m": 0.003,
+      "exact": 1,
+      "worst": []
+    },
+    {
+      "site": "mazar",
+      "source": "ords:repDiaHid12m",
+      "offset_days": -1,
+      "compared": 1667,
+      "mean_abs_diff_m": 0.4957,
+      "p95_abs_diff_m": 1.4,
+      "max_abs_diff_m": 4.63,
+      "exact": 48,
+      "worst": [
+        {
+          "date": "2022-04-21",
+          "ours": 2141.09,
+          "theirs": 2136.46,
+          "diff": 4.63
+        },
+        {
+          "date": "2026-05-03",
+          "ours": 2137.62,
+          "theirs": 2133.76,
+          "diff": 3.86
+        },
+        {
+          "date": "2024-03-27",
+          "ours": 2120.11,
+          "theirs": 2123.87,
+          "diff": -3.76
+        },
+        {
+          "date": "2026-05-04",
+          "ours": 2141.26,
+          "theirs": 2137.62,
+          "diff": 3.64
+        },
+        {
+          "date": "2022-04-09",
+          "ours": 2131.53,
+          "theirs": 2127.93,
+          "diff": 3.6
+        },
+        {
+          "date": "2023-04-19",
+          "ours": 2129.11,
+          "theirs": 2132.19,
+          "diff": -3.08
+        },
+        {
+          "date": "2022-04-08",
+          "ours": 2127.93,
+          "theirs": 2130.77,
+          "diff": -2.84
+        },
+        {
+          "date": "2022-04-13",
+          "ours": 2130.11,
+          "theirs": 2132.86,
+          "diff": -2.75
+        },
+        {
+          "date": "2024-06-16",
+          "ours": 2152.55,
+          "theirs": 2149.8,
+          "diff": 2.75
+        },
+        {
+          "date": "2022-08-30",
+          "ours": 2153.78,
+          "theirs": 2151.08,
+          "diff": 2.7
+        }
+      ]
+    },
+    {
+      "site": "mazar",
+      "source": "ords:repDiaHid12m",
+      "offset_days": 0,
+      "compared": 1668,
+      "mean_abs_diff_m": 0.0001,
+      "p95_abs_diff_m": 0,
+      "max_abs_diff_m": 0.01,
+      "exact": 1668,
+      "worst": []
+    },
+    {
+      "site": "mazar",
+      "source": "ords:repDiaHid12m",
+      "offset_days": 1,
+      "compared": 1668,
+      "mean_abs_diff_m": 0.4964,
+      "p95_abs_diff_m": 1.4,
+      "max_abs_diff_m": 4.63,
+      "exact": 51,
+      "worst": [
+        {
+          "date": "2022-04-20",
+          "ours": 2136.46,
+          "theirs": 2141.09,
+          "diff": -4.63
+        },
+        {
+          "date": "2026-05-02",
+          "ours": 2133.76,
+          "theirs": 2137.62,
+          "diff": -3.86
+        },
+        {
+          "date": "2024-03-26",
+          "ours": 2123.87,
+          "theirs": 2120.11,
+          "diff": 3.76
+        },
+        {
+          "date": "2026-05-03",
+          "ours": 2137.62,
+          "theirs": 2141.26,
+          "diff": -3.64
+        },
+        {
+          "date": "2022-04-08",
+          "ours": 2127.93,
+          "theirs": 2131.53,
+          "diff": -3.6
+        },
+        {
+          "date": "2023-04-18",
+          "ours": 2132.19,
+          "theirs": 2129.11,
+          "diff": 3.08
+        },
+        {
+          "date": "2022-04-07",
+          "ours": 2130.77,
+          "theirs": 2127.93,
+          "diff": 2.84
+        },
+        {
+          "date": "2022-04-12",
+          "ours": 2132.86,
+          "theirs": 2130.11,
+          "diff": 2.75
+        },
+        {
+          "date": "2024-06-15",
+          "ours": 2149.8,
+          "theirs": 2152.55,
+          "diff": -2.75
+        },
+        {
+          "date": "2022-08-29",
+          "ours": 2151.08,
+          "theirs": 2153.78,
+          "diff": -2.7
+        }
+      ]
+    },
+    {
+      "site": "mazar",
+      "source": "ords:repDiaNivQIng",
+      "offset_days": -1,
+      "compared": 1,
+      "mean_abs_diff_m": 0,
+      "p95_abs_diff_m": 0,
+      "max_abs_diff_m": 0,
+      "exact": 1,
+      "worst": []
+    },
+    {
+      "site": "sopladora",
+      "source": "ords:repDiaNivQIng",
+      "offset_days": -1,
+      "compared": 1,
+      "mean_abs_diff_m": 0.0025,
+      "p95_abs_diff_m": 0.0025,
+      "max_abs_diff_m": 0.0025,
+      "exact": 1,
+      "worst": []
+    }
+  ]
+}

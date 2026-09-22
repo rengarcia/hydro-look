@@ -40,6 +40,22 @@ export type SmecConcept = (typeof SMEC_CONCEPTS)[keyof typeof SMEC_CONCEPTS];
 /** A report without these is a stub, not a balance: CENACE publishes the running day that way. */
 const REQUIRED_CONCEPTS: SmecConcept[] = ["generacion_hidraulica", "total_generacion", "demanda_distribucion"];
 
+/**
+ * Minimum ratio of distribution demand to total generation for a report to be a whole day.
+ *
+ * SMEC sometimes serves a half-rendered page whose rows are all present but hold only the
+ * metering that had arrived: total generation equal to hydro alone, a fraction of a normal day,
+ * and distribution demand near zero. Those pages passed the row-presence check above and put
+ * eight phantom 90% generation collapses into the history — 2020-06-18, -21, -23, -24, -25,
+ * -29, 2020-12-07 and 2026-03-18 — which is exactly the shape of the crises this project exists
+ * to detect.
+ *
+ * Across 3,788 backfilled days the ratio is 89.4% at the median and 69.3% at the 1st percentile,
+ * and those eight days sit between 0.85% and 4.66%; the next lowest real day is 34.8%. A 20%
+ * threshold separates them with a seven-fold margin and rejects nothing else.
+ */
+const MIN_DEMAND_SHARE = 0.2;
+
 export interface SmecRow {
   date: IsoDate;
   concepto: SmecConcept;
@@ -149,11 +165,18 @@ export function parseSmecInforme1(html: string, requestedDate: IsoDate): SmecRep
 
   const missing = REQUIRED_CONCEPTS.filter((c) => !seen.has(c));
   const totalGeneration = rows.find((r) => r.concepto === "total_generacion")?.dia_kwh ?? 0;
-  const complete = missing.length === 0 && totalGeneration > 0;
+  const demand = rows.find((r) => r.concepto === "demanda_distribucion")?.dia_kwh ?? 0;
+  const demandShare = totalGeneration > 0 ? demand / totalGeneration : 0;
+  const partiallyMetered = missing.length === 0 && totalGeneration > 0 && demandShare < MIN_DEMAND_SHARE;
+
+  const complete = missing.length === 0 && totalGeneration > 0 && !partiallyMetered;
   if (!complete) {
-    notes.push(
-      `smec ${date}: report is incomplete (${missing.length > 0 ? `missing ${missing.join(", ")}` : "total generación is 0"}); CENACE publishes the running day this way until D+1`,
-    );
+    const why = partiallyMetered
+      ? `distribution demand is only ${(demandShare * 100).toFixed(2)}% of total generación, so the page was rendered before the metering arrived`
+      : missing.length > 0
+        ? `missing ${missing.join(", ")}`
+        : "total generación is 0";
+    notes.push(`smec ${date}: report is incomplete (${why}); CENACE publishes the running day this way until D+1`);
   }
   return { date, tipo_dia, tipo_dia_anio_anterior, rows, complete, notes };
 }

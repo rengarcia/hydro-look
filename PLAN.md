@@ -323,6 +323,16 @@ Two things the first Actions runs settled:
 - **Generated files cannot be merged by rebase.** The first daily run collided with the levels backfill
   in an add/add conflict on every CSV. A run now stages its output and a second step re-applies it onto
   the branch tip (`--out` / `apply --in`), which is safe because applying is an upsert.
+- **The levels cross-check passes exactly** (`npm run crosscheck`, report in `data/crosschecks/`).
+  Against jordanvt18's 1,668-day historian-derived series, our `repDiaHid12m` backfill agrees on
+  **100% of days to the mirror's published precision of 0.01 m** for both Mazar (mean absolute
+  difference 0.0001 m) and Amaluza (0 m), at offset 0. A one-day shift in either direction costs
+  0.5–0.65 m of mean error, so the local-midnight date convention in §4 is confirmed, not assumed:
+  two independent routes into the same historian, parsed by two people, agree on the numbers *and*
+  the dates. This closes the D4/§6 acceptance criterion for levels. `repDiaNivQIng` has only been
+  ingested for one day so far and the mirror stops at 2026-09-20, so it has no usable overlap yet;
+  the report lists it explicitly as "not enough overlap to judge" rather than letting a one-day
+  comparison masquerade as a date-convention finding.
 
 Current full backfill: [Actions run 35675850138](https://github.com/rengarcia/hydro-look/actions/runs/35675850138/job/106582137605),
 reported in progress by the user on 2026-09-21. Completion and reconciliation remain to be checked.
@@ -339,7 +349,38 @@ CELEC Sur plants from 2020-09-20 and for the other three from 2019-06 via `EnerD
 jordanvt18's 2022→2026 Mazar/Amaluza/Sopladora levels with differences listed; daily workflow green three
 days in a row.
 
-**Phase 2 · CENACE SMEC ingestion + backfill (1–2 S)**
+**Phase 2 · CENACE SMEC ingestion + backfill — backfill complete 2026-09-22 (run 35675850138)**
+`national_balance_daily` now holds **3,780 days, 2016-05-01 → 2026-09-20**, in 11 year files. Coverage is
+**0.18% missing** (7 days, all isolated singles in 2019–2020: 2019-03-21, 2019-03-28, 2020-04-07, 2020-04-08,
+2020-06-20, 2020-06-27, 2020-11-28), against an acceptance bar of < 1%. A later dispatch retries them for
+free, since the backfill skips only days already stored.
+
+Reconciling that against the ORDS per-plant energy produced three findings, in descending order of how much
+they matter:
+
+- **Eight days were partially-published pages, and they are now rejected.** On 2020-06-18, -21, -23, -24,
+  -25, -29, 2020-12-07 and 2026-03-18, SMEC served a page whose rows were all present but held only the
+  metering that had arrived: total generación equal to hydro alone and a fraction of a normal day, with
+  distribution demand near zero. They passed the row-presence check and sat in the history as **phantom 90%
+  generation collapses** — precisely the signal this project exists to detect. The parser now also requires
+  distribution demand to be at least 20% of total generación. Across 3,788 days that ratio is 89.4% at the
+  median and 69.3% at the 1st percentile; those eight sit between 0.85% and 4.66% and the next lowest real
+  day is 34.8%, so the threshold separates them with a sevenfold margin and rejects nothing else. Their 81
+  rows are removed from the table here; the raw responses stay archived.
+- **59 days (1.6%) report distribution demand exceeding generación + importación − exportación**, which is
+  physically impossible. Concentrated in 2016 (34 of 245 days, 13.9%) but present through 2026 (11 of 263).
+  These are *flagged, not dropped*: unlike the eight above they are internally plausible published numbers
+  with an unclear failure mode, and deleting 1.6% of the history — 14% of 2016 — on a guess would be worse
+  than carrying a documented caveat. Any model should exclude them.
+- **Two days report generación far above any real day**: 2025-07-17 (247,391 MWh) and 2025-07-18 (203,988)
+  against a median of 76,622 and a genuine maximum near 115,771. Also flagged rather than dropped.
+
+The **CELEC plants we carry account for a median 43.9% of SMEC national hydro** (mean 44.9%, by year 40–46%),
+over 2,107 comparable days. That is the expected shape with Coca Codo Sinclair still missing: CCS alone is
+reported at 46–48% of national hydro, so the two together come to ~90% and the remainder belongs to other
+operators. Once the CCS backfill lands this ratio becomes a real unit check rather than a plausibility one.
+
+Original phase text, for reference:
 Parser for the 15/16 rows × 7 columns, contract, binary search for the earliest available date, backfill
 from there (≈3,800 requests at 1/s from 2016, in dispatch runs), reconciliation tests (SMEC hydro vs the sum
 of the seven plants' `EnerDia`; SMEC totals vs the Información Operativa validated-day block; kWh/24/1000 vs

@@ -45,3 +45,17 @@ describe("parseOptions", () => {
     expect(parseOptions(["apply", "--in", "/tmp/batch"])).toMatchObject({ command: "apply", in: "/tmp/batch" });
   });
 });
+
+describe("budgets", () => {
+  it("accepts a wall-clock budget alongside the request budget", () => {
+    const options = parseOptions(["backfill", "--from", "2016-05-01", "--max-requests", "5000", "--max-minutes", "270"]);
+    expect(options.maxRequests).toBe(5000);
+    expect(options.maxMinutes).toBe(270);
+  });
+
+  it("leaves both budgets unlimited when unset or empty", () => {
+    const options = parseOptions(["backfill", "--from", "2016-05-01", "--max-minutes", ""]);
+    expect(options.maxRequests).toBe(Infinity);
+    expect(options.maxMinutes).toBe(Infinity);
+  });
+});

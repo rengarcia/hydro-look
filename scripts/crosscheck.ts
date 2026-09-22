@@ -5,9 +5,14 @@
  *
  * That dataset reads the historian mrids; we read the daily report endpoints. They should
  * agree, and where they do not, the difference is a fact about the sources worth recording —
- * not something to paper over. The comparison therefore also tries a one-day shift in each
- * direction and reports which alignment fits best, because the two routes date a reading by
- * different conventions.
+ * not something to paper over. The comparison also tries a one-day shift in each direction,
+ * to test whether the two routes date a reading alike.
+ *
+ * Result of the first full run (2026-09-22, 1,668 overlapping days per reservoir): they do.
+ * Mazar and Amaluza agree at offset 0 on every single day to the mirror's published precision
+ * of 0.01 m, while a one-day shift in either direction costs 0.5-0.65 m of mean error. Two
+ * independent routes into the same historian, parsed by two people, land on the same numbers
+ * and the same dates.
  *
  *   npm run crosscheck            writes data/crosschecks/jordanvt18.md and .json
  *
@@ -32,6 +37,9 @@ const MIRROR_SITE: Record<string, SiteId> = {
 
 /** Above this, a day is listed individually in the report rather than just counted. */
 const NOTABLE_DIFF_M = 0.5;
+
+/** Below this many overlapping days, the winning offset says more about backfill ranges than data. */
+const MIN_DAYS_FOR_ALIGNMENT = 30;
 
 interface Comparison {
   site: SiteId;
@@ -118,13 +126,23 @@ async function main(): Promise<void> {
   }
   if (results.length === 0) throw new Error("nothing overlapped; has the backfill run?");
 
-  // The best alignment per (site, source) is the one with the lowest mean absolute difference.
+  /**
+   * The best alignment per (site, source) is the one with the lowest mean absolute difference —
+   * but only where enough days overlap to mean anything. A series we have ingested for a day or
+   * two, ending outside the mirror's range, "matches" whichever offset happens to reach an
+   * existing date, which reads as a date-convention finding when it is only an artifact of how
+   * far each side has been backfilled.
+   */
   const best = new Map<string, Comparison>();
+  const tooShort = new Map<string, Comparison>();
   for (const result of results) {
     const key = `${result.site}|${result.source}`;
-    const current = best.get(key);
-    if (!current || result.mean_abs_diff_m < current.mean_abs_diff_m) best.set(key, result);
+    const table = result.compared >= MIN_DAYS_FOR_ALIGNMENT ? best : tooShort;
+    const current = table.get(key);
+    if (!current || result.mean_abs_diff_m < current.mean_abs_diff_m) table.set(key, result);
   }
+  // A series with a real comparison is never also reported as too short.
+  for (const key of best.keys()) tooShort.delete(key);
 
   const lines = [
     "# Cross-check against jordanvt18/cotas-embalses-ecuador",
@@ -144,9 +162,24 @@ async function main(): Promise<void> {
           `| ${r.site} | ${r.source} | ${r.offset_days >= 0 ? "+" : ""}${r.offset_days} d | ${r.compared} | ${((r.exact / r.compared) * 100).toFixed(1)}% | ${r.mean_abs_diff_m} | ${r.p95_abs_diff_m} | ${r.max_abs_diff_m} |`,
       ),
     "",
-    "`offset` is how far their date must move to line up with ours: a non-zero best offset means",
-    "the two routes date the same reading differently, which matters for every lag feature later.",
+    "`offset` is how far their date must move to line up with ours: a non-zero best offset over a",
+    "long overlap would mean the two routes date the same reading differently, which would matter",
+    "for every lag feature later.",
     "",
+    ...(tooShort.size === 0
+      ? []
+      : [
+          `Series with fewer than ${MIN_DAYS_FOR_ALIGNMENT} overlapping days are listed below without a verdict. With`,
+          "an overlap that short, the winning offset is decided by which dates each side happens to",
+          "have been backfilled to, not by the data:",
+          "",
+          "| site | our source | days overlapping | note |",
+          "|---|---|---|---|",
+          ...[...tooShort.values()].map(
+            (r) => `| ${r.site} | ${r.source} | ${r.compared} | not enough overlap to judge alignment |`,
+          ),
+          "",
+        ]),
     "## All alignments tried",
     "",
     "| site | our source | offset | days | mean abs diff (m) |",

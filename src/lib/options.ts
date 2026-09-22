@@ -24,6 +24,12 @@ export interface Options {
   dryRun: boolean;
   rateMs: number;
   maxRequests: number;
+  /**
+   * Wall-clock budget for the fetch phase, in minutes. A staged run only writes anything once
+   * fetching ends, so a run killed by a CI job timeout loses everything it collected. Stopping
+   * on our own deadline leaves time to archive, apply and push what we already have.
+   */
+  maxMinutes: number;
   from?: IsoDate;
   to?: IsoDate;
   date?: IsoDate;
@@ -58,6 +64,7 @@ export function parseOptions(argv: string[]): Options {
       "dry-run": { type: "boolean", default: false },
       "rate-ms": { type: "string" },
       "max-requests": { type: "string" },
+      "max-minutes": { type: "string" },
       from: { type: "string" },
       to: { type: "string" },
       date: { type: "string" },
@@ -89,6 +96,7 @@ export function parseOptions(argv: string[]): Options {
     dryRun: values["dry-run"] ?? false,
     rateMs: positiveNumber(values["rate-ms"], 1000),
     maxRequests: positiveNumber(values["max-requests"], Infinity),
+    maxMinutes: positiveNumber(values["max-minutes"], Infinity),
     from: optionalDate(values.from),
     to: optionalDate(values.to),
     date: optionalDate(values.date),

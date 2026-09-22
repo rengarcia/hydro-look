@@ -91,9 +91,21 @@ async function main(): Promise<void> {
   const smec = new CenaceSmec(http, archive);
   const operativa = new CenaceOperativa(http, archive);
 
-  const budget = { left: options.maxRequests };
+  // Two budgets, either of which ends the fetch phase cleanly so the staged batch still gets
+  // archived and applied. The wall-clock one matters because the client waits `rate-ms` after
+  // each response rather than on a fixed cadence, so a request costs latency + rate-ms — about
+  // 1.4 s against these hosts, not the 1.0 s a request count suggests.
+  const budget = { left: options.maxRequests, deadline: Date.now() + options.maxMinutes * 60_000 };
+  let stoppedBy = "";
   const spend = async (work: () => Promise<void>): Promise<boolean> => {
-    if (budget.left <= 0) return false;
+    if (budget.left <= 0) {
+      stoppedBy ||= `request budget (${options.maxRequests})`;
+      return false;
+    }
+    if (Date.now() >= budget.deadline) {
+      stoppedBy ||= `time budget (${options.maxMinutes} min)`;
+      return false;
+    }
     budget.left--;
     await work();
     return true;
@@ -225,6 +237,12 @@ async function main(): Promise<void> {
           }
           if (daysSinceLog(date)) log(`ords-daily: reached ${date}, ${budget.left} requests left in this run`);
         }
+      }
+      if (stoppedBy) {
+        batch.notes.push(`backfill stopped early on the ${stoppedBy}; dispatch it again to continue where it left off`);
+        log(`stopped on the ${stoppedBy} — this run is incomplete, dispatch it again to continue`);
+      } else {
+        log("backfill reached the end of its range with budget to spare");
       }
       break;
     }
