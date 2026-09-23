@@ -90,8 +90,10 @@ npm test            # every parser against the recorded Phase 0 responses; no ne
 npm run typecheck
 npm run lint
 
-npm run ingest -- daily                    # yesterday from every source
+npm run ingest -- daily                    # the last three days from every source (--days)
 npm run ingest -- daily --dry-run          # parse and validate, write nothing
+npm run ingest -- daily --out /tmp/batch   # fetch and stage only, as CI does; touches no data
+npm run ingest -- apply --in /tmp/batch    # merge a staged batch into data/ (idempotent)
 npm run ingest -- backfill --source ords-levels --from 2014-09-20
 npm run ingest -- backfill --source smec --from 2016-05-01 --max-requests 10000
 npm run ingest -- latest                   # live tiles only
@@ -110,9 +112,10 @@ npm run adequacy                           # backtest, then write adequacy.json 
 npm run adequacy -- --dry-run              # compute and print; touch no file
 npm run adequacy -- --ceilings             # print the demonstrated thermal and import ceilings and stop
 
-npm run check                              # shape, ranges, reference integrity; no clock, no network
+npm run check                              # shape, ranges, reference integrity, raw_refs, quarantine
 npm run check -- --freshness               # also fail when a feed has stopped arriving
 npm run check -- --out public/api/status.json
+npx tsx scripts/tls-expiry.ts --live       # certificate expiry and pin drift, as tls-expiry.yml runs it
 
 npm run publish:api                        # write public/api/latest.json from the committed tables
 npm run publish:api -- --dry-run           # build it and print a summary; touch no file
@@ -145,11 +148,55 @@ aged. A feed that has never produced a row is reported rather than failed, so a 
 not had its first run yet does not block the gate.
 
 The sources are unreachable from most sandboxes; ingestion runs in GitHub Actions
-(`daily.yml`, `backfill.yml`). Every backfill is resumable — it skips days already in the
-store — so a long history is filled by dispatching the same command until it reports no new
-rows.
+(`daily.yml` at 12:47 and 16:53 UTC, `backfill.yml` by dispatch). Every backfill is resumable —
+it skips days already in the store — so a long history is filled by dispatching the same command
+until it reports no new rows. The schedules sit on odd minutes because GitHub delays scheduled
+runs on busy ones; the first two runs for the old 12:15 and 16:30 slots started hours late.
 
-Weather and ENSO use their own `covariates.yml` workflow, scheduled daily at 17:00 UTC,
+Each ingest workflow runs as three jobs. `fetch` asks the sources and stages a batch (rows as
+JSON, raw responses as they will be archived) with no write token and no secret, and uploads it
+as an artifact. `apply` downloads it and runs `.github/scripts/apply-and-push.sh`, which resets
+to the branch tip, applies, regenerates `status.json` and `latest.json`, commits and pushes —
+retrying from a fresh tip if another run pushed first — and it is the only job in the `ingest`
+concurrency group, so a backfill's hours of fetching never queue anyone. A run that found nothing
+commits nothing: when only `generated_at` stamps changed, the attempt is discarded. `report`
+opens one issue per failure mode (`ingest-failure`, `model-failure`, `covariates-failure`,
+`backfill-failure`) and closes it when the same workflow next goes green. Every run writes a step
+summary: rows added and updated per source, requests sent per host (retries included), errors,
+and for the narrative the call's cost, latency and the spend to date, which `status.json` also
+carries. `freshness.yml` checks `main` a few hours after each daily slot and keeps one
+`stale-feed` issue for a feed that has stopped or a slot that never fired; `tls-expiry.yml`
+checks weekly for a certificate within 30 days of expiry or a pinned host whose certificate
+changed.
+
+**Replaying a batch.** A batch that failed to land is not lost: download the run's
+`ingest-batch-<run id>` artifact (`backfill-batch-…`, `covariates-batch-…` and `xm-batch-…` for
+the other workflows) and apply it by hand on an up-to-date checkout:
+
+```sh
+gh run download <run id> -n ingest-batch-<run id> -D /tmp/batch
+npm run ingest -- apply --in /tmp/batch     # upsert rows and raw responses into data/
+npm run check -- --freshness --out public/api/status.json
+npm run publish:api
+git add data public && git commit -m "Replay batch from run <run id>"
+```
+
+`apply` is an upsert, so replaying onto newer data is safe, and replaying twice changes nothing.
+A batch staged before the raw archive moved to day files applies too: its bundles are refiled
+and its rows' `raw_ref`s rewritten on the way in.
+
+**Partial failure.** Each source's errors stay its own: a pinned host whose certificate check
+fails, a 5xx that outlives its retries, or a 200 that parses to fewer rows than the endpoint's
+floor in `registry.ts` is recorded on the batch and fails the run at the end, while every other
+source is still asked and written. Retries back off with jitter, honour a 429's `Retry-After`,
+and stop at one deadline per request. Rows that fail their contract are written to
+`data/quarantine/<table>/<run>.csv` with the reason instead of stopping the write, and
+`npm run check` fails while any quarantine file exists: fix the parser, re-apply the batch, and
+delete the file. Raw responses are written before the tables, and every file through a temp file
+and a rename, so an interrupted run cannot leave a row pointing at a response that was never
+archived — `npm run check` verifies that every `raw_ref` resolves.
+
+Weather and ENSO use their own `covariates.yml` workflow, scheduled daily at 17:23 UTC,
 and the same staged apply/write queue as the existing ingestion. A manual dispatch with
 `from` fills ERA5 history; without `from` it refreshes 30 recent available days and the
 16-day forecast. ERA5 stops six days before today to allow for the publication delay.
@@ -175,7 +222,7 @@ account for publication lag and revisions before using ONI in historical backtes
 ```
 src/lib/parse/      one pure parser per endpoint: raw text in, typed rows out
 src/lib/sources/    fetch + archive + parse for each upstream system
-src/lib/store/      year-partitioned CSV upsert, gzipped NDJSON raw archive
+src/lib/store/      year-partitioned CSV upsert, the NDJSON raw archive, status and run summaries
 src/lib/contracts/  zod table schemas; a drifted response writes nothing
 src/lib/quality/    checks over what is on disk, which the row-by-row contracts cannot see
 src/lib/features/   series assembly, the fitted reservoir curve, the national balance with its
@@ -191,7 +238,8 @@ scripts/check.ts    the quality gates and the public status document
 scripts/forecast.ts the backtest and the published forecast
 scripts/adequacy.ts the adequacy backtest, adequacy.json and its report
 data/curated/       the tables, CSV, partitioned by year
-data/raw/           every response as fetched, one gzipped bundle per source-month-endpoint
+data/raw/           every response as fetched, NDJSON, one file per source-endpoint-day
+data/quarantine/    rows an ingest could not store, with the reason; empty unless something broke
 data/reference/     plants, thresholds, rationing episodes, adequacy assumptions, basins,
                     mrids, TLS pins
 data/reports/       backtest.md and adequacy.md, regenerated with their models
@@ -199,6 +247,21 @@ public/api/         latest.json, status.json, forecast.json and adequacy.json �
                     the site reads and the stable public URLs a third party can fetch
 tests/fixtures/     the Phase 0 responses the parsers are tested against
 ```
+
+`data/raw/` keeps every response verbatim, so a parser fix is a reprocessing job rather than a
+re-scrape. Files are plain NDJSON, one record per request, under monthly directories:
+`<source>/<YYYY>/<MM>/<endpoint>.<day>.ndjson`, where the day is the one the data belongs to (a
+backfill of 2018 files under 2018/), or the fetch day for live endpoints; the Información
+Operativa snapshot, taken twice a day, gets a file per run
+(`InformacionOperativa.2026-09-22T143642Z.ndjson`). A row's `raw_ref` is `<file>#<request key>`
+(two of them, space-separated, on XM exchange rows). Until 2026-09-23 the archive was one gzip
+bundle per source-month-endpoint, rewritten whole on every run; git cannot delta gzip output, so
+each run stored a new full copy of every bundle it touched. Uncompressed files written once let
+git's own compression and deltas do the work: replayed in both layouts, the six daily runs of
+2026-09-23 grew the pack by under 15 KiB each in the new one against 60–116 KiB in the old, and
+a shallow clone of the tip packs to 18.6 MB against 19.6 MB. The price is the checkout: 255 MB on disk against
+24 MB. `scripts/migrate-raw.ts` did the move; refs in the old `….ndjson.gz#key` form still
+resolve, to the day file that holds the record.
 
 `data/reference/` is committed input rather than output, and every row says how far it can be
 trusted. `thresholds.csv` is derived from `operating_bands.csv` and `mrids.csv`, so it needs no
@@ -248,8 +311,8 @@ No `rejectUnauthorized: false` anywhere by default. `generacioncsr.celec.gob.ec`
 valid certificate since 2026-09-17; `www.cenace.gob.ec` omits its intermediate, which is
 committed under `data/reference/tls/` and appended to the trust store; `smec.cenace.gob.ec`
 serves a self-signed certificate that expired in 2009 and only negotiates at `SECLEVEL=1`, so
-it is pinned by SHA-256 fingerprint in `data/reference/tls_pins.json` and a mismatch aborts
-the run.
+it is pinned by SHA-256 fingerprint in `data/reference/tls_pins.json` and a mismatch fails
+every SMEC request (the other sources carry on).
 
 ## Language
 
