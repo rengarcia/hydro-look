@@ -29,10 +29,10 @@ jobs:
       DUCKDB_VERSION: v1.1.3
     steps:
       - run: echo "BULK_DIR=$RUNNER_TEMP/bulk" >> "$GITHUB_ENV"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
