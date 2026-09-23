@@ -156,7 +156,7 @@ export function parseSmecInforme1(html: string, requestedDate: IsoDate): SmecRep
       pct_anio: null,
       ultimos365_kwh: null,
     };
-    (columns as ColumnKey[]).forEach((key, index) => {
+    (columns).forEach((key, index) => {
       row[key] = parseEsNumber(cells[index + 1] ?? "");
     });
     rows.push(row);

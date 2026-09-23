@@ -156,7 +156,7 @@ const WEEKDAYS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes
 /** `2026-09-21` -> `lunes`. Computed in UTC from the date's parts, so no clock or zone enters. */
 export function weekday(iso: string): string {
   const [y, m, d] = iso.slice(0, 10).split("-").map(Number);
-  return WEEKDAYS[new Date(Date.UTC(y!, m! - 1, d!)).getUTCDay()]!;
+  return WEEKDAYS[new Date(Date.UTC(y!, m! - 1, d)).getUTCDay()]!;
 }
 
 const MONTHS = [

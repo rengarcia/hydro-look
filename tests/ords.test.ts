@@ -86,8 +86,8 @@ describe("the one-day reports", () => {
     ["ords_hist_repDiaNivQIng_15-10-2024.txt", "2024-10-14", "amaluza", 23.395722, 23],
     ["ords_rep_repDiaNivQIng.txt", "2026-09-19", "mazar", 75.263828, 75],
   ])("dates %s to %s, where the 12-month report puts the same inflow", (fixture, date, site, value, rounded) => {
-    const result = parseRepDiaNivQIng(ords(fixture as string));
-    const row = find(result.observations, date as string, site as string, "caudal_m3s");
+    const result = parseRepDiaNivQIng(ords(fixture));
+    const row = find(result.observations, date, site, "caudal_m3s");
     expect(row?.value).toBe(value);
     expect(Math.round(row!.value)).toBe(rounded);
   });

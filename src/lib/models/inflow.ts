@@ -111,7 +111,7 @@ interface Earlier {
 }
 
 function earlierYears(inflow: DailySeries, origin: IsoDate): Earlier[] {
-  const first = inflow.keys().next().value as IsoDate | undefined;
+  const first = inflow.keys().next().value;
   if (first === undefined) return [];
   const out: Earlier[] = [];
   const monthDay = origin.slice(5);

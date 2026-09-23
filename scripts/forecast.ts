@@ -448,7 +448,7 @@ function rainExperiment(
       "MAE in metres, skill against persistence in brackets. Coverage of the calibrated p10–p90 band:",
       scoreTable(run.scores.slice(1), options.horizonDays, (h) => (h.coverageP10P90 === null ? "—" : `${(h.coverageP10P90 * 100).toFixed(1)}%`)),
       helps14
-        ? `**Perfect foresight helps at 14 days** (${candidate14!.maeM.toFixed(3)} m against ${shipped14!.maeM.toFixed(3)} m). The next step is ` +
+        ? `**Perfect foresight helps at 14 days** (${candidate14.maeM.toFixed(3)} m against ${shipped14.maeM.toFixed(3)} m). The next step is ` +
           "to replay Open-Meteo's previous-runs archive for the real forecast's skill before anything is published; nothing is wired until then."
         : `**Negative: even perfect foresight of the rain does not improve the 14-day level** (${candidate14?.maeM.toFixed(3) ?? "—"} m against ` +
           `${shipped14?.maeM.toFixed(3) ?? "—"} m${verdict.worseAt.length > 0 ? `; worse at ${verdict.worseAt.join(", ")} d` : ""}). Narrowing a pool of ` +

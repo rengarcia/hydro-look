@@ -42,7 +42,6 @@ import {
   NARRATIVE_MODEL,
   narrativeDocument,
   snapshotRow,
-  type NarrativeOutput,
   type SnapshotRef,
 } from "../src/lib/narrative/generate.ts";
 import { CuratedStore } from "../src/lib/store/curated.ts";
@@ -176,7 +175,7 @@ async function main(): Promise<void> {
   const row = snapshotRow({ generatedAt, result, payload, payloadHash: hash });
   const document =
     result.status === "ok" && result.output
-      ? withContract("narrative", narrativeDocument({ generatedAt, result: { ...result, output: result.output as NarrativeOutput }, payload, payloadHash: hash }))
+      ? withContract("narrative", narrativeDocument({ generatedAt, result: { ...result, output: result.output }, payload, payloadHash: hash }))
       : null;
 
   const stageDir = values.stage?.trim();

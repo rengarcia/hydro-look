@@ -208,7 +208,7 @@ async function main(): Promise<void> {
       if (runs("ords-levels")) {
         // One request per year returns 365 days ending the day before `fecha`.
         for (let year = yearOf(from); year <= yearOf(to) + 1; year++) {
-          const fecha = `${year}-09-20` as IsoDate;
+          const fecha = `${year}-09-20`;
           if (fecha > addDays(todayEc(), 1)) continue;
           if (!(await spend(() => ords.repDiaHid12m(batch, fecha)))) break;
           log(`ords-levels: ${fecha} (${batch.observations.length} observations so far)`);

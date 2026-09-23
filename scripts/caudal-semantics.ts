@@ -222,7 +222,7 @@ function ceiling(label: string, mrid: number | null, values: Map<IsoDate, number
 function main(): void {
   const all = observations();
   const pick = (site: SiteId, variable: string, source: string, mrid: number | "" = ""): Map<IsoDate, number> =>
-    all.get(`${site}|${variable}|${source}|${mrid}`) ?? new Map();
+    all.get(`${site}|${variable}|${source}|${mrid}`) ?? new Map<IsoDate, number>();
 
   const mazarCaudalMrid = HISTORIAN_SERIES.find((s) => s.site === "mazar" && s.variable === "caudal_m3s")?.mrid;
   if (!mazarCaudalMrid) throw new Error("the registry no longer carries a Mazar caudal mrid");

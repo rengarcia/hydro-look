@@ -171,7 +171,7 @@ export function buildForecast(inputs: ForecastInputs): ForecastOutput | null {
   const fit = fitAt(context, options, inputs.cache);
   if (!fit) return null;
 
-  const perHorizon = inputs.calibration.get(inputs.modelId) ?? new Map();
+  const perHorizon = inputs.calibration.get(inputs.modelId) ?? (new Map() as NonNullable<ReturnType<Calibration["get"]>>);
   const overrides = new Map((inputs.horizonSwitch?.overrides ?? []).map((o) => [o.horizonDays, o]));
 
   const horizons: HorizonOutput[] = [];

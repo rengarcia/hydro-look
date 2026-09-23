@@ -68,7 +68,7 @@ export const ERA5_ADEQUATE = {
 
 /** `date -> precip_mm` from the reanalysis rows only; forecast rows are a different product. */
 export function readEra5Precip(basin: string = PROVISIONAL_PRECIP_BASIN, root: string = DATA_CURATED): DailySeries {
-  return readEra5ByBasin(root).get(basin) ?? new Map();
+  return readEra5ByBasin(root).get(basin) ?? new Map<IsoDate, number>();
 }
 
 /** Every basin's ERA5 precipitation, one pass over the table. */

@@ -87,14 +87,16 @@ function textLines(html: string): string[] {
   $("script, style, noscript").remove();
   const lines: string[] = [];
   const walk = (node: AnyNode): void => {
+    // domhandler types `type` as an ElementType enum whose Text member is the string "text".
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
     if (node.type === "text") {
       const text = node.data.replace(/\s+/g, " ").trim();
       if (text) lines.push(text);
       return;
     }
-    if ("children" in node) for (const child of node.children) walk(child as AnyNode);
+    if ("children" in node) for (const child of node.children) walk(child);
   };
-  for (const node of $.root().children().toArray()) walk(node as AnyNode);
+  for (const node of $.root().children().toArray()) walk(node);
   return lines;
 }
 

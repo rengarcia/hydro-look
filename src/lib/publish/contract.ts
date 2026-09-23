@@ -245,7 +245,7 @@ function specifics(name: DocumentName, document: Json): Json {
   switch (name) {
     case "status": {
       const feeds = Array.isArray(document["feeds"])
-        ? document["feeds"].map((feed) => {
+        ? (document["feeds"] as unknown[]).map((feed) => {
             if (!isObject(feed)) return feed;
             const code = feedCode(String(feed["feed"] ?? feed["id"] ?? ""));
             return { id: code.id, label_es: code.label_es, ...feed };
@@ -259,7 +259,7 @@ function specifics(name: DocumentName, document: Json): Json {
         out["current"] = { ...withTierCodes(document["current"]), narrative_tier_field: NARRATIVE_TIER_FIELD };
       }
       if (Array.isArray(document["horizons"])) {
-        out["horizons"] = document["horizons"].map((h) => (isObject(h) ? withTierCodes(h) : h));
+        out["horizons"] = (document["horizons"] as unknown[]).map((h) => (isObject(h) ? withTierCodes(h) : h));
       }
       if (isObject(document["tiers"])) {
         out["tiers"] = { ...document["tiers"], codes: TIER_CODES };

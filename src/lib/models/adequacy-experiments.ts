@@ -69,7 +69,7 @@ export function bandExperiment(
     const requirement = coverage(run.backtest, "requirement");
     const hydro = coverage(run.backtest, "hydro");
     const nearer = (mine: { coverage: number | null }[], theirs: { coverage: number | null }[]) =>
-      mine.every((m, i) => m.coverage !== null && theirs[i]?.coverage !== null && Math.abs(m.coverage - 0.8) < Math.abs(theirs[i]!.coverage! - 0.8));
+      mine.every((m, i) => m.coverage !== null && theirs[i]?.coverage !== null && Math.abs(m.coverage - 0.8) < Math.abs(theirs[i]!.coverage - 0.8));
     return {
       name: run.name,
       shipped: run.band === DEFAULT_BAND,

@@ -333,13 +333,13 @@ export interface FreshnessRule {
 export function checkFreshness(rules: FreshnessRule[], today: string): Finding[] {
   return rules.map((rule) => {
     if (rule.latest === null) {
-      return { check: "freshness", level: "info" as Level, message: `${rule.label} has no rows yet` };
+      return { check: "freshness", level: "info", message: `${rule.label} has no rows yet` };
     }
     const age = Math.round((Date.parse(`${today}T00:00:00Z`) - Date.parse(`${rule.latest}T00:00:00Z`)) / 86_400_000);
     if (age > rule.maxAgeDays) {
-      return { check: "freshness", level: "fail" as Level, message: `${rule.label} is ${age} days old (limit ${rule.maxAgeDays}), latest ${rule.latest}` };
+      return { check: "freshness", level: "fail", message: `${rule.label} is ${age} days old (limit ${rule.maxAgeDays}), latest ${rule.latest}` };
     }
-    return { check: "freshness", level: "info" as Level, message: `${rule.label} is ${age} days old, latest ${rule.latest}` };
+    return { check: "freshness", level: "info", message: `${rule.label} is ${age} days old, latest ${rule.latest}` };
   });
 }
 

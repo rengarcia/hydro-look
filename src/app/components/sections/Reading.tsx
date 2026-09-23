@@ -65,7 +65,7 @@ export function Reading({
             página; el pronóstico y el nivel de riesgo son de los modelos estadísticos, que el texto describe y no
             produce. Un validador rechaza cualquier cota o fecha que no esté en esos números. Confianza declarada:{" "}
             {CONFIDENCE_ES[narrative.confidence] ?? narrative.confidence} · generado el {ecStamp(narrative.generated_at)}.
-            {stale ? ` Escrito sobre los datos del ${longDate(narrative.origin_date)}; el resto de la página ya muestra los del ${longDate(forecast!.origin_date)}.` : ""}{" "}
+            {stale ? ` Escrito sobre los datos del ${longDate(narrative.origin_date)}; el resto de la página ya muestra los del ${longDate(forecast.origin_date)}.` : ""}{" "}
             <a href="/api/narrative.json">Lo que recibió el modelo</a> ·{" "}
             <a href={`/dia/${narrative.origin_date}/`}>enlace permanente a este día</a>.
           </p>

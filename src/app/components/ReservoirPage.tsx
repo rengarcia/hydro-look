@@ -171,7 +171,7 @@ export function FloorsPanel({ reservoir }: { reservoir: ReservoirSnapshot }) {
           </>
         ) : (
           <>
-            El mínimo de {name} es {num(floors[0]!, 0)} m según {who(floors[0]!)}.
+            El mínimo de {name} es {num(floors[0], 0)} m según {who(floors[0]!)}.
           </>
         )}
       </p>

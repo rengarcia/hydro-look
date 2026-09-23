@@ -1118,12 +1118,13 @@ async function probeContains(
       try {
         const response = await get(url, { headers: { accept: "application/json" } }, layer.kind === "arcgis" ? DEADLINE_MS : OFFICIAL_DEADLINE_MS);
         const body = await response.text();
-        let json: {
+        type Answer = {
           features?: { attributes?: Record<string, unknown>; properties?: Record<string, unknown>; geometry?: GeoJsonGeometry | null }[];
           error?: { message?: string };
-        } | null = null;
+        };
+        let json: Answer | null = null;
         try {
-          json = response.ok ? JSON.parse(body) : null;
+          json = response.ok ? (JSON.parse(body) as Answer) : null;
         } catch {
           json = null;
         }

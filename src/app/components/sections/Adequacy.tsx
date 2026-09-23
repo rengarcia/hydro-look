@@ -109,7 +109,7 @@ export function Adequacy({ adequacy }: { adequacy: AdequacyDocument | null }) {
             </div>
             <div className="assumption">
               <span className="assumption-label">Importación</span>
-              <span className="assumption-value num">{num(cutoff ? regime!.central_import_gwh_day : a.import_gwh_day, 2)}</span>
+              <span className="assumption-value num">{num(cutoff ? regime.central_import_gwh_day : a.import_gwh_day, 2)}</span>
               <span className="assumption-note">GWh/día · {cutoff ? "lo que llega" : "máx. demostrado"}</span>
             </div>
             <div className="assumption">
@@ -135,7 +135,7 @@ export function Adequacy({ adequacy }: { adequacy: AdequacyDocument | null }) {
             <span className="eyebrow">El supuesto más frágil</span>
             <p className="fragile-claim">
               {cutoff
-                ? `Colombia envió ${num(regime!.trailing_gwh_day, 2)} GWh/día en los últimos ${regime!.window_days} días.`
+                ? `Colombia envió ${num(regime.trailing_gwh_day, 2)} GWh/día en los últimos ${regime.window_days} días.`
                 : `El caso central cuenta con ${num(a.import_gwh_day, 2)} GWh/día desde Colombia.`}{" "}
               {peak ? `En ${monthName(peak)} de ${peak.slice(0, 4)} llegó a ${num(a.import_gwh_day, 2)}.` : ""}
             </p>

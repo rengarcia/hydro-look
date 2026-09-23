@@ -418,7 +418,7 @@ export function parseCapabilities(xml: string): Capabilities {
   const open = new RegExp(`<(?:[\\w-]+:)?${tag}\\b[^>]*>`, "gi");
   const boundary = new RegExp(`<(?:[\\w-]+:)?${tag}\\b[^>]*>|</(?:[\\w-]+:)?${tag}>`, "i");
   for (const m of xml.matchAll(open)) {
-    const rest = xml.slice(m.index! + m[0].length);
+    const rest = xml.slice(m.index + m[0].length);
     const stop = boundary.exec(rest);
     const own = stop ? rest.slice(0, stop.index) : rest;
     const name = firstText(own, "Name");
@@ -481,8 +481,8 @@ export interface HarvestedService {
 export function harvestServiceUrls(html: string, pageUrl: string): HarvestedService[] {
   const out = new Map<string, HarvestedService>();
   const found: { raw: string; index: number }[] = [
-    ...[...html.matchAll(/href\s*=\s*["']([^"']+)["']/gi)].map((m) => ({ raw: m[1]!, index: m.index! })),
-    ...[...html.matchAll(/https?:\/\/[^\s"'<>()]+/gi)].map((m) => ({ raw: m[0], index: m.index! })),
+    ...[...html.matchAll(/href\s*=\s*["']([^"']+)["']/gi)].map((m) => ({ raw: m[1]!, index: m.index })),
+    ...[...html.matchAll(/https?:\/\/[^\s"'<>()]+/gi)].map((m) => ({ raw: m[0], index: m.index })),
   ];
   for (const { raw, index } of found) {
     let url: URL;
@@ -523,7 +523,7 @@ function contextAt(html: string, index: number, length: number): string {
   const headings = [...before.matchAll(/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]>/gi)];
   const heading = headings.length ? stripTags(headings[headings.length - 1]![1]!) : "";
   const starts = [...before.matchAll(/<(tr|li|p|div|h[1-6]|section|article|dt|dd)\b[^>]*>/gi)];
-  const blockStart = starts.length ? starts[starts.length - 1]!.index! : Math.max(0, before.length - 300);
+  const blockStart = starts.length ? starts[starts.length - 1]!.index : Math.max(0, before.length - 300);
   const after = html.slice(index + length, index + length + 2000);
   const end = /<\/(tr|li|p|div|h[1-6]|section|article|dt|dd)>/i.exec(after);
   const block = stripTags(before.slice(blockStart) + html.slice(index, index + length) + after.slice(0, end ? end.index : 300));

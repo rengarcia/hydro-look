@@ -48,7 +48,8 @@ export interface ArchiveRecord {
  * fetched (`null`, for live endpoints), or a file of its own (`"run"`, for a snapshot taken
  * several times a day, which would otherwise rewrite one file all day).
  */
-export type ArchiveSlot = string | null | "run";
+// `"run"` is one of the strings; it is spelt out in the comment, not the type, which would absorb it.
+export type ArchiveSlot = string | null;
 
 const LEGACY_SUFFIX = ".ndjson.gz";
 const SUFFIX = ".ndjson";

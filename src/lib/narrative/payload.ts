@@ -649,7 +649,7 @@ export function canonicalJson(value: unknown): string {
   return JSON.stringify(value, (_key, item: unknown) => {
     if (item === null || typeof item !== "object" || Array.isArray(item)) return item;
     const sorted: Record<string, unknown> = {};
-    for (const key of Object.keys(item as Record<string, unknown>).sort()) sorted[key] = (item as Record<string, unknown>)[key];
+    for (const key of Object.keys(item).sort()) sorted[key] = (item as Record<string, unknown>)[key];
     return sorted;
   });
 }

@@ -63,7 +63,7 @@ describe("xm parsers", () => {
   });
 
   it("refuses an hour published both ways, a repeated entity and a non-number", () => {
-    const hours = (values: (string | "")[]) =>
+    const hours = (values: string[]) =>
       Object.fromEntries(values.map((v, i) => [`Hour${String(i + 1).padStart(2, "0")}`, v]));
     const answer = (code: string, values: string[], repeat = 1) =>
       JSON.stringify({

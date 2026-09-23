@@ -67,7 +67,7 @@ function main(): void {
   const dryRun = values["dry-run"] ?? false;
 
   const adequacyPath = repoPath("public", "api", "adequacy.json");
-  const adequacy = existsSync(adequacyPath) ? JSON.parse(readFileSync(adequacyPath, "utf8")) : null;
+  const adequacy: unknown = existsSync(adequacyPath) ? JSON.parse(readFileSync(adequacyPath, "utf8")) : null;
 
   const document = buildLatest({
     series: loadSeries(),

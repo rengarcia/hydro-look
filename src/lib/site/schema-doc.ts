@@ -55,7 +55,7 @@ function resolve(schema: Schema, root: Schema): Schema {
   const ref = schema["$ref"];
   if (typeof ref !== "string") return schema;
   const name = ref.replace(/^#\/\$defs\//, "");
-  return ((root["$defs"] as Record<string, Schema> | undefined)?.[name] ?? schema) as Schema;
+  return ((root["$defs"] as Record<string, Schema> | undefined)?.[name] ?? schema);
 }
 
 /**

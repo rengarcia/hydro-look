@@ -451,7 +451,7 @@ export function parseProdLineaLast2h(body: string): LiveReading[] {
 
   const out: LiveReading[] = [];
   for (const rowsOfBlock of blocks.values()) {
-    const qRow = rowsOfBlock.find((r) => typeof r["magnitud"] === "string" && (r["magnitud"] as string).startsWith("Q "));
+    const qRow = rowsOfBlock.find((r) => typeof r["magnitud"] === "string" && (r["magnitud"]).startsWith("Q "));
     if (!qRow) continue; // a block with no flow row names no site; the dashboard shows nothing for it either
     const site = siteFromQLabel(requireString(qRow, "magnitud", endpoint));
     for (const row of rowsOfBlock) {

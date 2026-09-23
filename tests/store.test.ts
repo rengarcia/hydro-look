@@ -95,7 +95,7 @@ describe("operating bands", () => {
       { date: "2025-06-01", site: "mazar", cota_min: 2100, cota_max: 2153, qmax_m3s: 800, source: "ords:repDiaHid12m" },
       { date: "2026-01-01", site: "mazar", cota_min: 2098, cota_max: 2153, qmax_m3s: 800, source: "ords:repDiaHid12m" },
     ];
-    const folded = foldBands(readings) as Record<string, unknown>[];
+    const folded = foldBands(readings);
     expect(folded).toHaveLength(2);
     expect(folded[0]).toMatchObject({ cota_min: 2100, first_date: "2025-01-01", last_date: "2025-06-01" });
     expect(validateRows(OPERATING_BANDS, folded)).toHaveLength(2);
