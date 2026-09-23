@@ -1,0 +1,644 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-09-23T02:37:02Z",
+  "data_date": "2026-09-21",
+  "run_id": "2026-09-21-mazar-2-3eaa4e38",
+  "origin_date": "2026-09-21",
+  "site": "mazar",
+  "variable": "cota_masl",
+  "units": "metres above sea level",
+  "disclaimer": "No es una fuente oficial. Pronóstico estadístico generado a partir de datos públicos de CELEC y CENACE; no representa la posición de ninguna institución.",
+  "model": {
+    "id": "M3-water-balance",
+    "label": "Water balance with a fitted release rule and analogue inflow years",
+    "version": "2",
+    "features_hash": "3eaa4e3838164077",
+    "backtest_origins": 105,
+    "horizon_models": [
+      {
+        "horizon_days": 7,
+        "model_id": "M4-gbm-m3-residual"
+      },
+      {
+        "horizon_days": 14,
+        "model_id": "M3-water-balance"
+      },
+      {
+        "horizon_days": 30,
+        "model_id": "M3-water-balance"
+      },
+      {
+        "horizon_days": 60,
+        "model_id": "M3-water-balance"
+      },
+      {
+        "horizon_days": 90,
+        "model_id": "M3-water-balance"
+      }
+    ]
+  },
+  "horizon_switch": {
+    "horizon_days": 7,
+    "candidate_model": "M4-gbm-m3-residual",
+    "published_model": "M4-gbm-m3-residual",
+    "status": "published",
+    "reason": "M4-gbm-m3-residual beats M3-water-balance at 7 d under the ladder's rule (lower MAE, band no worse calibrated) in the committed M4 backtest, which covers exactly this run's ladder origins.",
+    "other_horizons_model": "M3-water-balance",
+    "scenarios_and_days_to_threshold_model": "M3-water-balance",
+    "snapshot": {
+      "path": "data/reports/m4-backtest.json",
+      "generated_at": "2026-09-22T19:56:51Z",
+      "origins": 105,
+      "command": "npm run backtest:m4"
+    }
+  },
+  "current": {
+    "level_masl": 2138.37,
+    "observed_on": "2026-09-21",
+    "sources": [
+      "ords:repDiaHid12m",
+      "ords:repDiaNivQIng"
+    ],
+    "storage_above_lowest_threshold_hm3": 121.89,
+    "surface_area_km2": 5.056,
+    "slope_7d_m_per_day": -0.2129,
+    "slope_14d_m_per_day": -0.47,
+    "slope_30d_m_per_day": -0.3313,
+    "release_stance_m3s": 19.42
+  },
+  "thresholds": [
+    {
+      "name": "critical (plan)",
+      "level_masl": 2115,
+      "source": "PLAN.md section 7",
+      "status": "unverified",
+      "note": "No upstream source publishes this level; it is this project's own critical marker.",
+      "metres_above": 23.37
+    },
+    {
+      "name": "declared minimum (report endpoint)",
+      "level_masl": 2100,
+      "source": "ords:repDiaHid12m",
+      "status": "published",
+      "note": "Observed 2014-09-20 → 2026-09-20.",
+      "metres_above": 38.37
+    },
+    {
+      "name": "declared minimum (dashboard chart title)",
+      "level_masl": 2098,
+      "source": "celec dashboard bundle",
+      "status": "published",
+      "note": "Observed 2026-09-21 → 2026-09-21.",
+      "metres_above": 40.37
+    }
+  ],
+  "forecast": [
+    {
+      "horizon_days": 7,
+      "target_date": "2026-09-28",
+      "p10": 2131.86,
+      "p50": 2135.31,
+      "p90": 2137.99,
+      "ensemble": {
+        "p10": 2131.8,
+        "p90": 2144.64,
+        "n": 16,
+        "years": [
+          2010,
+          2011,
+          2012,
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ]
+      },
+      "median_backtest_residual_m": -0.25,
+      "model": "M4-gbm-m3-residual",
+      "band_source": "M4-gbm-m3-residual out-of-sample residuals at 7 d over 105 origins of `npm run backtest:m4` (data/reports/m4-backtest.json, 2026-09-22T19:56:51Z): median + the 10th and 90th percentile of actual − forecast, clamped to contain the median",
+      "backtest_skill": {
+        "source": "data/reports/m4-backtest.json",
+        "snapshot_generated_at": "2026-09-22T19:56:51Z",
+        "origins": 105,
+        "n": 105,
+        "mae_m": 2.034,
+        "skill_vs_persistence": 0.1122,
+        "coverage_p10_p90": 0.7634,
+        "reference_model": "M3-water-balance",
+        "reference_mae_m": 2.292,
+        "reference_coverage_p10_p90": 0.7419,
+        "paired_mae_difference_m": -0.258,
+        "paired_90_interval_m": [
+          -0.453,
+          -0.068
+        ]
+      },
+      "own_quantiles": {
+        "p10": 2131.91,
+        "p90": 2138.68,
+        "note": "The model's own quantile regressions before widening; they cover too little to publish."
+      },
+      "m3_anchor_p50": 2135.12,
+      "ensemble_note": "This row's `ensemble` is M3-water-balance's analogue inflow years, which this model corrects; it is not this row's band.",
+      "would_have_published": {
+        "model": "M3-water-balance",
+        "p10": 2130.9,
+        "p50": 2135.2,
+        "p90": 2137.55,
+        "median_backtest_residual_m": 0.13
+      }
+    },
+    {
+      "horizon_days": 14,
+      "target_date": "2026-10-05",
+      "p10": 2123.11,
+      "p50": 2130.95,
+      "p90": 2134.25,
+      "ensemble": {
+        "p10": 2125.64,
+        "p90": 2144.9,
+        "n": 16,
+        "years": [
+          2010,
+          2011,
+          2012,
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ]
+      },
+      "median_backtest_residual_m": -0.19,
+      "model": "M3-water-balance",
+      "band_source": "M3-water-balance out-of-sample residuals at 14 d, this run's ladder backtest"
+    },
+    {
+      "horizon_days": 30,
+      "target_date": "2026-10-21",
+      "p10": 2120.44,
+      "p50": 2133.28,
+      "p90": 2137.96,
+      "ensemble": {
+        "p10": 2119.08,
+        "p90": 2146.98,
+        "n": 15,
+        "years": [
+          2011,
+          2012,
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ]
+      },
+      "median_backtest_residual_m": 0.19,
+      "model": "M3-water-balance",
+      "band_source": "M3-water-balance out-of-sample residuals at 30 d, this run's ladder backtest"
+    },
+    {
+      "horizon_days": 60,
+      "target_date": "2026-11-20",
+      "p10": 2109.39,
+      "p50": 2127.54,
+      "p90": 2132.77,
+      "ensemble": {
+        "p10": 2115.45,
+        "p90": 2150.17,
+        "n": 15,
+        "years": [
+          2011,
+          2012,
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ]
+      },
+      "median_backtest_residual_m": 0,
+      "model": "M3-water-balance",
+      "band_source": "M3-water-balance out-of-sample residuals at 60 d, this run's ladder backtest"
+    },
+    {
+      "horizon_days": 90,
+      "target_date": "2026-12-20",
+      "p10": 2106.39,
+      "p50": 2126.47,
+      "p90": 2132.85,
+      "ensemble": {
+        "p10": 2116.61,
+        "p90": 2152.56,
+        "n": 14,
+        "years": [
+          2011,
+          2012,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ]
+      },
+      "median_backtest_residual_m": 0.16,
+      "model": "M3-water-balance",
+      "band_source": "M3-water-balance out-of-sample residuals at 90 d, this run's ladder backtest"
+    }
+  ],
+  "days_to_threshold": {
+    "horizon_days": 365,
+    "note": "Each scenario is one real analogue year of inflow — the driest, median and wettest of the years on record for this calendar window — run through the same release rule.",
+    "thresholds": [
+      {
+        "threshold": "critical (plan)",
+        "level_masl": 2115,
+        "source": "PLAN.md section 7",
+        "status": "unverified",
+        "note": "No upstream source publishes this level; it is this project's own critical marker.",
+        "across_all_analogue_years": {
+          "analogue_years": 14,
+          "years_that_cross": 5,
+          "p10_days": 42,
+          "p50_days": null,
+          "p90_days": null
+        },
+        "scenarios": [
+          {
+            "scenario": "dry",
+            "analogYear": 2022,
+            "inflowMeanM3s": 63.71,
+            "inflowTotalHm3": 2009.1,
+            "crossesOn": "2027-01-05",
+            "days": 106,
+            "minimumLevelMasl": 2114.09
+          },
+          {
+            "scenario": "median",
+            "analogYear": 2019,
+            "inflowMeanM3s": 90.18,
+            "inflowTotalHm3": 2843.9,
+            "crossesOn": null,
+            "days": null,
+            "minimumLevelMasl": 2131.13
+          },
+          {
+            "scenario": "wet",
+            "analogYear": 2011,
+            "inflowMeanM3s": 103.37,
+            "inflowTotalHm3": 3259.9,
+            "crossesOn": null,
+            "days": null,
+            "minimumLevelMasl": 2137.35
+          }
+        ]
+      },
+      {
+        "threshold": "declared minimum (report endpoint)",
+        "level_masl": 2100,
+        "source": "ords:repDiaHid12m",
+        "status": "published",
+        "note": "Observed 2014-09-20 → 2026-09-20.",
+        "across_all_analogue_years": {
+          "analogue_years": 14,
+          "years_that_cross": 0,
+          "p10_days": null,
+          "p50_days": null,
+          "p90_days": null
+        },
+        "scenarios": [
+          {
+            "scenario": "dry",
+            "analogYear": 2022,
+            "inflowMeanM3s": 63.71,
+            "inflowTotalHm3": 2009.1,
+            "crossesOn": null,
+            "days": null,
+            "minimumLevelMasl": 2114.09
+          },
+          {
+            "scenario": "median",
+            "analogYear": 2019,
+            "inflowMeanM3s": 90.18,
+            "inflowTotalHm3": 2843.9,
+            "crossesOn": null,
+            "days": null,
+            "minimumLevelMasl": 2131.13
+          },
+          {
+            "scenario": "wet",
+            "analogYear": 2011,
+            "inflowMeanM3s": 103.37,
+            "inflowTotalHm3": 3259.9,
+            "crossesOn": null,
+            "days": null,
+            "minimumLevelMasl": 2137.35
+          }
+        ]
+      },
+      {
+        "threshold": "declared minimum (dashboard chart title)",
+        "level_masl": 2098,
+        "source": "celec dashboard bundle",
+        "status": "published",
+        "note": "Observed 2026-09-21 → 2026-09-21.",
+        "across_all_analogue_years": {
+          "analogue_years": 14,
+          "years_that_cross": 0,
+          "p10_days": null,
+          "p50_days": null,
+          "p90_days": null
+        },
+        "scenarios": [
+          {
+            "scenario": "dry",
+            "analogYear": 2022,
+            "inflowMeanM3s": 63.71,
+            "inflowTotalHm3": 2009.1,
+            "crossesOn": null,
+            "days": null,
+            "minimumLevelMasl": 2114.09
+          },
+          {
+            "scenario": "median",
+            "analogYear": 2019,
+            "inflowMeanM3s": 90.18,
+            "inflowTotalHm3": 2843.9,
+            "crossesOn": null,
+            "days": null,
+            "minimumLevelMasl": 2131.13
+          },
+          {
+            "scenario": "wet",
+            "analogYear": 2011,
+            "inflowMeanM3s": 103.37,
+            "inflowTotalHm3": 3259.9,
+            "crossesOn": null,
+            "days": null,
+            "minimumLevelMasl": 2137.35
+          }
+        ]
+      }
+    ]
+  },
+  "reservoir": {
+    "crest_masl": 2155.83,
+    "crest_basis": "highest level in the record; the declared maximum is operational, not physical",
+    "area_elevation": {
+      "form": "A(level) = coefficient * (level - datum)^exponent, m2",
+      "coefficient": 48.458321,
+      "exponent": 2.5,
+      "datum_m": 2036.66,
+      "fit_rmse_level_m": 0.689341,
+      "fit_days": 1997
+    },
+    "turbine_m3s_per_mw": 0.670779,
+    "release_rule_m3s": [
+      {
+        "level_masl": 2110,
+        "release_m3s": 10.46
+      },
+      {
+        "level_masl": 2112.5,
+        "release_m3s": 15.06
+      },
+      {
+        "level_masl": 2115,
+        "release_m3s": 29.8
+      },
+      {
+        "level_masl": 2117.5,
+        "release_m3s": 27.85
+      },
+      {
+        "level_masl": 2120,
+        "release_m3s": 36.21
+      },
+      {
+        "level_masl": 2122.5,
+        "release_m3s": 34.97
+      },
+      {
+        "level_masl": 2125,
+        "release_m3s": 35.72
+      },
+      {
+        "level_masl": 2127.5,
+        "release_m3s": 47.09
+      },
+      {
+        "level_masl": 2130,
+        "release_m3s": 55.68
+      },
+      {
+        "level_masl": 2132.5,
+        "release_m3s": 61.9
+      },
+      {
+        "level_masl": 2135,
+        "release_m3s": 69.41
+      },
+      {
+        "level_masl": 2137.5,
+        "release_m3s": 53.23
+      },
+      {
+        "level_masl": 2140,
+        "release_m3s": 53.59
+      },
+      {
+        "level_masl": 2142.5,
+        "release_m3s": 54.21
+      },
+      {
+        "level_masl": 2145,
+        "release_m3s": 57.96
+      },
+      {
+        "level_masl": 2147.5,
+        "release_m3s": 60.01
+      },
+      {
+        "level_masl": 2150,
+        "release_m3s": 60.79
+      },
+      {
+        "level_masl": 2152.5,
+        "release_m3s": 85.25
+      },
+      {
+        "level_masl": 2155,
+        "release_m3s": 223.17
+      }
+    ],
+    "release_rule_days": 4298
+  },
+  "backtest": {
+    "report": "data/reports/backtest.md",
+    "horizons": [
+      {
+        "horizon_days": 7,
+        "model": "M4-gbm-m3-residual",
+        "n": 105,
+        "mae_m": 2.034,
+        "skill_vs_persistence": 0.1122,
+        "coverage_p10_p90": 0.7634,
+        "ensemble_coverage_p10_p90": 0.619
+      },
+      {
+        "horizon_days": 14,
+        "model": "M3-water-balance",
+        "n": 105,
+        "mae_m": 3.616,
+        "skill_vs_persistence": -0.0122,
+        "coverage_p10_p90": 0.7742,
+        "ensemble_coverage_p10_p90": 0.6
+      },
+      {
+        "horizon_days": 30,
+        "model": "M3-water-balance",
+        "n": 104,
+        "mae_m": 5.851,
+        "skill_vs_persistence": 0.001,
+        "coverage_p10_p90": 0.8043,
+        "ensemble_coverage_p10_p90": 0.5096
+      },
+      {
+        "horizon_days": 60,
+        "model": "M3-water-balance",
+        "n": 103,
+        "mae_m": 7.253,
+        "skill_vs_persistence": 0.2445,
+        "coverage_p10_p90": 0.7363,
+        "ensemble_coverage_p10_p90": 0.534
+      },
+      {
+        "horizon_days": 90,
+        "model": "M3-water-balance",
+        "n": 102,
+        "mae_m": 7.305,
+        "skill_vs_persistence": 0.3482,
+        "coverage_p10_p90": 0.7222,
+        "ensemble_coverage_p10_p90": 0.5294
+      }
+    ]
+  },
+  "crisis_check": {
+    "threshold_masl": 2115,
+    "threshold_source": "PLAN.md section 7; no upstream source publishes it",
+    "origins_considered": 105,
+    "false_alarms_p50": 1,
+    "episodes": [
+      {
+        "crossed_on": "2024-04-11",
+        "p50_called_from": null,
+        "p50_lead_time_days": null,
+        "p10_called_from": null,
+        "p10_lead_time_days": null
+      },
+      {
+        "crossed_on": "2024-10-08",
+        "p50_called_from": null,
+        "p50_lead_time_days": null,
+        "p10_called_from": "2024-10-01",
+        "p10_lead_time_days": 7
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "code_url": "https://github.com/rengarcia/hydro-look/blob/main/LICENSE",
+    "data": "Copies of public data. Each upstream source keeps its own terms, listed in `attribution`; credit them, and this project, when you republish.",
+    "data_es": "Copias de datos públicos. Cada fuente conserva sus propios términos, listados en `attribution`; cítelas, y a este proyecto, al republicar."
+  },
+  "attribution": [
+    {
+      "id": "celec",
+      "name": "CELEC EP",
+      "provides": "reservoir levels, inflows, declared bands and per-plant energy",
+      "url": "https://www.celec.gob.ec/",
+      "terms": "public web services of a state company; no licence is stated",
+      "terms_es": "servicios web públicos de una empresa del Estado; no declaran licencia"
+    },
+    {
+      "id": "cenace",
+      "name": "CENACE",
+      "provides": "the national energy balance and live operating data",
+      "url": "https://www.cenace.gob.ec/",
+      "terms": "public web services of the system operator; no licence is stated",
+      "terms_es": "servicios web públicos del operador del sistema; no declaran licencia"
+    },
+    {
+      "id": "xm",
+      "name": "XM S.A. E.S.P.",
+      "provides": "Colombian storage and cross-border exchanges",
+      "url": "https://www.xm.com.co/",
+      "terms": "public data portal of the Colombian market operator",
+      "terms_es": "portal de datos públicos del operador del mercado colombiano"
+    },
+    {
+      "id": "open_meteo",
+      "name": "Open-Meteo (ERA5 and forecast models)",
+      "provides": "precipitation and temperature at the basin centroids",
+      "url": "https://open-meteo.com/",
+      "terms": "CC BY 4.0 (https://open-meteo.com/en/terms); the free API is for non-commercial use",
+      "terms_es": "CC BY 4.0 (https://open-meteo.com/en/terms); la API gratuita es para uso no comercial"
+    },
+    {
+      "id": "noaa",
+      "name": "NOAA PSL / CPC",
+      "provides": "the Oceanic Niño Index",
+      "url": "https://psl.noaa.gov/data/correlation/oni.data",
+      "terms": "US government work, public domain",
+      "terms_es": "obra del Gobierno de EE. UU., dominio público"
+    }
+  ],
+  "see_also": {
+    "latest": "https://hydro-look.vercel.app/api/latest.json",
+    "status": "https://hydro-look.vercel.app/api/status.json",
+    "adequacy": "https://hydro-look.vercel.app/api/adequacy.json",
+    "narrative": "https://hydro-look.vercel.app/api/narrative.json",
+    "schema": "https://hydro-look.vercel.app/api/schema/forecast.schema.json",
+    "documentation": "https://hydro-look.vercel.app/datos/"
+  }
+}

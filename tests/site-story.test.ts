@@ -17,7 +17,93 @@ import {
   skillTone,
   weekday,
   wholeYears,
+  changeWord,
+  criticalThreshold,
+  heroHeadline,
+  narrativeTierNote,
+  scenarioOf,
+  splitLead,
 } from "../src/lib/site/story.ts";
+
+describe("heroHeadline", () => {
+  it("rounds the hydro share to whole kWh out of a hundred and says it in one sentence", () => {
+    const h = heroHeadline(78.81);
+    expect(h.text).toBe("El agua encendió 79 de cada 100 kWh del país.");
+    expect(h.emphasis).toBe("79 de cada 100");
+  });
+
+  it("falls back to the site's own line when there is no closed day", () => {
+    expect(heroHeadline(null).share).toBeNull();
+    expect(heroHeadline(undefined).text).toBe("El sistema hidroeléctrico del Ecuador, día a día.");
+  });
+});
+
+describe("changeWord", () => {
+  it("says a change with its sign and unit, at the precision it is published", () => {
+    expect(changeWord(-0.77, 2, "m")).toBe("−0,77 m");
+    expect(changeWord(8.907, 1, "GWh")).toBe("+8,9 GWh");
+  });
+
+  it("says a change that rounds to nothing as no change, not as a signed zero", () => {
+    expect(changeWord(0.004, 2, "m")).toBe("sin cambio");
+    expect(changeWord(-0.004, 2, "m")).toBe("sin cambio");
+  });
+
+  it("has nothing to say without a yesterday", () => {
+    expect(changeWord(null, 2, "m")).toBeNull();
+  });
+});
+
+describe("splitLead", () => {
+  const long =
+    "La cota de Mazar desciende y su caudal de entrada está por debajo de lo habitual, en el percentil 29 de su historia para esta época del año, con 2.138,37 m, después de una semana en la que bajó a razón de veintiún centímetros por día. " +
+    "El pronóstico a 90 días la lleva a 2.126,47 m.";
+
+  it("splits after the first sentence, never at a number's thousands point", () => {
+    const [lead, rest] = splitLead(long);
+    expect(lead.endsWith("por día.")).toBe(true);
+    expect(rest).toBe("El pronóstico a 90 días la lleva a 2.126,47 m.");
+  });
+
+  it("leaves a short paragraph whole", () => {
+    expect(splitLead("Una frase. Otra.")).toEqual(["Una frase. Otra.", ""]);
+  });
+});
+
+describe("narrativeTierNote", () => {
+  const adequacy = { origin_date: "2026-09-21", current: { worst_tier_horizon_days: 60 }, horizons: [{ horizon_days: 7 }] };
+
+  it("names the worst tier and its horizon, which is what the text is given", () => {
+    expect(narrativeTierNote({ origin_date: "2026-09-21" }, adequacy)).toBe("el peor de los horizontes, a 60 días");
+  });
+
+  it("says the first horizon when the document names that field instead", () => {
+    const first = { ...adequacy, current: { ...adequacy.current, narrative_tier_field: "tier" } };
+    expect(narrativeTierNote({ origin_date: "2026-09-21" }, first)).toBe("a 7 días");
+  });
+
+  it("says nothing when the text is about another day than the adequacy run", () => {
+    expect(narrativeTierNote({ origin_date: "2026-09-20" }, adequacy)).toBeNull();
+    expect(narrativeTierNote({ origin_date: "2026-09-21" }, null)).toBeNull();
+  });
+});
+
+describe("criticalThreshold and scenarios", () => {
+  it("reads the scenarios against this project's unverified marker first", () => {
+    const thresholds = [
+      { status: "published", level_masl: 2100 },
+      { status: "unverified", level_masl: 2115 },
+    ];
+    expect(criticalThreshold(thresholds)?.level_masl).toBe(2115);
+    expect(criticalThreshold([thresholds[0]!])?.level_masl).toBe(2100);
+    expect(criticalThreshold([])).toBeUndefined();
+  });
+
+  it("names the analogue years in Spanish and keeps an unknown one as it came", () => {
+    expect(scenarioOf("dry")).toEqual({ name: "Seco", tone: "tight" });
+    expect(scenarioOf("other").name).toBe("other");
+  });
+});
 
 describe("adequacyHeadline", () => {
   it("says the first horizon's answer, then the worst one's when it is worse", () => {
