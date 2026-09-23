@@ -128,6 +128,16 @@ credentials, runs no ingestion and queries nothing. A number changes on the site
 changes in this repository, and not otherwise. `out/` is servable by anything static, so
 `npx serve out` is a faithful preview.
 
+There are two pages. `/` answers the day's questions in order — the mix, the day's reading, the
+eight reservoirs on one scale, Mazar's forecast with its skill beside each horizon, inflow, the
+national balance, adequacy, feed freshness and the method notes — and `/embalses/mazar/` carries
+Mazar's full record, its analogue years, the 2024 crisis check and its two declared floors. The
+look ("Páramo": Instrument Serif, Geist and Geist Mono over a teal-and-terracotta palette, light
+and dark from the reader's system setting) follows the design canvas the redesign was drawn on.
+Every headline on the page is a rule over the day's numbers in `src/lib/site/story.ts`, so a
+sentence cannot outlive the number it describes; charts that would be unreadable on a phone are
+drawn a second time at phone size and CSS shows one.
+
 `npm run check` runs in CI on every push and again after every ingest. The split is deliberate:
 shape and range checks are a function of the files alone, so they hold for as long as the commit
 does, while freshness is a function of the clock and would turn every pull request red as the data

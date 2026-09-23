@@ -6,8 +6,9 @@
  * a stacked area is readable: a stack sorted by size repaints itself whenever the mix changes,
  * which is exactly when a reader is trying to follow one band across the change.
  *
- * Three of the light-mode series sit below 3:1 against the surface, so this chart always ships
- * with a legend naming every band and the same numbers as a table beneath it. Colour is never
+ * Water is teal and every fuel is a terracotta, so the chart reads as water against fuel before
+ * any single band is picked out. The terracottas are close to one another by design, which is
+ * why the chart always ships beside a list naming every band with its number: colour is never
  * the only thing carrying identity here.
  *
  * Days SMEC never published are holes: the stack is drawn in runs of consecutive days, so a
@@ -15,25 +16,44 @@
  */
 
 import { bandPath, stack, stackMax, type Point } from "../../lib/chart/scale.ts";
-import { Plot, frameOf, spacedLabels } from "./Plot.tsx";
-import { num, shortDate } from "../../lib/site/format.ts";
+import { Plot, frameOf, monthLabels } from "./Plot.tsx";
+import { num } from "../../lib/site/format.ts";
 import { daysBetween } from "../../lib/util/dates.ts";
 import type { MixDay } from "../../lib/site/data.ts";
 
-const HEIGHT = 260;
-
-/** Series slot per concept, by position. Fixed: a concept never changes colour. */
+/** Colour per concept, in stacking order. Fixed: a concept never changes colour. */
 export const MIX_SERIES: { concept: string; token: string }[] = [
-  { concept: "generacion_hidraulica", token: "var(--series-1)" },
-  { concept: "generacion_turbinas_gas", token: "var(--series-2)" },
-  { concept: "generacion_motores_bunker", token: "var(--series-3)" },
-  { concept: "generacion_vapor_bunker", token: "var(--series-4)" },
-  { concept: "generacion_turbinas_diesel", token: "var(--series-5)" },
-  { concept: "generacion_otros_tipos", token: "var(--series-6)" },
-  { concept: "total_importacion", token: "var(--series-7)" },
+  { concept: "generacion_hidraulica", token: "var(--water)" },
+  { concept: "generacion_turbinas_gas", token: "var(--t1)" },
+  { concept: "generacion_motores_bunker", token: "var(--t2)" },
+  { concept: "generacion_vapor_bunker", token: "var(--t3)" },
+  { concept: "generacion_turbinas_diesel", token: "var(--t4)" },
+  { concept: "generacion_otros_tipos", token: "var(--sage)" },
+  { concept: "total_importacion", token: "var(--import)" },
 ];
 
-export function MixChart({ days, label }: { days: MixDay[]; label: string }) {
+export function mixToken(concept: string): string {
+  return MIX_SERIES.find((s) => s.concept === concept)?.token ?? "var(--muted)";
+}
+
+export function MixChart({
+  days,
+  label,
+  width = 540,
+  height = 250,
+  compact = false,
+}: {
+  days: MixDay[];
+  label: string;
+  width?: number;
+  height?: number;
+  /** The phone drawing: a narrower box, so the same type renders larger. */
+  compact?: boolean;
+}) {
+  if (compact) {
+    width = 360;
+    height = 260;
+  }
   if (days.length < 2) return null;
 
   const first = days[0]!.date;
@@ -44,7 +64,14 @@ export function MixChart({ days, label }: { days: MixDay[]; label: string }) {
 
   const keys = MIX_SERIES.map((s) => s.concept);
   const bands = stack(days.map((d) => d.values), keys);
-  const frame = frameOf({ height: HEIGHT, xDomain: [0, span], yDomain: [0, stackMax(bands) * 1.05] });
+  const frame = frameOf({
+    width,
+    height,
+    margin: compact ? { top: 12, right: 8, bottom: 34, left: 44 } : { top: 12, right: 10, bottom: 30, left: 40 },
+    xDomain: [0, span],
+    yDomain: [0, stackMax(bands) * 1.05],
+    yTickCount: 2,
+  });
 
   // Indices of `days` that are consecutive in the calendar, as runs. Each run is drawn as its
   // own closed band so a break in the record is a break in the area.
@@ -60,12 +87,12 @@ export function MixChart({ days, label }: { days: MixDay[]; label: string }) {
 
   return (
     <Plot
-      height={HEIGHT}
       frame={frame}
-      xLabels={spacedLabels(days.map((d) => d.date), 6, shortDate, at)}
+      xLabels={monthLabels(first, last, compact ? 3 : 2, at)}
+      fontSize={compact ? 14 : 10.5}
       yFormat={(v) => num(v, 0)}
       title={label}
-      desc={`Generación diaria por tipo e importación, en GWh, entre ${first} y ${last}.`}
+      desc={`Generación diaria por tipo e importación, en GWh, entre el ${first} y el ${last}.`}
     >
       {MIX_SERIES.map((series, slot) => {
         const band = bands[slot]!;
@@ -86,10 +113,10 @@ export function MixChart({ days, label }: { days: MixDay[]; label: string }) {
                   key={`${from}-${to}`}
                   d={bandPath(upper, lower)}
                   fill={series.token}
-                  /* A hairline in the surface colour is the 2px spacer between stacked fills,
-                     drawn on the band itself so it costs no extra element per day. */
+                  /* A hairline in the surface colour is the spacer between stacked fills, drawn
+                     on the band itself so it costs no extra element per day. */
                   stroke="var(--surface)"
-                  strokeWidth={0.75}
+                  strokeWidth={0.6}
                 />
               );
             })}

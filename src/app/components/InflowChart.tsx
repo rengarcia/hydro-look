@@ -2,9 +2,9 @@
  * A year of inflow against what this river normally does on the same days.
  *
  * The ribbon is the p10–p90 of every year on record within a week either side of each calendar
- * day; the dashed line through it is the median. Both are drawn in neutral ink rather than a
- * series colour, because they are a reference range and not a second thing being compared —
- * spending a categorical hue on them would say otherwise.
+ * day; the dashed line through it is the median. Both are drawn in pale, recessive ink rather
+ * than the reading's colour, because they are a reference range and not a second thing being
+ * compared.
  *
  * The x axis is days, not readings. That distinction is the whole point on this data: laying
  * the readings out evenly would close every hole in the record without saying so, and the
@@ -13,22 +13,32 @@
  */
 
 import { bandPath, linePath, type Point } from "../../lib/chart/scale.ts";
-import { Plot, frameOf, spacedLabels } from "./Plot.tsx";
-import { num, shortDate } from "../../lib/site/format.ts";
+import { Plot, frameOf, monthLabels, round } from "./Plot.tsx";
+import { num } from "../../lib/site/format.ts";
 import { daysBetween } from "../../lib/util/dates.ts";
 import type { RibbonPoint, SeriesPoint } from "../../lib/site/data.ts";
-
-const HEIGHT = 240;
 
 export function InflowChart({
   readings,
   ribbon,
   label,
+  width = 540,
+  height = 270,
+  compact = false,
 }: {
   readings: SeriesPoint[];
   ribbon: RibbonPoint[];
   label: string;
+  width?: number;
+  height?: number;
+  /** The phone drawing: a narrower box, so the same type renders larger. */
+  compact?: boolean;
 }) {
+  if (compact) {
+    width = 360;
+    height = 280;
+  }
+  const font = compact ? 14 : 10.5;
   if (readings.length < 2) return null;
 
   const first = readings[0]!.date;
@@ -41,29 +51,44 @@ export function InflowChart({
   for (const r of readings) top = Math.max(top, r.value);
   for (const r of ribbon) top = Math.max(top, r.band.p90);
 
-  const frame = frameOf({ height: HEIGHT, xDomain: [0, span], yDomain: [0, top * 1.05] });
+  const frame = frameOf({
+    width,
+    height,
+    margin: compact ? { top: 12, right: 8, bottom: 34, left: 44 } : { top: 12, right: 10, bottom: 30, left: 40 },
+    xDomain: [0, span],
+    yDomain: [0, top * 1.05],
+  });
 
   const onChart = ribbon.filter((r) => r.date >= first && r.date <= last);
   const upper: Point[] = onChart.map((r) => ({ x: frame.x(at(r.date)), y: frame.y(r.band.p90) }));
   const lower: Point[] = onChart.map((r) => ({ x: frame.x(at(r.date)), y: frame.y(r.band.p10) }));
   const median: Point[] = onChart.map((r) => ({ x: frame.x(at(r.date)), y: frame.y(r.band.p50) }));
+  const newest = readings.at(-1)!;
 
   return (
     <Plot
-      height={HEIGHT}
       frame={frame}
-      xLabels={spacedLabels(readings.map((r) => r.date), 6, shortDate, at)}
+      xLabels={monthLabels(first, last, compact ? 4 : 3, at)}
+      fontSize={font}
       yFormat={(v) => num(v, 0)}
       title={label}
-      desc={`Caudal diario entre ${first} y ${last}, sobre la franja p10–p90 de los mismos días del año en todos los años disponibles.`}
+      desc={`Caudal diario entre el ${first} y el ${last}, sobre la franja p10–p90 de los mismos días del año en todos los años disponibles.`}
     >
-      {upper.length > 1 ? <path d={bandPath(upper, lower)} fill="var(--axis)" fillOpacity={0.28} /> : null}
+      {upper.length > 1 ? <path d={bandPath(upper, lower)} fill="var(--water-3)" opacity={0.8} /> : null}
       {median.length > 1 ? (
-        <path d={linePath(median)} fill="none" stroke="var(--muted)" strokeWidth={1.5} strokeDasharray="4 4" />
+        <path d={linePath(median)} fill="none" stroke="var(--muted)" strokeWidth={1.3} strokeDasharray="4 4" />
       ) : null}
       {segments(readings, at, frame).map((d, i) => (
-        <path key={i} d={d} fill="none" stroke="var(--series-1)" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+        <path key={i} d={d} fill="none" stroke="var(--water)" strokeWidth={1.8} strokeLinejoin="round" strokeLinecap="round" />
       ))}
+      <circle
+        cx={round(frame.x(at(newest.date)))}
+        cy={round(frame.y(newest.value))}
+        r={4.5}
+        fill="var(--water)"
+        stroke="var(--surface)"
+        strokeWidth={2}
+      />
     </Plot>
   );
 }
