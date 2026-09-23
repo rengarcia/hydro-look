@@ -10,7 +10,7 @@
  */
 
 import { Gauge } from "./Gauge.tsx";
-import { num, pct, signed } from "../../lib/site/format.ts";
+import { basinLabel, declarationLabel, num, pct, signed } from "../../lib/site/format.ts";
 import type { ReservoirSnapshot } from "../../lib/publish/latest.ts";
 
 export function ReservoirCard({ reservoir }: { reservoir: ReservoirSnapshot }) {
@@ -36,7 +36,7 @@ export function ReservoirCard({ reservoir }: { reservoir: ReservoirSnapshot }) {
   // of the axis end tells the reader nothing.
   const marks = [...new Map(bands.map((band) => [band.min_masl, band])).values()]
     .filter((band) => band.min_masl !== min)
-    .map((band) => ({ level: band.min_masl, label: `Mínimo declarado ${num(band.min_masl, 0)} m (${band.declaration})` }));
+    .map((band) => ({ level: band.min_masl, label: `Mínimo declarado ${num(band.min_masl, 0)} m (${declarationLabel(band.declaration)})` }));
 
   const climatology = inflow?.climatology ?? null;
 
@@ -44,7 +44,7 @@ export function ReservoirCard({ reservoir }: { reservoir: ReservoirSnapshot }) {
     <article className="card">
       <h3>
         {reservoir.label}
-        <span className="basin">cuenca {reservoir.basin}</span>
+        <span className="basin">{basinLabel(reservoir.basin)}</span>
       </h3>
 
       <p className="figure" style={{ margin: "4px 0 0" }}>

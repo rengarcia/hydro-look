@@ -166,7 +166,13 @@ export async function generateNarrative(payload: NarrativePayload, options: Gene
             outputTokens: error.usage?.outputTokens ?? null,
             costUsd: null,
           },
-          reasons: [`schema: ${describe(error)}`],
+          // The raw answer is the only way to tell a truncated reply from fenced JSON or prose,
+          // and the row is the only place it survives the run.
+          reasons: [
+            `schema: ${describe(error)}`,
+            `finish: ${error.finishReason ?? "unknown"}`,
+            `raw: ${(error.text ?? "").slice(0, 2_000)}`,
+          ],
         };
       }
       return { status: "failed", modelId, output: null, usage: NO_USAGE, reasons: [describe(error)] };

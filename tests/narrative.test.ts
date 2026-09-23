@@ -364,7 +364,7 @@ describe("generateNarrative, against a mock model", () => {
       cost_usd: 0.0213,
       drivers_json: JSON.stringify(goodAnswer.drivers),
     });
-    expect(row.run_id).toMatch(/^2026-09-21-narrative-es-1-[0-9a-f]{8}-124005$/);
+    expect(row.run_id).toMatch(new RegExp(`^2026-09-21-narrative-${PROMPT_VERSION}-[0-9a-f]{8}-124005$`));
   });
 
   it("tolerates a gateway that reports no cost", async () => {
@@ -391,6 +391,8 @@ describe("generateNarrative, against a mock model", () => {
     const result = await generateNarrative(payload, { model: answering({ ...goodAnswer, confidence: "certain" }) });
     expect(result.status).toBe("rejected");
     expect(result.reasons[0]).toMatch(/^schema:/);
+    expect(result.reasons).toContain("finish: stop");
+    expect(result.reasons.find((r) => r.startsWith("raw: "))).toContain('"certain"');
   });
 
   const rateLimited = () =>

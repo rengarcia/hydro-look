@@ -13,11 +13,12 @@
 
 import { canonicalJson, type NarrativePayload } from "./payload.ts";
 
-export const PROMPT_VERSION = "es-1";
+export const PROMPT_VERSION = "es-2";
 
 export const INSTRUCTIONS = [
   "You write the short outlook paragraph for a public, unofficial website about Ecuador's hydroelectric reservoirs.",
-  "Write in Spanish as used in Ecuador. Plain prose, no markdown, no headings, no lists inside the text.",
+  "Write in Spanish as used in Ecuador: outlook_es and every entry of drivers are Spanish; only the confidence",
+  "value stays in English. Plain prose, no markdown, no headings, no lists inside the text.",
   "",
   "You interpret numbers that were computed in code. You never forecast.",
   "- Every number and every date you write must appear in the payload. Copy it as written there;",
@@ -39,6 +40,9 @@ export const INSTRUCTIONS = [
   "- drivers: 3 to 5 short sentences, one per factor, each grounded in a named field of the payload.",
   "- confidence: low, medium or high. It is how well the indicators agree with each other and with the",
   "  forecast's own measured skill (`skill_vs_persistence`, `coverage_p10_p90`), not how sure you feel.",
+  "",
+  "Answer with one JSON object and nothing else: no code fences, no text before or after it, exactly these keys:",
+  '{"outlook_es": "...", "drivers": ["...", "..."], "confidence": "low" | "medium" | "high"}',
 ].join("\n");
 
 export function buildPrompt(payload: NarrativePayload): string {
