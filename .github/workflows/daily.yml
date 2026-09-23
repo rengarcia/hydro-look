@@ -1,20 +1,31 @@
 name: Daily ingest
 
 # Two runs a day, both after the source has published:
-#  - 12:15 UTC (07:15 in Ecuador) for the CELEC ORDS, once the local midnight point exists;
-#  - 16:30 UTC (11:30 local) for SMEC, which closes the previous day around 11:15 local.
-# Each run also re-reads the trailing year and six months from the 12m reports, so a gap
-# left by a failed run repairs itself without a manual backfill.
+#  - 12:47 UTC (07:47 in Ecuador) for the CELEC ORDS, once the local midnight point exists;
+#  - 16:53 UTC (11:53 local) for SMEC, which closes the previous day around 11:15 local.
+# Odd minutes on purpose. GitHub delays scheduled runs on busy minutes, and :15 and :30 are busy
+# minutes: the first two scheduled runs, for the old 12:15 and 16:30 slots, started at 16:58 and
+# 19:47. freshness.yml notices a slot that does not fire at all.
+# Each run also re-reads the trailing year and six months from the 12m reports, and the last
+# three days of the per-day reports, so a gap left by a failed run repairs itself without a
+# manual backfill.
+#
+# Three jobs. `fetch` talks to the sources and stages a batch, holding no write token and no
+# secret; the batch is uploaded as an artifact before anything tries to apply it, so a run that
+# fails to push loses nothing (see the README for replaying one by hand). `apply` merges the batch
+# onto the branch tip, models and narrates, and is the only job that can push — and the only one
+# in the `ingest` concurrency group, since only the write needs serialising. `report` opens or
+# closes the tracking issues.
 on:
   schedule:
-    - cron: "15 12 * * *"
-    - cron: "30 16 * * *"
+    - cron: "47 12 * * *"
+    - cron: "53 16 * * *"
   workflow_dispatch:
     inputs:
       days:
-        description: "How many recent days to re-read (default 1)"
+        description: "How many recent days to re-read (default 3)"
         required: false
-        default: "1"
+        default: "3"
       dry_run:
         description: "Parse and validate without writing"
         type: boolean
@@ -23,104 +34,192 @@ on:
 
 permissions: {}
 
-concurrency:
-  group: ingest
-  cancel-in-progress: false
-
 jobs:
-  ingest:
+  fetch:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
-      contents: write
-      issues: write
+      contents: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "22"
           cache: npm
-      - run: npm ci
+      - run: npm ci --ignore-scripts
 
       # Fetch and stage only: nothing under data/ is touched, so the write can be replayed
-      # onto whatever the branch holds once the network work is done.
+      # onto whatever the branch holds once the network work is done. Every response is archived
+      # in the batch, including non-200 bodies.
       - name: Ingest
-        id: ingest
         env:
-          DAYS: ${{ inputs.days || '1' }}
+          DAYS: ${{ inputs.days || '3' }}
           DRY_RUN: ${{ inputs.dry_run && '--dry-run' || '' }}
         run: npm run ingest -- daily --days "$DAYS" --out "$RUNNER_TEMP/batch" $DRY_RUN 2>&1 | tee "$RUNNER_TEMP/ingest.log"
 
-      - name: Apply and commit
+      - name: Upload staged batch
         if: always() && !inputs.dry_run
-        run: bash .github/scripts/apply-and-push.sh "Daily ingest $(date -u +%Y-%m-%d) (run ${{ github.run_id }})"
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ingest-batch-${{ github.run_id }}
+          path: ${{ runner.temp }}/batch
+          if-no-files-found: ignore
+          retention-days: 14
+          overwrite: true
+
+      - name: Upload fetch log
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ingest-log-${{ github.run_id }}
+          path: ${{ runner.temp }}/ingest.log
+          retention-days: 14
+          overwrite: true
+
+  apply:
+    needs: fetch
+    if: ${{ !cancelled() && !inputs.dry_run }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # One writer at a time, and a queued writer waits rather than replacing the one writing.
+    # Only this job is in the group: fetching needs no serialising, so a backfill that spends
+    # hours fetching no longer holds the group and no longer makes a daily run wait (or, as the
+    # second pending run in the group, get cancelled) behind it.
+    concurrency:
+      group: ingest
+      cancel-in-progress: false
+    permissions:
+      contents: write
+    outputs:
+      models: ${{ steps.models.outcome }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+          cache: npm
+      # This job holds the push token and the gateway key, so no dependency's install script runs.
+      - run: npm ci --ignore-scripts
+
+      - name: Download staged batch
+        # A fetch job that staged nothing uploaded nothing; apply-and-push.sh says so and exits 0.
+        continue-on-error: true
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ingest-batch-${{ github.run_id }}
+          path: ${{ runner.temp }}/batch
+
+      - name: Apply and commit
         env:
           BRANCH: ${{ github.ref_name }}
           BATCH_DIR: ${{ runner.temp }}/batch
+          SUMMARY: ${{ runner.temp }}/summary.md
+          RUN_ID: ${{ github.run_id }}
+        run: bash .github/scripts/apply-and-push.sh "Daily ingest $(date -u +%Y-%m-%d) (run $RUN_ID)"
 
       # Runs after the apply, so both models stand on the day that has just landed rather than
       # on yesterday's. They read the committed tables and touch no network, so a failure here
       # is a modelling failure and never a source outage — and `continue-on-error` keeps it
-      # from burying an ingest that has already succeeded and pushed.
+      # from burying an ingest that has already succeeded and pushed. `report` gives a failure
+      # here its own issue.
       - name: Model and commit
         id: models
-        if: always() && !inputs.dry_run
+        if: ${{ !cancelled() }}
         continue-on-error: true
-        run: bash .github/scripts/model-and-push.sh "Models $(date -u +%Y-%m-%d) (run ${{ github.run_id }})"
         env:
           BRANCH: ${{ github.ref_name }}
           LOG: ${{ runner.temp }}/forecast.log
+          RUN_ID: ${{ github.run_id }}
+        run: bash .github/scripts/model-and-push.sh "Models $(date -u +%Y-%m-%d) (run $RUN_ID)"
 
       # Phase 6b, last: one model-written paragraph over the numbers the step above just pushed.
       # Only after a green ingest and a green model step — a narrative over yesterday's forecast
       # would be the one thing on the page describing the wrong day. It makes the run's only paid
       # call (Vercel AI Gateway), which is why it is `continue-on-error` and why the key is the
       # only secret this workflow reads: without it the command logs one line and writes nothing,
-      # and a rerun on unchanged data is a no-op by payload hash. See narrative-and-push.sh.
+      # and a rerun on unchanged data is a no-op by payload hash. The step summary carries the
+      # call's cost and latency and the spend to date. See narrative-and-push.sh.
       - name: Narrative and commit
-        if: steps.models.outcome == 'success' && !inputs.dry_run
+        if: steps.models.outcome == 'success'
         continue-on-error: true
-        run: bash .github/scripts/narrative-and-push.sh "Narrative $(date -u +%Y-%m-%d) (run ${{ github.run_id }})"
         env:
           BRANCH: ${{ github.ref_name }}
           STAGE_DIR: ${{ runner.temp }}/narrative
           LOG: ${{ runner.temp }}/narrative.log
+          RUN_ID: ${{ github.run_id }}
           AI_GATEWAY_API_KEY: ${{ secrets.AI_GATEWAY_API_KEY }}
+        run: bash .github/scripts/narrative-and-push.sh "Narrative $(date -u +%Y-%m-%d) (run $RUN_ID)"
 
-      - name: Upload run log
+      - name: Upload run logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: ingest-log-${{ github.run_id }}
+          name: apply-log-${{ github.run_id }}
           path: |
-            ${{ runner.temp }}/ingest.log
             ${{ runner.temp }}/forecast.log
             ${{ runner.temp }}/narrative.log
+          if-no-files-found: ignore
           retention-days: 14
+          overwrite: true
 
-      # A source that changes shape must be loud: the run fails, the raw response is already
-      # archived, and the issue carries the log so the parser can be fixed from it.
-      - name: Open an issue on failure
-        if: failure() && github.event_name == 'schedule'
-        uses: actions/github-script@v7
+  # A source that changes shape must be loud: the run fails, the raw response is already
+  # archived, and the issue points at the run so the parser can be fixed from its artifacts. One
+  # issue per failure mode, commented on while it lasts and closed by the next green run.
+  report:
+    needs: [fetch, apply]
+    if: ${{ always() && !inputs.dry_run }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/scripts
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+        env:
+          FETCH: ${{ needs.fetch.result }}
+          APPLY: ${{ needs.apply.result }}
+          MODELS: ${{ needs.apply.outputs.models }}
+          SCHEDULED: ${{ github.event_name == 'schedule' }}
         with:
           script: |
-            const title = `Daily ingest failed (${new Date().toISOString().slice(0, 10)})`;
-            const body = [
-              `Run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
-              '',
-              'The raw responses are archived under `data/raw/`, so a parser fix can be tested',
-              'against them without re-fetching. See the `ingest-log` artifact for the errors.',
-            ].join('\n');
-            const existing = await github.rest.issues.listForRepo({
-              owner: context.repo.owner, repo: context.repo.repo, state: 'open', labels: 'ingest-failure',
-            });
-            if (existing.data.length > 0) {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner, repo: context.repo.repo, issue_number: existing.data[0].number, body,
-              });
-            } else {
-              await github.rest.issues.create({
-                owner: context.repo.owner, repo: context.repo.repo, title, body, labels: ['ingest-failure'],
-              });
+            const issues = require('./.github/scripts/issues.cjs');
+            const { FETCH, APPLY, MODELS, SCHEDULED } = process.env;
+            const today = new Date().toISOString().slice(0, 10);
+            const gh = { github, context };
+
+            if (FETCH === 'failure' || APPLY === 'failure') {
+              // Manual runs are watched by whoever dispatched them; only a scheduled failure files.
+              if (SCHEDULED === 'true') {
+                await issues.report(gh, {
+                  label: 'ingest-failure',
+                  title: `Daily ingest failed (${today})`,
+                  body: [
+                    `Daily ingest failed: fetch ${FETCH}, apply ${APPLY}.`,
+                    '',
+                    'The staged batch is in the run\'s `ingest-batch-*` artifact and every raw response,',
+                    'non-200 bodies included, is archived in it, so a parser fix can be tested and the',
+                    'batch replayed without re-fetching (README, "Replaying a batch").',
+                  ].join('\n'),
+                });
+              }
+            } else if (FETCH === 'success' && APPLY === 'success') {
+              await issues.resolve(gh, { label: 'ingest-failure' });
+            }
+
+            if (MODELS === 'failure') {
+              if (SCHEDULED === 'true') {
+                await issues.report(gh, {
+                  label: 'model-failure',
+                  title: `Model step failed (${today})`,
+                  body: 'The forecast or adequacy step failed after a successful ingest; the previously committed documents are still published. See the run\'s `apply-log-*` artifact (forecast.log).',
+                });
+              }
+            } else if (MODELS === 'success') {
+              await issues.resolve(gh, { label: 'model-failure' });
             }

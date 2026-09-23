@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # Sourced, not run: the reset-regenerate-commit-push loop shared by the steps that write
 # documents derived from what is already committed.
 #

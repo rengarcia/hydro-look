@@ -38,12 +38,14 @@ jobs:
     # leaves the answers it had; the ceiling is here to stop a hung request costing an hour.
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "22"
           cache: npm
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - name: Probe
         # Through the environment, not interpolated into the script, so an input is data and never shell.
         env:
@@ -54,7 +56,7 @@ jobs:
         run: cat "$RUNNER_TEMP/probe/probe-basins.md" >> "$GITHUB_STEP_SUMMARY" || true
       - name: Upload result
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: probe-basins-${{ github.run_id }}
           path: |
@@ -70,12 +72,13 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "22"
           cache: npm
-      - run: npm ci
+      # This job holds the push token, so no dependency's install script runs.
+      - run: npm ci --ignore-scripts
       - name: Delineate
         run: npm run catchments 2>&1 | tee "$RUNNER_TEMP/catchments.log"
       - name: Summarise
@@ -86,12 +89,13 @@ jobs:
         if: always()
         env:
           BRANCH: ${{ github.ref_name }}
+          RUN_ID: ${{ github.run_id }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/reference/catchments.geojson data/reports/catchments.md data/reports/catchments.json data/raw/inamhi 2>/dev/null || true
           if git diff --cached --quiet; then echo "Nothing to commit."; exit 0; fi
-          git commit -m "Catchments from the Copernicus DEM (run ${{ github.run_id }})"
+          git commit -m "Catchments from the Copernicus DEM (run $RUN_ID)"
           for attempt in 1 2 3 4; do
             git pull --rebase origin "$BRANCH" && git push origin "HEAD:$BRANCH" && exit 0
             sleep $((attempt * 5))

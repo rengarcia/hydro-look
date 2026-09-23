@@ -24,8 +24,21 @@ STAGE_DIR="${STAGE_DIR:?STAGE_DIR required}"
 LOG="${LOG:-/dev/null}"
 LABEL="Narrative"
 
-# shellcheck source=push-loop.sh
+# shellcheck source=SCRIPTDIR/push-loop.sh
 source "$(dirname "$0")/push-loop.sh"
+
+# The step summary gets the call's cost and latency and the spend to date, whichever way the
+# script ends. Latency is the wall clock around the one gateway call; the snapshot table records
+# tokens and cost but not time.
+STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+LATENCY_MS=""
+# shellcheck disable=SC2317  # invoked by the EXIT trap
+summarise() {
+  if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+    npx tsx scripts/narrative-summary.ts --since "$STARTED_AT" ${LATENCY_MS:+--latency-ms "$LATENCY_MS"} >> "$GITHUB_STEP_SUMMARY" || true
+  fi
+}
+trap summarise EXIT
 
 # Stand on the tip the models just pushed, so the payload is built from today's documents and
 # the no-op check sees every snapshot already committed.
@@ -34,8 +47,10 @@ git reset --hard "origin/$BRANCH"
 
 rm -rf "$STAGE_DIR"
 set +e
+CALL_START_MS=$(date +%s%3N)
 npm run narrative -- --stage "$STAGE_DIR" 2>&1 | tee -a "$LOG"
 NARRATIVE_STATUS=${PIPESTATUS[0]}
+LATENCY_MS=$(( $(date +%s%3N) - CALL_START_MS ))
 set -e
 
 if [ ! -f "$STAGE_DIR/snapshot.json" ]; then
@@ -43,6 +58,7 @@ if [ ! -f "$STAGE_DIR/snapshot.json" ]; then
   exit "$NARRATIVE_STATUS"
 fi
 
+# shellcheck disable=SC2317  # invoked by push_with_retry
 apply_staged() {
   npm run narrative -- apply --in "$STAGE_DIR" 2>&1 | tee -a "$LOG"
 }

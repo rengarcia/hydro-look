@@ -1,0 +1,32 @@
+# Keeps the SHA-pinned actions and the npm dependencies current, one grouped pull request per
+# ecosystem a week, so pinning by SHA does not turn into pinning forever. CI runs on each.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "Actions"
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    # Minor and patch updates arrive as two grouped pull requests, runtime and tooling; a major
+    # version (zod 4, undici 8, TypeScript 7) gets its own, since ENHANCEMENTS.md §6.1 orders them.
+    groups:
+      runtime:
+        dependency-type: production
+        update-types: ["minor", "patch"]
+      tooling:
+        dependency-type: development
+        update-types: ["minor", "patch"]
+    commit-message:
+      prefix: "npm"
+    open-pull-requests-limit: 5

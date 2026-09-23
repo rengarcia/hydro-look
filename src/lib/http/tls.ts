@@ -64,12 +64,21 @@ export interface ExpiryFinding {
   message: string;
 }
 
+/** One certificate's expiry against today: `warn` inside `warnDays`, `fail` once expired. */
+export function judgeExpiry(subject: string, notAfter: string, today: string, warnDays = 30): ExpiryFinding {
+  const day = notAfter.slice(0, 10);
+  const daysLeft = Math.floor((Date.parse(`${day}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000);
+  const level = daysLeft < 0 ? "fail" : daysLeft <= warnDays ? "warn" : "ok";
+  const when = daysLeft < 0 ? `expired ${-daysLeft} days ago` : `expires in ${daysLeft} days`;
+  return { subject, not_after: day, days_left: daysLeft, level, message: `${subject} ${when} (${day})` };
+}
+
 /**
  * What expires when, from what is committed: each pin's recorded `not_after` and every
  * certificate in the committed intermediate bundles. Nothing read the ORDS leaf's 2027-04-03
  * before this, so the first sign of its expiry would have been a failed run.
  *
- * `warn` inside `warnDays`, `fail` once expired. A pin without `not_after` is skipped: SMEC's
+ * A pin without `not_after` is skipped: SMEC's
  * certificate expired in 2009 and is trusted by fingerprint alone, which is the point of it.
  */
 export function expiryFindings(
@@ -79,12 +88,7 @@ export function expiryFindings(
   warnDays = 30,
 ): ExpiryFinding[] {
   const findings: ExpiryFinding[] = [];
-  const judge = (subject: string, notAfter: string): void => {
-    const daysLeft = Math.floor((Date.parse(`${notAfter.slice(0, 10)}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000);
-    const level = daysLeft < 0 ? "fail" : daysLeft <= warnDays ? "warn" : "ok";
-    const when = daysLeft < 0 ? `expired ${-daysLeft} days ago` : `expires in ${daysLeft} days`;
-    findings.push({ subject, not_after: notAfter.slice(0, 10), days_left: daysLeft, level, message: `${subject} ${when} (${notAfter.slice(0, 10)})` });
-  };
+  const judge = (subject: string, notAfter: string): void => void findings.push(judgeExpiry(subject, notAfter, today, warnDays));
   for (const [host, pin] of Object.entries(pins.hosts)) {
     if (pin.not_after) judge(`pinned leaf for ${host}`, pin.not_after);
   }

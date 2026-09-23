@@ -1,7 +1,8 @@
 name: Phase 0 reconnaissance
 
 # One-off discovery run: captures raw responses from every candidate data
-# source into tests/fixtures/ and commits them with a report. Manual only.
+# source into tests/fixtures/ and commits them with a report. Manual only: it is on the default
+# branch, so a dispatch names the ref to run and no push trigger is needed.
 on:
   workflow_dispatch:
     inputs:
@@ -9,15 +10,6 @@ on:
         description: "Comma-separated sections (tls,ords_matrix,ords,ords_catalog,ords_reports,ords_new_mrids,ords_history,celec_web,smec,operativa,covariates,mirrors,open_data,xm); empty = all"
         required: false
         default: ""
-  # workflow_dispatch is only registered once the file reaches the default
-  # branch; until then, a push of the recon tooling on this branch runs it.
-  # Commits made by the workflow itself (GITHUB_TOKEN) never retrigger it.
-  push:
-    branches: ["claude/quirky-knuth-u2y8s2"]
-    paths:
-      - ".github/workflows/recon.yml"
-      - "scripts/recon/capture.py"
-      - "scripts/recon/requirements.txt"
 
 permissions: {}
 
@@ -32,9 +24,9 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.12"
 
@@ -47,7 +39,7 @@ jobs:
 
       - name: Upload full capture (including large bundles) as artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: recon-capture-${{ github.run_id }}
           path: ${{ runner.temp }}/recon-capture
@@ -56,6 +48,11 @@ jobs:
 
       - name: Commit fixtures and report
         if: always()
+        # Through the environment, not interpolated into the script, so a ref name is data and
+        # never shell.
+        env:
+          BRANCH: ${{ github.ref_name }}
+          RUN_ID: ${{ github.run_id }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -63,8 +60,8 @@ jobs:
           if git diff --cached --quiet; then
             echo "No fixture changes."
           else
-            git commit -m "Phase 0: capture reconnaissance fixtures and report (run ${{ github.run_id }})"
+            git commit -m "Phase 0: capture reconnaissance fixtures and report (run $RUN_ID)"
             # re-runs check out an older commit; rebase onto the branch tip before pushing
-            git pull --rebase origin "${{ github.ref_name }}"
-            git push origin "HEAD:${{ github.ref_name }}"
+            git pull --rebase origin "$BRANCH"
+            git push origin "HEAD:$BRANCH"
           fi

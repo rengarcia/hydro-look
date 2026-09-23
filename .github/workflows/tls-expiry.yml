@@ -1,0 +1,58 @@
+name: TLS expiry
+
+# Weekly: what in the TLS setup expires within 30 days, and whether any pinned host now serves a
+# different certificate. Reads tls_pins.json's `not_after` (the ORDS leaf expires 2027-04-03) and
+# the committed CENACE intermediate, then handshakes with each pinned host. Anything flagged
+# opens or updates one `tls-expiry` issue; a clean week closes it. See scripts/tls-expiry.ts.
+on:
+  schedule:
+    - cron: "37 10 * * 1"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  tls:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci --ignore-scripts
+
+      - name: Check certificates and pins
+        id: check
+        shell: bash
+        run: |
+          set +e
+          npx tsx scripts/tls-expiry.ts --live --out "$RUNNER_TEMP/tls.md"
+          echo "status=$?" >> "$GITHUB_OUTPUT"
+          cat "$RUNNER_TEMP/tls.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: File or close the tls-expiry issue
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+        env:
+          CHECK_STATUS: ${{ steps.check.outputs.status }}
+        with:
+          script: |
+            const fs = require('fs');
+            const issues = require('./.github/scripts/issues.cjs');
+            const gh = { github, context };
+            const report = fs.readFileSync(`${process.env.RUNNER_TEMP}/tls.md`, 'utf8');
+            if (process.env.CHECK_STATUS !== '0') {
+              await issues.report(gh, {
+                label: 'tls-expiry',
+                title: 'A certificate expires soon or a pin changed',
+                body: `${report}\nRe-capture a changed pin into data/reference/tls_pins.json only after confirming the change is legitimate.`,
+              });
+            } else {
+              await issues.resolve(gh, { label: 'tls-expiry', body: 'Nothing expires within 30 days and every pin matches.' });
+            }
