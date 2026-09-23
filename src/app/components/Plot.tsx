@@ -1,21 +1,19 @@
 /**
- * The frame every time-series chart on this page shares: margins, gridlines, axis labels.
+ * The frame every time-series chart on the site shares: margins, gridlines, axis labels.
  *
  * Charts are inline SVG rendered on the server. No client JavaScript ships, so the interaction
  * a reader gets is the browser's own: `<title>` inside a shape is a native tooltip, and every
- * chart is followed by the same numbers as a table. That is a deliberate trade — a crosshair
- * would be nicer, and it is not worth a hydration pass on a page whose numbers change once a
- * day.
+ * chart sits beside the same numbers in words or a list. That is a deliberate trade — a
+ * crosshair would be nicer, and it is not worth a hydration pass on a page whose numbers change
+ * once a day.
  *
- * The grid is recessive by construction: hairlines in `--grid`, labels in `--muted`, and no
- * frame around the plot. The data is the only thing drawn in a strong colour.
+ * The grid is recessive by construction: hairlines in `--line`, labels in `--muted` monospace,
+ * and no frame around the plot. The data is the only thing drawn in a strong colour.
  */
 
 import type { ReactNode } from "react";
 import { linearScale, niceTicks, type Scale } from "../../lib/chart/scale.ts";
-
-/** The SVG user-space box every chart is laid out in; CSS scales it to the container width. */
-export const WIDTH = 720;
+import { addDays, daysBetween } from "../../lib/util/dates.ts";
 
 export interface Margin {
   top: number;
@@ -24,9 +22,10 @@ export interface Margin {
   left: number;
 }
 
-export const MARGIN: Margin = { top: 8, right: 12, bottom: 24, left: 46 };
-
 export interface PlotFrame {
+  width: number;
+  height: number;
+  margin: Margin;
   x: Scale;
   y: Scale;
   yTicks: number[];
@@ -35,19 +34,25 @@ export interface PlotFrame {
 }
 
 export function frameOf(options: {
+  width: number;
   height: number;
+  margin: Margin;
   xDomain: [number, number];
   yDomain: [number, number];
   yTickCount?: number;
-  margin?: Margin;
+  /** Explicit tick values, when the nice ones land somewhere the chart does not want them. */
+  yTicks?: number[];
 }): PlotFrame {
-  const margin = options.margin ?? MARGIN;
-  const innerWidth = WIDTH - margin.left - margin.right;
-  const innerHeight = options.height - margin.top - margin.bottom;
+  const { width, height, margin } = options;
+  const innerWidth = width - margin.left - margin.right;
+  const innerHeight = height - margin.top - margin.bottom;
   return {
+    width,
+    height,
+    margin,
     x: linearScale(options.xDomain, [margin.left, margin.left + innerWidth]),
     y: linearScale(options.yDomain, [margin.top + innerHeight, margin.top]),
-    yTicks: niceTicks(options.yDomain[0], options.yDomain[1], options.yTickCount ?? 4),
+    yTicks: options.yTicks ?? niceTicks(options.yDomain[0], options.yDomain[1], options.yTickCount ?? 4),
     innerWidth,
     innerHeight,
   };
@@ -59,55 +64,52 @@ export interface XLabel {
 }
 
 /**
- * Gridlines, the y axis and a handful of x labels, with the chart's own marks drawn on top.
+ * Gridlines, the y labels and a handful of x labels, with the chart's own marks drawn on top.
  *
  * `title` and `desc` are the accessible description: a screen reader is given the chart's
  * subject and its range in words, because an SVG full of paths says nothing on its own.
  */
 export function Plot({
-  height,
   frame,
   xLabels,
   yFormat,
   title,
   desc,
-  margin = MARGIN,
+  fontSize = 11,
   children,
 }: {
-  height: number;
   frame: PlotFrame;
   xLabels: XLabel[];
   yFormat: (value: number) => string;
   title: string;
   desc?: string;
-  margin?: Margin;
+  fontSize?: number;
   children: ReactNode;
 }) {
-  const baseline = margin.top + frame.innerHeight;
+  const { width, height, margin } = frame;
   return (
-    <svg viewBox={`0 0 ${WIDTH} ${height}`} role="img" aria-label={title}>
+    <svg className="chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label={title}>
       <title>{title}</title>
       {desc ? <desc>{desc}</desc> : null}
 
-      <g aria-hidden="true">
+      <g aria-hidden="true" fontFamily="var(--mono)" fontSize={fontSize} fill="var(--muted)">
         {frame.yTicks.map((tick) => (
           <g key={tick}>
             <line
               x1={margin.left}
               x2={margin.left + frame.innerWidth}
-              y1={frame.y(tick)}
-              y2={frame.y(tick)}
-              stroke="var(--grid)"
+              y1={round(frame.y(tick))}
+              y2={round(frame.y(tick))}
+              stroke="var(--line)"
               strokeWidth={1}
             />
-            <text x={margin.left - 8} y={frame.y(tick)} dy="0.32em" textAnchor="end" fontSize={11} fill="var(--muted)">
+            <text x={margin.left - 10} y={round(frame.y(tick))} dy="0.35em" textAnchor="end">
               {yFormat(tick)}
             </text>
           </g>
         ))}
-        <line x1={margin.left} x2={margin.left + frame.innerWidth} y1={baseline} y2={baseline} stroke="var(--axis)" strokeWidth={1} />
         {xLabels.map((label) => (
-          <text key={`${label.at}-${label.text}`} x={frame.x(label.at)} y={height - 6} textAnchor="middle" fontSize={11} fill="var(--muted)">
+          <text key={`${label.at}-${label.text}`} x={round(frame.x(label.at))} y={height - 8} textAnchor="middle">
             {label.text}
           </text>
         ))}
@@ -118,26 +120,42 @@ export function Plot({
   );
 }
 
+const MONTHS_SHORT = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+
 /**
- * About `count` evenly spaced labels from a list of dates, always including the last one.
- *
- * The newest day is the one a reader looks for first, so it is pinned rather than left to
- * whatever the spacing happens to land on; the rest are spread back from it. `at` converts a
- * date to its x position, which is a day offset rather than a position in the array — the two
- * differ exactly where the record has holes, and that is where a label must not slide.
+ * A label on the middle of every `every`-th month between `first` and `last`, positioned by day
+ * offset from `first`. Months are counted from `last` backwards, so the newest month is always
+ * among the labelled ones — it is the one a reader looks for first.
  */
-export function spacedLabels(
-  dates: readonly string[],
-  count: number,
-  format: (iso: string) => string,
-  at: (iso: string) => number,
-): XLabel[] {
-  if (dates.length === 0) return [];
-  const step = Math.max(1, Math.floor((dates.length - 1) / Math.max(1, count - 1)));
+export function monthLabels(first: string, last: string, every: number, at: (iso: string) => number): XLabel[] {
   const out: XLabel[] = [];
-  for (let i = dates.length - 1; i >= 0; i -= step) {
-    const iso = dates[i]!;
-    out.unshift({ at: at(iso), text: format(iso) });
+  let year = Number(last.slice(0, 4));
+  let month = Number(last.slice(5, 7));
+  for (let i = 0; ; i++) {
+    const mid = `${year}-${String(month).padStart(2, "0")}-15`;
+    if (mid < first) break;
+    if (i % every === 0 && mid <= last && daysBetween(first, mid) > 4) {
+      out.unshift({ at: at(mid), text: MONTHS_SHORT[month - 1]! });
+    }
+    month -= 1;
+    if (month === 0) {
+      month = 12;
+      year -= 1;
+    }
   }
   return out;
+}
+
+/** A label at the middle of each calendar year between `first` and `last`. */
+export function yearLabels(first: string, last: string, at: (iso: string) => number): XLabel[] {
+  const out: XLabel[] = [];
+  for (let year = Number(first.slice(0, 4)); year <= Number(last.slice(0, 4)); year++) {
+    const mid = `${year}-07-01`;
+    if (mid >= first && mid <= addDays(last, 60)) out.push({ at: at(mid), text: String(year) });
+  }
+  return out;
+}
+
+export function round(v: number): number {
+  return Math.round(v * 10) / 10;
 }

@@ -145,6 +145,20 @@ export interface AdequacyDocument {
     import_gwh_day: number;
     stressed_import_gwh_day: number;
     other_gwh_day: number;
+    /** Prose naming where each ceiling came from, including the day the import maximum was set. */
+    basis?: string;
+    /**
+     * Whether imports are arriving. When they are cut off the central case uses what is arriving
+     * rather than the demonstrated maximum. Absent in documents written before the field existed.
+     */
+    import_regime?: {
+      state: string;
+      central_import_gwh_day: number;
+      trailing_gwh_day: number;
+      trailing_thermal_gwh_day: number;
+      window_days: number;
+      note: string;
+    };
     editable_at: string;
   };
   current: { tier: RiskTier; worst_tier: RiskTier; worst_tier_horizon_days: number; worst_deficit_gwh_day: number };

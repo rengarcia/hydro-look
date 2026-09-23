@@ -1,33 +1,58 @@
 /**
- * The site. One page, rendered to static HTML at build time from the committed data.
+ * The site's home page. Rendered to static HTML at build time from the committed data.
  *
- * The order is the order of the questions: how full are the reservoirs, where is the one with
- * real storage going, is the water arriving, what is the country running on, and can any of it
- * be trusted today. Every section that shows a modelled number shows the measurement of that
+ * The order is the order of the questions: what is the country running on today, what does the
+ * day's reading say, how full are the reservoirs, where is the one with real storage going, is
+ * the water arriving, where did yesterday's electricity come from, will there be enough, and can
+ * any of it be trusted. Every section that shows a modelled number shows the measurement of that
  * model beside it, because a forecast without its skill score is a number with no units.
+ *
+ * Every headline is built from the day's numbers by `lib/site/story.ts`, never written into the
+ * page: a sentence that stops being true is a wrong number in large type.
  */
 
-import { ReservoirCard } from "./components/ReservoirCard.tsx";
+import type React from "react";
+import { Contours, Footer, Masthead, NAV, REPO, SectionIntro } from "./components/Chrome.tsx";
+import { InflowLegend, MazarCut, PercentileTrack, inflowWindow } from "./components/MazarParts.tsx";
 import { FanChart } from "./components/FanChart.tsx";
+import { Fleet } from "./components/Fleet.tsx";
 import { InflowChart } from "./components/InflowChart.tsx";
-import { MixChart, MIX_SERIES } from "./components/MixChart.tsx";
-import { apiDocument, latest, mix, ribbon, series, window as windowOf } from "../lib/site/data.ts";
+import { MixChart, mixToken } from "./components/MixChart.tsx";
+import { apiDocument, dataDate, latest, mix, series, window as windowOf } from "../lib/site/data.ts";
 import type {
   AdequacyDocument,
   ForecastDocument,
   NarrativeDocument,
-  RiskTier,
   StatusDocument,
 } from "../lib/site/documents.ts";
-import { conceptLabel, feedLabel, findingText, longDate, num, pct, signed } from "../lib/site/format.ts";
-import { eachDay } from "../lib/util/dates.ts";
-
-const REPO = "https://github.com/rengarcia/hydro-look";
+import { conceptLabel, feedLabel, findingText, longDate, num, pct, shortDate, signed } from "../lib/site/format.ts";
+import {
+  SKILL_TIE,
+  adequacyHeadline,
+  countWord,
+  direction,
+  inflowHeadline,
+  joinDays,
+  marginClause,
+  modelShort,
+  monthName,
+  monthSpan,
+  skillTone,
+  tierOf,
+  weekday,
+} from "../lib/site/story.ts";
+import type { LatestDocument, ReservoirSnapshot } from "../lib/publish/latest.ts";
 
 /** Days of history drawn behind the forecast, and of inflow and national mix on their charts. */
 const FAN_HISTORY_DAYS = 180;
-const INFLOW_DAYS = 365;
 const MIX_DAYS = 180;
+
+const THERMAL = [
+  "generacion_turbinas_gas",
+  "generacion_motores_bunker",
+  "generacion_vapor_bunker",
+  "generacion_turbinas_diesel",
+];
 
 export default function Page() {
   const now = latest();
@@ -35,597 +60,213 @@ export default function Page() {
   const adequacy = apiDocument<AdequacyDocument>("adequacy.json");
   const status = apiDocument<StatusDocument>("status.json");
   const narrative = apiDocument<NarrativeDocument>("narrative.json");
+  const asOf = dataDate(now);
+  const mazar = now?.reservoirs.find((r) => r.site === "mazar") ?? null;
 
   return (
-    <main>
-      <header className="masthead">
-        <div className="wrap">
-          <h1>El sistema hidroeléctrico del Ecuador, día a día</h1>
-          <p>
-            Cotas de embalses, caudales, generación por central y balance nacional, recogidos a diario de los
-            servicios públicos de CELEC y CENACE, versionados en un repositorio y publicados aquí.
-          </p>
-          <p className="notice">
-            <strong>No es una fuente oficial.</strong> Cada número es una copia de lo que publicaron CELEC o CENACE,
-            con la respuesta que lo produjo archivada junto a él. Este sitio no representa la posición de ninguna
-            institución.{" "}
-            {now ? <>Datos al {longDate(now.as_of)}.</> : null}
-          </p>
+    <div className="site">
+      <Contours />
+      <Masthead asOf={asOf} links={NAV} />
+      <main className="stack-xl">
+        <div>
+          <Hero now={now} mazar={mazar} forecast={forecast} adequacy={adequacy} asOf={asOf} />
+          <Today now={now} adequacy={adequacy} narrative={narrative} />
         </div>
-      </header>
-
-      <div className="wrap">
+        <Reading narrative={narrative} forecast={forecast} />
         <Reservoirs now={now} />
         <Mazar forecast={forecast} />
-        <Inflow />
-        <National now={now} />
-        <Adequacy adequacy={adequacy} />
-        <Narrative narrative={narrative} forecast={forecast} />
-        <Freshness status={status} />
-        <Downloads narrative={narrative !== null} />
-        <Method />
-      </div>
-
-      <footer>
-        <div className="wrap">
-          <p>
-            Código bajo licencia MIT. Los datos de energía provienen de CELEC EP y CENACE; los meteorológicos de{" "}
-            <a href="https://open-meteo.com/">Open-Meteo</a> (ERA5, CC BY 4.0) y el índice ONI de{" "}
-            <a href="https://psl.noaa.gov/data/correlation/oni.data">NOAA PSL / CPC</a>.{" "}
-            <a href={REPO}>Código y datos</a>.
-          </p>
+        <div className="shell split even">
+          <Inflow mazar={mazar} />
+          <National now={now} />
         </div>
-      </footer>
-    </main>
-  );
-}
-
-/* ---------------------------------------------------------------- reservoirs */
-
-function Reservoirs({ now }: { now: ReturnType<typeof latest> }) {
-  if (now === null) return null;
-  return (
-    <section id="embalses">
-      <h2>Embalses</h2>
-      <p className="lede">
-        La cota de hoy dentro de la banda de operación que CELEC declara para cada embalse. La barra mide metros de
-        carga útil, no agua almacenada: la superficie de Mazar más que se duplica entre los 2110 y los 2150 m, así
-        que media banda no es media reserva.
-      </p>
-      <div className="cards">
-        {now.reservoirs.map((reservoir) => (
-          <ReservoirCard key={reservoir.site} reservoir={reservoir} />
-        ))}
-      </div>
-      <p className="note">
-        Donde CELEC declara más de un mínimo se dibujan todos, con una marca roja bajo la barra. El de Mazar es 2098 m
-        según el título del gráfico del tablero y 2100 m según ambos servicios de reportes: las dos cifras son de
-        CELEC y este sitio no elige entre ellas. Coca Codo Sinclair, Agoyán y Manduriacu no tienen banda declarada en
-        ninguna fuente; su escala es el rango registrado en este repositorio.
-      </p>
-    </section>
-  );
-}
-
-/* -------------------------------------------------------------------- mazar */
-
-function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
-  if (forecast === null) return null;
-
-  const history = windowOf(series().get("mazar", "cota_masl"), FAN_HISTORY_DAYS);
-  const thresholds = forecast.thresholds.map((t) => ({
-    level_masl: t.level_masl,
-    label: `${num(t.level_masl, 0)} m${t.status === "unverified" ? " (marcador propio)" : ""}`,
-    unverified: t.status === "unverified",
-  }));
-
-  const ninety = forecast.backtest.horizons.find((h) => h.horizon_days === 90);
-  const sixty = forecast.backtest.horizons.find((h) => h.horizon_days === 60);
-  const critical = forecast.days_to_threshold.thresholds.find((t) => t.status === "unverified");
-  // Since 2026-09-22 the 7-day row can come from M4 while the rest are M3; each row names its
-  // model, and older documents that do not are all `model.id`.
-  const modelOf = (h: { model?: string }) => h.model ?? forecast.model.id;
-  const switched = forecast.forecast.filter((h) => modelOf(h) !== forecast.model.id);
-  const switchedScore = switched[0]
-    ? forecast.backtest.horizons.find((b) => b.horizon_days === switched[0]!.horizon_days)
-    : undefined;
-  const fellBack = forecast.horizon_switch?.status === "fallback" ? forecast.horizon_switch : null;
-
-  return (
-    <section id="mazar">
-      <h2>Mazar: hacia dónde va</h2>
-      <p className="lede">
-        Mazar es el único embalse de la flota con almacenamiento de varias semanas, así que es el que se pronostica.
-        El modelo es un balance hídrico cerrado en torno al operador: la curva cota–superficie y los m³/s por MW de
-        la turbina se ajustan con las lecturas de este repositorio, y la descarga se lee cada día simulado de una
-        regla de operación contra la propia cota.
-      </p>
-
-      <div className="chart">
-        <ul className="legend">
-          <li>
-            <span className="swatch line" style={{ background: "var(--ink)" }} /> Cota observada
-          </li>
-          <li>
-            <span className="swatch line" style={{ background: "var(--series-1)" }} /> Pronóstico p50
-          </li>
-          <li>
-            <span className="swatch" style={{ background: "var(--series-1)", opacity: 0.35 }} /> Banda p10–p90
-          </li>
-          {switched.length > 0 ? (
-            <li>
-              <span className="swatch" style={{ border: "2px solid var(--series-1)", borderRadius: "50%" }} />{" "}
-              {switched.map((h) => h.horizon_days).join(", ")} días: otro modelo ({modelOf(switched[0]!)})
-            </li>
-          ) : null}
-          <li>
-            <span className="swatch line" style={{ background: "var(--critical)" }} /> Mínimos declarados
-          </li>
-        </ul>
-        <FanChart
-          history={history}
-          origin={forecast.origin_date}
-          originLevel={forecast.current.level_masl}
-          horizons={forecast.forecast}
-          thresholds={thresholds}
-          label={`Cota de Mazar: ${FAN_HISTORY_DAYS} días observados y pronóstico a 90 días`}
-          primaryModel={forecast.model.id}
-        />
-      </div>
-
-      <div className="scroll" style={{ marginTop: 20 }}>
-        <table>
-          <caption>
-            Pronóstico emitido el {longDate(forecast.origin_date)} desde una cota de {num(forecast.current.level_masl, 2)} m.
-            «Acierto frente a persistencia» compara el error del modelo con el de suponer que la cota no cambia:
-            0 % es empatar, negativo es perder.
-            {switched.length > 0 ? (
-              <>
-                {" "}
-                La fila de {switched.map((h) => h.horizon_days).join(", ")} días viene de otro modelo,{" "}
-                <code>{modelOf(switched[0]!)}</code> (árboles de decisión potenciados por gradiente que corrigen el error del balance hídrico), porque
-                en la validación histórica es el único que le gana a la persistencia a una semana; su banda sale de sus propios errores
-                fuera de muestra. El resto de horizontes, los escenarios y los días hasta el umbral son del balance hídrico.
-              </>
-            ) : null}
-          </caption>
-          <thead>
-            <tr>
-              <th>Horizonte</th>
-              <th>Fecha</th>
-              <th className="num">p10</th>
-              <th className="num">p50</th>
-              <th className="num">p90</th>
-              <th className="num">Acierto vs. persistencia</th>
-              <th className="num">Cobertura p10–p90</th>
-            </tr>
-          </thead>
-          <tbody>
-            {forecast.forecast.map((h) => {
-              const score = forecast.backtest.horizons.find((b) => b.horizon_days === h.horizon_days);
-              return (
-                <tr key={h.horizon_days}>
-                  <th scope="row">
-                    {h.horizon_days} días{modelOf(h) !== forecast.model.id ? " ·" : ""}
-                  </th>
-                  <td>{longDate(h.target_date)}</td>
-                  <td className="num">{num(h.p10, 2)}</td>
-                  <td className="num">{num(h.p50, 2)}</td>
-                  <td className="num">{num(h.p90, 2)}</td>
-                  <td className="num">{score ? pct(score.skill_vs_persistence * 100, 1) : "—"}</td>
-                  <td className="num">{score ? pct(score.coverage_p10_p90 * 100, 0) : "—"}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      <p className="note">
-        Lo que mide la validación histórica, dicho sin adornos: sobre {forecast.model.backtest_origins} orígenes mensuales
-        desde enero de 2018 el modelo es{" "}
-        {sixty ? <strong>{pct(sixty.skill_vs_persistence * 100, 1)} mejor que la persistencia a 60 días</strong> : null}
-        {ninety ? <> y {pct(ninety.skill_vs_persistence * 100, 1)} a 90</> : null}, y <strong>indistinguible de ella por
-        debajo del mes</strong>. Para menos de treinta días, suponer que la cota no cambia es tan bueno como este modelo
-        {switchedScore ? (
-          <>
-            , salvo a {switchedScore.horizon_days} días, donde se publica el otro modelo:{" "}
-            {pct(switchedScore.skill_vs_persistence * 100, 1)} mejor que la persistencia en la misma validación
-          </>
-        ) : null}
-        . La banda p10–p90 cubre entre el 72 % y el 80 % de los casos según el horizonte, por debajo del 80 % nominal.
-        {fellBack ? (
-          <>
-            {" "}
-            Hoy los {fellBack.horizon_days} días vuelven al balance hídrico: <code>{fellBack.candidate_model}</code> no se
-            publica cuando su validación no cubre los mismos orígenes que la del balance hídrico (el motivo está en{" "}
-            <code>horizon_switch</code> de forecast.json).
-          </>
-        ) : null}
-      </p>
-
-      {critical ? <Crossings threshold={critical} /> : null}
-
-      <p className="note">
-        La comprobación de crisis es la menos halagüeña: de los dos episodios en que Mazar bajó de los 2115 m en 2024,
-        la mediana del modelo no anticipó ninguno. La cola seca del conjunto (p10) sí avisó del cruce de octubre con{" "}
-        {forecast.crisis_check.episodes.find((e) => e.p10_lead_time_days !== null)?.p10_lead_time_days ?? "—"} días de
-        anticipación. La mediana, por su parte, dio {forecast.crisis_check.false_alarms_p50}{" "}
-        {forecast.crisis_check.false_alarms_p50 === 1 ? "falsa alarma" : "falsas alarmas"} en{" "}
-        {forecast.crisis_check.origins_considered} orígenes. Los números completos están en{" "}
-        <a href={`${REPO}/blob/main/${forecast.backtest.report}`}>{forecast.backtest.report}</a>.
-      </p>
-    </section>
-  );
-}
-
-function Crossings({ threshold }: { threshold: NonNullable<ForecastDocument["days_to_threshold"]["thresholds"][number]> }) {
-  const all = threshold.across_all_analogue_years;
-  return (
-    <div className="scroll" style={{ marginTop: 20 }}>
-      <table>
-        <caption>
-          Días hasta cruzar los {num(threshold.level_masl, 0)} m. Cada escenario es un año análogo real de caudal —el
-          más seco, el mediano y el más húmedo de los registrados para esta época del año— pasado por la misma regla
-          de descarga. Este umbral no lo publica ninguna fuente:
-          es el marcador propio de este proyecto (PLAN.md §7), no una declaración de CELEC. De los{" "}
-          {all.analogue_years} años análogos, {all.years_that_cross} llegan a cruzarlo dentro del año.
-        </caption>
-        <thead>
-          <tr>
-            <th>Escenario</th>
-            <th className="num">Año análogo</th>
-            <th className="num">Caudal medio</th>
-            <th>Cruce</th>
-            <th className="num">Días</th>
-            <th className="num">Cota mínima</th>
-          </tr>
-        </thead>
-        <tbody>
-          {threshold.scenarios.map((scenario) => (
-            <tr key={scenario.scenario}>
-              <th scope="row">{{ dry: "Seco", median: "Mediano", wet: "Húmedo" }[scenario.scenario] ?? scenario.scenario}</th>
-              <td className="num">{scenario.analogYear}</td>
-              <td className="num">{num(scenario.inflowMeanM3s, 1)} m³/s</td>
-              <td>{scenario.crossesOn ? longDate(scenario.crossesOn) : "no cruza"}</td>
-              <td className="num">{scenario.days === null ? "—" : num(scenario.days, 0)}</td>
-              <td className="num">{num(scenario.minimumLevelMasl, 2)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        <Adequacy adequacy={adequacy} />
+        <Data status={status} narrative={narrative !== null} />
+        <Method forecast={forecast} adequacy={adequacy} />
+      </main>
+      <Footer />
     </div>
   );
 }
 
-/* ------------------------------------------------------------------ inflows */
+/* --------------------------------------------------------------------- hero */
 
-function Inflow() {
-  const inflow = series().get("mazar", "caudal_m3s");
-  const readings = windowOf(inflow, INFLOW_DAYS);
-  if (readings.length < 2) return null;
-
-  const first = readings[0]!.date;
-  const last = readings.at(-1)!.date;
-  const band = ribbon(inflow, eachDay(first, last));
-
-  return (
-    <section id="caudales">
-      <h2>Caudal frente a su propia historia</h2>
-      <p className="lede">
-        El caudal de entrada a Mazar del último año, sobre la franja que va del percentil 10 al 90 de los mismos días
-        del año en todo el registro disponible desde 2010. La franja describe lo que este río ha hecho, no lo que
-        vaya a hacer.
-      </p>
-      <div className="chart">
-        <ul className="legend">
-          <li>
-            <span className="swatch line" style={{ background: "var(--series-1)" }} /> Caudal diario
-          </li>
-          <li>
-            <span className="swatch line" style={{ background: "var(--muted)" }} /> Mediana histórica
-          </li>
-          <li>
-            <span className="swatch" style={{ background: "var(--axis)", opacity: 0.6 }} /> Franja p10–p90
-          </li>
-        </ul>
-        <InflowChart readings={readings} ribbon={band} label="Caudal de entrada a Mazar frente a su climatología" />
-      </div>
-      <p className="note">
-        Un cero no significa lo mismo en las dos rutas y en ninguna significa «el río se detuvo». Los reportes de doce
-        meses publican m³/s enteros, así que su 0 es cualquier valor por debajo de 0,5; el historiador publica
-        decimales, así que su 0,00 es el servicio callando y se descarta. Los cortes en la línea son días que la
-        fuente nunca publicó.
-      </p>
-    </section>
-  );
-}
-
-/* ----------------------------------------------------------------- national */
-
-function National({ now }: { now: ReturnType<typeof latest> }) {
-  const days = mix(MIX_DAYS);
+function Hero({
+  now,
+  mazar,
+  forecast,
+  adequacy,
+  asOf,
+}: {
+  now: LatestDocument | null;
+  mazar: ReservoirSnapshot | null;
+  forecast: ForecastDocument | null;
+  adequacy: AdequacyDocument | null;
+  asOf: string | null;
+}) {
   const national = now?.national ?? null;
-  if (days.length < 2 || national === null) return null;
+  const share = national?.hydro_share_pct != null ? Math.round(national.hydro_share_pct) : null;
+  const slope = mazar?.slopes_m_per_day.d7 ?? null;
+  const dir = direction(slope);
+  const percentile = mazar?.inflow?.climatology?.percentile_today ?? null;
+  const worst = adequacy?.current.worst_tier ?? null;
+  const worstTier = tierOf(worst);
+  const clause =
+    adequacy && worst
+      ? marginClause(worst, adequacy.current.worst_tier_horizon_days, adequacy.horizons.at(-1)?.horizon_days ?? 90)
+      : null;
 
   return (
-    <section id="balance">
-      <h2>De dónde sale la electricidad</h2>
-      <p className="lede">
-        El balance diario que CENACE cierra cada mañana para el día anterior, en GWh. Los porcentajes se toman sobre
-        generación más importación, no sobre generación sola: un kWh importado alumbra igual que uno generado.
-      </p>
-
-      <div className="chart">
-        <ul className="legend">
-          {MIX_SERIES.map((s) => (
-            <li key={s.concept}>
-              <span className="swatch" style={{ background: s.token }} /> {conceptLabel(s.concept)}
-            </li>
-          ))}
-        </ul>
-        <MixChart days={days} label={`Generación diaria por tipo e importación, últimos ${MIX_DAYS} días`} />
-      </div>
-
-      <div className="scroll" style={{ marginTop: 20 }}>
-        <table>
-          <caption>
-            Día cerrado más reciente: {longDate(national.date)}. Demanda de distribución{" "}
-            {num(national.distribution_demand_gwh, 2)} GWh; exportación {num(national.total_export_gwh, 2)} GWh.
-          </caption>
-          <thead>
-            <tr>
-              <th>Fuente</th>
-              <th className="num">GWh</th>
-              <th className="num">% del suministro</th>
-            </tr>
-          </thead>
-          <tbody>
-            {national.supply_gwh.map((part) => (
-              <tr key={part.concept}>
-                <th scope="row">{conceptLabel(part.concept)}</th>
-                <td className="num">{num(part.gwh, 2)}</td>
-                <td className="num">{pct(part.pct, 2)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <p className="note">
-        Ese día el agua cubrió {pct(national.hydro_share_pct, 1)} del suministro, la generación térmica{" "}
-        {pct(national.thermal_share_pct, 1)} y la importación {pct(national.import_share_pct, 1)}. Es una
-        descripción de lo ocurrido, no una previsión: lo que viene después es la previsión, y lleva al lado su
-        propia validación histórica.
-      </p>
-    </section>
-  );
-}
-
-/* ---------------------------------------------------------------- adequacy */
-
-const TIER_STYLE: Record<RiskTier, { label: string; dot: string; gloss: string }> = {
-  holgado: {
-    label: "Holgado",
-    dot: "good",
-    gloss: "incluso el caso p90 queda cubierto",
-  },
-  vigilancia: {
-    label: "Vigilancia",
-    dot: "warning",
-    gloss: "el caso p90 queda corto; el central, no",
-  },
-  ajustado: {
-    label: "Ajustado",
-    dot: "serious",
-    gloss: "el caso central queda corto en menos de 5 GWh/día",
-  },
-  deficit: {
-    label: "Déficit",
-    dot: "critical",
-    gloss: "el caso central queda corto en 5 GWh/día o más",
-  },
-};
-
-function Adequacy({ adequacy }: { adequacy: AdequacyDocument | null }) {
-  if (adequacy === null) return null;
-  const tier = TIER_STYLE[adequacy.current.worst_tier] ?? TIER_STYLE.vigilancia;
-  const first = adequacy.horizons[0];
-  const episode = adequacy.crisis_check.episodes.find((e) => e.measured_suppression_gwh_day > 10);
-  const ninety = adequacy.horizons.find((h) => h.horizon_days === 90);
-
-  return (
-    <section id="suficiencia">
-      <h2>¿Alcanza la energía?</h2>
-      <p className="lede">
-        Una sola identidad: demanda no suprimida menos hidroeléctrica menos el techo térmico menos la importación.
-        Lo que queda es el superávit; si es negativo, es el déficit esperado en GWh/día. La demanda se ajusta
-        excluyendo los días de racionamiento, porque durante un corte lo que miden los contadores es la demanda que
-        se permitió, no la que había.
-      </p>
-
-      <div className="cards">
-        <article className="card">
-          <h3>
-            Peor nivel hasta los {adequacy.horizons.at(-1)?.horizon_days ?? 90} días
-            <span className="basin">{longDate(adequacy.origin_date)}</span>
-          </h3>
-          <p className="figure">
-            <span className="pill" style={{ fontSize: "inherit" }}>
-              <span className={`dot ${tier.dot}`} aria-hidden="true" />
-              {tier.label}
-            </span>
-          </p>
-          <p className="sub">
-            {tier.gloss}; el peor cae a los {adequacy.current.worst_tier_horizon_days} días.
-          </p>
-          <dl className="pairs">
-            <dt>Margen a 7 días</dt>
-            <dd>{first ? pct(first.margin_pct, 1) : "—"}</dd>
-            <dt>Margen a 90 días</dt>
-            <dd>{ninety ? pct(ninety.margin_pct, 1) : "—"}</dd>
-            <dt>Quincena hídrica</dt>
-            <dd>{num(adequacy.data.hydro_anomaly, 2)} × su climatología</dd>
-          </dl>
-        </article>
-
-        <article className="card">
-          <h3>
-            Techos supuestos<span className="basin">GWh/día</span>
-          </h3>
-          <dl className="pairs">
-            <dt>Térmica</dt>
-            <dd>{num(adequacy.assumptions.thermal_gwh_day, 2)}</dd>
-            <dt>Importación</dt>
-            <dd>{num(adequacy.assumptions.import_gwh_day, 2)}</dd>
-            <dt>Importación en crisis</dt>
-            <dd>{num(adequacy.assumptions.stressed_import_gwh_day, 2)}</dd>
-            <dt>Otros tipos</dt>
-            <dd>{num(adequacy.assumptions.other_gwh_day, 2)}</dd>
-          </dl>
-          <p className="sub" style={{ marginTop: 12 }}>
-            Son máximos demostrados en los últimos tres años, no declaraciones de disponibilidad: ninguna fuente
-            que alcance este proyecto publica los mantenimientos programados. Se editan en{" "}
-            <code>{adequacy.assumptions.editable_at}</code>.
-          </p>
-        </article>
-      </div>
-
-      <div className="scroll" style={{ marginTop: 20 }}>
-        <table>
-          <caption>
-            Todo en GWh/día. «Requerimiento» es demanda menos hidroeléctrica: lo que tienen que cubrir la térmica,
-            la importación y el resto. «Superávit» es lo que sobra después de cubrirlo; en negativo sería déficit.
-            La columna «con importación en crisis» repite la cuenta con la importación que hubo realmente entre el
-            1 de octubre y el 10 de noviembre de 2024.
-          </caption>
-          <thead>
-            <tr>
-              <th>Horizonte</th>
-              <th className="num">Demanda</th>
-              <th className="num">Hidroeléctrica</th>
-              <th className="num">Requerimiento</th>
-              <th className="num">Superávit</th>
-              <th className="num">Con importación en crisis</th>
-              <th>Nivel</th>
-            </tr>
-          </thead>
-          <tbody>
-            {adequacy.horizons.map((h) => (
-              <tr key={h.horizon_days}>
-                <th scope="row">{h.horizon_days} días</th>
-                <td className="num">{num(h.demand_gwh_day, 1)}</td>
-                <td className="num">{num(h.hydro_gwh_day, 1)}</td>
-                <td className="num">{num(h.requirement_gwh_day, 1)}</td>
-                <td className="num">{signed(-h.deficit_gwh_day, 1)}</td>
-                <td className="num">{signed(-h.stressed_deficit_gwh_day, 1)}</td>
-                <td>
-                  <span className="pill">
-                    <span className={`dot ${TIER_STYLE[h.tier]?.dot ?? "warning"}`} aria-hidden="true" />
-                    {TIER_STYLE[h.tier]?.label ?? h.tier}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <p className="note">
-        La importación es el supuesto más frágil de la tabla, y no en abstracto. Entre el 1 de octubre y el 10 de
-        noviembre de 2024, con el país racionando catorce horas al día, la importación desde Colombia fue de{" "}
-        {num(adequacy.assumptions.stressed_import_gwh_day, 2)} GWh/día frente a los{" "}
-        {num(adequacy.assumptions.import_gwh_day, 2)} que había alcanzado ese agosto, porque Colombia estaba seca al
-        mismo tiempo. Un interconector no es firme cuando la sequía es compartida.
-      </p>
-
-      {episode ? (
-        <>
-          <div className="scroll" style={{ marginTop: 20 }}>
-            <table>
-              <caption>
-                La comprobación. Un déficit es un contrafactual y no se puede medir, pero durante un racionamiento
-                deja una sombra observable: la diferencia entre la demanda que el modelo dice que hubo y la que
-                registraron los contadores. Si la identidad es correcta, esa diferencia y el déficit calculado
-                deben tener el mismo tamaño.
-              </caption>
-              <thead>
-                <tr>
-                  <th>Episodio</th>
-                  <th className="num">Días</th>
-                  <th className="num">Demanda modelada</th>
-                  <th className="num">Carga medida</th>
-                  <th className="num">Supresión observada</th>
-                  <th className="num">Déficit calculado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {adequacy.crisis_check.episodes.map((e) => (
-                  <tr key={e.start}>
-                    <th scope="row">
-                      {longDate(e.start)} → {longDate(e.end)}
-                    </th>
-                    <td className="num">{e.days}</td>
-                    <td className="num">{num(e.modelled_demand_gwh_day, 1)}</td>
-                    <td className="num">{num(e.measured_load_gwh_day, 1)}</td>
-                    <td className="num">{num(e.measured_suppression_gwh_day, 1)}</td>
-                    <td className="num">{num(e.implied_deficit_gwh_day, 1)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+    <section className="shell hero" aria-labelledby="hero-title">
+      <div className="hero-copy rise">
+        {asOf ? (
+          <div className="eyebrow">
+            Ecuador · {weekday(asOf)} {longDate(asOf)}
           </div>
-
-          <p className="note">
-            En el episodio largo de 2024 las dos últimas columnas —{" "}
-            {num(episode.measured_suppression_gwh_day, 1)} y {num(episode.implied_deficit_gwh_day, 1)} GWh/día —
-            se calculan desde lados distintos de la identidad y coinciden dentro de{" "}
-            {num(Math.abs(episode.measured_suppression_gwh_day - episode.implied_deficit_gwh_day), 1)} GWh/día. En
-            los dos episodios cortos no coinciden: el modelo no ve déficit donde sí hubo cortes. Las fechas de esos
-            dos episodios están registradas al mes, no al día, y son de prensa, no de una fuente oficial.
-          </p>
-        </>
-      ) : null}
-
-      <p className="note">
-        Lo que mide la validación histórica: sobre {adequacy.model.backtest_origins} orígenes mensuales, el requerimiento le
-        gana a suponer que el último mes se repite{" "}
-        {first?.backtest.requirement_skill_vs_persistence !== null && first !== undefined ? (
-          <>
-            por {pct(first.backtest.requirement_skill_vs_persistence! * 100, 1)} a 7 días
-            {ninety?.backtest.requirement_skill_vs_persistence !== null && ninety !== undefined ? (
-              <> y {pct(ninety.backtest.requirement_skill_vs_persistence! * 100, 1)} a 90</>
-            ) : null}
-          </>
         ) : null}
-        , y su banda p10–p90 cubre entre el 60 % y el 67 % de los casos frente al 80 % nominal, así que conviene
-        leerla como dos tercios y no como cuatro quintos. El término hidroeléctrico es el débil: a 30 días no le
-        gana a suponer que el último mes se repite. Los números completos, negativos incluidos, están en{" "}
-        <a href={`${REPO}/blob/main/data/reports/adequacy.md`}>data/reports/adequacy.md</a>.
-      </p>
-
-      <p className="note">
-        Y lo que dijeron estos niveles cuando se aplicaron a cada mes del registro: sobre{" "}
-        {adequacy.tier_history.origins} orígenes mensuales, {adequacy.tier_history.origins_followed_by_rationing}{" "}
-        fueron seguidos de racionamiento dentro de treinta días y {adequacy.tier_history.origins_flagged} se marcaron
-        «ajustado» o «déficit». De los marcados,{" "}
-        {pct((adequacy.tier_history.share_of_flagged_that_preceded_cuts ?? 0) * 100, 0)} precedieron cortes; de los
-        que precedieron cortes, se marcó{" "}
-        {pct((adequacy.tier_history.share_of_cuts_that_were_flagged ?? 0) * 100, 0)}. No da falsas alarmas, pero se le
-        escapan la mayoría de las crisis, que es la forma que cabe esperar de un modelo cuyo término más débil es el que decide
-        cuánta agua hay. Tres episodios no son una muestra con la que ajustar un umbral, y ninguno de estos se
-        ajustó a ellos.
-      </p>
-
-      <p className="note">
-        Nada de esto modela la red. Un déficit en GWh/día dice que la energía no está; no dice si podría entregarse
-        donde hacía falta, que es otro fallo y el que causó el apagón de junio de 2024.
-      </p>
+        <h1 id="hero-title">
+          {share !== null ? (
+            <>
+              El agua encendió <em>{share} de cada 100</em> kWh del país.
+            </>
+          ) : (
+            "El sistema hidroeléctrico del Ecuador, día a día."
+          )}
+        </h1>
+        {mazar?.level ? (
+          <p className="hero-lede">
+            Mazar, el único embalse con reserva para semanas, está a {num(mazar.level.masl, 2)} m
+            {dir === "flat" ? " y se mantiene estable" : ` y ${dir === "down" ? "baja" : "sube"} ${num(Math.abs(slope!), 2)} m al día`}.
+            {percentile !== null ? ` El caudal que le entra está en el percentil ${num(percentile, 0)} de su historia.` : ""}
+            {clause && worstTier ? (
+              <>
+                {" "}
+                {clause.before} <strong className={`tone-${worstTier.tone}`}>{clause.word}</strong>.
+              </>
+            ) : null}
+          </p>
+        ) : null}
+        <div className="actions">
+          <a href="#mazar" className="btn btn-solid">
+            Ver hacia dónde va Mazar
+          </a>
+          <a href="#suficiencia" className="btn btn-ghost">
+            ¿Alcanza la energía?
+          </a>
+        </div>
+      </div>
+      <div className="rise rise-late">{mazar ? <MazarCut mazar={mazar} forecast={forecast} /> : null}</div>
     </section>
   );
 }
 
-/* ---------------------------------------------------------------- narrative */
+/* -------------------------------------------------------------------- today */
+
+interface Stat {
+  label: string;
+  chip: string;
+  value: string;
+  unit: string;
+  note: string;
+}
+
+function Today({
+  now,
+  adequacy,
+  narrative,
+}: {
+  now: LatestDocument | null;
+  adequacy: AdequacyDocument | null;
+  narrative: NarrativeDocument | null;
+}) {
+  const national = now?.national ?? null;
+  const stats: Stat[] = [];
+  if (national) {
+    const gwh = (concept: string) => national.supply_gwh.find((p) => p.concept === concept)?.gwh ?? 0;
+    const thermal = THERMAL.reduce((sum, c) => sum + gwh(c), 0);
+    const regime = adequacy?.assumptions.import_regime;
+    stats.push(
+      {
+        label: "Hidroeléctrica",
+        chip: "var(--water)",
+        value: num(national.hydro_share_pct, 1),
+        unit: "%",
+        note: `de la electricidad del ${shortDate(national.date)}: ${num(gwh("generacion_hidraulica"), 1)} GWh`,
+      },
+      {
+        label: "Térmica",
+        chip: "var(--t1)",
+        value: num(national.thermal_share_pct, 1),
+        unit: "%",
+        note: `búnker, diésel y gas: ${num(thermal, 1)} GWh`,
+      },
+      {
+        label: "Importación",
+        chip: "var(--import)",
+        value: num(national.import_share_pct, 1),
+        unit: "%",
+        note:
+          regime?.state === "cutoff"
+            ? `Colombia no está enviando: ${num(regime.trailing_gwh_day, 2)} GWh/día en ${regime.window_days} días`
+            : `${num(national.total_import_gwh, 2)} GWh desde Colombia`,
+      },
+    );
+  }
+  const rain = narrative?.basis?.precipitation_16d ?? null;
+  if (rain) {
+    stats.push({
+      label: `Lluvia, ${rain.days} días`,
+      chip: "var(--water-2)",
+      value: num(rain.forecast_total_mm, 1),
+      unit: "mm",
+      note:
+        (rain.percentile_vs_climatology !== null ? `percentil ${num(rain.percentile_vs_climatology, 0)} · ` : "") +
+        (rain.coordinate_status === "provisional" ? "un punto provisional del Paute" : "cuenca del Paute"),
+    });
+  }
+  const enso = narrative?.basis?.enso ?? null;
+  if (enso) {
+    const phase = { el_nino: "El Niño", la_nina: "La Niña", neutral: "Neutral" }[enso.phase] ?? enso.phase;
+    const earliest = enso.previous?.at(-1) ?? null;
+    const trend =
+      earliest === null
+        ? ""
+        : enso.oni > earliest.oni
+          ? `, en ascenso desde ${num(earliest.oni, 2)} en ${monthName(earliest.month)}`
+          : enso.oni < earliest.oni
+            ? `, en descenso desde ${num(earliest.oni, 2)} en ${monthName(earliest.month)}`
+            : `, igual que en ${monthName(earliest.month)}`;
+    stats.push({
+      label: `ENSO · ONI ${monthName(enso.month)}`,
+      chip: enso.phase === "el_nino" ? "var(--tight)" : enso.phase === "la_nina" ? "var(--water)" : "var(--muted)",
+      value: signed(enso.oni, 1).replace(/^\+/, ""),
+      unit: "",
+      note: `${phase}${trend}`,
+    });
+  }
+  if (stats.length === 0) return null;
+
+  return (
+    <div className="shell">
+      <div className="strip" style={{ "--n": stats.length } as React.CSSProperties}>
+        {stats.map((stat) => (
+          <div className="stat" key={stat.label}>
+            <div className="stat-label">
+              <span className="chip" style={{ background: stat.chip }} aria-hidden="true" />
+              {stat.label}
+            </div>
+            <div className="stat-value num">
+              {stat.value}
+              {stat.unit ? <small>{stat.unit}</small> : null}
+            </div>
+            <div className="stat-note">{stat.note}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ reading */
 
 const CONFIDENCE_ES: Record<NarrativeDocument["confidence"], string> = {
   low: "baja",
@@ -633,341 +274,745 @@ const CONFIDENCE_ES: Record<NarrativeDocument["confidence"], string> = {
   high: "alta",
 };
 
-/** `2026-09-22T12:40:05Z` -> `22 de septiembre de 2026, 07:40 (hora de Ecuador)`. */
+/** `2026-09-22T12:40:05Z` -> `22 sep 2026, 07:40 (hora de Ecuador)`. */
 function narrativeStamp(timestamp: string): string {
   const instant = Date.parse(timestamp);
   if (!Number.isFinite(instant)) return timestamp;
   // Ecuador is UTC−5 all year; the arithmetic is the same one `util/dates.ts` does.
   const local = new Date(instant - 5 * 3_600_000).toISOString();
-  return `${longDate(local.slice(0, 10))}, ${local.slice(11, 16)} (hora de Ecuador)`;
+  return `${shortDate(local)} ${local.slice(0, 4)}, ${local.slice(11, 16)} (hora de Ecuador)`;
 }
 
 /**
- * Phase 6b. A paragraph a language model wrote, and — beside it, in the same ink — the numbers
- * it was handed, so the reader can check one against the other without leaving the section.
- *
- * The numbers come from the narrative's own `basis`, not from today's documents. On a day the
- * gateway rate-limits or the validator rejects the text, the page keeps the previous narrative,
- * and pairing old prose with new numbers would make a correct paragraph look wrong. When the
- * basis is older than the forecast above, the section says so.
+ * Phase 6b. A paragraph a language model wrote from the numbers on this page and nothing else.
  *
  * The risk tier shown is the one the text was given, and it is the adequacy model's: the model
- * explains it and cannot choose it, so there is never a second tier on the page.
+ * explains it and cannot choose it, so there is never a second tier on the page. When the text is
+ * older than the forecast — the gateway rate-limited or the validator rejected today's — the
+ * section says so rather than pairing yesterday's prose with today's numbers in silence.
  */
-function Narrative({ narrative, forecast }: { narrative: NarrativeDocument | null; forecast: ForecastDocument | null }) {
+function Reading({ narrative, forecast }: { narrative: NarrativeDocument | null; forecast: ForecastDocument | null }) {
   if (narrative === null || !narrative.outlook_es) return null;
-  const basis = narrative.basis;
-  const mazar = basis?.reservoirs?.find((r) => r.site === (basis.mazar_forecast?.site ?? "mazar")) ?? null;
-  const floors = mazar?.floors ?? [];
-  const primaryBand = mazar?.bands?.[0] ?? null;
-  const horizons = basis?.mazar_forecast?.horizons ?? [];
-  const rain = basis?.precipitation_16d ?? null;
-  const enso = basis?.enso ?? null;
-  const tier = narrative.risk_tier ? TIER_STYLE[narrative.risk_tier as RiskTier] : undefined;
+  const tier = tierOf(narrative.risk_tier);
   const stale = forecast !== null && narrative.origin_date < forecast.origin_date;
+  // The design sets the reading as a pull quote, which holds a sentence and not a paragraph. The
+  // first sentence is set large and the rest follows at reading size, so none of the text the
+  // validator passed is cut.
+  const [lead, rest] = splitLead(narrative.outlook_es);
 
   return (
-    <section id="lectura">
-      <h2>Lectura del día</h2>
-      <p className="lede">
-        Un resumen en prosa de los números de esta página, redactado por un modelo de lenguaje a partir de los datos
-        que se muestran junto a este texto y de nada más. Un validador rechaza cualquier texto que cite una cota o una fecha
-        que no esté en esos datos; si el de hoy fue rechazado, se mantiene el anterior.
-      </p>
-
-      <div className="cards">
-        <article className="card">
-          <h3>
-            Resumen<span className="basin">texto generado por un modelo</span>
-          </h3>
-          <p style={{ margin: "8px 0 0" }}>{narrative.outlook_es}</p>
-          {narrative.drivers.length > 0 ? (
-            <ul className="sub" style={{ margin: "12px 0 0", paddingLeft: 18 }}>
-              {narrative.drivers.map((driver, i) => (
-                <li key={i}>{driver}</li>
-              ))}
-            </ul>
-          ) : null}
-          <dl className="pairs">
-            <dt>Confianza declarada</dt>
-            <dd>{CONFIDENCE_ES[narrative.confidence] ?? narrative.confidence}</dd>
-            <dt>Generado</dt>
-            <dd>{narrativeStamp(narrative.generated_at)}</dd>
-            <dt>Datos del</dt>
-            <dd>{longDate(narrative.origin_date)}</dd>
-            <dt>Modelo</dt>
-            <dd>
-              <code>{narrative.model}</code> · instrucciones <code>{narrative.prompt_version}</code>
-            </dd>
-          </dl>
-        </article>
-
-        <article className="card">
-          <h3>
-            Los números que leyó<span className="basin">{mazar?.label ?? "Mazar"}</span>
-          </h3>
-          <dl className="pairs">
-            {mazar ? (
-              <>
-                <dt>Cota</dt>
-                <dd>{num(mazar.level_masl, 2)} m</dd>
-                {primaryBand ? (
-                  <>
-                    <dt>Banda {num(primaryBand.floor_masl, 0)}–{num(primaryBand.ceiling_masl, 0)}</dt>
-                    <dd>{pct(primaryBand.band_pct)}</dd>
-                  </>
-                ) : null}
-                <dt>Pendiente 7 / 14 / 30 d</dt>
-                <dd>
-                  {signed(mazar.slopes_m_per_day.d7, 2)} / {signed(mazar.slopes_m_per_day.d14, 2)} /{" "}
-                  {signed(mazar.slopes_m_per_day.d30, 2)} m/día
-                </dd>
-                {floors.map((floor) => (
-                  <FloorPair key={floor.floor_masl} floor={floor} />
-                ))}
-              </>
-            ) : null}
-            {horizons.map((h) => (
-              <HorizonPair key={h.horizon_days} horizon={h} />
-            ))}
+    <section id="lectura" className="shell section" aria-labelledby="lectura-title">
+      <div className="reading inverse">
+        <div className="reading-main">
+          <div className="reading-head">
+            <h2 id="lectura-title" className="eyebrow">
+              Lectura del día
+            </h2>
             {tier ? (
-              <>
-                <dt>Suficiencia</dt>
-                <dd>
-                  <span className="pill">
-                    <span className={`dot ${tier.dot}`} aria-hidden="true" />
-                    {tier.label}
-                  </span>
-                </dd>
-              </>
+              <span className="pill">
+                <span className={`dot tone-${tier.tone}`} aria-hidden="true" />
+                Nivel {tier.label.toLowerCase()}
+              </span>
             ) : null}
-            {rain ? (
-              <>
-                <dt>Lluvia prevista, {rain.days} días</dt>
-                <dd>
-                  {num(rain.forecast_total_mm, 1)} mm frente a una mediana de {num(rain.climatology_p50_mm, 1)} mm
-                  {rain.coordinate_status === "provisional" ? " (punto provisional)" : ""}
-                </dd>
-              </>
-            ) : null}
-            {enso ? (
-              <>
-                <dt>ONI {enso.month}</dt>
-                <dd>
-                  {signed(enso.oni, 2)} · {{ el_nino: "El Niño", la_nina: "La Niña", neutral: "neutral" }[enso.phase]}
-                </dd>
-              </>
-            ) : null}
-          </dl>
-          <p className="sub" style={{ marginTop: 12 }}>
-            El abanico y la tabla completa están en <a href="#mazar">la sección de Mazar</a>; el nivel de suficiencia, en{" "}
-            <a href="#suficiencia">la sección anterior</a>. El documento entero, con todo lo que recibió el modelo, es{" "}
-            <a href="/api/narrative.json">narrative.json</a>.
+          </div>
+          <blockquote>
+            <p>“{lead}{rest ? "" : "”"}</p>
+            {rest ? <p className="reading-rest">{rest}”</p> : null}
+          </blockquote>
+          <p className="reading-fine">
+            Texto redactado por un modelo de lenguaje (<code>{narrative.model}</code>) solo con los números de esta
+            página; el pronóstico y el nivel de riesgo son de los modelos estadísticos, que el texto describe y no
+            produce. Un validador rechaza cualquier cota o fecha que no esté en esos números. Confianza declarada:{" "}
+            {CONFIDENCE_ES[narrative.confidence] ?? narrative.confidence} · generado el {narrativeStamp(narrative.generated_at)}.
+            {stale ? ` Escrito sobre los datos del ${longDate(narrative.origin_date)}; el resto de la página ya muestra los del ${longDate(forecast!.origin_date)}.` : ""}{" "}
+            <a href="/api/narrative.json">Lo que recibió el modelo</a>.
           </p>
-        </article>
-      </div>
-
-      <p className="note">
-        <strong>El texto lo generó un modelo de lenguaje; el pronóstico es el estadístico.</strong> Las cifras de la
-        cota futura son las de la sección de Mazar (el balance hídrico y, donde la tabla lo indica, el modelo que corrige
-        su error a 7 días), con su validación histórica, y el nivel de
-        riesgo lo calcula el modelo de suficiencia: el modelo de lenguaje los describe, no los produce.
-        {stale ? (
-          <>
-            {" "}
-            Este texto se escribió sobre los datos del {longDate(narrative.origin_date)}; las secciones de arriba ya
-            muestran los del {longDate(forecast!.origin_date)}.
-          </>
+        </div>
+        {narrative.drivers.length > 0 ? (
+          <ol className="drivers">
+            {narrative.drivers.map((driver, i) => (
+              <li key={i}>
+                <span aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+                <span>{driver}</span>
+              </li>
+            ))}
+          </ol>
         ) : null}
-      </p>
+      </div>
     </section>
   );
 }
 
-function FloorPair({ floor }: { floor: NarrativeDocument["basis"]["reservoirs"][number]["floors"][number] }) {
-  const pace = floor.days_at_slope_30d ?? floor.days_at_slope_7d;
+/**
+ * The first sentence of a paragraph, and the rest. A sentence ends at a full stop followed by a
+ * space and a capital; `2.138,37` has no space after its point, so a number never ends one.
+ */
+function splitLead(text: string): [string, string] {
+  const match = /[.!?]\s+(?=[A-ZÁÉÍÓÚÑ¿¡])/.exec(text);
+  if (match === null || text.length < 220) return [text, ""];
+  const cut = match.index + 1;
+  return [text.slice(0, cut), text.slice(cut).trim()];
+}
+
+/* --------------------------------------------------------------- reservoirs */
+
+function Reservoirs({ now }: { now: LatestDocument | null }) {
+  if (now === null) return null;
+  const mazar = now.reservoirs.find((r) => r.site === "mazar");
+  const count = now.reservoirs.filter((r) => r.level !== null).length;
+  const hatched = now.reservoirs.some((r) => r.level !== null && r.bands.length === 0);
   return (
-    <>
-      <dt>
-        Sobre {num(floor.floor_masl, 0)} m{floor.status === "unverified" ? " (marcador propio)" : ""}
-      </dt>
-      <dd>
-        {num(floor.metres_above, 2)} m
-        {pace !== null ? <> · {num(pace, 0)} días al ritmo de {floor.days_at_slope_30d !== null ? "30" : "7"} días</> : null}
-      </dd>
-    </>
+    <section id="embalses" className="shell section" aria-labelledby="embalses-title">
+      <div className="section-head">
+        <SectionIntro index="01" eyebrow="Embalses" title={<span id="embalses-title">{`${count === 8 ? "Ocho" : count} embalses, una misma escala: metros de carga útil.`}</span>}>
+            Cada columna va del mínimo declarado a la cresta de su banda y se llena hasta la cota de hoy. Mide metros,
+            no agua almacenada: la superficie de Mazar más que se duplica entre los 2.110 y los 2.150 m.
+            {hatched ? " Las columnas rayadas no tienen banda publicada en ninguna fuente; su escala es el rango registrado." : ""}
+          </SectionIntro>
+        <div className="legend-stack">
+          <div>
+            <span className="key-floor" aria-hidden="true" />
+            otro mínimo declarado por CELEC
+          </div>
+          {hatched ? (
+            <div>
+              <span className="key-hatch" aria-hidden="true" />
+              sin banda declarada
+            </div>
+          ) : null}
+          <div>
+            <span className="key-p" aria-hidden="true">
+              p{Math.round(mazar?.inflow?.climatology?.percentile_today ?? 50)}
+            </span>
+            caudal de hoy frente a su historia
+          </div>
+        </div>
+      </div>
+      <Fleet reservoirs={now.reservoirs} />
+    </section>
   );
 }
 
-function HorizonPair({ horizon }: { horizon: NonNullable<NarrativeDocument["basis"]["mazar_forecast"]>["horizons"][number] }) {
-  return (
-    <>
-      <dt>p50 a {horizon.horizon_days} días</dt>
-      <dd>
-        {num(horizon.p50, 2)} m ({num(horizon.p10, 2)}–{num(horizon.p90, 2)})
-      </dd>
-    </>
-  );
-}
+/* -------------------------------------------------------------------- mazar */
 
-/* ---------------------------------------------------------------- freshness */
-
-const FRESHNESS_WORDS: Record<string, { word: string; dot: string }> = {
-  current: { word: "al día", dot: "good" },
-  stale: { word: "detenida", dot: "critical" },
-  not_ingested: { word: "sin datos", dot: "warning" },
+const SCENARIO_ES: Record<string, { name: string; tone: string }> = {
+  dry: { name: "Seco", tone: "var(--tight)" },
+  median: { name: "Mediano", tone: "var(--water-2)" },
+  wet: { name: "Húmedo", tone: "var(--water)" },
 };
 
-function Freshness({ status }: { status: StatusDocument | null }) {
-  if (status === null) return null;
+function SkillBar({ skill }: { skill: number }) {
+  // Zero sits 14 px in; the bar runs right for skill and left for its absence, 1.4 px a point.
+  const zero = 14;
+  const width = Math.min(Math.abs(skill * 100) * 1.4, skill >= 0 ? 70 - zero : zero);
+  const x = skill >= 0 ? zero : zero - width;
   return (
-    <section id="frescura">
-      <h2>Frescura de los datos</h2>
-      <p className="lede">
-        Cada fuente tiene su propio retraso de publicación. El límite es ese retraso más margen para una ejecución
-        fallida, no un objetivo: el ONI, por ejemplo, etiqueta cada valor con el mes central de una media de tres, así
-        que el más reciente disponible siempre tiene unos dos meses.
-      </p>
-      <div className="scroll">
-        <table>
-          <caption>
-            Generado el {longDate(status.generated_at.slice(0, 10))} a partir de {num(status.tables["observations_daily"]?.rows ?? 0, 0)}{" "}
-            observaciones y {num(status.tables["national_balance_daily"]?.rows ?? 0, 0)} filas de balance nacional.
-          </caption>
-          <thead>
-            <tr>
-              <th>Fuente</th>
-              <th>Último dato</th>
-              <th className="num">Límite</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {status.feeds.map((feed) => {
-              const state = FRESHNESS_WORDS[feed.state] ?? { word: feed.state, dot: "warning" };
+    <svg width="70" height="10" viewBox="0 0 70 10" aria-hidden="true">
+      <rect x="0" y="4" width="70" height="2" fill="var(--sunk)" />
+      <rect x={x.toFixed(1)} y="1" width={Math.max(width, 1.5).toFixed(1)} height="8" rx="2" fill="var(--tone, var(--muted))" />
+      <line x1={zero} x2={zero} y1="0" y2="10" stroke="var(--ink-2)" />
+    </svg>
+  );
+}
+
+function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
+  if (forecast === null) return null;
+
+  const history = windowOf(series().get("mazar", "cota_masl"), FAN_HISTORY_DAYS);
+  const thresholds = forecast.thresholds.map((t) => ({
+    level_masl: t.level_masl,
+    label:
+      t.status === "unverified"
+        ? `${num(t.level_masl, 0)} m · marcador propio, sin fuente oficial`
+        : `${num(t.level_masl, 0)} m · mínimo declarado (${/dashboard/.test(t.name) ? "tablero" : "reportes"})`,
+    unverified: t.status === "unverified",
+  }));
+  // Since 2026-09-22 the 7-day row can come from M4 while the rest are M3; each row names its
+  // model, and older documents that do not are all `model.id`.
+  const modelOf = (h: { model?: string }) => h.model ?? forecast.model.id;
+  const switched = forecast.forecast.filter((h) => modelOf(h) !== forecast.model.id);
+  const fellBack = forecast.horizon_switch?.status === "fallback" ? forecast.horizon_switch : null;
+  const scores = forecast.backtest.horizons;
+  const ties = scores.filter((b) => Math.abs(b.skill_vs_persistence) < SKILL_TIE).map((b) => b.horizon_days);
+  const coverage = scores.map((b) => b.coverage_p10_p90 * 100);
+  const critical = forecast.days_to_threshold.thresholds.find((t) => t.status === "unverified") ?? forecast.days_to_threshold.thresholds[0];
+  const declared = forecast.days_to_threshold.thresholds.filter((t) => t.status !== "unverified");
+  const last = forecast.forecast.at(-1)!;
+  const chart = {
+    history,
+    origin: forecast.origin_date,
+    originLevel: forecast.current.level_masl,
+    horizons: forecast.forecast,
+    thresholds,
+    label: `Cota de Mazar: ${FAN_HISTORY_DAYS} días observados y pronóstico a ${last.horizon_days} días con banda p10 a p90`,
+    primaryModel: forecast.model.id,
+  };
+
+  return (
+    <section id="mazar" className="shell section" aria-labelledby="mazar-title">
+      <div className="section-head">
+        <SectionIntro
+          index="02"
+          eyebrow={`Mazar · pronóstico a ${last.horizon_days} días`}
+          title={<span id="mazar-title">Hacia dónde va el único embalse con semanas de reserva.</span>}
+        >
+          Un balance hídrico cerrado en torno al operador: la curva cota–superficie y los m³/s por MW se ajustan con
+          las lecturas de este repositorio, y la descarga sale cada día simulado de una regla de operación contra la
+          propia cota. Junto a cada horizonte, cuánto le gana a suponer que la cota no cambia.
+        </SectionIntro>
+        <a href="/embalses/mazar/" className="btn btn-ghost">
+          Ficha completa de Mazar →
+        </a>
+      </div>
+
+      <div className="panel">
+        <div className="chart-head">
+          <ul className="legend">
+            <li>
+              <span className="key-line" style={{ background: "var(--ink)" }} aria-hidden="true" />
+              Cota observada
+            </li>
+            <li>
+              <span className="key-line" style={{ background: "var(--water)" }} aria-hidden="true" />
+              Pronóstico p50
+            </li>
+            <li>
+              <span className="key-box" style={{ background: "var(--water)", opacity: 0.3 }} aria-hidden="true" />
+              Banda p10–p90
+            </li>
+            {switched.length > 0 ? (
+              <li>
+                <span className="key-ring" aria-hidden="true" />
+                {joinDays(switched.map((h) => h.horizon_days))} días: otro modelo ({modelShort(modelOf(switched[0]!))}, árboles potenciados)
+              </li>
+            ) : null}
+            <li>
+              <span className="key-dash" aria-hidden="true" />
+              Mínimos
+            </li>
+          </ul>
+          <span className="meta">m s. n. m.</span>
+        </div>
+        <div className="only-wide">
+          <FanChart {...chart} />
+        </div>
+        <div className="only-compact">
+          <FanChart {...chart} compact />
+        </div>
+      </div>
+
+      <div className="split">
+        <div className="panel tight">
+          <div className="panel-head">
+            <h3>Horizontes</h3>
+            <span className="meta">p10 – p50 – p90 · acierto vs. persistencia</span>
+          </div>
+          {forecast.forecast.map((h) => {
+            const score = scores.find((b) => b.horizon_days === h.horizon_days);
+            const tone = skillTone(score?.skill_vs_persistence);
+            return (
+              <div className="horizon" key={h.horizon_days}>
+                <span className="when">{h.horizon_days} días</span>
+                <span className="date">{shortDate(h.target_date)}</span>
+                <span className="range num">
+                  {num(h.p10, 0)} – <strong>{num(h.p50, 2)}</strong> – {num(h.p90, 0)}
+                </span>
+                <span className={`skill tone-${tone}`}>
+                  {score ? (
+                    <>
+                      <SkillBar skill={score.skill_vs_persistence} />
+                      <span className="num">{signed(score.skill_vs_persistence * 100, 1)} %</span>
+                    </>
+                  ) : (
+                    "—"
+                  )}
+                </span>
+                <span className="model" title={modelOf(h)}>
+                  {modelShort(modelOf(h))}
+                </span>
+              </div>
+            );
+          })}
+          <p className="fine" style={{ marginTop: 14 }}>
+            {forecast.model.backtest_origins} orígenes mensuales desde 2018.
+            {ties.length > 0 ? ` A ${joinDays(ties)} días el modelo empata con la persistencia, y así se publica.` : ""}{" "}
+            La banda p10–p90 cubre entre el {num(Math.min(...coverage), 0)} % y el {num(Math.max(...coverage), 0)} % de
+            los casos, frente al 80 % nominal.
+            {switched.length > 0
+              ? ` La fila de ${joinDays(switched.map((h) => h.horizon_days))} días viene de ${modelOf(switched[0]!)}, que corrige el error del balance hídrico y es el único que le gana a la persistencia a una semana.`
+              : ""}
+            {fellBack
+              ? ` Hoy los ${fellBack.horizon_days} días vuelven al balance hídrico: ${fellBack.candidate_model} no se publica cuando su validación no cubre los mismos orígenes.`
+              : ""}
+          </p>
+        </div>
+
+        {critical ? (
+          <div className="scenarios">
+            <div className="panel-head" style={{ marginBottom: 0 }}>
+              <h3>Tres años reales de caudal, la misma regla</h3>
+              <span className="meta">umbral {num(critical.level_masl, 0)} m</span>
+            </div>
+            {critical.scenarios.map((s) => {
+              const kind = SCENARIO_ES[s.scenario] ?? { name: s.scenario, tone: "var(--muted)" };
               return (
-                <tr key={feed.feed}>
-                  <th scope="row">{feedLabel(feed.feed)}</th>
-                  <td>{feed.latest ? longDate(feed.latest) : "—"}</td>
-                  <td className="num">{feed.limit_days} días</td>
-                  <td>
-                    <span className="pill">
-                      <span className={`dot ${state.dot}`} aria-hidden="true" />
-                      {state.word}
+                <div className="scenario lift" key={s.scenario}>
+                  <div className="scenario-head">
+                    <span className="scenario-name">
+                      <span className="dot" style={{ background: kind.tone }} aria-hidden="true" />
+                      {kind.name}
                     </span>
-                  </td>
-                </tr>
+                    <span className="meta" style={{ fontSize: 12 }}>
+                      como {s.analogYear} · {num(s.inflowMeanM3s, 1)} m³/s
+                    </span>
+                  </div>
+                  <div className="scenario-verdict">{s.crossesOn ? `Cruza ${num(critical.level_masl, 0)} m` : "No cruza"}</div>
+                  <div className="scenario-detail">
+                    {s.crossesOn ? `el ${longDate(s.crossesOn)}, en ${num(s.days, 0)} días` : `en los próximos ${forecast.days_to_threshold.horizon_days} días`}
+                    <br />
+                    mínimo {num(s.minimumLevelMasl, 2)} m
+                  </div>
+                </div>
               );
             })}
-          </tbody>
-        </table>
+            <p className="fine">
+              De los {critical.across_all_analogue_years.analogue_years} años análogos,{" "}
+              {critical.across_all_analogue_years.years_that_cross} cruzan los {num(critical.level_masl, 0)} m
+              {declared.length > 0
+                ? declared.every((t) => t.across_all_analogue_years.years_that_cross === 0)
+                  ? `; ninguno llega a los ${num(Math.max(...declared.map((t) => t.level_masl)), 0)} m declarados.`
+                  : `; ${Math.max(...declared.map((t) => t.across_all_analogue_years.years_that_cross))} llegan a un mínimo declarado.`
+                : "."}{" "}
+              {critical.status === "unverified" ? `${num(critical.level_masl, 0)} m es un marcador de este proyecto, no de CELEC.` : ""}
+            </p>
+          </div>
+        ) : null}
       </div>
-      {status.findings.length > 0 ? (
-        <p className="note">
-          Observaciones abiertas del control de calidad: {status.findings.map(findingText).join(" · ")}
-        </p>
-      ) : null}
     </section>
   );
 }
 
-/* ---------------------------------------------------------------- downloads */
+/* ------------------------------------------------------------------ inflows */
 
-function Downloads({ narrative }: { narrative: boolean }) {
+function Inflow({ mazar }: { mazar: ReservoirSnapshot | null }) {
+  const data = inflowWindow();
+  if (data === null) return null;
+  const inflow = mazar?.inflow ?? null;
+  const climatology = inflow?.climatology ?? null;
+
   return (
-    <section id="descargas">
-      <h2>Descargas</h2>
-      <p className="lede">
-        Los documentos JSON son pequeños y estables; las tablas completas están en CSV particionado por año,
-        y cada respuesta original queda archivada comprimida junto a la fila que produjo.
-      </p>
-      <ul className="links">
-        <li>
-          <a href="/api/latest.json">latest.json</a> — <code>cota, banda, caudal y mezcla del día</code>
-        </li>
-        <li>
-          <a href="/api/forecast.json">forecast.json</a> — <code>pronóstico de Mazar con su validación histórica</code>
-        </li>
-        <li>
-          <a href="/api/adequacy.json">adequacy.json</a> —{" "}
-          <code>déficit esperado en GWh/día y nivel de riesgo</code>
-        </li>
-        <li>
-          <a href="/api/status.json">status.json</a> — <code>frescura por fuente y control de calidad</code>
-        </li>
-        {narrative ? (
-          <li>
-            <a href="/api/narrative.json">narrative.json</a> —{" "}
-            <code>el resumen generado por un modelo, con los datos que recibió</code>
-          </li>
+    <section id="caudal" className="section" style={{ gap: 28 }} aria-labelledby="caudal-title">
+      <SectionIntro index="03" eyebrow="Caudal" title={<span id="caudal-title">{inflowHeadline(climatology?.percentile_today)}</span>}>
+        Caudal de entrada a Mazar del último año sobre la franja p10–p90 de los mismos días en todo el registro desde
+        2010. La franja describe lo que este río ha hecho, no lo que vaya a hacer.
+      </SectionIntro>
+      <div className="panel tight">
+        {inflow ? (
+          <div className="figure-row">
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <span className="big-figure num">
+                {num(inflow.m3s, 1)}
+                <small>m³/s</small>
+              </span>
+              <span style={{ fontSize: 13, color: "var(--ink-2)" }}>
+                {shortDate(inflow.date)}
+                {climatology ? ` · mediana histórica ${num(climatology.p50, 1)} m³/s` : ""}
+              </span>
+            </div>
+            {climatology?.percentile_today != null ? (
+              <PercentileTrack percentile={climatology.percentile_today} years={climatology.years} />
+            ) : null}
+          </div>
         ) : null}
-        <li>
-          <a href={`${REPO}/tree/main/data/curated`}>data/curated/</a> — <code>tablas en CSV por año</code>
-        </li>
-        <li>
-          <a href={`${REPO}/tree/main/data/raw`}>data/raw/</a> — <code>respuestas originales, NDJSON comprimido</code>
-        </li>
-        <li>
-          <a href={`${REPO}/blob/main/data/reports/backtest.md`}>backtest.md</a> —{" "}
-          <code>la validación histórica del pronóstico de cota, incluidos los resultados negativos</code>
-        </li>
-        <li>
-          <a href={`${REPO}/blob/main/data/reports/adequacy.md`}>adequacy.md</a> —{" "}
-          <code>la validación histórica del cálculo de suficiencia</code>
-        </li>
-      </ul>
+        <div className="only-wide">
+          <InflowChart readings={data.readings} ribbon={data.band} label="Caudal de entrada a Mazar del último año frente a su franja histórica p10 a p90" />
+        </div>
+        <div className="only-compact">
+          <InflowChart compact readings={data.readings} ribbon={data.band} label="Caudal de entrada a Mazar del último año frente a su franja histórica p10 a p90" />
+        </div>
+        <InflowLegend />
+        <p className="fine" style={{ marginTop: 12 }}>
+          Los cortes en la línea son días que la fuente nunca publicó. Un cero no significa «el río se detuvo»: en los
+          reportes de doce meses es cualquier valor por debajo de 0,5 m³/s.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+/* ----------------------------------------------------------------- national */
+
+function National({ now }: { now: LatestDocument | null }) {
+  const days = mix(MIX_DAYS);
+  const national = now?.national ?? null;
+  if (days.length < 2 || national === null) return null;
+  const supply = (national.total_generation_gwh ?? 0) + (national.total_import_gwh ?? 0);
+  const parts = national.supply_gwh;
+
+  return (
+    <section id="balance" className="section" style={{ gap: 28 }} aria-labelledby="balance-title">
+      <SectionIntro index="04" eyebrow="Balance nacional" title={<span id="balance-title">De dónde salió la electricidad.</span>}>
+        El balance que CENACE cierra cada mañana para el día anterior, en GWh. Los porcentajes van sobre generación
+        más importación: un kWh importado alumbra igual que uno generado.
+      </SectionIntro>
+      <div className="panel tight">
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", fontSize: 13 }}>
+            <span style={{ color: "var(--ink-2)" }}>
+              {shortDate(national.date)} {national.date.slice(0, 4)} · {num(supply, 1)} GWh de suministro
+            </span>
+            <span className="meta" style={{ fontSize: 12 }}>
+              demanda de distribución {num(national.distribution_demand_gwh, 1)} GWh
+            </span>
+          </div>
+          <div
+            className="supply"
+            role="img"
+            aria-label={`Suministro del ${longDate(national.date)}: hidroeléctrica ${pct(national.hydro_share_pct, 1)}, térmica ${pct(national.thermal_share_pct, 1)}, importación ${pct(national.import_share_pct, 1)}.`}
+          >
+            {parts.map((p) => (
+              <span
+                key={p.concept}
+                style={{ width: `${p.pct.toFixed(2)}%`, background: mixToken(p.concept) }}
+                title={`${conceptLabel(p.concept)}: ${pct(p.pct, 1)}`}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="only-wide">
+          <MixChart days={days} label={`Generación diaria del Ecuador por tipo e importación, últimos ${MIX_DAYS} días, en GWh`} />
+        </div>
+        <div className="only-compact">
+          <MixChart compact days={days} label={`Generación diaria del Ecuador por tipo e importación, últimos ${MIX_DAYS} días, en GWh`} />
+        </div>
+        <div className="mix-table" style={{ marginTop: 14 }}>
+          {parts.map((p) => (
+            <div key={p.concept}>
+              <span className="swatch" style={{ background: mixToken(p.concept) }} aria-hidden="true" />
+              <span>{conceptLabel(p.concept)}</span>
+              <span className="num gwh">{num(p.gwh, 2)}</span>
+              <span className="num">{pct(p.pct, 1)}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------------------------------------------------------------- adequacy */
+
+/** The day the import maximum was set, read from the assumptions' own prose when it names one. */
+function importPeakDate(basis: string | undefined): string | null {
+  const match = /import = [\d.]+ \([^()]*\((\d{4}-\d{2}-\d{2})\)/.exec(basis ?? "");
+  return match ? match[1]! : null;
+}
+
+function Adequacy({ adequacy }: { adequacy: AdequacyDocument | null }) {
+  if (adequacy === null) return null;
+  const worst = tierOf(adequacy.current.worst_tier);
+  const a = adequacy.assumptions;
+  const regime = a.import_regime;
+  const cutoff = regime?.state === "cutoff";
+  const peak = importPeakDate(a.basis);
+  const episodes = adequacy.crisis_check.episodes;
+  const scale = Math.max(1, ...episodes.flatMap((e) => [Math.abs(e.measured_suppression_gwh_day), Math.abs(e.implied_deficit_gwh_day)]));
+  const barWidth = (v: number) => `calc(${Math.max((Math.max(v, 0) / scale) * 50, 1.5).toFixed(1)}% * var(--bar-scale, 1))`;
+  const tones = adequacy.horizons.map((h) => `var(--${tierOf(h.tier)?.tone ?? "muted"})`);
+  const track =
+    tones.length > 1
+      ? `linear-gradient(90deg, ${tones.map((t, i) => `${t} ${Math.round((i / (tones.length - 1)) * 100)}%`).join(", ")})`
+      : tones[0];
+
+  return (
+    <section id="suficiencia" className="shell section" aria-labelledby="suficiencia-title">
+      <SectionIntro index="05" eyebrow="Suficiencia energética" title={<span id="suficiencia-title">{adequacyHeadline(adequacy.horizons)}</span>} wide>
+        Una sola identidad: demanda no suprimida menos hidroeléctrica menos el techo térmico menos la importación. Lo
+        que queda es el superávit; en negativo, el déficit esperado. La demanda excluye los días de racionamiento,
+        porque durante un corte los contadores miden la demanda que se permitió, no la que había.
+      </SectionIntro>
+
+      <div className="split wide-left">
+        <div className="panel">
+          <div className="panel-head" style={{ marginBottom: 36 }}>
+            <h3>Superávit esperado por horizonte</h3>
+            {worst ? (
+              <span className="pill">
+                <span className={`dot tone-${worst.tone}`} aria-hidden="true" />
+                Peor nivel: {worst.label.toLowerCase()} a {adequacy.current.worst_tier_horizon_days} días
+              </span>
+            ) : null}
+          </div>
+          <div className="timeline">
+            <div className="timeline-track" style={{ background: track }} aria-hidden="true" />
+            <ol>
+              {adequacy.horizons.map((h) => {
+                const tier = tierOf(h.tier);
+                const surplus = -h.deficit_gwh_day;
+                return (
+                  <li className={`step tone-${tier?.tone ?? "muted"}`} key={h.horizon_days}>
+                    <div className="step-when">{h.horizon_days} días</div>
+                    <div className="step-dot" aria-hidden="true" />
+                    <div className={surplus < 0 ? "step-value num short" : "step-value num"}>{signed(surplus, 1)}</div>
+                    <div className="step-note">
+                      GWh/día
+                      <br />
+                      margen {signed(h.margin_pct, 2)} %
+                    </div>
+                    <div className="step-tier">{tier?.label ?? h.tier}</div>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+          <div className="assumptions">
+            <div className="assumption">
+              <span className="assumption-label">Térmica</span>
+              <span className="assumption-value num">{num(a.thermal_gwh_day, 2)}</span>
+              <span className="assumption-note">GWh/día · máx. demostrado</span>
+            </div>
+            <div className="assumption">
+              <span className="assumption-label">Importación</span>
+              <span className="assumption-value num">{num(cutoff ? regime!.central_import_gwh_day : a.import_gwh_day, 2)}</span>
+              <span className="assumption-note">GWh/día · {cutoff ? "lo que llega" : "máx. demostrado"}</span>
+            </div>
+            <div className="assumption">
+              <span className="assumption-label">Otros tipos</span>
+              <span className="assumption-value num">{num(a.other_gwh_day, 2)}</span>
+              <span className="assumption-note">GWh/día · mediana</span>
+            </div>
+            <div className="assumption">
+              <span className="assumption-label">Quincena hídrica</span>
+              <span className="assumption-value num">{num(adequacy.data.hydro_anomaly, 2)} ×</span>
+              <span className="assumption-note">su climatología</span>
+            </div>
+          </div>
+          <p className="fine" style={{ marginTop: 18 }}>
+            Los techos son máximos demostrados en los últimos tres años, no declaraciones de disponibilidad: ninguna
+            fuente que alcance este proyecto publica los mantenimientos programados. Se editan en{" "}
+            <code>{a.editable_at}</code>.
+          </p>
+        </div>
+
+        <div className="aside-stack">
+          <div className="inverse fragile">
+            <span className="eyebrow">El supuesto más frágil</span>
+            <p className="fragile-claim">
+              {cutoff
+                ? `Colombia envió ${num(regime!.trailing_gwh_day, 2)} GWh/día en los últimos ${regime!.window_days} días.`
+                : `El caso central cuenta con ${num(a.import_gwh_day, 2)} GWh/día desde Colombia.`}{" "}
+              {peak ? `En ${monthName(peak)} de ${peak.slice(0, 4)} llegó a ${num(a.import_gwh_day, 2)}.` : ""}
+            </p>
+            <p className="fragile-fine">
+              Un interconector no es firme cuando la sequía es compartida: entre el 1 de octubre y el 10 de noviembre
+              de 2024, con el país racionando, llegaron {num(a.stressed_import_gwh_day, 2)} GWh/día.
+              {cutoff ? " El caso central usa lo que está llegando, no el máximo." : ""}
+            </p>
+          </div>
+          {episodes.length > 0 ? (
+            <div className="inverse check">
+              <div className="check-head">
+                <strong>La comprobación</strong>
+                <span>GWh/día</span>
+              </div>
+              <p className="check-lede">
+                En cada racionamiento, la demanda suprimida que midieron los contadores frente al déficit que calcula
+                el modelo. Si la identidad es correcta, deben tener el mismo tamaño.
+              </p>
+              {episodes.map((e) => (
+                <div className="episode" key={e.start}>
+                  <div>
+                    {monthSpan(e.start, e.end)}
+                    <small>{e.days} días</small>
+                  </div>
+                  <div className="episode-bars">
+                    <div>
+                      <span className="episode-bar" style={{ width: barWidth(e.measured_suppression_gwh_day), background: "var(--inv-accent)" }} />
+                      {num(e.measured_suppression_gwh_day, 1)} observada
+                    </div>
+                    <div>
+                      <span className="episode-bar" style={{ width: barWidth(e.implied_deficit_gwh_day), background: "var(--t3)" }} />
+                      {signed(e.implied_deficit_gwh_day, 1)} calculada
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------- data */
+
+const FRESHNESS: Record<string, { word: string; tone: string }> = {
+  current: { word: "al día", tone: "good" },
+  stale: { word: "detenida", tone: "deficit" },
+  not_ingested: { word: "sin datos", tone: "watch" },
+};
+
+function Data({ status, narrative }: { status: StatusDocument | null; narrative: boolean }) {
+  const downloads = [
+    { path: "/api/latest.json", what: "Embalses y balance del día" },
+    { path: "/api/forecast.json", what: "Pronóstico de Mazar y su validación" },
+    { path: "/api/adequacy.json", what: "Suficiencia por horizonte" },
+    ...(narrative ? [{ path: "/api/narrative.json", what: "La lectura del día y lo que recibió el modelo" }] : []),
+    { path: "/api/status.json", what: "Frescura y comprobaciones" },
+  ];
+  const current = status?.feeds.filter((f) => f.state === "current").length ?? 0;
+  const total = status?.feeds.length ?? 0;
+  const overall = total === 0 ? "muted" : current === total ? "good" : status?.feeds.some((f) => f.state === "stale") ? "deficit" : "watch";
+
+  return (
+    <section id="datos" className="shell split even" aria-label="Datos">
+      {status ? (
+        <div className="panel">
+          <div className="panel-head" style={{ alignItems: "center", marginBottom: 10 }}>
+            <h2 className="panel-title">¿Se puede confiar hoy?</h2>
+            <span className="pill">
+              <span className={`dot tone-${overall}`} aria-hidden="true" />
+              {current} de {total} al día
+            </span>
+          </div>
+          <p className="panel-lede" style={{ marginBottom: 12 }}>
+            Cada fuente, con la última fecha que publicó. El límite de cada una es su retraso de publicación más margen
+            para una ejecución fallida: el ONI siempre tiene unos dos meses.
+            {status.findings.length > 0
+              ? ` ${status.findings.length === 1 ? "Un aviso abierto" : `${status.findings.length} avisos abiertos`}: ${status.findings.map(findingText).join(" · ")}.`
+              : ""}
+          </p>
+          <ul className="feeds">
+            {status.feeds.map((feed) => {
+              const state = FRESHNESS[feed.state] ?? { word: feed.state, tone: "watch" };
+              return (
+                <li key={feed.feed} title={`Límite: ${feed.limit_days} días · ${state.word}`}>
+                  <span>
+                    <span className={`dot tone-${state.tone}`} aria-hidden="true" />
+                    {feedLabel(feed.feed).replace(/\s*\([^)]*\)$/, "")}
+                    <span className="visually-hidden">: {state.word}</span>
+                  </span>
+                  <span className="when">{feed.latest ? shortDate(feed.latest) : "—"}</span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ) : null}
+      <div className="downloads">
+        <h2 className="panel-title" style={{ marginBottom: 4 }}>
+          Llévate los datos
+        </h2>
+        <p className="panel-lede" style={{ marginBottom: 6 }}>
+          JSON abiertos, actualizados cada día, con la respuesta original archivada junto a cada número.
+        </p>
+        {downloads.map((d) => (
+          <a key={d.path} href={d.path} className="download lift">
+            <span>
+              <span className="path">{d.path}</span>
+              <span className="what">{d.what}</span>
+            </span>
+            <span className="go" aria-hidden="true">
+              ↗
+            </span>
+          </a>
+        ))}
+        <a href={`${REPO}/tree/main/data/curated`} className="download lift">
+          <span>
+            <span className="path">data/curated/</span>
+            <span className="what">Las tablas completas, en CSV por año, y las respuestas originales en data/raw/</span>
+          </span>
+          <span className="go" aria-hidden="true">
+            ↗
+          </span>
+        </a>
+      </div>
     </section>
   );
 }
 
 /* ------------------------------------------------------------------- method */
 
-function Method() {
+function Method({ forecast, adequacy }: { forecast: ForecastDocument | null; adequacy: AdequacyDocument | null }) {
+  const sixty = forecast?.backtest.horizons.find((h) => h.horizon_days === 60);
+  const ninety = forecast?.backtest.horizons.find((h) => h.horizon_days === 90);
+  const tiers = adequacy?.tier_history;
+  const firstA = adequacy?.horizons[0];
+  const ninetyA = adequacy?.horizons.find((h) => h.horizon_days === 90);
   return (
-    <section id="metodo">
-      <h2>Método y advertencias</h2>
-      <p className="lede">
-        Cinco cosas que conviene saber antes de usar cualquiera de estos números. Están documentadas con las
-        mediciones que las establecieron en el <a href={REPO}>repositorio</a>.
-      </p>
-      <div className="stack">
-        <article className="card">
-          <h3><code>volutilalm</code> no es un volumen</h3>
-          <p className="sub">
-            El servicio lo publica como «% de volumen útil», pero es exactamente (cota − mín) / (máx − mín),
-            verificado a diez decimales en los tres embalses que cubre. Aquí se guarda como{" "}
-            <code>nivel_pct_banda</code> y no debe leerse como agua almacenada.
+    <section id="metodo" className="shell section" aria-labelledby="metodo-title">
+      <SectionIntro index="06" eyebrow="Método y advertencias" title={<span id="metodo-title">Lo que conviene saber antes de usar estos números.</span>}>
+        Cada una está documentada, con las mediciones que la establecieron, en el <a href={REPO}>repositorio</a>.
+      </SectionIntro>
+      <div className="caveats">
+        {forecast && sixty && ninety ? (
+          <p>
+            <strong>El pronóstico de cota.</strong> Sobre {forecast.model.backtest_origins} orígenes mensuales, el
+            balance hídrico es {pct(sixty.skill_vs_persistence * 100, 1)} mejor que la persistencia a 60 días y{" "}
+            {pct(ninety.skill_vs_persistence * 100, 1)} a 90, e indistinguible de ella por debajo del mes. De los{" "}
+            {countWord(forecast.crisis_check.episodes.length)} cruces de los {num(forecast.crisis_check.threshold_masl, 0)} m en 2024, la
+            mediana no anticipó ninguno; dio {forecast.crisis_check.false_alarms_p50}{" "}
+            {forecast.crisis_check.false_alarms_p50 === 1 ? "falsa alarma" : "falsas alarmas"}. Todo, negativos incluidos,
+            en <a href={`${REPO}/blob/main/${forecast.backtest.report}`}>{forecast.backtest.report}</a>.
+          </p>
+        ) : null}
+        {adequacy && tiers ? (
+          <p>
+            <strong>La suficiencia.</strong> El requerimiento le gana a suponer que el último mes se repite
+            {firstA?.backtest.requirement_skill_vs_persistence != null
+              ? ` por ${pct(firstA.backtest.requirement_skill_vs_persistence * 100, 1)} a 7 días`
+              : ""}
+            {ninetyA?.backtest.requirement_skill_vs_persistence != null
+              ? ` y ${pct(ninetyA.backtest.requirement_skill_vs_persistence * 100, 1)} a 90`
+              : ""}
+            , y su banda p10–p90 cubre unos dos tercios de los casos, no cuatro quintos. Aplicados a{" "}
+            {tiers.origins} meses del registro, los niveles marcaron {tiers.origins_flagged}; de los marcados,{" "}
+            {pct((tiers.share_of_flagged_that_preceded_cuts ?? 0) * 100, 0)} precedieron cortes, y de los cortes se marcó{" "}
+            {pct((tiers.share_of_cuts_that_were_flagged ?? 0) * 100, 0)}: no da falsas alarmas, pero se le escapan la mayoría
+            de las crisis. Nada de esto modela la red. Detalle en{" "}
+            <a href={`${REPO}/blob/main/data/reports/adequacy.md`}>data/reports/adequacy.md</a>.
+          </p>
+        ) : null}
+      </div>
+      <div className="notes">
+        <article>
+          <h3>
+            <code>volutilalm</code> no es un volumen
+          </h3>
+          <p>
+            El servicio lo publica como «% de volumen útil», pero es exactamente (cota − mín) / (máx − mín), verificado
+            a diez decimales. Aquí se guarda como <code>nivel_pct_banda</code> y no debe leerse como agua almacenada.
           </p>
         </article>
-        <article className="card">
-          <h3><code>repDiaNivQIng</code> responde con los números de ayer</h3>
-          <p className="sub">
-            Si se le pide el día D, devuelve filas fechadas D cuyos valores son los de D−1, medido en 113 días
-            consecutivos y en capturas de 2016, 2019, 2022, 2024 y 2026. Sus filas se guardan bajo el día que
-            describen, no bajo el día que las etiqueta.
+        <article>
+          <h3>
+            <code>repDiaNivQIng</code> responde con los números de ayer
+          </h3>
+          <p>
+            Si se le pide el día D, devuelve filas fechadas D con los valores de D−1, medido en 113 días consecutivos.
+            Sus filas se guardan bajo el día que describen, no bajo el que las etiqueta.
           </p>
         </article>
-        <article className="card">
+        <article>
           <h3>El caudal del historiador es caudal de entrada</h3>
-          <p className="sub">
+          <p>
             <code>mridCaud</code> coincide con <code>q_ingresado</code> del reporte en 4281 días con r = 1,0000; el
-            reporte es exactamente <code>round(historiador)</code> en cada uno de ellos. El caudal turbinado, el otro
-            candidato, correlaciona a r = −0,06.
+            caudal turbinado, el otro candidato, correlaciona a r = −0,06.
           </p>
         </article>
-        <article className="card">
+        <article>
           <h3>La misma lectura de dos servicios se guarda dos veces</h3>
-          <p className="sub">
-            Cuando dos servicios de CELEC publican el mismo día, se conservan ambas filas con su fuente en lugar de
-            preferir una en silencio, para que los desacuerdos entre reportes sigan siendo visibles. Los modelos
-            resuelven una sola serie por un orden de fuentes declarado, que decide cobertura y no verdad.
+          <p>
+            Cuando dos servicios de CELEC publican el mismo día se conservan ambas filas con su fuente, para que los
+            desacuerdos sigan siendo visibles. Los modelos resuelven una sola serie por un orden de fuentes declarado.
           </p>
         </article>
-        <article className="card">
-          <h3>Los 2115 m son un marcador de este proyecto</h3>
-          <p className="sub">
+        <article>
+          <h3>Los 2.115 m son un marcador de este proyecto</h3>
+          <p>
             Ninguna fuente publica ese nivel como crítico. Se pronostica porque el plan lo pide y se etiqueta como no
-            verificado en cada documento, para que nadie aguas abajo lo confunda con una declaración de CELEC.
+            verificado en cada documento, para que nadie lo confunda con una declaración de CELEC.
           </p>
         </article>
       </div>

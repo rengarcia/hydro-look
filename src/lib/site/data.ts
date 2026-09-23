@@ -137,3 +137,10 @@ export function mix(days: number): MixDay[] {
   const first = addDays(last, -(days - 1));
   return dates.filter((d) => d >= first).map((date) => ({ date, values: byDate.get(date)! }));
 }
+
+/** The date the newest number on the page describes: the latest reading or closed balance day. */
+export function dataDate(now: LatestDocument | null = latest()): string | null {
+  if (now === null) return null;
+  const dates = [now.national?.date, ...now.reservoirs.map((r) => r.level?.date)].filter((d): d is string => !!d);
+  return dates.length > 0 ? dates.sort().at(-1)! : now.as_of;
+}
