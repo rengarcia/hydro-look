@@ -63,7 +63,9 @@ export interface NavLink {
 
 /**
  * The strip across the top. `asOf` is the date of the data, not of the build: the pill is the
- * first thing a reader sees, and what it has to answer is how old the numbers are.
+ * first thing a reader sees, and what it has to answer is how old the numbers are. It says so in
+ * words ("actualizados al") on every width, shortening only on a phone, where the navigation has
+ * folded into the menu and the pill is the one thing beside the mark.
  */
 export function Masthead({ asOf, links }: { asOf: string | null; links: NavLink[] }) {
   return (
@@ -78,9 +80,13 @@ export function Masthead({ asOf, links }: { asOf: string | null; links: NavLink[
           ))}
         </nav>
         {asOf ? (
-          <span className="pill">
+          <span className="pill masthead-date" title="El último día con datos publicados por CELEC y CENACE">
             <span className="dot tone-good" aria-hidden="true" />
-            Datos al {dateWithYear(asOf)}
+            <span>
+              <span className="pill-long">Datos actualizados al </span>
+              <span className="pill-short">Actualizado: </span>
+              {dateWithYear(asOf)}
+            </span>
           </span>
         ) : null}
         <details className="menu">
