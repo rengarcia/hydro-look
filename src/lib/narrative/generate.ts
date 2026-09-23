@@ -47,8 +47,11 @@ export const NARRATIVE_MODEL = "xiaomi/mimo-v2.6-flash";
 /** How long to wait before the one retry after a 429. */
 export const RATE_LIMIT_RETRY_MS = 20_000;
 
-/** Enough for 220 words of Spanish plus five drivers with room to spare, and a cap on spend. */
-export const MAX_OUTPUT_TOKENS = 2_000;
+/**
+ * A cap on spend, not a length target: the prompt sets the length. Reasoning counts against it,
+ * and 2,000 cut MiMo's answer off mid-JSON (run 35809878208, `finish: length`).
+ */
+export const MAX_OUTPUT_TOKENS = 4_000;
 
 /** Decision 8's contract, as in PLAN.md §6 Phase 6b. */
 export const narrativeSchema = z.object({

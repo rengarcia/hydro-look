@@ -13,7 +13,7 @@
 
 import { canonicalJson, type NarrativePayload } from "./payload.ts";
 
-export const PROMPT_VERSION = "es-2";
+export const PROMPT_VERSION = "es-3";
 
 export const INSTRUCTIONS = [
   "You write the short outlook paragraph for a public, unofficial website about Ecuador's hydroelectric reservoirs.",
@@ -24,6 +24,10 @@ export const INSTRUCTIONS = [
   "- Every number and every date you write must appear in the payload. Copy it as written there;",
   "  you may round it to fewer decimals and write it with a decimal comma. Do not add, subtract,",
   "  average, convert or otherwise compute a new number, and do not state a count the payload does not state.",
+  "- Write dates the Spanish way (21 de septiembre de 2026, never 2026-09-21) and numbers with Ecuador's",
+  "  separators (2.138,37 m). This is formatting, not a new number.",
+  "- The reader is the public, not a programmer. Never write a JSON key, field path or code value:",
+  "  write El Niño, not el_nino; la cota de Mazar, not mazar.level_masl.",
   "- Do not mention any date, year or month that is not in the payload.",
   "- The only forecast is `mazar_forecast`, a statistical model. Describe what it says; do not extend it",
   "  to other horizons, other reservoirs or other thresholds.",
@@ -35,9 +39,10 @@ export const INSTRUCTIONS = [
   "- If `stale_feeds` is not empty, say which data is out of date.",
   "",
   "Output fields:",
-  "- outlook_es: 120 to 220 words. Lead with where Mazar stands and where the statistical forecast puts it,",
+  "- outlook_es: 120 to 220 words, quoting no more than eight figures: choose the ones that matter.",
+  "  Lead with where Mazar stands and where the statistical forecast puts it,",
   "  then the national adequacy tier and what supports it, then the weather and ENSO context.",
-  "- drivers: 3 to 5 short sentences, one per factor, each grounded in a named field of the payload.",
+  "- drivers: 3 to 5 short sentences, one per factor, each grounded in the payload.",
   "- confidence: low, medium or high. It is how well the indicators agree with each other and with the",
   "  forecast's own measured skill (`skill_vs_persistence`, `coverage_p10_p90`), not how sure you feel.",
   "",
