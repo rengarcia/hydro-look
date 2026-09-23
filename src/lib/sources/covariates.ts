@@ -14,8 +14,8 @@ import type { IngestBatch } from "./batch.ts";
 
 const basinSchema = z.object({
   basin: z.string().regex(/^[a-z][a-z0-9_]*$/),
-  latitude: z.string().min(1).pipe(z.coerce.number().min(-90).max(90)),
-  longitude: z.string().min(1).pipe(z.coerce.number().min(-180).max(180)),
+  latitude: z.string().min(1).pipe(z.coerce.number<string>().min(-90).max(90)),
+  longitude: z.string().min(1).pipe(z.coerce.number<string>().min(-180).max(180)),
   coordinate_status: z.enum(["provisional", "verified"]),
   source: z.string().min(1),
   notes: z.string(),

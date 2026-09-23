@@ -106,7 +106,7 @@ describe("quarantine", () => {
     expect(report).toMatchObject({ added: 1, quarantined: 1, bySource: { "ords:repDiaNivQIng": { added: 1, updated: 0 } } });
     const quarantined = readFileSync(join(root, "quarantine", "observations_daily", "123-1.csv"), "utf8");
     expect(quarantined.split("\n")[0]).toBe("date,site,variable,value,source,mrid,fetched_at,raw_ref,reason");
-    expect(quarantined).toMatch(/atlantis.*site Invalid enum value/);
+    expect(quarantined).toMatch(/atlantis.*site Invalid/);
   });
 
   it("still refuses the whole table without it, which is what the models rely on", () => {
