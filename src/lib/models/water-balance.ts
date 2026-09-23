@@ -53,6 +53,7 @@ import {
   fitHypsometry,
   impliedReleases,
   levelAt,
+  nextDay,
   trimReleases,
   volumeAt,
 } from "../features/hydrology.ts";
@@ -188,7 +189,22 @@ export function analogPaths(
   days: number,
   accept?: (startDate: IsoDate) => boolean,
 ): AnalogPath[] {
-  const firstYear = Number([...inflow.keys()][0]?.slice(0, 4) ?? origin.slice(0, 4));
+  return analogPathsUpTo(inflow, origin, days, accept).filter((path) => path.inflowM3s.length === days);
+}
+
+/**
+ * Every earlier year's window, each followed for as many of `maxDays` as its record runs
+ * without a gap. `analogPaths(h)` is exactly the members here that reach `h`, so one call to
+ * this serves every horizon: a member is built once and simulated once, and each horizon reads
+ * the members long enough to reach it.
+ */
+export function analogPathsUpTo(
+  inflow: DailySeries,
+  origin: IsoDate,
+  maxDays: number,
+  accept?: (startDate: IsoDate) => boolean,
+): AnalogPath[] {
+  const firstYear = Number(inflow.keys().next().value?.slice(0, 4) ?? origin.slice(0, 4));
   const originYear = Number(origin.slice(0, 4));
   const monthDay = origin.slice(5);
   const out: AnalogPath[] = [];
@@ -201,12 +217,14 @@ export function analogPaths(
     if (startDate >= origin) continue;
     if (accept && !accept(startDate)) continue;
     const path: number[] = [];
-    for (let day = 1; day <= days; day++) {
-      const value = inflow.get(addDays(startDate, day));
+    let date = startDate;
+    for (let day = 1; day <= maxDays; day++) {
+      date = nextDay(date);
+      const value = inflow.get(date);
       if (value === undefined) break;
       path.push(value);
     }
-    if (path.length < days) continue;
+    if (path.length === 0) continue;
     out.push({
       year,
       startDate,
@@ -215,6 +233,48 @@ export function analogPaths(
     });
   }
   return out;
+}
+
+export interface HorizonEnsemble {
+  horizonDays: number;
+  /** Simulated level at the horizon, one per member that reaches it. */
+  ends: number[];
+  years: number[];
+}
+
+/**
+ * The analogue ensemble at every horizon from one simulation per member (§5.7 of ENHANCEMENTS).
+ *
+ * Each year is run once, to the longest horizon its record covers, and each horizon reads the
+ * members that reach it. The arithmetic is `simulateLevels`, which a test holds to
+ * `simulatePath` line for line, so the levels are the ones a separate simulation per horizon
+ * produced — the 90-day path used to be simulated about 2.2 times over.
+ *
+ * `sharedMembers` keeps only the years that reach the *longest* horizon, so every horizon is
+ * read off the same ensemble. It is a recorded experiment, not the default: it drops the years
+ * whose record stops short of ninety days from the short horizons too (see the backtest report).
+ */
+export function horizonEnsembles(
+  fit: WaterBalanceFit,
+  inflow: DailySeries,
+  origin: IsoDate,
+  horizons: readonly number[],
+  crestM: number,
+  options: WaterBalanceOptions = DEFAULT_WATER_BALANCE,
+  accept?: (startDate: IsoDate) => boolean,
+  sharedMembers = false,
+): HorizonEnsemble[] {
+  const longest = Math.max(0, ...horizons);
+  let paths = analogPathsUpTo(inflow, origin, longest, accept);
+  if (sharedMembers) paths = paths.filter((path) => path.inflowM3s.length === longest);
+  const runs = paths.map((path) => ({
+    year: path.year,
+    levels: simulateLevels(fit.curve, fit.rule, fit.startLevel, path.inflowM3s, fit.stance, crestM, options),
+  }));
+  return horizons.map((horizonDays) => {
+    const reaching = runs.filter((run) => run.levels.length >= horizonDays);
+    return { horizonDays, ends: reaching.map((run) => run.levels[horizonDays - 1]!), years: reaching.map((run) => run.year) };
+  });
 }
 
 export interface SimulationStep {
@@ -306,11 +366,46 @@ export function createFitCache(): FitCache {
   return new Map();
 }
 
+/**
+ * The rest of a fit — release rule, stance, start level — memoised against the same per-run
+ * cache as the curve. The ladder, the ENSO variant, the crisis check, M4's monthly fits and the
+ * live forecast all ask for the fit at the same origins; before this each of them refitted the
+ * rule and re-read the stance from four thousand implied releases. Hung off the curve cache
+ * through a `WeakMap`, so it lives and dies with one run's cache exactly as the curve does.
+ */
+const FULL_FITS = new WeakMap<FitCache, Map<string, WaterBalanceFit | null>>();
+
+function firstKey(series: DailySeries): string {
+  return series.keys().next().value ?? "";
+}
+
 export function fitAt(
   context: ForecastContext,
   options: WaterBalanceOptions = DEFAULT_WATER_BALANCE,
   cache?: FitCache,
 ): WaterBalanceFit | null {
+  const fullKey = [
+    context.origin,
+    JSON.stringify(options),
+    context.levels.size,
+    context.inflow.size,
+    context.production.size,
+    firstKey(context.levels),
+    firstKey(context.inflow),
+    firstKey(context.production),
+  ].join("|");
+  let fits: Map<string, WaterBalanceFit | null> | undefined;
+  if (cache) {
+    fits = FULL_FITS.get(cache) ?? FULL_FITS.set(cache, new Map()).get(cache)!;
+    const hit = fits.get(fullKey);
+    if (hit !== undefined) return hit;
+  }
+  const fit = fitUncached(context, options, cache);
+  fits?.set(fullKey, fit);
+  return fit;
+}
+
+function fitUncached(context: ForecastContext, options: WaterBalanceOptions, cache?: FitCache): WaterBalanceFit | null {
   const after = addDays(context.origin, 1);
   const days = balanceDays(context.levels, context.inflow, context.production, after);
   if (days.length < 60) return null;
@@ -345,7 +440,9 @@ export interface AnalogVariant {
   idSuffix: string;
   labelSuffix: string;
   /** True to keep the analogue year starting on `startDate` in the pool for this `origin`. */
-  accept(startDate: IsoDate, origin: IsoDate): boolean;
+  accept?(startDate: IsoDate, origin: IsoDate): boolean;
+  /** Read every horizon off the members that reach the longest one; see `horizonEnsembles`. */
+  sharedMembers?: boolean;
 }
 
 export function waterBalanceModel(
@@ -359,24 +456,19 @@ export function waterBalanceModel(
     forecast(context: ForecastContext): HorizonForecast[] {
       const fit = fitAt(context, options, cache);
       if (!fit) return [];
+      const accept = variant?.accept && ((start: IsoDate) => variant.accept!(start, context.origin));
       const out: HorizonForecast[] = [];
-
-      for (const horizonDays of context.horizonDays) {
-        const paths = analogPaths(context.inflow, context.origin, horizonDays, variant && ((start) => variant.accept(start, context.origin)));
-        if (paths.length < options.minAnalogYears) continue;
-        const ends = paths.map(
-          (path) =>
-            simulatePath(
-              fit.curve,
-              fit.rule,
-              fit.startLevel,
-              context.origin,
-              path.inflowM3s,
-              fit.stance,
-              context.crestM,
-              options,
-            ).at(-1)!.level,
-        );
+      for (const { horizonDays, ends } of horizonEnsembles(
+        fit,
+        context.inflow,
+        context.origin,
+        context.horizonDays,
+        context.crestM,
+        options,
+        accept,
+        variant?.sharedMembers ?? false,
+      )) {
+        if (ends.length < options.minAnalogYears) continue;
         const centre = median(ends);
         if (centre === null) continue;
         out.push({ horizonDays, targetDate: addDays(context.origin, horizonDays), p50: centre, ensemble: ends });

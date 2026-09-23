@@ -220,6 +220,7 @@ function main(): void {
     modelLabel: shipped.label,
     backtestOrigins: ladder.origins.length,
     horizonSwitch,
+    cache,
   });
   if (!forecast) {
     console.error("the model could not be fitted on the committed data; nothing written");

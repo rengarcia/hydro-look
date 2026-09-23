@@ -65,6 +65,23 @@ import type { DailySeries } from "./series.ts";
 
 const SECONDS_PER_DAY = 86_400;
 
+/**
+ * `addDays(date, 1)`, memoised. The balance, the implied releases and the analogue paths all
+ * step through the record a day at a time, once per origin and per variant, and `addDays` is a
+ * `Date` parse and format each time: it was a third of a forecast run's CPU before this. The
+ * memo holds one entry per distinct day ever asked about, which is bounded by the record.
+ */
+const NEXT_DAY = new Map<IsoDate, IsoDate>();
+
+export function nextDay(date: IsoDate): IsoDate {
+  let next = NEXT_DAY.get(date);
+  if (next === undefined) {
+    next = addDays(date, 1);
+    NEXT_DAY.set(date, next);
+  }
+  return next;
+}
+
 export interface Hypsometry {
   /** `A(level) = areaCoefficient * (level - datumM)^areaExponent`, in m2. */
   areaCoefficient: number;
@@ -121,8 +138,7 @@ export function balanceDays(
   const out: BalanceDay[] = [];
   for (const [date, level] of levels) {
     if (before !== undefined && date >= before) continue;
-    const next = addDays(date, 1);
-    const nextLevel = levels.get(next);
+    const nextLevel = levels.get(nextDay(date));
     const inflowM3s = inflow.get(date);
     const producedMwh = production.get(date);
     if (nextLevel === undefined || inflowM3s === undefined || producedMwh === undefined) continue;
@@ -255,7 +271,7 @@ export function impliedReleases(
   const out: ImpliedRelease[] = [];
   for (const [date, level] of levels) {
     if (before !== undefined && date >= before) continue;
-    const nextLevel = levels.get(addDays(date, 1));
+    const nextLevel = levels.get(nextDay(date));
     const inflowM3s = inflow.get(date);
     if (nextLevel === undefined || inflowM3s === undefined) continue;
     const stored = volumeAt(curve, nextLevel) - volumeAt(curve, level);
