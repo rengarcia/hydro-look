@@ -1,25 +1,24 @@
 {
-  "generated_at": "2026-09-23T02:33:19Z",
+  "generated_at": "2026-09-23T02:37:18Z",
   "status": "ok",
-  "model": "anthropic/claude-opus-5",
-  "prompt_version": "es-3",
+  "model": "anthropic/claude-opus-5.5",
+  "prompt_version": "es-4",
   "payload_hash": "40c07781513c71f022fdbece8a205888c989b3048a9cc3ee719a6966b062501b",
   "origin_date": "2026-09-21",
   "risk_tier": "ajustado",
-  "outlook_es": "Mazar se observó en 2.138,37 m el 21 de septiembre de 2026, con una pendiente de 30 días de -0,33 m por día y un caudal de entrada de 32,14 m³/s, es decir, el percentil 29 de su climatología. El pronóstico estadístico coloca la mediana en 2.135,31 m al 28 de septiembre de 2026 y en 2.133,28 m al 21 de octubre de 2026, con un escenario bajo de 2.120,44 m. El marcador de 2.115 m es propio de este proyecto y no una declaración de CELEC; dividir la distancia de 23,37 m para la pendiente actual da 71 días, lo cual es una división y no una predicción. El nivel de riesgo del modelo de suficiencia es ajustado a 60 días, porque el caso central queda corto en 0,797 GWh/día, aunque a 7 días todavía hay un superávit de 1,832 GWh/día bajo nivel vigilancia. En la cuenca del Paute se prevén 72,9 mm en 16 días, percentil 72, pero provienen de un solo punto de muestreo provisional y no de un promedio de la cuenca. El ONI de 1,8 en julio de 2026 mantiene la fase El Niño.",
+  "outlook_es": "Al 21 de septiembre de 2026, Mazar está en la cota 2.138,37 m y viene bajando. El pronóstico estadístico sitúa su nivel mediano en 2.130,95 m para el 5 de octubre de 2026, con un rango de 2.123,11 m a 2.134,25 m, aunque a ese plazo el modelo no supera a la simple persistencia. Solo en el escenario seco, con caudales como los de 2022, la cota cruzaría los 2.115 m, un marcador propio de este proyecto y no de CELEC, hacia el 5 de enero de 2027. El nivel de suficiencia nacional es ajustado: a 60 días el caso central queda corto en 0,8 GWh/día, mientras que a 7 y 30 días el margen es positivo pero estrecho y el nivel es vigilancia. El aporte hidroeléctrico reciente está algo por debajo de su climatología y el caudal de entrada a Mazar está bajo, en el percentil 29. La lluvia prevista para 16 días, medida en un solo punto provisional y no como promedio de la cuenca, queda en el percentil 72 frente a la climatología. El último ONI publicado, de julio de 2026, es 1,8, en fase de El Niño y en ascenso.",
   "drivers": [
-    "Mazar está en 2.138,37 m el 21 de septiembre de 2026, con pendiente de 30 días de -0,33 m por día y caudal de entrada de 32,14 m³/s, en el percentil 29 de su climatología.",
-    "El pronóstico estadístico sitúa la mediana en 2.135,31 m al 28 de septiembre de 2026 y en 2.133,28 m al 21 de octubre de 2026, con banda baja de 2.120,44 m.",
-    "El nivel de riesgo es ajustado a 60 días: el caso central queda corto en 0,797 GWh/día, mientras a 7 días hay superávit de 1,832 GWh/día y nivel vigilancia.",
-    "La lluvia prevista de 72,9 mm en 16 días equivale al percentil 72, pero proviene de un solo punto provisional y no de un promedio de la cuenca.",
-    "El ONI de 1,8 en julio de 2026 ubica la fase en El Niño, subiendo desde 1,39 en junio de 2026.",
-    "La destreza del modelo frente a la persistencia es baja (0,001 a 30 días) y la cobertura observada de 0,80 queda por debajo de lo esperado."
+    "La cota de Mazar desciende y su caudal de entrada está por debajo de lo habitual, en el percentil 29.",
+    "A 60 días la oferta queda corta en 0,8 GWh/día en el caso central, lo que define el nivel ajustado.",
+    "El pronóstico de Mazar tiene poca ventaja sobre la persistencia: 11,2 % a 7 días y prácticamente nula a 14 y 30 días.",
+    "La lluvia prevista en un punto provisional de la cuenca del Paute está en el percentil 72 de su climatología.",
+    "El Niño se intensifica según el último ONI publicado, de 1,8 en julio de 2026."
   ],
-  "confidence": "low",
+  "confidence": "medium",
   "usage": {
-    "input_tokens": 6609,
-    "output_tokens": 916,
-    "cost_usd": 0.055945
+    "input_tokens": 6433,
+    "output_tokens": 680,
+    "cost_usd": 0.039332
   },
   "disclaimer": "Texto redactado por un modelo de lenguaje a partir de los números que lo acompañan. No es un pronóstico: el pronóstico es el estadístico de la sección de Mazar, y el nivel de riesgo lo calcula el modelo de suficiencia, no el de lenguaje.",
   "basis": {
