@@ -152,7 +152,7 @@ export class HttpClient {
         try {
           check = await this.pinCheck(url.hostname, port);
         } catch (error) {
-          throw new Error(`TLS pin check failed for ${id}: ${String(error).replace(/^Error: /, "")}`);
+          throw new Error(`TLS pin check failed for ${id}: ${String(error).replace(/^Error: /, "")}`, { cause: error });
         }
         if (check) this.onPin?.(check);
       })();

@@ -28,8 +28,10 @@ jobs:
       - run: shellcheck -x .github/scripts/*.sh
       - run: npm run typecheck
       - run: npm run lint
-      # Every parser runs against the recorded Phase 0 responses, so CI needs no network.
-      - run: npm test
+      # Every parser runs against the recorded Phase 0 responses, so CI needs no network. Run with
+      # coverage over all of src/lib, against floors in vitest.config.ts: a module nobody tests
+      # counts as a zero, so the list of untested modules cannot grow unnoticed.
+      - run: npm run test:coverage
       # Shape, ranges and reference integrity over the committed data. Deliberately without
       # --freshness: that one depends on the clock, so in CI it would turn every pull request
       # red once the data aged a few days, which only teaches people to ignore a red build.

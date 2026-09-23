@@ -28,7 +28,7 @@ function parseJson(body: string, endpoint: string): Json {
   try {
     payload = JSON.parse(body);
   } catch (error) {
-    throw new Error(`${endpoint}: response is not JSON (${String(error)}); first 120 chars: ${body.slice(0, 120)}`);
+    throw new Error(`${endpoint}: response is not JSON (${String(error)}); first 120 chars: ${body.slice(0, 120)}`, { cause: error });
   }
   if (payload === null || typeof payload !== "object") throw new Error(`${endpoint}: response is not an object`);
   return payload as Json;

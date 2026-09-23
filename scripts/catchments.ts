@@ -289,7 +289,7 @@ async function loadTile(south: number, west: number): Promise<Tile> {
       }
       tile = { name, data, width, height, west: originLon, north: originLat, dLon: Math.abs(resLon), dLat: Math.abs(resLat), etag: response.headers.get("etag") ?? "" };
     } catch (error) {
-      if (attempt === 3) throw new Error(`DEM tile ${name}: ${String(error)}`);
+      if (attempt === 3) throw new Error(`DEM tile ${name}: ${String(error)}`, { cause: error });
       await sleep(3000 * attempt);
     }
   }
