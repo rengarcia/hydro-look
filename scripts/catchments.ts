@@ -40,7 +40,9 @@ import {
   accumulate,
   catchmentMask,
   catchmentStats,
+  confluencesAbove,
   geometryAreaKm2,
+  type Confluence,
   geometryBbox,
   outline,
   overlap,
@@ -371,6 +373,8 @@ interface CandidateResult {
   point: (Resolved & { note: string }) | null;
   snapped: { lat: number; lon: number; movedKm: number; accKm2: number; by: string } | null;
   stats: CatchmentStats | null;
+  /** Branches of at least 2% of the catchment joining the main channel within 3 km above the pour point. */
+  confluences: Confluence[];
   inamhi: (Overlap & { layer: string; id: string })[];
   outline: GeoJsonGeometry | null;
   error: string;
@@ -417,7 +421,7 @@ async function delineate(basin: Basin, inamhi: InamhiPolygon[]): Promise<BasinRe
     const grow = { north: false, south: false, west: false, east: false };
     for (const [k, c] of basin.candidates.entries()) {
       const point = points[k] ?? null;
-      const out: CandidateResult = { role: c.role, evidence: c.evidence, point, snapped: null, stats: null, inamhi: [], outline: null, error: "" };
+      const out: CandidateResult = { role: c.role, evidence: c.evidence, point, snapped: null, stats: null, confluences: [], inamhi: [], outline: null, error: "" };
       candidates.push(out);
       if (!point) {
         out.error = "not located";
@@ -435,6 +439,13 @@ async function delineate(basin: Basin, inamhi: InamhiPolygon[]): Promise<BasinRe
       for (const side of ["north", "south", "west", "east"] as const) if (out.stats.touches[side]) grow[side] = true;
       if (Object.values(out.stats.touches).some(Boolean)) continue; // cut off: widen before measuring anything else
       out.outline = outline(grid, mask, OUTLINE_TOLERANCE_DEG);
+      out.confluences = confluencesAbove(grid, routing, acc, snapped.index, 3, 0.02 * out.stats.areaKm2).map((k) => ({
+        ...k,
+        lat: round(k.lat, 5),
+        lon: round(k.lon, 5),
+        sideKm2: round(k.sideKm2, 1),
+        mainKm2: round(k.mainKm2, 1),
+      }));
       for (const p of inamhi) {
         if (!intersects(p.bbox, out.stats.bbox)) continue;
         if (!within(p.bbox, win)) {
@@ -520,6 +531,22 @@ function report(startedAt: string, inamhiNote: string, inamhi: InamhiPolygon[], 
     }
   }
   lines.push(
+    "",
+    "## Confluences just above each pour point",
+    "",
+    "Every branch of at least 2% of the catchment that joins the main channel within 3 km upstream of the pour point.",
+    "A disagreement with INAMHI the size of one of these branches is a disagreement about which side of the dam that",
+    "junction lies on, and its distance is how far apart the two pour points are.",
+    "",
+    "| basin | point | km upstream | at | branch km² | main channel km² |",
+    "|---|---|---|---|---|---|",
+    ...results.flatMap((r) =>
+      r.candidates.flatMap((c) =>
+        c.confluences.length
+          ? c.confluences.map((k) => `| ${r.basin} | ${c.role} | ${k.kmUpstream} | ${k.lat}, ${k.lon} | ${f1(k.sideKm2)} | ${f1(k.mainKm2)} |`)
+          : [`| ${r.basin} | ${c.role} | — | none within 3 km | — | — |`],
+      ),
+    ),
     "",
     "## Evidence for each pour point",
     "",

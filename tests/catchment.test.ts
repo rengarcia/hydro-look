@@ -3,6 +3,7 @@ import {
   accumulate,
   catchmentMask,
   catchmentStats,
+  confluencesAbove,
   cellAreaKm2,
   geometryAreaKm2,
   outline,
@@ -205,3 +206,30 @@ describe("polygons", () => {
     expect(o.iou).toBeCloseTo(0.5, 2);
   });
 });
+
+describe("confluences", () => {
+  it("finds the tributary that joins above a pour point, and how far up", () => {
+    // The same valley and tributary as the crest test: the tributary joins the main channel at
+    // row 7, two rows (0.02°, ~2.2 km) above a pour point at row 9.
+    const g = grid(
+      Array.from({ length: 12 }, (_, r) =>
+        Array.from({ length: 11 }, (_, c) => {
+          const main = 100 + 20 * Math.abs(c - 5) + 3 * (11 - r);
+          const trib = c > 5 ? 100 + 20 * Math.abs(r - 7) + 3 * (c - 5) + 3 * (11 - 7) : Infinity;
+          return Math.min(main, trib);
+        }),
+      ),
+    );
+    const routing = routeFlow(g);
+    const acc = accumulate(g, routing);
+    const found = confluencesAbove(g, routing, acc, at(g, 9, 5), 5, 3);
+    const trib = found.find((k) => Math.abs(k.lat - cellLatOf(7)) < 1e-9);
+    expect(trib).toBeDefined();
+    expect(trib!.kmUpstream).toBeCloseTo(2 * 1.1119, 1);
+    expect(trib!.sideKm2).toBeGreaterThan(3);
+  });
+});
+
+function cellLatOf(row: number): number {
+  return -(row + 0.5) * 0.01;
+}

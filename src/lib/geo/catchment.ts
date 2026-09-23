@@ -252,6 +252,57 @@ function kmToPolyline(p: { lat: number; lon: number }, line: readonly { lat: num
   return best;
 }
 
+export interface Confluence {
+  /** Distance up the main channel from the pour point, km. */
+  kmUpstream: number;
+  lat: number;
+  lon: number;
+  /** Upstream area of the side branch that joins here, km². */
+  sideKm2: number;
+  /** Upstream area of the main channel just above the junction, km². */
+  mainKm2: number;
+}
+
+/**
+ * Walk up the main channel from a pour point — always into the upstream neighbour with the
+ * largest area — and list every branch of at least `minKm2` that joins it within `maxKm`.
+ *
+ * This is how a disagreement about a catchment near a dam is settled from the data rather than
+ * argued: if a tributary the size of the difference joins a few hundred metres above the pour
+ * point, the two delineations differ on which side of the dam that junction is, and the distance
+ * says how far the DEM is from agreeing with the other.
+ */
+export function confluencesAbove(g: DemGrid, routing: Routing, acc: Float64Array, pour: number, maxKm: number, minKm2: number): Confluence[] {
+  const { width: w, height: h } = g;
+  const kmPerDeg = (Math.PI * EARTH_KM) / 180;
+  const out: Confluence[] = [];
+  let at = pour;
+  let km = 0;
+  while (km <= maxKm) {
+    const r = Math.floor(at / w);
+    const c = at - r * w;
+    const children: number[] = [];
+    for (let k = 0; k < 8; k++) {
+      const rr = r + DR[k]!;
+      const cc = c + DC[k]!;
+      if (rr < 0 || cc < 0 || rr >= h || cc >= w) continue;
+      const j = rr * w + cc;
+      if (routing.receiver[j] === at) children.push(j);
+    }
+    if (children.length === 0) break;
+    children.sort((a, b) => acc[b]! - acc[a]!);
+    const main = children[0]!;
+    for (const side of children.slice(1)) {
+      if (acc[side]! >= minKm2) out.push({ kmUpstream: Math.round(km * 1000) / 1000, lat: cellLat(g, r), lon: cellLon(g, c), sideKm2: acc[side]!, mainKm2: acc[main]! });
+    }
+    const mr = Math.floor(main / w);
+    const mc = main - mr * w;
+    km += Math.hypot((mr - r) * g.dLat * kmPerDeg, (mc - c) * g.dLon * kmPerDeg * Math.cos(rad(cellLat(g, r))));
+    at = main;
+  }
+  return out;
+}
+
 /** Every cell that drains through `pour`, as a 0/1 mask. */
 export function catchmentMask(g: DemGrid, routing: Routing, pour: number): Uint8Array {
   const mask = new Uint8Array(g.width * g.height);
