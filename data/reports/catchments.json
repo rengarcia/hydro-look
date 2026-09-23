@@ -1,6 +1,6 @@
 {
- "startedAt": "2026-09-23T04:13:19Z",
- "finishedAt": "2026-09-23T04:14:53Z",
+ "startedAt": "2026-09-23T04:17:50Z",
+ "finishedAt": "2026-09-23T04:19:00Z",
  "inamhi": "12 polygons, 2,408,810 bytes",
  "results": [
   {
@@ -21,7 +21,7 @@
     "Copernicus_DSM_COG_30_S03_00_W079_00_DEM \"75606582be76f58a68b981a9f9fbcf68\""
    ],
    "noDataShare": 0,
-   "seconds": 11,
+   "seconds": 10,
    "candidates": [
     {
      "role": "dam",
@@ -29,25 +29,200 @@
      "point": {
       "lat": -2.5951527,
       "lon": -78.6222096,
-      "source": "OSM way/311803060 \"Presa Mazar\" (42 nodes), api.openstreetmap.org 2026-09-23T04:13:21Z",
+      "line": [
+       {
+        "lat": -2.5951887,
+        "lon": -78.624828
+       },
+       {
+        "lat": -2.5949851,
+        "lon": -78.6244861
+       },
+       {
+        "lat": -2.5945296,
+        "lon": -78.6238342
+       },
+       {
+        "lat": -2.5941759,
+        "lon": -78.6236452
+       },
+       {
+        "lat": -2.5940714,
+        "lon": -78.6234869
+       },
+       {
+        "lat": -2.5940956,
+        "lon": -78.6233232
+       },
+       {
+        "lat": -2.5940446,
+        "lon": -78.6230792
+       },
+       {
+        "lat": -2.5937687,
+        "lon": -78.622756
+       },
+       {
+        "lat": -2.5937003,
+        "lon": -78.6224462
+       },
+       {
+        "lat": -2.5937606,
+        "lon": -78.6219835
+       },
+       {
+        "lat": -2.5936976,
+        "lon": -78.6215329
+       },
+       {
+        "lat": -2.593711,
+        "lon": -78.6211561
+       },
+       {
+        "lat": -2.5937379,
+        "lon": -78.6205123
+       },
+       {
+        "lat": -2.5937887,
+        "lon": -78.6202562
+       },
+       {
+        "lat": -2.5938557,
+        "lon": -78.6201998
+       },
+       {
+        "lat": -2.5942067,
+        "lon": -78.6203299
+       },
+       {
+        "lat": -2.5944559,
+        "lon": -78.6198981
+       },
+       {
+        "lat": -2.5940379,
+        "lon": -78.619595
+       },
+       {
+        "lat": -2.594815,
+        "lon": -78.6199732
+       },
+       {
+        "lat": -2.594894,
+        "lon": -78.6201837
+       },
+       {
+        "lat": -2.5954379,
+        "lon": -78.6204587
+       },
+       {
+        "lat": -2.5959055,
+        "lon": -78.6211091
+       },
+       {
+        "lat": -2.5967937,
+        "lon": -78.6214659
+       },
+       {
+        "lat": -2.5966825,
+        "lon": -78.6220681
+       },
+       {
+        "lat": -2.5965781,
+        "lon": -78.6222946
+       },
+       {
+        "lat": -2.596629,
+        "lon": -78.6224556
+       },
+       {
+        "lat": -2.5965954,
+        "lon": -78.6224878
+       },
+       {
+        "lat": -2.5964963,
+        "lon": -78.6222678
+       },
+       {
+        "lat": -2.5961929,
+        "lon": -78.6218702
+       },
+       {
+        "lat": -2.5961467,
+        "lon": -78.6219594
+       },
+       {
+        "lat": -2.5960556,
+        "lon": -78.6220667
+       },
+       {
+        "lat": -2.5959296,
+        "lon": -78.6220037
+       },
+       {
+        "lat": -2.5960153,
+        "lon": -78.622233
+       },
+       {
+        "lat": -2.5960288,
+        "lon": -78.6223228
+       },
+       {
+        "lat": -2.5959591,
+        "lon": -78.6223631
+       },
+       {
+        "lat": -2.5958813,
+        "lon": -78.6223577
+       },
+       {
+        "lat": -2.59586,
+        "lon": -78.6227633
+       },
+       {
+        "lat": -2.5958224,
+        "lon": -78.6231865
+       },
+       {
+        "lat": -2.5957581,
+        "lon": -78.6235432
+       },
+       {
+        "lat": -2.5954768,
+        "lon": -78.6244565
+       },
+       {
+        "lat": -2.5953589,
+        "lon": -78.6247649
+       },
+       {
+        "lat": -2.5952906,
+        "lon": -78.6247998
+       },
+       {
+        "lat": -2.5951887,
+        "lon": -78.624828
+       }
+      ],
+      "source": "OSM way/311803060 \"Presa Mazar\" (42 nodes), api.openstreetmap.org 2026-09-23T04:17:52Z",
       "note": "resolved from OSM — 0.04 km from the recorded point"
      },
      "snapped": {
-      "lat": -2.592917,
-      "lon": -78.61875,
-      "movedKm": 0.458,
-      "accKm2": 4418.4
+      "lat": -2.59375,
+      "lon": -78.619583,
+      "movedKm": 0.337,
+      "accKm2": 4418.1,
+      "by": "crest, 0.15 km"
      },
      "stats": {
-      "areaKm2": 4418.356458095327,
-      "cells": 515233,
+      "areaKm2": 4418.056244111172,
+      "cells": 515198,
       "centroid": {
-       "lat": -2.8818722780472226,
-       "lon": -78.91731871000708
+       "lat": -2.8818917334567433,
+       "lon": -78.91733914869224
       },
       "representative": {
-       "lat": -2.8818722780472226,
-       "lon": -78.91731871000708,
+       "lat": -2.8818917334567433,
+       "lon": -78.91733914869224,
        "isCentroid": true
       },
       "bbox": {
@@ -62,47 +237,47 @@
        "west": false,
        "east": false
       },
-      "meanElevM": 3113.6227083713457
+      "meanElevM": 3113.6773910830207
      },
      "inamhi": [
       {
        "layer": "Mazar",
        "id": "hidroelectricasshape.7",
-       "aKm2": 4418.356458095327,
+       "aKm2": 4418.056244111172,
        "bKm2": 4040.996532256701,
        "bothKm2": 4034.041272652447,
-       "iou": 0.9115835290241362,
-       "aInB": 0.9130185196491477,
+       "iou": 0.9116453752188657,
+       "aInB": 0.9130805607170395,
        "bInA": 0.9982788256439384
       },
       {
        "layer": "Paute_Molino",
        "id": "hidroelectricasshape.9",
-       "aKm2": 4418.356458095327,
+       "aKm2": 4418.056244111172,
        "bKm2": 5182.519980648008,
-       "bothKm2": 4399.99878361576,
-       "iou": 0.8460108226690886,
-       "aInB": 0.9958451350284488,
-       "bInA": 0.8490075870514244
+       "bothKm2": 4399.698569631626,
+       "iou": 0.8459530989532036,
+       "aInB": 0.995844852698737,
+       "bInA": 0.8489496588648945
       },
       {
        "layer": "Sopladora",
        "id": "hidroelectricasshape.11",
-       "aKm2": 4418.356458095327,
+       "aKm2": 4418.056244111172,
        "bKm2": 5322.634507768951,
-       "bothKm2": 4399.99878361576,
-       "iou": 0.8238167429339677,
-       "aInB": 0.9958451350284488,
-       "bInA": 0.8266580726505819
+       "bothKm2": 4399.698569631626,
+       "iou": 0.8237605335305701,
+       "aInB": 0.995844852698737,
+       "bInA": 0.8266016693819195
       },
       {
        "layer": "Minas_San_fancisco",
        "id": "hidroelectricasshape.8",
-       "aKm2": 4418.356458095327,
+       "aKm2": 4418.056244111172,
        "bKm2": 3346.6104241517583,
        "bothKm2": 2.957887310163714,
-       "iou": 0.00038107238887420946,
-       "aInB": 0.0006694542050232872,
+       "iou": 0.0003810871283166884,
+       "aInB": 0.0006694996955066569,
        "bInA": 0.0008838457230687163
       }
      ],
@@ -129,7 +304,7 @@
     "Copernicus_DSM_COG_30_N00_00_W078_00_DEM \"056444a1a5277738e5e4a703f51c11e5\""
    ],
    "noDataShare": 0,
-   "seconds": 12,
+   "seconds": 10,
    "candidates": [
     {
      "role": "dam",
@@ -137,25 +312,44 @@
      "point": {
       "lat": -0.1969932,
       "lon": -77.6850091,
-      "source": "OSM way/310742588 \"Coca Codo Sinclair\" (4 nodes), api.openstreetmap.org 2026-09-23T04:13:33Z",
+      "line": [
+       {
+        "lat": -0.1978197,
+        "lon": -77.6874232
+       },
+       {
+        "lat": -0.1969864,
+        "lon": -77.6847929
+       },
+       {
+        "lat": -0.196682,
+        "lon": -77.6840707
+       },
+       {
+        "lat": -0.1964849,
+        "lon": -77.6837495
+       }
+      ],
+      "source": "OSM way/310742588 \"Coca Codo Sinclair\" (4 nodes), api.openstreetmap.org 2026-09-23T04:18:03Z",
       "note": "resolved from OSM — 0.1 km from the recorded point"
      },
      "snapped": {
-      "lat": -0.192917,
-      "lon": -77.685417,
-      "movedKm": 0.456,
-      "accKm2": 3727.8
+      "lat": -0.195417,
+      "lon": -77.684583,
+      "movedKm": 0.182,
+      "accKm2": 3727.3,
+      "by": "crest, 0.15 km"
      },
      "stats": {
-      "areaKm2": 3727.8188470998257,
-      "cells": 434165,
+      "areaKm2": 3727.2950827659292,
+      "cells": 434104,
       "centroid": {
-       "lat": -0.30335657742646316,
-       "lon": -77.92653038228958
+       "lat": -0.30337152835766906,
+       "lon": -77.9265648071734
       },
       "representative": {
-       "lat": -0.30335657742646316,
-       "lon": -77.92653038228958,
+       "lat": -0.30337152835766906,
+       "lon": -77.9265648071734,
        "isCentroid": true
       },
       "bbox": {
@@ -170,37 +364,37 @@
        "west": false,
        "east": false
       },
-      "meanElevM": 3002.7165182037866
+      "meanElevM": 3002.937484763224
      },
      "inamhi": [
       {
        "layer": "Coca-Codo4326",
        "id": "hidroelectricasshape.1",
-       "aKm2": 3727.8188470998257,
+       "aKm2": 3727.2950827659292,
        "bKm2": 3726.4709442085036,
-       "bothKm2": 3718.8635590865765,
-       "iou": 0.9955660553560645,
-       "aInB": 0.997597713735415,
-       "bInA": 0.9979585550952034
+       "bothKm2": 3718.854972787373,
+       "iou": 0.9957010806504516,
+       "aInB": 0.9977355938311454,
+       "bInA": 0.9979562509583049
       },
       {
        "layer": "manduriacudisolv",
        "id": "hidroelectricasshape.5",
-       "aKm2": 3727.8188470998257,
+       "aKm2": 3727.2950827659292,
        "bKm2": 6959.0000238206385,
        "bothKm2": 2.3612381721526967,
-       "iou": 0.000220997476270148,
-       "aInB": 0.0006334101170151271,
+       "iou": 0.0002210083103503077,
+       "aInB": 0.0006334991246253793,
        "bInA": 0.0003393071079278897
       },
       {
        "layer": "Due_Hidroelec_4326",
        "id": "hidroelectricasshape.3",
-       "aKm2": 3727.8188470998257,
+       "aKm2": 3727.2950827659292,
        "bKm2": 604.9251712961775,
        "bothKm2": 0.3692130482913829,
-       "iou": 0.00008522186211489388,
-       "aInB": 0.00009904264757356003,
+       "iou": 0.0000852321662946594,
+       "aInB": 0.00009905656517471095,
        "bInA": 0.0006103449911007464
       }
      ],
@@ -229,7 +423,7 @@
     "Copernicus_DSM_COG_30_S01_00_W078_00_DEM \"5e42c464a76133a87a67cba65a16dc58\""
    ],
    "noDataShare": 0,
-   "seconds": 16,
+   "seconds": 15,
    "candidates": [
     {
      "role": "dam",
@@ -237,14 +431,15 @@
      "point": {
       "lat": -1.3997132,
       "lon": -78.3743984,
-      "source": "OSM node/8432673468 \"Central hidroeléctrica Agoyán\" (1 node), api.openstreetmap.org 2026-09-23T04:13:45Z",
+      "source": "OSM node/8432673468 \"Central hidroeléctrica Agoyán\" (1 node), api.openstreetmap.org 2026-09-23T04:18:13Z",
       "note": "resolved from OSM — 0.37 km from the recorded point"
      },
      "snapped": {
       "lat": -1.402083,
       "lon": -78.37125,
       "movedKm": 0.438,
-      "accKm2": 8242.4
+      "accKm2": 8242.4,
+      "by": "radius, 0.5 km"
      },
      "stats": {
       "areaKm2": 8242.401273676123,
@@ -374,7 +569,8 @@
       "lat": 0.214583,
       "lon": -78.91625,
       "movedKm": 0.436,
-      "accKm2": 6969.3
+      "accKm2": 6969.3,
+      "by": "radius, 0.5 km"
      },
      "stats": {
       "areaKm2": 6969.337545983613,
@@ -482,7 +678,8 @@
       "lat": -0.93875,
       "lon": -79.762083,
       "movedKm": 1.874,
-      "accKm2": 4196.7
+      "accKm2": 4196.7,
+      "by": "radius, 2 km"
      },
      "stats": {
       "areaKm2": 4196.721192443178,
@@ -534,46 +731,119 @@
    "window": {
     "south": -4,
     "north": -2,
-    "west": -81,
+    "west": -80,
     "east": -78
    },
    "grids": 1,
    "tiles": [
-    "Copernicus_DSM_COG_30_S04_00_W081_00_DEM \"b9e72b8a58f9b6501bbe9c452919671a\"",
     "Copernicus_DSM_COG_30_S04_00_W080_00_DEM \"eff780a179ff04863308a5db1eed2a14\"",
     "Copernicus_DSM_COG_30_S04_00_W079_00_DEM \"161019aaa61926dea4bac1a90a9f692c\"",
-    "Copernicus_DSM_COG_30_S03_00_W081_00_DEM \"d44d03a84b7e1f5f542783bd3b284921\"",
     "Copernicus_DSM_COG_30_S03_00_W080_00_DEM \"2a799e74ac887af287ceb00a9dbb020e\"",
     "Copernicus_DSM_COG_30_S03_00_W079_00_DEM \"75606582be76f58a68b981a9f9fbcf68\""
    ],
    "noDataShare": 0,
-   "seconds": 11,
+   "seconds": 5,
    "candidates": [
     {
-     "role": "intake lead",
-     "evidence": "the only waterway=dam on the Jubones in a 55 km box, on the river, 13.3 km from and 315 m above the powerhouse; no name, operator or QID (§2.4)",
+     "role": "dam",
+     "evidence": "the only waterway=dam on the Jubones in a 55 km box, on the river, 13.3 km from and 315 m above the powerhouse, with no name, operator or QID (§2.4). INAMHI's Minas_San_fancisco polygon was drawn at this point: the first run's catchment here matched it at 99% IoU (3,345 against 3,347 km²), while the powerhouse, which sits off the river at the end of the tunnel, drained 0.3 km²",
      "point": {
       "lat": -3.3157917,
       "lon": -79.4817219,
-      "source": "OSM way/690695821 (17 nodes), api.openstreetmap.org 2026-09-23T04:14:21Z",
+      "line": [
+       {
+        "lat": -3.31514,
+        "lon": -79.4812131
+       },
+       {
+        "lat": -3.3152846,
+        "lon": -79.4815055
+       },
+       {
+        "lat": -3.3152739,
+        "lon": -79.4816449
+       },
+       {
+        "lat": -3.3150651,
+        "lon": -79.4817978
+       },
+       {
+        "lat": -3.3153141,
+        "lon": -79.4819775
+       },
+       {
+        "lat": -3.3153703,
+        "lon": -79.4818595
+       },
+       {
+        "lat": -3.3158604,
+        "lon": -79.482117
+       },
+       {
+        "lat": -3.3158978,
+        "lon": -79.4820553
+       },
+       {
+        "lat": -3.3160264,
+        "lon": -79.4821572
+       },
+       {
+        "lat": -3.316977,
+        "lon": -79.4821411
+       },
+       {
+        "lat": -3.3167424,
+        "lon": -79.4819684
+       },
+       {
+        "lat": -3.3164014,
+        "lon": -79.4817172
+       },
+       {
+        "lat": -3.3162486,
+        "lon": -79.4816047
+       },
+       {
+        "lat": -3.3160972,
+        "lon": -79.4815315
+       },
+       {
+        "lat": -3.3158614,
+        "lon": -79.4814176
+       },
+       {
+        "lat": -3.3155578,
+        "lon": -79.4813258
+       },
+       {
+        "lat": -3.3153397,
+        "lon": -79.4812375
+       },
+       {
+        "lat": -3.31514,
+        "lon": -79.4812131
+       }
+      ],
+      "source": "OSM way/690695821 (17 nodes), api.openstreetmap.org 2026-09-23T04:18:47Z",
       "note": "resolved from OSM"
      },
      "snapped": {
-      "lat": -3.31625,
-      "lon": -79.485417,
-      "movedKm": 0.413,
-      "accKm2": 3345
+      "lat": -3.315417,
+      "lon": -79.482917,
+      "movedKm": 0.141,
+      "accKm2": 3344.6,
+      "by": "crest, 0.15 km"
      },
      "stats": {
-      "areaKm2": 3345.005729248474,
-      "cells": 390247,
+      "areaKm2": 3344.594273266352,
+      "cells": 390199,
       "centroid": {
-       "lat": -3.365293059309519,
-       "lon": -79.25465206333782
+       "lat": -3.3652994706815242,
+       "lon": -79.25462384953535
       },
       "representative": {
-       "lat": -3.365293059309519,
-       "lon": -79.25465206333782,
+       "lat": -3.3652994706815242,
+       "lon": -79.25462384953535,
        "isCentroid": true
       },
       "bbox": {
@@ -588,53 +858,53 @@
        "west": false,
        "east": false
       },
-      "meanElevM": 2602.035270327297
+      "meanElevM": 2602.231480066413
      },
      "inamhi": [
       {
        "layer": "Minas_San_fancisco",
        "id": "hidroelectricasshape.8",
-       "aKm2": 3345.005729248474,
+       "aKm2": 3344.594273266352,
        "bKm2": 3346.6104241517583,
-       "bothKm2": 3336.812405410608,
-       "iou": 0.9946371400742002,
-       "aInB": 0.997550580028541,
-       "bInA": 0.9970722559547295
+       "bothKm2": 3336.8038334809594,
+       "iou": 0.9947540466479795,
+       "aInB": 0.9976707369716972,
+       "bInA": 0.9970696945781239
       },
       {
        "layer": "Mazar",
        "id": "hidroelectricasshape.7",
-       "aKm2": 3345.005729248474,
+       "aKm2": 3344.594273266352,
        "bKm2": 4040.996532256701,
        "bothKm2": 0.6772897775287523,
-       "iou": 0.00009170751187273946,
-       "aInB": 0.00020247791255081639,
+       "iou": 0.0000917126214253815,
+       "aInB": 0.0002025028216254484,
        "bInA": 0.00016760464210309993
       },
       {
        "layer": "Paute_Molino",
        "id": "hidroelectricasshape.9",
-       "aKm2": 3345.005729248474,
+       "aKm2": 3344.594273266352,
        "bKm2": 5182.519980648008,
        "bothKm2": 0.6772897775287523,
-       "iou": 0.00007943025889034203,
-       "aInB": 0.00020247791255081639,
+       "iou": 0.00007943409191641367,
+       "aInB": 0.0002025028216254484,
        "bInA": 0.0001306873451637066
       },
       {
        "layer": "Sopladora",
        "id": "hidroelectricasshape.11",
-       "aKm2": 3345.005729248474,
+       "aKm2": 3344.594273266352,
        "bKm2": 5322.634507768951,
        "bothKm2": 0.6772897775287523,
-       "iou": 0.00007814614896264714,
-       "aInB": 0.00020247791255081639,
+       "iou": 0.00007814985905431428,
+       "aInB": 0.0002025028216254484,
        "bInA": 0.00012724709474982283
       },
       {
        "layer": "Delsinta",
        "id": "hidroelectricasshape.2",
-       "aKm2": 3345.005729248474,
+       "aKm2": 3344.594273266352,
        "bKm2": 1387.0858530492942,
        "bothKm2": null,
        "iou": null,
@@ -642,50 +912,6 @@
        "bInA": null
       }
      ],
-     "error": ""
-    },
-    {
-     "role": "powerhouse",
-     "evidence": "OSM 'Central Hidroeléctrica Minas San Francisco', wikidata=Q65196242, operator=CELEC Sur (§2.4)",
-     "point": {
-      "lat": -3.309854,
-      "lon": -79.5988947,
-      "source": "OSM way/928750864 \"Central Hidroeléctrica Minas San Francisco\" (8 nodes), api.openstreetmap.org 2026-09-23T04:14:21Z",
-      "note": "resolved from OSM — 1.4 km from the recorded point"
-     },
-     "snapped": {
-      "lat": -3.30875,
-      "lon": -79.594583,
-      "movedKm": 0.494,
-      "accKm2": 0.3
-     },
-     "stats": {
-      "areaKm2": 0.2743066480363187,
-      "cells": 32,
-      "centroid": {
-       "lat": -3.3035677026158603,
-       "lon": -79.59604166659615
-      },
-      "representative": {
-       "lat": -3.3035677026158603,
-       "lon": -79.59604166659615,
-       "isCentroid": true
-      },
-      "bbox": {
-       "north": -3.299166666666667,
-       "south": -3.309166666666667,
-       "west": -79.59833333333333,
-       "east": -79.59416666666667
-      },
-      "touches": {
-       "north": false,
-       "south": false,
-       "west": false,
-       "east": false
-      },
-      "meanElevM": 962.1446985328473
-     },
-     "inamhi": [],
      "error": ""
     }
    ],
@@ -709,33 +935,88 @@
     "Copernicus_DSM_COG_30_S04_00_W079_00_DEM \"161019aaa61926dea4bac1a90a9f692c\""
    ],
    "noDataShare": 0,
-   "seconds": 22,
+   "seconds": 9,
    "candidates": [
     {
-     "role": "intake lead",
-     "evidence": "OSM waterway=dam ~500 m above the powerhouse, no QID or operator; nothing mapped ties it to the scheme yet (§2.4)",
+     "role": "dam",
+     "evidence": "OSM 'Delsitanisagua hidroelectrica', waterway=dam, power=plant, operator=CELEC, across the Río Zamora 0.02 km from the intake lead node/2489320895 and 480 m above the powerhouse, which an underground CELEC water pipeline (way/690695823) leaves; found by probe run 35816537011",
      "point": {
-      "lat": -3.9803332,
-      "lon": -79.0172129,
-      "source": "OSM node/2489320895 \"Delsitanisagua\" (1 node), api.openstreetmap.org 2026-09-23T04:14:43Z",
+      "lat": -3.9805082,
+      "lon": -79.0172631,
+      "line": [
+       {
+        "lat": -3.9807303,
+        "lon": -79.0168139
+       },
+       {
+        "lat": -3.9807317,
+        "lon": -79.0171606
+       },
+       {
+        "lat": -3.9806998,
+        "lon": -79.0174888
+       },
+       {
+        "lat": -3.9805663,
+        "lon": -79.0174963
+       },
+       {
+        "lat": -3.9804066,
+        "lon": -79.0177192
+       },
+       {
+        "lat": -3.9803989,
+        "lon": -79.0178435
+       },
+       {
+        "lat": -3.9803364,
+        "lon": -79.017837
+       },
+       {
+        "lat": -3.9803461,
+        "lon": -79.0177278
+       },
+       {
+        "lat": -3.980412,
+        "lon": -79.0170718
+       },
+       {
+        "lat": -3.9804335,
+        "lon": -79.016644
+       },
+       {
+        "lat": -3.9805163,
+        "lon": -79.0166369
+       },
+       {
+        "lat": -3.9805207,
+        "lon": -79.0167179
+       },
+       {
+        "lat": -3.9807303,
+        "lon": -79.0168139
+       }
+      ],
+      "source": "OSM way/726604479 \"Delsitanisagua hidroelectrica\" (12 nodes), api.openstreetmap.org 2026-09-23T04:18:52Z",
       "note": "resolved from OSM"
      },
      "snapped": {
-      "lat": -3.984583,
+      "lat": -3.98125,
       "lon": -79.017083,
-      "movedKm": 0.473,
-      "accKm2": 1138
+      "movedKm": 0.082,
+      "accKm2": 1137,
+      "by": "crest, 0.15 km"
      },
      "stats": {
-      "areaKm2": 1137.9872069621138,
-      "cells": 132839,
+      "areaKm2": 1137.0021619731033,
+      "cells": 132724,
       "centroid": {
-       "lat": -3.8793336156746716,
-       "lon": -79.15945940601074
+       "lat": -3.8792434618690446,
+       "lon": -79.15958873677609
       },
       "representative": {
-       "lat": -3.8793336156746716,
-       "lon": -79.15945940601074,
+       "lat": -3.8792434618690446,
+       "lon": -79.15958873677609,
        "isCentroid": true
       },
       "bbox": {
@@ -750,27 +1031,27 @@
        "west": false,
        "east": false
       },
-      "meanElevM": 2474.9471808988415
+      "meanElevM": 2475.537266087941
      },
      "inamhi": [
       {
        "layer": "Delsinta",
        "id": "hidroelectricasshape.2",
-       "aKm2": 1137.9872069621138,
+       "aKm2": 1137.0021619731033,
        "bKm2": 1387.2457914957745,
-       "bothKm2": 1135.4428821810882,
-       "iou": 0.8169887444752454,
-       "aInB": 0.9977641885906453,
-       "bInA": 0.8184871701479923
+       "bothKm2": 1134.457837192078,
+       "iou": 0.8162799719940819,
+       "aInB": 0.9977622515892054,
+       "bInA": 0.8177770977188317
       },
       {
        "layer": "Minas_San_fancisco",
        "id": "hidroelectricasshape.8",
-       "aKm2": 1137.9872069621138,
+       "aKm2": 1137.0021619731033,
        "bKm2": 3346.610424151448,
        "bothKm2": 0.12852586957418607,
-       "iou": 0.000028660219650948702,
-       "aInB": 0.00011294140108770572,
+       "iou": 0.00002866651645168931,
+       "aInB": 0.00011303924818502364,
        "bInA": 0.00003840478970801465
       }
      ],
@@ -782,14 +1063,117 @@
      "point": {
       "lat": -4.0449634,
       "lon": -78.9844542,
-      "source": "OSM way/690695824 \"Central Hidroeléctrica Delsitanisagua\" (24 nodes), api.openstreetmap.org 2026-09-23T04:14:31Z",
+      "line": [
+       {
+        "lat": -4.0447388,
+        "lon": -78.9857233
+       },
+       {
+        "lat": -4.0453649,
+        "lon": -78.9852351
+       },
+       {
+        "lat": -4.0462692,
+        "lon": -78.9850098
+       },
+       {
+        "lat": -4.0463548,
+        "lon": -78.9848864
+       },
+       {
+        "lat": -4.0463067,
+        "lon": -78.9847255
+       },
+       {
+        "lat": -4.0462117,
+        "lon": -78.9844318
+       },
+       {
+        "lat": -4.0463227,
+        "lon": -78.9841113
+       },
+       {
+        "lat": -4.0463521,
+        "lon": -78.9832878
+       },
+       {
+        "lat": -4.0451722,
+        "lon": -78.9827031
+       },
+       {
+        "lat": -4.0448405,
+        "lon": -78.9827997
+       },
+       {
+        "lat": -4.0446157,
+        "lon": -78.9830679
+       },
+       {
+        "lat": -4.0444819,
+        "lon": -78.9837492
+       },
+       {
+        "lat": -4.0443667,
+        "lon": -78.9837757
+       },
+       {
+        "lat": -4.0440164,
+        "lon": -78.9838564
+       },
+       {
+        "lat": -4.0439656,
+        "lon": -78.9839476
+       },
+       {
+        "lat": -4.0439575,
+        "lon": -78.9840388
+       },
+       {
+        "lat": -4.0440806,
+        "lon": -78.9841944
+       },
+       {
+        "lat": -4.0444819,
+        "lon": -78.9845806
+       },
+       {
+        "lat": -4.0445729,
+        "lon": -78.9849186
+       },
+       {
+        "lat": -4.0445462,
+        "lon": -78.9852351
+       },
+       {
+        "lat": -4.0444498,
+        "lon": -78.9855301
+       },
+       {
+        "lat": -4.044482,
+        "lon": -78.9856361
+       },
+       {
+        "lat": -4.0445355,
+        "lon": -78.9857179
+       },
+       {
+        "lat": -4.0446358,
+        "lon": -78.9857394
+       },
+       {
+        "lat": -4.0447388,
+        "lon": -78.9857233
+       }
+      ],
+      "source": "OSM way/690695824 \"Central Hidroeléctrica Delsitanisagua\" (24 nodes), api.openstreetmap.org 2026-09-23T04:18:52Z",
       "note": "resolved from OSM — 0.13 km from the recorded point"
      },
      "snapped": {
       "lat": -4.047917,
       "lon": -78.98125,
       "movedKm": 0.484,
-      "accKm2": 1387.3
+      "accKm2": 1387.3,
+      "by": "radius, 0.5 km"
      },
      "stats": {
       "areaKm2": 1387.2961502483754,
