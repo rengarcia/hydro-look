@@ -199,6 +199,59 @@ export function snapToChannel(g: DemGrid, acc: Float64Array, lat: number, lon: n
   return best;
 }
 
+/**
+ * The cell with the largest upstream area within `toleranceKm` of a line — a dam's crest.
+ *
+ * Better than a radius wherever the dam is mapped as a way: the river crosses the crest, so the
+ * channel cell under it is the pour point, and nothing downstream of the dam is ever a candidate.
+ * A radius cannot promise that. Mazar is the case that showed it: a 0.5 km radius around the
+ * crest's centre reached below the dam, past a north-bank tributary, and added 385 km² that
+ * INAMHI's polygon, drawn at the dam, does not have.
+ */
+export function snapToLine(g: DemGrid, acc: Float64Array, line: readonly { lat: number; lon: number }[], toleranceKm: number): Snapped | null {
+  if (line.length === 0) return null;
+  const kmPerLat = (Math.PI * EARTH_KM) / 180;
+  const midLat = line.reduce((s, p) => s + p.lat, 0) / line.length;
+  const kmPerLon = kmPerLat * Math.cos(rad(midLat));
+  const padLat = toleranceKm / kmPerLat;
+  const padLon = toleranceKm / kmPerLon;
+  const r0 = Math.max(0, Math.floor((g.north - Math.max(...line.map((p) => p.lat)) - padLat) / g.dLat));
+  const r1 = Math.min(g.height - 1, Math.floor((g.north - Math.min(...line.map((p) => p.lat)) + padLat) / g.dLat));
+  const c0 = Math.max(0, Math.floor((Math.min(...line.map((p) => p.lon)) - padLon - g.west) / g.dLon));
+  const c1 = Math.min(g.width - 1, Math.floor((Math.max(...line.map((p) => p.lon)) + padLon - g.west) / g.dLon));
+  const centre = { lat: midLat, lon: line.reduce((s, p) => s + p.lon, 0) / line.length };
+  let best: Snapped | null = null;
+  for (let r = r0; r <= r1; r++) {
+    for (let c = c0; c <= c1; c++) {
+      const i = r * g.width + c;
+      if (!(acc[i]! > 0) || (best && acc[i]! <= best.accKm2)) continue;
+      const p = { lat: cellLat(g, r), lon: cellLon(g, c) };
+      if (kmToPolyline(p, line, kmPerLat, kmPerLon) > toleranceKm) continue;
+      best = { index: i, lat: p.lat, lon: p.lon, movedKm: Math.hypot((p.lat - centre.lat) * kmPerLat, (p.lon - centre.lon) * kmPerLon), accKm2: acc[i]! };
+    }
+  }
+  return best;
+}
+
+function kmToPolyline(p: { lat: number; lon: number }, line: readonly { lat: number; lon: number }[], kmPerLat: number, kmPerLon: number): number {
+  const xy = (q: { lat: number; lon: number }) => ({ x: (q.lon - p.lon) * kmPerLon, y: (q.lat - p.lat) * kmPerLat });
+  if (line.length === 1) {
+    const a = xy(line[0]!);
+    return Math.hypot(a.x, a.y);
+  }
+  let best = Infinity;
+  for (let k = 1; k < line.length; k++) {
+    const a = xy(line[k - 1]!);
+    const b = xy(line[k]!);
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const len2 = dx * dx + dy * dy;
+    const t = len2 === 0 ? 0 : Math.max(0, Math.min(1, -(a.x * dx + a.y * dy) / len2));
+    best = Math.min(best, Math.hypot(a.x + t * dx, a.y + t * dy));
+  }
+  return best;
+}
+
 /** Every cell that drains through `pour`, as a 0/1 mask. */
 export function catchmentMask(g: DemGrid, routing: Routing, pour: number): Uint8Array {
   const mask = new Uint8Array(g.width * g.height);

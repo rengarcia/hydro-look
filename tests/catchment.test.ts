@@ -11,6 +11,7 @@ import {
   ringAreaKm2,
   routeFlow,
   snapToChannel,
+  snapToLine,
   type DemGrid,
 } from "../src/lib/geo/catchment.ts";
 
@@ -117,6 +118,28 @@ describe("accumulation, snapping and the catchment's figures", () => {
     expect(snapped.index).toBe(at(g, 5, 1));
     expect(snapped.movedKm).toBeGreaterThan(1);
     expect(snapped.movedKm).toBeLessThan(1.2);
+  });
+
+  it("snaps to a dam's crest without reaching the confluence below it", () => {
+    // A main valley down column 5, and a tributary entering from the east at row 7. A dam across
+    // the main valley at row 5 must not collect the tributary, which a radius from its centre
+    // wide enough to reach row 7 would.
+    const g = grid(
+      Array.from({ length: 12 }, (_, r) =>
+        Array.from({ length: 11 }, (_, c) => {
+          const main = 100 + 20 * Math.abs(c - 5) + 3 * (11 - r);
+          const trib = c > 5 ? 100 + 20 * Math.abs(r - 7) + 3 * (c - 5) + 3 * (11 - 7) : Infinity;
+          return Math.min(main, trib);
+        }),
+      ),
+    );
+    const routing = routeFlow(g);
+    const acc = accumulate(g, routing);
+    const crest = [{ lat: -0.055, lon: 0.035 }, { lat: -0.055, lon: 0.075 }];
+    const onCrest = snapToLine(g, acc, crest, 0.3)!;
+    expect(onCrest.index).toBe(at(g, 5, 5));
+    const wide = snapToChannel(g, acc, -0.055, 0.055, 2.5)!;
+    expect(wide.accKm2).toBeGreaterThan(onCrest.accKm2);
   });
 
   it("reports area, centroid, bbox and whether the grid cut the catchment off", () => {

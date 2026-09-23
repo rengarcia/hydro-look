@@ -47,6 +47,7 @@ import {
   rasterize,
   routeFlow,
   snapToChannel,
+  snapToLine,
   type CatchmentStats,
   type DemGrid,
   type Overlap,
@@ -64,7 +65,11 @@ interface Candidate {
   recorded?: LatLon;
   /** Why this point may, or may not, be trusted as a pour point, from PLAN.md §2.4. */
   evidence: string;
-  /** Snap radius, km. Small by default: a wide one can jump to a bigger river below a confluence. */
+  /**
+   * Snap radius, km, for a point; small by default, because a wide one can jump to a bigger river
+   * below a confluence. A dam mapped as a way is snapped onto its crest instead (`CREST_KM`), and
+   * this is ignored.
+   */
   snapKm?: number;
 }
 
@@ -127,8 +132,14 @@ const BASINS: Basin[] = [
     site: "minas_san_francisco",
     label: "Minas San Francisco (Jubones)",
     candidates: [
-      { role: "intake lead", osm: "way/690695821", evidence: "the only waterway=dam on the Jubones in a 55 km box, on the river, 13.3 km from and 315 m above the powerhouse; no name, operator or QID (§2.4)" },
-      { role: "powerhouse", osm: "way/928750864", recorded: { lat: -3.3221588, lon: -79.6016026 }, evidence: "OSM 'Central Hidroeléctrica Minas San Francisco', wikidata=Q65196242, operator=CELEC Sur (§2.4)" },
+      {
+        role: "dam",
+        osm: "way/690695821",
+        evidence:
+          "the only waterway=dam on the Jubones in a 55 km box, on the river, 13.3 km from and 315 m above the powerhouse, with no name, " +
+          "operator or QID (§2.4). INAMHI's Minas_San_fancisco polygon was drawn at this point: the first run's catchment here matched it " +
+          "at 99% IoU (3,345 against 3,347 km²), while the powerhouse, which sits off the river at the end of the tunnel, drained 0.3 km²",
+      },
     ],
   },
   {
@@ -136,7 +147,14 @@ const BASINS: Basin[] = [
     site: "delsitanisagua",
     label: "Delsitanisagua (Zamora)",
     candidates: [
-      { role: "intake lead", osm: "node/2489320895", evidence: "OSM waterway=dam ~500 m above the powerhouse, no QID or operator; nothing mapped ties it to the scheme yet (§2.4)" },
+      {
+        role: "dam",
+        osm: "way/726604479",
+        evidence:
+          "OSM 'Delsitanisagua hidroelectrica', waterway=dam, power=plant, operator=CELEC, across the Río Zamora 0.02 km from the " +
+          "intake lead node/2489320895 and 480 m above the powerhouse, which an underground CELEC water pipeline (way/690695823) leaves; " +
+          "found by probe run 35816537011",
+      },
       { role: "powerhouse", osm: "way/690695824", recorded: { lat: -4.04588889, lon: -78.98377778 }, evidence: "OSM 'Central Hidroeléctrica Delsitanisagua', wikidata=Q65196191, 0.1 km from Wikidata's point (§2.4)" },
     ],
   },
@@ -150,6 +168,8 @@ const DEM_BUCKET = "https://copernicus-dem-90m.s3.amazonaws.com";
 /** No catchment here is wider than this many degrees; a mosaic that would need more is a routing error, not a basin. */
 const MAX_SPAN_DEG = 5;
 const OUTLINE_TOLERANCE_DEG = 0.002;
+/** How far from a dam's crest line a channel cell may be and still be the pour point: about one and a half cells. */
+const CREST_KM = 0.15;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const round = (v: number, digits: number) => Math.round(v * 10 ** digits) / 10 ** digits;
@@ -164,6 +184,8 @@ async function get(url: string, deadlineMs = 120_000): Promise<Response> {
 
 interface Resolved extends LatLon {
   source: string;
+  /** A way's nodes in order — a dam's crest, which the pour point is snapped onto. Absent for a node. */
+  line?: LatLon[];
 }
 
 /** An OSM element's position: a node's own, or the mean of a way's nodes. */
@@ -175,7 +197,7 @@ async function resolveOsm(ref: string): Promise<Resolved | { error: string }> {
       const response = await get(url, 30_000);
       if (response.status === 410) return { error: `${ref} is deleted in OSM (410)` };
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const json = (await response.json()) as { elements: { type: string; id: number; lat?: number; lon?: number; tags?: Record<string, string> }[] };
+      const json = (await response.json()) as { elements: { type: string; id: number; lat?: number; lon?: number; nodes?: number[]; tags?: Record<string, string> }[] };
       const nodes = json.elements.filter((e) => e.type === "node" && e.lat !== undefined && e.lon !== undefined);
       if (nodes.length === 0) return { error: `${ref}: no nodes in the answer` };
       const element = json.elements.find((e) => `${e.type}/${e.id}` === ref);
@@ -183,7 +205,9 @@ async function resolveOsm(ref: string): Promise<Resolved | { error: string }> {
       const name = tags["name"] ? ` "${tags["name"]}"` : "";
       const lat = nodes.reduce((s, n) => s + n.lat!, 0) / nodes.length;
       const lon = nodes.reduce((s, n) => s + n.lon!, 0) / nodes.length;
-      return { lat: round(lat, 7), lon: round(lon, 7), source: `OSM ${ref}${name} (${nodes.length} node${nodes.length === 1 ? "" : "s"}), api.openstreetmap.org ${nowUtc()}` };
+      const byId = new Map(nodes.map((n) => [n.id, { lat: n.lat!, lon: n.lon! }]));
+      const line = type === "way" ? (element?.nodes ?? []).flatMap((id) => byId.get(id) ?? []) : undefined;
+      return { lat: round(lat, 7), lon: round(lon, 7), ...(line && line.length >= 2 ? { line } : {}), source: `OSM ${ref}${name} (${nodes.length} node${nodes.length === 1 ? "" : "s"}), api.openstreetmap.org ${nowUtc()}` };
     } catch (error) {
       if (attempt === 3) return { error: `${ref}: ${String(error)}` };
       await sleep(2000 * attempt);
@@ -345,7 +369,7 @@ interface CandidateResult {
   role: Candidate["role"];
   evidence: string;
   point: (Resolved & { note: string }) | null;
-  snapped: { lat: number; lon: number; movedKm: number; accKm2: number } | null;
+  snapped: { lat: number; lon: number; movedKm: number; accKm2: number; by: string } | null;
   stats: CatchmentStats | null;
   inamhi: (Overlap & { layer: string; id: string })[];
   outline: GeoJsonGeometry | null;
@@ -399,12 +423,13 @@ async function delineate(basin: Basin, inamhi: InamhiPolygon[]): Promise<BasinRe
         out.error = "not located";
         continue;
       }
-      const snapped = snapToChannel(grid, acc, point.lat, point.lon, c.snapKm ?? 0.5);
+      const onCrest = c.role !== "powerhouse" && point.line;
+      const snapped = onCrest ? snapToLine(grid, acc, point.line!, CREST_KM) : snapToChannel(grid, acc, point.lat, point.lon, c.snapKm ?? 0.5);
       if (!snapped) {
-        out.error = "no channel within the snap radius";
+        out.error = onCrest ? "no channel under the crest" : "no channel within the snap radius";
         continue;
       }
-      out.snapped = { lat: round(snapped.lat, 6), lon: round(snapped.lon, 6), movedKm: round(snapped.movedKm, 3), accKm2: round(snapped.accKm2, 1) };
+      out.snapped = { lat: round(snapped.lat, 6), lon: round(snapped.lon, 6), movedKm: round(snapped.movedKm, 3), accKm2: round(snapped.accKm2, 1), by: onCrest ? `crest, ${CREST_KM} km` : `radius, ${c.snapKm ?? 0.5} km` };
       const mask = catchmentMask(grid, routing, snapped.index);
       out.stats = catchmentStats(grid, mask);
       for (const side of ["north", "south", "west", "east"] as const) if (out.stats.touches[side]) grow[side] = true;
@@ -468,7 +493,7 @@ function report(startedAt: string, inamhiNote: string, inamhi: InamhiPolygon[], 
       const best = c.inamhi[0];
       lines.push(
         `| ${r.basin} | ${c.role} | ${c.point ? `${c.point.lat}, ${c.point.lon} — ${cell(c.point.source)}; ${cell(c.point.note)}` : "—"} | ` +
-          `${c.snapped ? `${c.snapped.lat}, ${c.snapped.lon}; ${c.snapped.movedKm} km` : cell(c.error) || "—"} | ${c.stats ? f1(c.stats.areaKm2) : "—"} | ` +
+          `${c.snapped ? `${c.snapped.lat}, ${c.snapped.lon}; ${c.snapped.movedKm} km (${c.snapped.by})` : cell(c.error) || "—"} | ${c.stats ? f1(c.stats.areaKm2) : "—"} | ` +
           `${c.stats ? `${round(c.stats.centroid.lat, 4)}, ${round(c.stats.centroid.lon, 4)}` : "—"} | ` +
           `${c.stats ? `${round(c.stats.representative.lat, 4)}, ${round(c.stats.representative.lon, 4)}${c.stats.representative.isCentroid ? " (centroid)" : " (nearest cell)"}` : "—"} | ` +
           `${c.stats ? Math.round(c.stats.meanElevM) : "—"} | ${best ? cell(best.layer) : "none overlaps"} | ${best ? pct(best.iou) : "—"} | ${best ? pct(best.aInB) : "—"} | ${best ? pct(best.bInA) : "—"} |`,

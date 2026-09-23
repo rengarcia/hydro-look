@@ -1,6 +1,6 @@
 # hydro-look — Plan v2
 
-**Status:** ingestion implemented; historical backfill running; Phase 4 covariate ingestion merged, first run queued; the `pointValues` null issue is resolved and Phase 3 is unblocked (probe of 2026-09-22 02:14 UTC); the site is deployed on Vercel; Phase 6b is built and waits on an `AI_GATEWAY_API_KEY` secret; Colombia's side of the interconnection is ingested from XM (Phase 7). **Updated:** 2026-09-22. Supersedes the initial plan and the
+**Status:** Phases 0, 2, 3, 5, 6 and 6c are done. Phase 1 is code-complete and waits only on its clock — three consecutive days with a green *scheduled* daily run; 2026-09-22 is the first, so it can close 2026-09-24 at the earliest. Phase 4's reference tables, gates and ERA5 history are done; its catchments are CATCHMENT_STATUS. Phase 6b is live: the AI Gateway is configured and the first `ok` narrative was written 2026-09-23 (run 35810691729), so its seven-day acceptance count has started. The site is deployed on Vercel, and Colombia's side of the interconnection is ingested from XM (Phase 7). **Updated:** 2026-09-23. Supersedes the initial plan and the
 follow-up research note ("CELEC dashboard covers 7 plants", "CENACE header has usable numbers").
 
 This version was built after reading the two community scrapers that already run daily against
@@ -1064,7 +1064,7 @@ the 10.78 they had reached that August, because Colombia was short of water at t
 Imports were also below 1 GWh/day for 398 consecutive days from 2019-07-06. Every horizon
 therefore publishes a stressed deficit beside the central one.
 
-**Phase 6b · AI narrative panel via Vercel AI Gateway — built 2026-09-22, waiting on a secret**
+**Phase 6b · AI narrative panel via Vercel AI Gateway — built 2026-09-22, live 2026-09-23; seven-day count running**
 `npm run narrative` builds a deterministic payload (≈9 kB of canonical JSON, sha256-hashed) only
 from what the repository already publishes: per reservoir the level, bands and slopes from
 `latest.json`, days to each floor at the 7- and 30-day slopes (a division, labelled as one), the
