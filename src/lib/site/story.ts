@@ -44,6 +44,42 @@ export const ARROW: Record<Direction, string> = { up: "↑", down: "↓", flat: 
 export const DIRECTION_TONE: Record<Direction, string> = { up: "water", down: "tight", flat: "muted" };
 
 /**
+ * The page's headline: how much of the country's electricity came from water on the latest
+ * closed day, in whole kWh out of a hundred. `emphasis` is the part set in the water colour;
+ * `text` is the sentence as a screen reader and a share preview read it.
+ */
+export function heroHeadline(hydroSharePct: number | null | undefined): {
+  share: number | null;
+  before: string;
+  emphasis: string;
+  after: string;
+  text: string;
+} {
+  if (hydroSharePct === null || hydroSharePct === undefined || !Number.isFinite(hydroSharePct)) {
+    const text = "El sistema hidroeléctrico del Ecuador, día a día.";
+    return { share: null, before: text, emphasis: "", after: "", text };
+  }
+  const share = Math.round(hydroSharePct);
+  const before = "El agua encendió ";
+  const emphasis = `${share} de cada 100`;
+  const after = " kWh del país.";
+  return { share, before, emphasis, after, text: `${before}${emphasis}${after}` };
+}
+
+/**
+ * A change since yesterday in words: `+0,4 m`, `sin cambio`. `digits` is the precision the
+ * number is published at; a change that rounds to zero at it is said as no change, because a
+ * reader told "−0,00 m" has been told nothing and asked to notice the minus sign.
+ */
+export function changeWord(delta: number | null | undefined, digits: number, unit: string): string | null {
+  if (delta === null || delta === undefined || !Number.isFinite(delta)) return null;
+  const rounded = Number(delta.toFixed(digits));
+  if (rounded === 0) return "sin cambio";
+  const text = Math.abs(rounded).toLocaleString("es-EC", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  return `${rounded > 0 ? "+" : "−"}${text}${unit ? ` ${unit}` : ""}`;
+}
+
+/**
  * The inflow headline, from today's percentile against the same days of every year on record.
  * The middle fifth of the distribution is "as usual"; the words either side are deliberately
  * plain, because the number is printed right beside them.
@@ -168,4 +204,64 @@ export function joinDays(days: readonly number[]): string {
 /** The short name of a model id: `M4-gbm-m3-residual` -> `M4`. */
 export function modelShort(id: string): string {
   return id.split("-")[0] ?? id;
+}
+
+/**
+ * The first sentence of a paragraph, and the rest. A sentence ends at a full stop followed by a
+ * space and a capital; `2.138,37` has no space after its point, so a number never ends one. A
+ * paragraph shorter than a long sentence is not split at all.
+ */
+export function splitLead(text: string): [string, string] {
+  const match = /[.!?]\s+(?=[A-ZÁÉÍÓÚÑ¿¡])/.exec(text);
+  if (match === null || text.length < 220) return [text, ""];
+  const cut = match.index + 1;
+  return [text.slice(0, cut), text.slice(cut).trim()];
+}
+
+/**
+ * Which of the adequacy document's two tiers the narrative was written about, in words. The
+ * document names it (`current.narrative_tier_field`, since schema version 1); an older one is
+ * read as the worst tier, which is what the payload builder has always handed the text.
+ */
+export function narrativeTierNote(
+  narrative: { origin_date: string },
+  adequacy: { origin_date: string; current: { worst_tier_horizon_days: number; narrative_tier_field?: string }; horizons: { horizon_days: number }[] } | null,
+): string | null {
+  if (adequacy === null || adequacy.origin_date !== narrative.origin_date) return null;
+  if ((adequacy.current.narrative_tier_field ?? "worst_tier") === "worst_tier") {
+    return `el peor de los horizontes, a ${adequacy.current.worst_tier_horizon_days} días`;
+  }
+  return `a ${adequacy.horizons[0]?.horizon_days ?? 7} días`;
+}
+
+/**
+ * The three named analogue years, in the page's words and colours. `tone` is a `tone-*` class:
+ * the dry year is drawn in the warning colour and the wet one in the reservoir's own.
+ */
+export const SCENARIOS: Record<string, { name: string; tone: string }> = {
+  dry: { name: "Seco", tone: "tight" },
+  median: { name: "Mediano", tone: "water-2" },
+  wet: { name: "Húmedo", tone: "water" },
+};
+
+export function scenarioOf(scenario: string): { name: string; tone: string } {
+  return SCENARIOS[scenario] ?? { name: scenario, tone: "muted" };
+}
+
+/**
+ * The threshold the scenarios are read against: this project's own unverified marker when the
+ * forecast carries one — it is the one that is crossed first and the one PLAN.md §7 asks about —
+ * and otherwise the first declared floor.
+ */
+export function criticalThreshold<T extends { status: string }>(thresholds: readonly T[]): T | undefined {
+  return thresholds.find((t) => t.status === "unverified") ?? thresholds[0];
+}
+
+/**
+ * A declared floor's label as the charts print it. `where` names the declaration that set it —
+ * the dashboard's chart title or the report endpoints — because the two disagree and the page
+ * never picks between them.
+ */
+export function thresholdSource(name: string): "tablero" | "reportes" {
+  return /dashboard/.test(name) ? "tablero" : "reportes";
 }

@@ -208,6 +208,9 @@
           },
           "terms": {
             "type": "string"
+          },
+          "terms_es": {
+            "type": "string"
           }
         },
         "required": [
@@ -215,7 +218,8 @@
           "name",
           "provides",
           "url",
-          "terms"
+          "terms",
+          "terms_es"
         ]
       }
     },

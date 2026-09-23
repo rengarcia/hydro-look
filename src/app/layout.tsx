@@ -1,12 +1,47 @@
 import type { Metadata, Viewport } from "next";
+import { preload } from "react-dom";
 import { Analytics } from "@vercel/analytics/next";
+import { SITE_URL } from "../lib/publish/contract.ts";
 import "./globals.css";
 
+const SITE_NAME = "hydro-look";
+
+const DESCRIPTION =
+  "Cotas de embalses, caudales, generación por central y balance nacional, recogidos a diario " +
+  "de los servicios públicos de CELEC y CENACE. No es una fuente oficial.";
+
+/**
+ * The metadata every page inherits. `metadataBase` makes each relative URL below absolute, which
+ * is what a share preview needs; `title.template` puts the brand after every child page's own
+ * title so no page writes it by hand; and each page sets its own `canonical`.
+ *
+ * The preview image is `opengraph-image.tsx`, drawn at build time from the day's headline.
+ */
 export const metadata: Metadata = {
-  title: "hydro-look — el sistema hidroeléctrico del Ecuador",
-  description:
-    "Cotas de embalses, caudales, generación por central y balance nacional, recogidos a diario " +
-    "de los servicios públicos de CELEC y CENACE. No es una fuente oficial.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "hydro-look — el sistema hidroeléctrico del Ecuador",
+    template: `%s — ${SITE_NAME}`,
+  },
+  description: DESCRIPTION,
+  applicationName: SITE_NAME,
+  alternates: {
+    canonical: "/",
+    types: { "application/atom+xml": [{ url: "/feed.xml", title: "hydro-look: la lectura del día" }] },
+  },
+  openGraph: {
+    type: "website",
+    locale: "es_EC",
+    siteName: SITE_NAME,
+    title: "hydro-look — el sistema hidroeléctrico del Ecuador",
+    description: DESCRIPTION,
+    url: "/",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "hydro-look — el sistema hidroeléctrico del Ecuador",
+    description: DESCRIPTION,
+  },
 };
 
 export const viewport: Viewport = {
@@ -17,24 +52,22 @@ export const viewport: Viewport = {
 };
 
 /*
- * The typefaces are linked, not bundled through `next/font`. `next/font/google` downloads the
- * files during `next build`, and the build runs with no network in CI by design; a stylesheet
- * link costs the reader one request and the build nothing. Every family falls back to a system
- * stack in `globals.css`, so a blocked request degrades the look and never the numbers.
+ * The typefaces are committed under `public/fonts/` — Instrument Serif, Geist and Geist Mono,
+ * the Latin subset of each, under the SIL Open Font License beside them — and declared in
+ * `globals.css`. The build has no network, which is why they are files and not `next/font`, and
+ * serving them from the site removes a render-blocking third-party stylesheet and a request to
+ * Google on every visit. The two faces the first screen is set in are preloaded.
  */
-const FONTS =
-  "https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap";
+const PRELOAD = ["/fonts/instrument-serif-latin-400-normal.woff2", "/fonts/geist-sans-latin-400-normal.woff2"];
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   // Decision 3: the published site is in Spanish. `lang` is what tells a screen reader which
   // voice to read these numbers in, so it is not decoration.
+  // `preload` rather than a `<link>` in `<head>`: React hoists a resource hint on its own, and a
+  // hand-written link beside it would be emitted twice.
+  for (const href of PRELOAD) preload(href, { as: "font", type: "font/woff2", crossOrigin: "" });
   return (
     <html lang="es">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link rel="stylesheet" href={FONTS} />
-      </head>
       <body>
         {children}
         <Analytics />

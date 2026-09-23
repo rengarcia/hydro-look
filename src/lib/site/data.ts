@@ -25,11 +25,18 @@ import { parseCsv } from "../store/csv.ts";
 import { dayOfYear } from "../util/stats.ts";
 import { addDays, type IsoDate } from "../util/dates.ts";
 import { dataDateOf, type LatestDocument } from "../publish/latest.ts";
+import { daysFrom, type DayRecord } from "./days.ts";
 
-const ROOT = process.cwd();
+/**
+ * `HYDRO_LOOK_SITE_ROOT` points the reads at another tree with the same `data/curated` and
+ * `public/api` layout — which is how the render test builds the page from `tests/fixtures/site/`
+ * instead of from whatever the repository holds today.
+ */
+const ROOT = process.env["HYDRO_LOOK_SITE_ROOT"] ?? process.cwd();
 const CURATED = join(ROOT, "data", "curated");
 
-function readTable(name: string): Record<string, string>[] {
+/** Every row of a curated table, partitions in year order. */
+export function readTable(name: string): Record<string, string>[] {
   const directory = join(CURATED, name);
   if (!existsSync(directory)) return [];
   const rows: Record<string, string>[] = [];
@@ -136,6 +143,24 @@ export function mix(days: number): MixDay[] {
   if (last === undefined) return [];
   const first = addDays(last, -(days - 1));
   return dates.filter((d) => d >= first).map((date) => ({ date, values: byDate.get(date)! }));
+}
+
+/** Every day a model stood on, newest first, for the permalinks under `/dia/`. */
+let daysCache: DayRecord[] | null = null;
+export function days(): DayRecord[] {
+  daysCache ??= daysFrom({
+    forecastRuns: readTable("forecast_runs"),
+    forecastValues: readTable("forecast_values"),
+    adequacyRuns: readTable("adequacy_runs"),
+    adequacyValues: readTable("adequacy_values"),
+    narrativeSnapshots: readTable("narrative_snapshots"),
+  });
+  return daysCache;
+}
+
+/** Where a reservoir's own page lives. Every reservoir `latest.json` carries has one. */
+export function reservoirHref(site: string): string {
+  return `/embalses/${site}/`;
 }
 
 /**

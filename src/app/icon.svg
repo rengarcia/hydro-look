@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 28 28">
+  <style>
+    .ring { stroke: #10201e; }
+    .water { stroke: #0a6a70; }
+    .disc { fill: #fbfaf6; }
+    @media (prefers-color-scheme: dark) {
+      .ring { stroke: #edf2ef; }
+      .water { stroke: #5cc6bf; }
+      .disc { fill: #12201e; }
+    }
+  </style>
+  <circle class="disc" cx="14" cy="14" r="13.5" />
+  <circle class="ring" cx="14" cy="14" r="12.5" fill="none" stroke-width="1.5" />
+  <path class="water" d="M3 15.5c2.6 0 2.6-2 5.2-2s2.6 2 5.2 2 2.6-2 5.2-2 2.6 2 5.2 2" fill="none" stroke-width="1.8" stroke-linecap="round" />
+  <path class="water" d="M5.5 20.5h17" stroke-width="1.8" stroke-linecap="round" opacity=".45" />
+</svg>

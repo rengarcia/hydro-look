@@ -9,6 +9,7 @@
 
 import { isSiteId, SITES } from "../registry.ts";
 import { declarationCode, feedCode } from "../publish/contract.ts";
+import { ecWallClock } from "../util/dates.ts";
 
 const LOCALE = "es-EC";
 
@@ -52,6 +53,12 @@ export function shortDate(iso: string): string {
 /** `2026-09-21` -> `21 sep 2026`, where no caption carries the year for it. */
 export function dateWithYear(iso: string): string {
   return `${shortDate(iso)} ${iso.slice(0, 4)}`;
+}
+
+/** `2026-09-22T12:40:05Z` -> `22 sep 2026, 07:40 (hora de Ecuador)`. */
+export function ecStamp(timestamp: string): string {
+  const wall = ecWallClock(timestamp);
+  return wall === null ? timestamp : `${dateWithYear(wall.date)}, ${wall.time} (hora de Ecuador)`;
 }
 
 /** `servicio de reportes` -> `Servicio de reportes`. */
@@ -101,8 +108,14 @@ const BASIN_ES: Record<string, string> = {
   coca: "Coca",
 };
 
+/** `paute` -> `Paute`. */
+export function basinName(basin: string): string {
+  return BASIN_ES[basin] ?? capitalise(basin);
+}
+
+/** `paute` -> `cuenca del Paute`. */
 export function basinLabel(basin: string): string {
-  return `cuenca del ${BASIN_ES[basin] ?? basin.charAt(0).toUpperCase() + basin.slice(1)}`;
+  return `cuenca del ${basinName(basin)}`;
 }
 
 /**

@@ -66,6 +66,7 @@ export interface Attribution {
   provides: string;
   url: string;
   terms: string;
+  terms_es: string;
 }
 
 export const ATTRIBUTION: readonly Attribution[] = [
@@ -75,6 +76,7 @@ export const ATTRIBUTION: readonly Attribution[] = [
     provides: "reservoir levels, inflows, declared bands and per-plant energy",
     url: "https://www.celec.gob.ec/",
     terms: "public web services of a state company; no licence is stated",
+    terms_es: "servicios web públicos de una empresa del Estado; no declaran licencia",
   },
   {
     id: "cenace",
@@ -82,6 +84,7 @@ export const ATTRIBUTION: readonly Attribution[] = [
     provides: "the national energy balance and live operating data",
     url: "https://www.cenace.gob.ec/",
     terms: "public web services of the system operator; no licence is stated",
+    terms_es: "servicios web públicos del operador del sistema; no declaran licencia",
   },
   {
     id: "xm",
@@ -89,6 +92,7 @@ export const ATTRIBUTION: readonly Attribution[] = [
     provides: "Colombian storage and cross-border exchanges",
     url: "https://www.xm.com.co/",
     terms: "public data portal of the Colombian market operator",
+    terms_es: "portal de datos públicos del operador del mercado colombiano",
   },
   {
     id: "open_meteo",
@@ -96,6 +100,7 @@ export const ATTRIBUTION: readonly Attribution[] = [
     provides: "precipitation and temperature at the basin centroids",
     url: "https://open-meteo.com/",
     terms: "CC BY 4.0 (https://open-meteo.com/en/terms); the free API is for non-commercial use",
+    terms_es: "CC BY 4.0 (https://open-meteo.com/en/terms); la API gratuita es para uso no comercial",
   },
   {
     id: "noaa",
@@ -103,6 +108,7 @@ export const ATTRIBUTION: readonly Attribution[] = [
     provides: "the Oceanic Niño Index",
     url: "https://psl.noaa.gov/data/correlation/oni.data",
     terms: "US government work, public domain",
+    terms_es: "obra del Gobierno de EE. UU., dominio público",
   },
 ];
 
