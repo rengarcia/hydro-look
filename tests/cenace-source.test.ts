@@ -135,6 +135,18 @@ describe("ORDS row floors", () => {
     expect(batch.errors).toEqual([]);
   });
 
+  it("accepts an empty window from before a report's history begins, and an empty plant-day", async () => {
+    const { http } = empty();
+    const batch = emptyBatch();
+    const ords = new CelecOrds(http, archive(), () => "2026-09-23");
+    await ords.repDiaHid12m(batch, "2012-09-20");
+    // The EnerDia parser notes an incomplete day itself; before commissioning, empty is the truth.
+    await ords.enerDia(batch, "ago", "2016-05-01");
+    expect(batch.errors).toEqual([]);
+    await ords.repDiaHid12m(batch, "2026-09-23");
+    expect(batch.errors).toHaveLength(1);
+  });
+
   it("holds the historian to no floor: a blank month is its known behaviour", async () => {
     const { http } = empty();
     const batch = emptyBatch();

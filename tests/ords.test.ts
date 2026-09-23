@@ -163,7 +163,7 @@ describe("the historian and live endpoints", () => {
 
   it("drops an inflow the report publishes as negative, and says so", () => {
     // Copied verbatim from the archived response of 2019-09-20
-    // (celec_ords/2019/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2019-09-20), which is what the
+    // (celec_ords/2019/09/repDiaHid12m.2019-09-20.ndjson#repDiaHid12m:2019-09-20), which is what the
     // ORDS really sends on the two days before Minas San Francisco's level series begins.
     const body = JSON.stringify({
       items: [
@@ -200,7 +200,7 @@ describe("the historian and live endpoints", () => {
 
   it("drops an inflow in five figures, which no Ecuadorian intake sees", () => {
     // Verbatim from the historian response for 2013-11 that the 2005 walk reached
-    // (celec_ords/2013/11/pointValuesMesH24.ndjson.gz): 23,221.10 m3/s between neighbours of
+    // (celec_ords/2013/11/pointValuesMesH24.2013-11-01.ndjson): 23,221.10 m3/s between neighbours of
     // 34.31 and 0.00, against a maximum of 867 in the same series.
     const body = JSON.stringify({
       items: [

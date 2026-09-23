@@ -226,13 +226,17 @@ export const REG_AYER_DESCR_TO_VARIABLE: Record<string, VariableId> = {
  *
  * `settleDays` is how long after the day asked about an empty answer stops being normal. The
  * per-day reports answer nothing for a day that has not been published yet (`repDiaVolAlm` for
- * the running day was empty on every run of 2026-09-22), and `{code}EnerDia` writes a day only
- * once all 24 hours are in, so those are held to their floor only for days at least two days
- * old — which the daily run's three-day window always includes. `since` is the first day the
- * endpoint has anything to say, so a backfill that asks before it is not an error either.
- * Endpoints with no entry have no floor: the historian (`pointValuesMesH24`) answers null for
- * whole months as a known property of the endpoint (see sources/historian.ts), and a quiet
- * month there is information rather than failure.
+ * the running day was empty on every run of 2026-09-22), so they are held to their floor only
+ * for days at least two days old — which the daily run's three-day window always includes, and
+ * which every one of them had answered for by the next morning in the committed record. `since`
+ * is the first day a windowed report has anything to say, so a backfill that asks before it is
+ * not an error either.
+ *
+ * Endpoints with no entry have no floor. The historian (`pointValuesMesH24`) answers null for
+ * whole months as a known property of the endpoint (see sources/historian.ts), and a quiet month
+ * there is information rather than failure. `{code}EnerDia` is never silent to begin with: its
+ * parser writes a day only once all 24 hours are in and notes every day it leaves out, and
+ * before a plant's commissioning (Agoyán's hours begin 2017-01-01) an empty day is the truth.
  */
 export interface RowFloor {
   rows: number;
@@ -248,17 +252,13 @@ export const MIN_ROWS: Record<string, RowFloor> = {
   repDiaEnerAyerHoy: { rows: 1, settleDays: 2 },
   repDiaRegAyer: { rows: 1, settleDays: 2 },
   repDiaVolAlm: { rows: 1, settleDays: 2 },
-  EnerDia: { rows: 1, settleDays: 2 },
   csrCaudCuenAniosAvg: { rows: 1, settleDays: 0 },
   InformacionOperativa: { rows: 1, settleDays: 0 },
 };
 
-/**
- * The floor that applies to one answer, or null when an empty one is acceptable. `{code}EnerDia`
- * shares one entry, since every plant's module answers the same way.
- */
+/** The floor that applies to one answer, or null when an empty one is acceptable. */
 export function rowFloor(endpoint: string, dataDate: string | null, today: string): RowFloor | null {
-  const floor = MIN_ROWS[endpoint] ?? (/^[a-z]{3}EnerDia$/.test(endpoint) ? MIN_ROWS["EnerDia"] : undefined);
+  const floor = MIN_ROWS[endpoint];
   if (!floor) return null;
   if (dataDate !== null) {
     if (floor.since && dataDate < floor.since) return null;
