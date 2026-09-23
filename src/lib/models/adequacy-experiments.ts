@@ -36,7 +36,7 @@ export const BAND_VARIANTS: readonly { name: string; band: BandMethod }[] = [
   { name: "last 24 origins", band: { ...POOLED_BAND, windowOrigins: 24 } },
   { name: "last 36 origins", band: { ...POOLED_BAND, windowOrigins: 36 } },
   { name: "pooled p5–p95", band: { ...POOLED_BAND, quantiles: [0.05, 0.95] } },
-  { name: "pooled, adaptive stretch (shipped)", band: DEFAULT_BAND },
+  { name: "pooled, adaptive stretch", band: DEFAULT_BAND },
   { name: "last 36 origins, adaptive stretch", band: { ...DEFAULT_BAND, windowOrigins: 36 } },
 ];
 

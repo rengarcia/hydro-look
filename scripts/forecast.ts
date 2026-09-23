@@ -490,8 +490,9 @@ function sharedMembersExperiment(
       scoreTable(run.scores, options.horizonDays, (h) => (h.coverageP10P90 === null ? "—" : `${(h.coverageP10P90 * 100).toFixed(1)}%`)),
       verdict.better
         ? "**Shared members are better at every horizon** and should replace the per-horizon pool, with the M4 backtest rerun (its M3 anchor changes)."
-        : `**Negative: not better at ${verdict.worseAt.join(", ")} d.** The shipped model keeps every year a horizon can use; ` +
-          "dropping the years whose record stops short of ninety days costs the short horizons members for no gain there.",
+        : `**Negative: not better at ${verdict.worseAt.join(", ")} d**, and the ladder's rule asks for every horizon. The shipped ` +
+          "model keeps every year a horizon can use; dropping the years whose record stops short of ninety days takes members " +
+          "from the short horizons, and whatever it gains elsewhere is not enough to pay for that everywhere.",
     ],
   };
 }
