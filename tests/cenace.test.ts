@@ -140,6 +140,19 @@ describe("SMEC partially-metered pages", () => {
     expect(report.notes.join(" ")).toMatch(/rendered before the metering arrived/);
   });
 
+  it("rejects a half-rendered page that puts figures under a section heading", () => {
+    // 2026-09-22 as fetched at 15:00 UTC (run 35878139889), before SMEC closed the day: hydro
+    // only, then the same hydro figures under "Balance Generación" and Total Pérdidas Transporte.
+    const report = parseSmecInforme1(smec("informe1_2026-09-22_partial.html"), "2026-09-22");
+    expect(report.complete).toBe(false);
+    expect(report.notes.join(" ")).toMatch(/"Balance Generación" carries figures/);
+  });
+
+  it("still throws on an unknown label that is not a section heading", () => {
+    const doctored = smec("informe1_2026-09-22_partial.html").replace(/Balance Generación(\s*<\/span>)/, "Generación Nuclear$1");
+    expect(() => parseSmecInforme1(doctored, "2026-09-22")).toThrow(/unknown row label "Generación Nuclear"/);
+  });
+
   it("still names the ordinary incomplete case by its own cause", () => {
     const running = parseSmecInforme1(smec("informe1_2026-09-21.html"), "2026-09-21");
     expect(running.complete).toBe(false);

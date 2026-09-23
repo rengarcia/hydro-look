@@ -37,6 +37,17 @@ export const SMEC_CONCEPTS = {
 
 export type SmecConcept = (typeof SMEC_CONCEPTS)[keyof typeof SMEC_CONCEPTS];
 
+/**
+ * The section headings, which a whole page renders as single-cell rows with no figures.
+ *
+ * A page caught mid-render can put figures on them instead: 2026-09-22, fetched at 15:00 UTC
+ * (run 35878139889), an hour before SMEC closed the day, had Generación Hidráulica and then the
+ * same hydro figures repeated under "Balance Generación" and under Total Pérdidas Transporte,
+ * with every other row absent. That is a page not yet filled in, not a new report shape, so it
+ * is an incomplete day rather than an unknown label.
+ */
+const SECTION_HEADINGS = new Set(["balance generacion", "conexiones internacionales", "perdidas transporte"]);
+
 /** A report without these is a stub, not a balance: CENACE publishes the running day that way. */
 const REQUIRED_CONCEPTS: SmecConcept[] = ["generacion_hidraulica", "total_generacion", "demanda_distribucion"];
 
@@ -115,6 +126,7 @@ export function parseSmecInforme1(html: string, requestedDate: IsoDate): SmecRep
   let columns: ColumnKey[] | null = null;
   const rows: SmecRow[] = [];
   const seen = new Set<SmecConcept>();
+  const headingsWithFigures: string[] = [];
 
   $("tr").each((_, tr) => {
     // Direct children only: SMEC nests the report table inside layout tables, so `find`
@@ -138,8 +150,13 @@ export function parseSmecInforme1(html: string, requestedDate: IsoDate): SmecRep
 
     const concepto = SMEC_CONCEPTS[normalizeLabel(label) as keyof typeof SMEC_CONCEPTS];
     if (!concepto) {
-      // Section headings ("Balance Generación") are single-cell rows and carry no numbers.
+      // Section headings ("Balance Generación") are single-cell rows and carry no numbers, except
+      // on a half-rendered page (see SECTION_HEADINGS).
       const hasNumbers = cells.slice(1).some((c) => parseEsNumber(c) !== null);
+      if (hasNumbers && SECTION_HEADINGS.has(normalizeLabel(label))) {
+        headingsWithFigures.push(label);
+        return;
+      }
       if (hasNumbers && label !== "") throw new Error(`smec: unknown row label ${JSON.stringify(label)}`);
       return;
     }
@@ -169,13 +186,17 @@ export function parseSmecInforme1(html: string, requestedDate: IsoDate): SmecRep
   const demandShare = totalGeneration > 0 ? demand / totalGeneration : 0;
   const partiallyMetered = missing.length === 0 && totalGeneration > 0 && demandShare < MIN_DEMAND_SHARE;
 
-  const complete = missing.length === 0 && totalGeneration > 0 && !partiallyMetered;
+  const halfRendered = headingsWithFigures.length > 0;
+
+  const complete = missing.length === 0 && totalGeneration > 0 && !partiallyMetered && !halfRendered;
   if (!complete) {
-    const why = partiallyMetered
-      ? `distribution demand is only ${(demandShare * 100).toFixed(2)}% of total generación, so the page was rendered before the metering arrived`
-      : missing.length > 0
-        ? `missing ${missing.join(", ")}`
-        : "total generación is 0";
+    const why = halfRendered
+      ? `the section heading ${headingsWithFigures.map((h) => JSON.stringify(h)).join(", ")} carries figures, so the page was rendered before the metering arrived`
+      : partiallyMetered
+        ? `distribution demand is only ${(demandShare * 100).toFixed(2)}% of total generación, so the page was rendered before the metering arrived`
+        : missing.length > 0
+          ? `missing ${missing.join(", ")}`
+          : "total generación is 0";
     // The running day really does look like this until D+1. An archived day does not recover,
     // though, and saying it might would keep a permanent gap on the list of things to retry:
     // the fifteen days missing from 2016-05-01 onwards were re-fetched on 2026-09-22 (run
