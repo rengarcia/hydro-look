@@ -11,11 +11,7 @@ import { countWord } from "../../../lib/site/story.ts";
 
 /** Text with its backticked parts set as code. */
 export function Rich({ text }: { text: string }) {
-  return (
-    <>
-      {splitCode(text).map((part, i) => (typeof part === "string" ? part : <code key={i}>{part.code}</code>))}
-    </>
-  );
+  return <>{splitCode(text).map((part, i) => (typeof part === "string" ? part : <code key={i}>{part.code}</code>))}</>;
 }
 
 export function Method({ forecast, adequacy }: { forecast: ForecastDocument | null; adequacy: AdequacyDocument | null }) {
@@ -29,22 +25,29 @@ export function Method({ forecast, adequacy }: { forecast: ForecastDocument | nu
     .filter((c): c is number => c !== null && c !== undefined)
     .map((c) => c * 100);
   const nominalA = Math.round((adequacy?.band_method?.nominal_coverage ?? 0.8) * 100);
-  const notes = [...METHOD_NOTES, ...modelNotes({ precipitation_basin: forecast?.precipitation_basin, band_method: adequacy?.band_method })];
+  const notes = [
+    ...METHOD_NOTES,
+    ...modelNotes({ precipitation_basin: forecast?.precipitation_basin, band_method: adequacy?.band_method }),
+  ];
   return (
     <section id="metodo" className="shell section" aria-labelledby="metodo-title">
-      <SectionIntro index="06" eyebrow="Método y advertencias" titleId="metodo-title" title="Lo que conviene saber antes de usar estos números.">
+      <SectionIntro
+        index="06"
+        eyebrow="Método y advertencias"
+        titleId="metodo-title"
+        title="Lo que conviene saber antes de usar estos números."
+      >
         Cada una está documentada, con las mediciones que la establecieron, en el <a href={REPO}>repositorio</a>.
       </SectionIntro>
       <div className="caveats">
         {forecast && sixty && ninety ? (
           <p>
-            <strong>El pronóstico de cota.</strong> Sobre {forecast.model.backtest_origins} orígenes mensuales, el
-            balance hídrico es {pct(sixty.skill_vs_persistence * 100, 1)} mejor que la persistencia a 60 días y{" "}
-            {pct(ninety.skill_vs_persistence * 100, 1)} a 90, e indistinguible de ella por debajo del mes. De los{" "}
-            {countWord(forecast.crisis_check.episodes.length)} cruces de los {num(forecast.crisis_check.threshold_masl, 0)} m en 2024, la
-            mediana no anticipó ninguno; dio {forecast.crisis_check.false_alarms_p50}{" "}
-            {forecast.crisis_check.false_alarms_p50 === 1 ? "falsa alarma" : "falsas alarmas"}. Todo, negativos incluidos,
-            en <a href={`${REPO}/blob/main/${forecast.backtest.report}`}>{forecast.backtest.report}</a>.
+            <strong>El pronóstico de cota.</strong> Sobre {forecast.model.backtest_origins} orígenes mensuales, el balance hídrico es{" "}
+            {pct(sixty.skill_vs_persistence * 100, 1)} mejor que la persistencia a 60 días y {pct(ninety.skill_vs_persistence * 100, 1)} a
+            90, e indistinguible de ella por debajo del mes. De los {countWord(forecast.crisis_check.episodes.length)} cruces de los{" "}
+            {num(forecast.crisis_check.threshold_masl, 0)} m en 2024, la mediana no anticipó ninguno; dio{" "}
+            {forecast.crisis_check.false_alarms_p50} {forecast.crisis_check.false_alarms_p50 === 1 ? "falsa alarma" : "falsas alarmas"}.
+            Todo, negativos incluidos, en <a href={`${REPO}/blob/main/${forecast.backtest.report}`}>{forecast.backtest.report}</a>.
           </p>
         ) : null}
         {adequacy && tiers ? (
@@ -59,12 +62,10 @@ export function Method({ forecast, adequacy }: { forecast: ForecastDocument | nu
             {coverageA.length > 0
               ? `, y su banda p10–p90 cubre entre el ${num(Math.min(...coverageA), 0)} % y el ${num(Math.max(...coverageA), 0)} % de los casos, frente al ${nominalA} % nominal.`
               : "."}{" "}
-            Aplicados a{" "}
-            {tiers.origins} meses del registro, los niveles marcaron {tiers.origins_flagged}; de los marcados,{" "}
+            Aplicados a {tiers.origins} meses del registro, los niveles marcaron {tiers.origins_flagged}; de los marcados,{" "}
             {pct((tiers.share_of_flagged_that_preceded_cuts ?? 0) * 100, 0)} precedieron cortes, y de los cortes se marcó{" "}
-            {pct((tiers.share_of_cuts_that_were_flagged ?? 0) * 100, 0)}: no da falsas alarmas, pero se le escapan la mayoría
-            de las crisis. Nada de esto modela la red. Detalle en{" "}
-            <a href={`${REPO}/blob/main/data/reports/adequacy.md`}>data/reports/adequacy.md</a>.
+            {pct((tiers.share_of_cuts_that_were_flagged ?? 0) * 100, 0)}: no da falsas alarmas, pero se le escapan la mayoría de las crisis.
+            Nada de esto modela la red. Detalle en <a href={`${REPO}/blob/main/data/reports/adequacy.md`}>data/reports/adequacy.md</a>.
           </p>
         ) : null}
       </div>

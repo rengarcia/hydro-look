@@ -20,13 +20,7 @@ import {
   M4_VARIANTS,
   type Covariates,
 } from "../src/lib/models/boosted.ts";
-import {
-  DEFAULT_WATER_BALANCE,
-  fitAt,
-  simulateLevels,
-  simulatePath,
-  waterBalanceModel,
-} from "../src/lib/models/water-balance.ts";
+import { DEFAULT_WATER_BALANCE, fitAt, simulateLevels, simulatePath, waterBalanceModel } from "../src/lib/models/water-balance.ts";
 import type { ForecastContext } from "../src/lib/models/types.ts";
 
 const TRUTH: Hypsometry = {

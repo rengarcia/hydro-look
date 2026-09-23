@@ -30,7 +30,9 @@ export function readThresholdRows(root: string = DATA_REFERENCE): Record<string,
 export function thresholdsFor(site: string, rows: readonly Record<string, string>[] = readThresholdRows()): ThresholdRef[] {
   const out: ThresholdRef[] = [];
   const seen = new Set<number>();
-  const ordered = [...rows].filter((row) => (row["site"] ?? "") === site).sort((a, b) => Number(isUnverifiedMarker(b)) - Number(isUnverifiedMarker(a)));
+  const ordered = [...rows]
+    .filter((row) => (row["site"] ?? "") === site)
+    .sort((a, b) => Number(isUnverifiedMarker(b)) - Number(isUnverifiedMarker(a)));
   for (const row of ordered) {
     const level = Number(row["cota_min_masl"] ?? "");
     if ((row["cota_min_masl"] ?? "") === "" || !Number.isFinite(level) || seen.has(level)) continue;

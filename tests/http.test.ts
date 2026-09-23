@@ -137,7 +137,9 @@ describe("HttpClient pin check", () => {
         throw new Error("TLS pin mismatch for 127.0.0.1");
       },
     });
-    await expect(http.fetch({ key: "p1", url: `${base}/pinned` })).rejects.toThrow(/TLS pin check failed for 127\.0\.0\.1:\d+: TLS pin mismatch/);
+    await expect(http.fetch({ key: "p1", url: `${base}/pinned` })).rejects.toThrow(
+      /TLS pin check failed for 127\.0\.0\.1:\d+: TLS pin mismatch/,
+    );
     await expect(http.fetch({ key: "p2", url: `${base}/pinned` })).rejects.toThrow(/TLS pin check failed/);
     expect(checks).toBe(1);
     expect(hits.get("/pinned")).toBeUndefined();
@@ -148,7 +150,15 @@ describe("HttpClient pin check", () => {
     handlers.set("/advisory", (_req, res) => res.writeHead(200).end("ok"));
     const seen: boolean[] = [];
     const http = client({
-      pinCheck: async (host, port) => ({ host, port, mode: "advisory", expected: "a", observed: "b", observedNotAfter: "2027-01-01T00:00:00.000Z", ok: false }),
+      pinCheck: async (host, port) => ({
+        host,
+        port,
+        mode: "advisory",
+        expected: "a",
+        observed: "b",
+        observedNotAfter: "2027-01-01T00:00:00.000Z",
+        ok: false,
+      }),
       onPin: (check) => seen.push(check.ok),
     });
     expect((await http.fetch({ key: "adv", url: `${base}/advisory` })).status).toBe(200);

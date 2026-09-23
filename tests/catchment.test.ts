@@ -136,7 +136,10 @@ describe("accumulation, snapping and the catchment's figures", () => {
     );
     const routing = routeFlow(g);
     const acc = accumulate(g, routing);
-    const crest = [{ lat: -0.055, lon: 0.035 }, { lat: -0.055, lon: 0.075 }];
+    const crest = [
+      { lat: -0.055, lon: 0.035 },
+      { lat: -0.055, lon: 0.075 },
+    ];
     const onCrest = snapToLine(g, acc, crest, 0.3)!;
     expect(onCrest.index).toBe(at(g, 5, 5));
     const wide = snapToChannel(g, acc, -0.055, 0.055, 2.5)!;
@@ -151,7 +154,10 @@ describe("accumulation, snapping and the catchment's figures", () => {
     // It reaches row 1, next to the northern border, so a real run would widen the grid there.
     expect(stats.touches.north).toBe(true);
     expect(stats.bbox.north).toBeCloseTo(-0.01, 9);
-    expect(stats.representative.isCentroid || mask[at(g, Math.floor(-stats.representative.lat / 0.01), Math.floor(stats.representative.lon / 0.01))] === 1).toBe(true);
+    expect(
+      stats.representative.isCentroid ||
+        mask[at(g, Math.floor(-stats.representative.lat / 0.01), Math.floor(stats.representative.lon / 0.01))] === 1,
+    ).toBe(true);
     // One cell of 0.01° at the equator is 1.1119² km² to four figures.
     expect(cellAreaKm2(g, 0)).toBeCloseTo(1.2364, 3);
     expect(stats.areaKm2).toBeCloseTo(stats.cells * cellAreaKm2(g, 0), 2);
@@ -159,7 +165,18 @@ describe("accumulation, snapping and the catchment's figures", () => {
 });
 
 describe("polygons", () => {
-  const square = { type: "Polygon", coordinates: [[[0.02, -0.05], [0.05, -0.05], [0.05, -0.02], [0.02, -0.02], [0.02, -0.05]]] };
+  const square = {
+    type: "Polygon",
+    coordinates: [
+      [
+        [0.02, -0.05],
+        [0.05, -0.05],
+        [0.05, -0.02],
+        [0.02, -0.02],
+        [0.02, -0.05],
+      ],
+    ],
+  };
 
   it("measures a counter-clockwise ring as positive, and a polygon's area on the sphere", () => {
     expect(ringAreaKm2(square.coordinates[0]!)).toBeGreaterThan(0);

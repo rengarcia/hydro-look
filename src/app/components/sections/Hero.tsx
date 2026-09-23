@@ -29,9 +29,7 @@ export function Hero({
   const worst = adequacy?.current.worst_tier ?? null;
   const worstTier = tierOf(worst);
   const clause =
-    adequacy && worst
-      ? marginClause(worst, adequacy.current.worst_tier_horizon_days, adequacy.horizons.at(-1)?.horizon_days ?? 90)
-      : null;
+    adequacy && worst ? marginClause(worst, adequacy.current.worst_tier_horizon_days, adequacy.horizons.at(-1)?.horizon_days ?? 90) : null;
 
   return (
     <section className="shell hero" aria-labelledby="hero-title">

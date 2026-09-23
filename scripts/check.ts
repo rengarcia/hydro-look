@@ -100,7 +100,10 @@ function readTable(name: string): { rows: Rows; header: string[] | null; mismatc
   const directory = join(DATA_CURATED, name);
   const single = join(DATA_CURATED, `${name}.csv`);
   const paths = existsSync(directory)
-    ? readdirSync(directory).filter((f) => f.endsWith(".csv")).sort().map((f) => join(directory, f))
+    ? readdirSync(directory)
+        .filter((f) => f.endsWith(".csv"))
+        .sort()
+        .map((f) => join(directory, f))
     : existsSync(single)
       ? [single]
       : [];
@@ -207,7 +210,9 @@ function main(): void {
   const archive = new RawArchive(DATA_RAW);
   findings.push(
     ...checkRawRefs(
-      tables.filter(([spec]) => (spec.columns as readonly string[]).includes("raw_ref")).map(([spec, table]) => ({ name: spec.name, rows: table.rows })),
+      tables
+        .filter(([spec]) => (spec.columns as readonly string[]).includes("raw_ref"))
+        .map(([spec, table]) => ({ name: spec.name, rows: table.rows })),
       (ref) => (archive.has(ref) ? (isLegacyRef(ref) ? "legacy" : "current") : null),
     ),
   );
@@ -222,7 +227,14 @@ function main(): void {
     ["CENACE Información Operativa", latestWhere(operativa.rows, "fetched_at", () => true)],
     ["Open-Meteo ERA5", latestWhere(weather.rows, "date", (row) => row["kind"] === "era5")],
     // ONI is a month, not a day; its first day stands in for it so the arithmetic is uniform.
-    ["NOAA ONI", latestWhere(enso.rows.map((r) => ({ ...r, month: `${r["month"]}-01` })), "month", () => true)],
+    [
+      "NOAA ONI",
+      latestWhere(
+        enso.rows.map((r) => ({ ...r, month: `${r["month"]}-01` })),
+        "month",
+        () => true,
+      ),
+    ],
     ["XM exchanges with Colombia", latestWhere(xmExchange.rows, "date", () => true)],
     ["XM Colombian storage", latestWhere(xmSystem.rows, "date", (row) => row["metric"] === "PorcVoluUtilDiar")],
     ["Mazar level forecast", latestWhere(forecastRuns.rows, "origin_date", (row) => row["site"] === "mazar")],
@@ -265,7 +277,11 @@ function main(): void {
     };
     // Left alone when only `generated_at` would change, so a run that found nothing new commits
     // nothing (see apply-and-push.sh).
-    console.log(writeJsonUnlessOnlyStamped(outPath, withContract("status", document)) ? `wrote ${outPath}` : `${outPath} unchanged but for generated_at; left as it was`);
+    console.log(
+      writeJsonUnlessOnlyStamped(outPath, withContract("status", document))
+        ? `wrote ${outPath}`
+        : `${outPath} unchanged but for generated_at; left as it was`,
+    );
   }
 
   process.exitCode = failures.length > 0 ? 1 : 0;

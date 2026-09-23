@@ -51,15 +51,7 @@ import { addDays, isCalendarDate } from "../util/dates.ts";
 import type { IsoDate } from "../util/dates.ts";
 import type { DailySeries } from "../features/series.ts";
 import type { Hypsometry } from "../features/hydrology.ts";
-import {
-  balanceDays,
-  fitHypsometry,
-  impliedReleases,
-  levelAt,
-  nextDay,
-  trimReleases,
-  volumeAt,
-} from "../features/hydrology.ts";
+import { balanceDays, fitHypsometry, impliedReleases, levelAt, nextDay, trimReleases, volumeAt } from "../features/hydrology.ts";
 import { median, quantile } from "../util/stats.ts";
 import type { ForecastContext, HorizonForecast, Model } from "./types.ts";
 
@@ -186,12 +178,7 @@ export interface AnalogPath {
  * value would be a synthetic member of an ensemble whose whole claim is that its members are
  * real years.
  */
-export function analogPaths(
-  inflow: DailySeries,
-  origin: IsoDate,
-  days: number,
-  accept?: (startDate: IsoDate) => boolean,
-): AnalogPath[] {
+export function analogPaths(inflow: DailySeries, origin: IsoDate, days: number, accept?: (startDate: IsoDate) => boolean): AnalogPath[] {
   return analogPathsUpTo(inflow, origin, days, accept).filter((path) => path.inflowM3s.length === days);
 }
 
@@ -459,11 +446,7 @@ export interface AnalogVariant {
   sharedMembers?: boolean;
 }
 
-export function waterBalanceModel(
-  options: WaterBalanceOptions = DEFAULT_WATER_BALANCE,
-  variant?: AnalogVariant,
-  cache?: FitCache,
-): Model {
+export function waterBalanceModel(options: WaterBalanceOptions = DEFAULT_WATER_BALANCE, variant?: AnalogVariant, cache?: FitCache): Model {
   return {
     id: `M3-water-balance${variant ? variant.idSuffix : ""}`,
     label: `Water balance with a fitted release rule and analogue inflow years${variant ? variant.labelSuffix : ""}`,
@@ -531,11 +514,13 @@ export function inflowScenarios(
     return closest;
   };
 
-  return ([
-    ["dry", 0.1],
-    ["median", 0.5],
-    ["wet", 0.9],
-  ] as const).map(([name, q]) => {
+  return (
+    [
+      ["dry", 0.1],
+      ["median", 0.5],
+      ["wet", 0.9],
+    ] as const
+  ).map(([name, q]) => {
     const path = pick(q);
     return {
       name,

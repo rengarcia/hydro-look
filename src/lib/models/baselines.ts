@@ -125,12 +125,7 @@ const DECAY_GRID = [0.95, 0.97, 0.98, 0.99, 0.995, 0.998, 1];
  * rung loses it has lost on its own best settings. The fit is a grid because there are seven
  * candidates and an exact search is cheaper to run and to audit than an optimiser.
  */
-function fitDecay(
-  levels: DailySeries,
-  table: SeasonalTable,
-  horizon: number,
-  dates: readonly IsoDate[],
-): number {
+function fitDecay(levels: DailySeries, table: SeasonalTable, horizon: number, dates: readonly IsoDate[]): number {
   let bestPhi = 1;
   let bestError = Number.POSITIVE_INFINITY;
   for (const phi of DECAY_GRID) {

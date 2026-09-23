@@ -47,7 +47,16 @@ function series() {
       ["produccion_mwh", powerMw * 24],
     ] as const) {
       if (gap && variable === "caudal_m3s") continue;
-      rows.push({ date, site: "mazar", variable, value: String(value), source: "ords:repDiaHid12m", mrid: "", fetched_at: "2026-09-22T00:00:00Z", raw_ref: "x" });
+      rows.push({
+        date,
+        site: "mazar",
+        variable,
+        value: String(value),
+        source: "ords:repDiaHid12m",
+        mrid: "",
+        fetched_at: "2026-09-22T00:00:00Z",
+        raw_ref: "x",
+      });
     }
     level = levelAt(TRUTH, volumeAt(TRUTH, level) + 86_400 * (inflowM3s - TRUTH.turbineM3sPerMw * powerMw));
   }
@@ -120,7 +129,13 @@ describe("the per-run fit cache", () => {
     const earlier = "2023-09-01";
     const a = fitAt(context, DEFAULT_WATER_BALANCE, cache)!;
     const b = fitAt(
-      { ...context, origin: earlier, levels: truncate(levels, earlier), inflow: truncate(inflow, earlier), production: truncate(production, earlier) },
+      {
+        ...context,
+        origin: earlier,
+        levels: truncate(levels, earlier),
+        inflow: truncate(inflow, earlier),
+        production: truncate(production, earlier),
+      },
       DEFAULT_WATER_BALANCE,
       cache,
     )!;

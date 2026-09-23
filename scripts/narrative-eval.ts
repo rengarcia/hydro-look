@@ -18,7 +18,14 @@ import { parseArgs } from "node:util";
 import { buildPayload, loadPayloadInputs, payloadHash, type NarrativePayload } from "../src/lib/narrative/payload.ts";
 import { generateNarrative } from "../src/lib/narrative/generate.ts";
 import { promptVersionFor } from "../src/lib/narrative/prompt.ts";
-import { evaluateRecorded, payloadSize, renderNarrativeReport, replay, summariseEval, type EvalRow } from "../src/lib/narrative/evaluate.ts";
+import {
+  evaluateRecorded,
+  payloadSize,
+  renderNarrativeReport,
+  replay,
+  summariseEval,
+  type EvalRow,
+} from "../src/lib/narrative/evaluate.ts";
 import { readCuratedTable } from "../src/lib/models/scorecard.ts";
 import { NARRATIVE_SNAPSHOTS } from "../src/lib/contracts/tables.ts";
 import { DATA_CURATED, DATA_REFERENCE, repoPath } from "../src/lib/util/paths.ts";
@@ -56,13 +63,23 @@ async function main(): Promise<void> {
 
   const rows: EvalRow[] = evaluateRecorded(readCuratedTable(NARRATIVE_SNAPSHOTS.name), payloads);
   if (values.replay) {
-    const models = (values.models ?? "").split(",").map((m) => m.trim()).filter(Boolean);
+    const models = (values.models ?? "")
+      .split(",")
+      .map((m) => m.trim())
+      .filter(Boolean);
     if (models.length === 0 || !process.env["AI_GATEWAY_API_KEY"]?.trim()) {
       console.error("--replay needs --models <slug,...> and AI_GATEWAY_API_KEY");
       process.exitCode = 1;
       return;
     }
-    rows.push(...(await replay([...payloads.values()], models, (payload, modelId) => generateNarrative(payload, { model: modelId, modelId }), promptVersionFor)));
+    rows.push(
+      ...(await replay(
+        [...payloads.values()],
+        models,
+        (payload, modelId) => generateNarrative(payload, { model: modelId, modelId }),
+        promptVersionFor,
+      )),
+    );
   }
 
   for (const s of summariseEval(rows)) {

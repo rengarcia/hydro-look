@@ -27,7 +27,11 @@ import {
 
 /** The Wikidata point PLAN.md §2.4 records for Minas San Francisco (Q65196242). */
 const MINAS = { lat: -3.3221588, lon: -79.6016026 };
-const SCHEME: SchemeIdentity = { qid: "Q65196242", aliases: ["minas san francisco", "enerjubones", "la union"], operator: /celec|enerjubones/i };
+const SCHEME: SchemeIdentity = {
+  qid: "Q65196242",
+  aliases: ["minas san francisco", "enerjubones", "la union"],
+  operator: /celec|enerjubones/i,
+};
 
 describe("bounding boxes", () => {
   it("widens a single anchor symmetrically and orders it the way Overpass reads it", () => {
@@ -50,7 +54,13 @@ describe("bounding boxes", () => {
   });
 
   it("takes the envelope of several points before padding, so a box over two claims covers both", () => {
-    const box = bboxAround([{ lat: -4.0, lon: -79.0 }, { lat: -4.05, lon: -78.9 }], 0.02);
+    const box = bboxAround(
+      [
+        { lat: -4.0, lon: -79.0 },
+        { lat: -4.05, lon: -78.9 },
+      ],
+      0.02,
+    );
     expect(box).toEqual({ south: -4.07, west: -79.02, north: -3.98, east: -78.88 });
   });
 
@@ -112,11 +122,35 @@ describe("point in polygon", () => {
       ],
     ];
     expect(geometryContains({ type: "MultiPolygon", coordinates: [far, square] }, -78.5, -2.5)).toBe(true);
-    expect(geometryContains({ type: "GeometryCollection", geometries: [{ type: "Polygon", coordinates: far }, { type: "Polygon", coordinates: square }] }, -78.5, -2.5)).toBe(true);
+    expect(
+      geometryContains(
+        {
+          type: "GeometryCollection",
+          geometries: [
+            { type: "Polygon", coordinates: far },
+            { type: "Polygon", coordinates: square },
+          ],
+        },
+        -78.5,
+        -2.5,
+      ),
+    ).toBe(true);
   });
 
   it("declines to rule on lines, points, missing geometry and coordinates that are not degrees", () => {
-    expect(geometryContains({ type: "LineString", coordinates: [[-79, -3], [-78, -2]] }, -78.5, -2.5)).toBeNull();
+    expect(
+      geometryContains(
+        {
+          type: "LineString",
+          coordinates: [
+            [-79, -3],
+            [-78, -2],
+          ],
+        },
+        -78.5,
+        -2.5,
+      ),
+    ).toBeNull();
     expect(geometryContains(null, -78.5, -2.5)).toBeNull();
     // A server that ignored srsName and answered in UTM 17S.
     const utm = [
@@ -244,7 +278,15 @@ describe("tracing a headrace", () => {
       { lat: -4.0499, lon: -78.9 },
     ],
   };
-  const stray: WayGeom = { id: "way/99", tags: { waterway: "canal" }, nodes: [900, 901], geometry: [{ lat: -3.9, lon: -79.2 }, { lat: -3.91, lon: -79.21 }] };
+  const stray: WayGeom = {
+    id: "way/99",
+    tags: { waterway: "canal" },
+    nodes: [900, 901],
+    geometry: [
+      { lat: -3.9, lon: -79.2 },
+      { lat: -3.91, lon: -79.21 },
+    ],
+  };
 
   it("finds the chain from the intake node to the powerhouse through shared nodes and near ends", () => {
     const result = traceChain([stray, penstock, tunnel, canal], intake, powerhouse, 0.1);
@@ -355,7 +397,9 @@ describe("capabilities URLs", () => {
   });
 
   it("asks ArcGIS REST services for their JSON instead", () => {
-    expect(capabilitiesUrl("https://example.gob.ec/arcgis/rest/services/Agua/UH/MapServer", "WMS")).toBe("https://example.gob.ec/arcgis/rest/services/Agua/UH/MapServer?f=json");
+    expect(capabilitiesUrl("https://example.gob.ec/arcgis/rest/services/Agua/UH/MapServer", "WMS")).toBe(
+      "https://example.gob.ec/arcgis/rest/services/Agua/UH/MapServer?f=json",
+    );
   });
 });
 
@@ -394,8 +438,21 @@ describe("harvesting directory pages", () => {
 
 describe("ArcGIS Online, restricted to the agencies", () => {
   const items = [
-    { title: "Fig 13_ B_UnidadesHidrográficasN4Pfastetter", type: "Feature Service", owner: "some_student", url: "https://services7.arcgis.com/x/FeatureServer", tags: ["tesis"] },
-    { title: "Unidades Hidrográficas Nivel 5", type: "Feature Service", owner: "geo_maate", url: "https://services.arcgis.com/y/FeatureServer", tags: ["SENAGUA", "Pfafstetter"], accessInformation: "Secretaría del Agua" },
+    {
+      title: "Fig 13_ B_UnidadesHidrográficasN4Pfastetter",
+      type: "Feature Service",
+      owner: "some_student",
+      url: "https://services7.arcgis.com/x/FeatureServer",
+      tags: ["tesis"],
+    },
+    {
+      title: "Unidades Hidrográficas Nivel 5",
+      type: "Feature Service",
+      owner: "geo_maate",
+      url: "https://services.arcgis.com/y/FeatureServer",
+      tags: ["SENAGUA", "Pfafstetter"],
+      accessInformation: "Secretaría del Agua",
+    },
     { title: "Concesiones de agua", type: "Map Service", owner: "senagua_ec", url: "https://services.arcgis.com/z/MapServer", tags: [] },
     { title: "Unidades hidrográficas (PDF)", type: "PDF", owner: "geo_maate", url: null, tags: ["SENAGUA"] },
     { title: "Tourism", type: "Feature Service", owner: "turismo", url: "https://services.arcgis.com/t/FeatureServer", tags: [] },

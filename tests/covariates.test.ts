@@ -107,8 +107,17 @@ describe("covariates", () => {
     const root = mkdtempSync(join(tmpdir(), "hydro-weather-resume-"));
     const store = new CuratedStore(root);
     // A complete day for every basin in the reference table, so the first run has nothing to fetch.
-    const read = vi.spyOn(store, "read").mockReturnValue(loadBasins().map((b) => ({ date: "2024-01-01", basin: b.basin,
-      latitude: String(b.latitude), longitude: String(b.longitude), kind: "era5", precip_mm: "0", temp_mean_c: "12" })));
+    const read = vi.spyOn(store, "read").mockReturnValue(
+      loadBasins().map((b) => ({
+        date: "2024-01-01",
+        basin: b.basin,
+        latitude: String(b.latitude),
+        longitude: String(b.longitude),
+        kind: "era5",
+        precip_mm: "0",
+        temp_mean_c: "12",
+      })),
+    );
     const source = new Covariates({ fetch: vi.fn() }, new RawArchive(root));
     const weather = vi.spyOn(source, "weather").mockResolvedValue();
     const oni = vi.spyOn(source, "oni").mockResolvedValue();
@@ -123,8 +132,17 @@ describe("covariates", () => {
     expect(weather).toHaveBeenCalledWith(batch, basin, "era5", "2024-01-01", "2024-01-01");
     expect(oni).not.toHaveBeenCalled();
     expect(batch.notes).toContainEqual(expect.stringMatching(/budget exhausted/));
-    read.mockReturnValue([{ date: "2024-01-01", basin: basin.basin,
-      latitude: String(basin.latitude), longitude: String(basin.longitude), kind: "era5", precip_mm: "", temp_mean_c: "12" }]);
+    read.mockReturnValue([
+      {
+        date: "2024-01-01",
+        basin: basin.basin,
+        latitude: String(basin.latitude),
+        longitude: String(basin.longitude),
+        kind: "era5",
+        precip_mm: "",
+        temp_mean_c: "12",
+      },
+    ]);
     weather.mockClear();
     await ingestCovariates(source, store, emptyBatch(), options, "2026-09-22");
     expect(weather).toHaveBeenCalledOnce();
@@ -140,7 +158,8 @@ describe("covariates", () => {
     await ingestCovariates(source, store, batch, parseOptions(["covariates"]), "2026-09-22");
     expect(weather).toHaveBeenNthCalledWith(1, batch, basin, "forecast", "2026-09-22", "2026-10-07");
     expect(weather).toHaveBeenNthCalledWith(2, batch, basin, "era5", "2026-08-18", "2026-09-16");
-    await expect(ingestCovariates(source, store, batch, parseOptions(["covariates", "--from", "2026-09-20"]), "2026-09-22"))
-      .rejects.toThrow(/ERA5 range/);
+    await expect(
+      ingestCovariates(source, store, batch, parseOptions(["covariates", "--from", "2026-09-20"]), "2026-09-22"),
+    ).rejects.toThrow(/ERA5 range/);
   });
 });

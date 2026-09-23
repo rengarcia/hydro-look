@@ -28,9 +28,8 @@ export default function DaysIndex() {
       <Crumbs trail={[{ href: "/", label: "Inicio" }, { label: "Archivo diario" }]} />
       <section className="shell section" aria-labelledby="archivo-title">
         <SectionIntro index="—" eyebrow="Archivo" titleId="archivo-title" title="Lo que se publicó sobre cada día.">
-          Una página por cada día en que los modelos corrieron, reconstruida de las tablas donde queda cada corrida:
-          el pronóstico de Mazar, la suficiencia y la lectura del día. Si un día se corrió más de una vez, la página
-          muestra la última corrida y dice cuántas hubo.
+          Una página por cada día en que los modelos corrieron, reconstruida de las tablas donde queda cada corrida: el pronóstico de Mazar,
+          la suficiencia y la lectura del día. Si un día se corrió más de una vez, la página muestra la última corrida y dice cuántas hubo.
         </SectionIntro>
         {all.length === 0 ? (
           <p className="panel-lede">Aún no hay días archivados.</p>

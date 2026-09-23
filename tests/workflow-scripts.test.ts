@@ -85,7 +85,9 @@ describe("missed daily slots", () => {
 
   it("reports a slot with no scheduled run created after it", async () => {
     const runs = (created: string[]) => ({
-      github: { rest: { actions: { listWorkflowRuns: async () => ({ data: { workflow_runs: created.map((created_at) => ({ created_at })) } }) } } },
+      github: {
+        rest: { actions: { listWorkflowRuns: async () => ({ data: { workflow_runs: created.map((created_at) => ({ created_at })) } }) } },
+      },
       context: { repo: { owner: "o", repo: "r" } },
     });
     const due = new Date("2026-09-23T12:47:00Z");

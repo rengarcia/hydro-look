@@ -123,16 +123,14 @@ export function Footer() {
         <div className="footer-lead">
           <Brand size={26} />
           <p>
-            <strong>No es una fuente oficial.</strong> Cada número es una copia de lo que publicaron CELEC o CENACE,
-            con la respuesta que lo produjo archivada junto a él. Este sitio no representa la posición de ninguna
-            institución.
+            <strong>No es una fuente oficial.</strong> Cada número es una copia de lo que publicaron CELEC o CENACE, con la respuesta que lo
+            produjo archivada junto a él. Este sitio no representa la posición de ninguna institución.
           </p>
         </div>
         <div className="footer-fine">
           <p>
-            Código bajo licencia MIT. Energía: CELEC EP y CENACE. Meteorología:{" "}
-            <a href="https://open-meteo.com/">Open-Meteo</a> (ERA5, CC BY 4.0). Índice ONI:{" "}
-            <a href="https://psl.noaa.gov/data/correlation/oni.data">NOAA PSL / CPC</a>. Intercambios con Colombia: XM.{" "}
+            Código bajo licencia MIT. Energía: CELEC EP y CENACE. Meteorología: <a href="https://open-meteo.com/">Open-Meteo</a> (ERA5, CC
+            BY 4.0). Índice ONI: <a href="https://psl.noaa.gov/data/correlation/oni.data">NOAA PSL / CPC</a>. Intercambios con Colombia: XM.{" "}
             <a href={REPO}>Código y datos en GitHub</a>.
           </p>
           <p className="footer-links">
@@ -160,11 +158,7 @@ export function Contours() {
     const base = 40 + (i * (height - 100)) / (lines - 1);
     const points: string[] = [];
     for (let x = 0; x <= width; x += 36) {
-      const y =
-        base +
-        12 * Math.sin(x / 170 + i * 0.9) +
-        7 * Math.sin(x / 83 - i * 1.7) +
-        4 * Math.cos(x / 41 + i * 0.4);
+      const y = base + 12 * Math.sin(x / 170 + i * 0.9) + 7 * Math.sin(x / 83 - i * 1.7) + 4 * Math.cos(x / 41 + i * 0.4);
       points.push(`${x === 0 ? "M" : "L"}${x} ${Math.round(y * 10) / 10}`);
     }
     paths.push(points.join(" "));

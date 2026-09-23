@@ -196,8 +196,7 @@ function BarRow({ column }: { column: Column }) {
           {pct(column.share, 1)} {column.declared ? "de la banda" : "del rango registrado"}
         </span>
         <span>
-          {dir === "flat" ? num(0, 2) : signed(slope, 2)} m/día · caudal{" "}
-          <PercentileAbbr percentile={column.percentile} empty="sin base" />
+          {dir === "flat" ? num(0, 2) : signed(slope, 2)} m/día · caudal <PercentileAbbr percentile={column.percentile} empty="sin base" />
         </span>
       </div>
     </>

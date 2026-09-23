@@ -67,7 +67,9 @@ function snapshot(overrides: Partial<M4Snapshot> = {}): M4Snapshot {
     referenceId: "M3-water-balance",
     scores: [score("M0-persistence", 10, 0.8), score("M3-water-balance", 2.3, 0.74), score(PUBLISHED_M4_ID, 2.0, 0.76)],
     native: [],
-    paired: [{ modelId: PUBLISHED_M4_ID, horizons: [{ horizonDays: 7, n: 3, maeDifferenceM: -0.26, low90: -0.45, high90: -0.07, winShare: 0.6 }] }],
+    paired: [
+      { modelId: PUBLISHED_M4_ID, horizons: [{ horizonDays: 7, n: 3, maeDifferenceM: -0.26, low90: -0.45, high90: -0.07, winShare: 0.6 }] },
+    ],
     crisis: { thresholdM: 2115, episodes: [], falseAlarms: [], originsConsidered: 3 },
     m3AnchorMaxAbsDifferenceM: 0,
     calibration: [{ modelId: PUBLISHED_M4_ID, horizons: [{ horizonDays: 7, q10: -3.1, q50: 0.2, q90: 2.4, n: 3 }] }],
@@ -236,11 +238,7 @@ const QUICK: M4Settings = { ...DEFAULT_M4, gbm: { ...DEFAULT_M4.gbm, trees: 15 }
 describe("fitM4Live", () => {
   it("is the backtest's model at that origin, fitted only on what was known there", { timeout: 60_000 }, () => {
     const origin = "2019-03-01";
-    const live = fitM4Live(
-      { origin, ...DATA, crestM: CREST },
-      PUBLISHED_M4_HORIZON,
-      QUICK,
-    );
+    const live = fitM4Live({ origin, ...DATA, crestM: CREST }, PUBLISHED_M4_HORIZON, QUICK);
     expect(live).not.toBeNull();
     expect(live!.horizonDays).toBe(7);
 

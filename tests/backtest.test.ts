@@ -46,12 +46,7 @@ describe("truncate", () => {
 
 describe("monthlyOrigins", () => {
   it("returns only first-of-month days the series covers, inside the closed window", () => {
-    expect(monthlyOrigins(ramp(200), "2018-02-01", "2018-05-01")).toEqual([
-      "2018-02-01",
-      "2018-03-01",
-      "2018-04-01",
-      "2018-05-01",
-    ]);
+    expect(monthlyOrigins(ramp(200), "2018-02-01", "2018-05-01")).toEqual(["2018-02-01", "2018-03-01", "2018-04-01", "2018-05-01"]);
   });
 
   it("stops where the series does, not where the window does", () => {
@@ -85,9 +80,7 @@ describe("look-ahead", () => {
   it("calibrates a band only from origins strictly earlier than the one it is applied to", () => {
     const levels = ramp(500);
     const result = runBacktest({ levels, inflow: new Map(), production: new Map() }, [persistence], OPTIONS);
-    const byOrigin = result.predictions
-      .filter((p) => p.horizonDays === 7)
-      .sort((a, b) => (a.origin < b.origin ? -1 : 1));
+    const byOrigin = result.predictions.filter((p) => p.horizonDays === 7).sort((a, b) => (a.origin < b.origin ? -1 : 1));
 
     // The warm-up carries no band at all rather than borrowing one from the future.
     expect(byOrigin.slice(0, OPTIONS.minCalibrationOrigins).every((p) => p.p10 === null)).toBe(true);
@@ -139,10 +132,7 @@ describe("scoring", () => {
   it("reports skill against persistence, and zero for persistence itself", () => {
     const other: Model = { id: "other", label: "other", forecast: () => [] };
     const scores = scoreAll(
-      [
-        prediction({ actual: 110, p50: 100 }),
-        prediction({ modelId: "other", actual: 110, p50: 105 }),
-      ],
+      [prediction({ actual: 110, p50: 100 }), prediction({ modelId: "other", actual: 110, p50: 105 })],
       [persistence, other],
       [7],
     );

@@ -79,11 +79,9 @@ export interface PublishedSwitch {
 }
 
 function table(headers: readonly string[], rows: readonly (readonly string[])[]): string {
-  return [
-    `| ${headers.join(" | ")} |`,
-    `|${headers.map(() => "---").join("|")}|`,
-    ...rows.map((row) => `| ${row.join(" | ")} |`),
-  ].join("\n");
+  return [`| ${headers.join(" | ")} |`, `|${headers.map(() => "---").join("|")}|`, ...rows.map((row) => `| ${row.join(" | ")} |`)].join(
+    "\n",
+  );
 }
 
 /** A model × horizon table of one statistic, as every table in this report is drawn. */
@@ -133,9 +131,7 @@ export function renderBacktestReport(inputs: ReportInputs): string {
       `${nBand} of them with a calibrated band (the first twelve are the calibration's warm-up).`,
   );
   lines.push("");
-  lines.push(
-    `Level history: ${inputs.levelRange.days} days, ${inputs.levelRange.first} → ${inputs.levelRange.last}.`,
-  );
+  lines.push(`Level history: ${inputs.levelRange.days} days, ${inputs.levelRange.first} → ${inputs.levelRange.last}.`);
   lines.push("");
 
   lines.push("## Verdict");
@@ -184,7 +180,12 @@ export function renderBacktestReport(inputs: ReportInputs): string {
 
   lines.push("## Mean absolute error, metres");
   lines.push("");
-  lines.push(table(headers, scoreRows(tableScores, H, (h) => f(h.maeM))));
+  lines.push(
+    table(
+      headers,
+      scoreRows(tableScores, H, (h) => f(h.maeM)),
+    ),
+  );
   lines.push("");
   if (m4Rows.length > 0) {
     lines.push(
@@ -198,7 +199,12 @@ export function renderBacktestReport(inputs: ReportInputs): string {
 
   lines.push("## Skill against persistence (1 − MAE/MAE₀)");
   lines.push("");
-  lines.push(table(headers, scoreRows(tableScores, H, (h) => pct(h.skillVsPersistence))));
+  lines.push(
+    table(
+      headers,
+      scoreRows(tableScores, H, (h) => pct(h.skillVsPersistence)),
+    ),
+  );
   lines.push("");
   lines.push(
     "Section 7 expected climatological drift to improve on persistence. It does not, at any horizon: " +
@@ -210,11 +216,21 @@ export function renderBacktestReport(inputs: ReportInputs): string {
 
   lines.push("## Coverage of the published p10–p90 band");
   lines.push("");
-  lines.push(table(headers, scoreRows(tableScores, H, (h) => pct(h.coverageP10P90))));
+  lines.push(
+    table(
+      headers,
+      scoreRows(tableScores, H, (h) => pct(h.coverageP10P90)),
+    ),
+  );
   lines.push("");
   lines.push("Against the model's own ensemble, uncalibrated:");
   lines.push("");
-  lines.push(table(headers, scoreRows(tableScores, H, (h) => pct(h.ensembleCoverage))));
+  lines.push(
+    table(
+      headers,
+      scoreRows(tableScores, H, (h) => pct(h.ensembleCoverage)),
+    ),
+  );
   lines.push("");
   lines.push(
     "The gap between the two tables is the reason the published band is not the ensemble. An ensemble " +
@@ -226,11 +242,21 @@ export function renderBacktestReport(inputs: ReportInputs): string {
 
   lines.push("## Pinball loss, metres (mean over the three published quantiles)");
   lines.push("");
-  lines.push(table(headers, scoreRows(tableScores, H, (h) => f(h.pinballMeanM))));
+  lines.push(
+    table(
+      headers,
+      scoreRows(tableScores, H, (h) => f(h.pinballMeanM)),
+    ),
+  );
   lines.push("");
   lines.push("## Bias, metres (mean actual − forecast; positive means the model forecasts too low)");
   lines.push("");
-  lines.push(table(headers, scoreRows(tableScores, H, (h) => f(h.biasM))));
+  lines.push(
+    table(
+      headers,
+      scoreRows(tableScores, H, (h) => f(h.biasM)),
+    ),
+  );
   lines.push("");
 
   if (m4) lines.push(...renderM4Section(m4, decisions, m4Aligned, inputs.m4!.ladderOrigins.length, inputs.published ?? null));
@@ -244,7 +270,12 @@ export function renderBacktestReport(inputs: ReportInputs): string {
         "members by ENSO phase often leaves too few to form an ensemble at all:",
     );
     lines.push("");
-    lines.push(table(headers, scoreRows(inputs.variant.scores, H, (h) => f(h.maeM))));
+    lines.push(
+      table(
+        headers,
+        scoreRows(inputs.variant.scores, H, (h) => f(h.maeM)),
+      ),
+    );
     lines.push("");
     lines.push(
       "The phase used is the one a forecaster could actually have read at each origin: ONI is a " +
@@ -358,11 +389,7 @@ export function renderBacktestReport(inputs: ReportInputs): string {
         ["area-elevation datum", `${f(curve.datumM, 1)} m`, "fitted"],
         ["fit residual", `${f(curve.rmseDeltaLevelM)} m/day over ${curve.days} days`, "fitted"],
         ["turbined flow per MW", `${f(curve.turbineM3sPerMw)} m³/s`, "fitted jointly with the curve"],
-        [
-          "storage, lowest declared minimum → crest",
-          `${f(storageHm3(curve, 2098, inputs.crestM), 1)} hm³`,
-          "integral of the fitted curve",
-        ],
+        ["storage, lowest declared minimum → crest", `${f(storageHm3(curve, 2098, inputs.crestM), 1)} hm³`, "integral of the fitted curve"],
         ["release rule points", String(rule.points.length), `median implied release over ${rule.days} days`],
         ["operator's current stance", `${f(stance, 1)} m³/s vs the rule`, "trailing 30 days"],
         ["crest used as the spill cap", `${f(inputs.crestM, 2)} m`, "highest level in the record"],
@@ -443,7 +470,9 @@ function publishedLine(published: PublishedSwitch, snapshot: M4Snapshot | null, 
     score && reference
       ? ` (MAE ${f(score.maeM, 2)} m against ${f(reference.maeM, 2)} m, ${pct(score.skillVsPersistence)} better than ` +
         `persistence; band coverage ${pct(score.coverageP10P90)} against ${pct(reference.coverageP10P90)}` +
-        (paired ? `; paired difference ${signed(paired.maeDifferenceM)} m, 90% interval [${signed(paired.low90)}, ${signed(paired.high90)}]` : "") +
+        (paired
+          ? `; paired difference ${signed(paired.maeDifferenceM)} m, 90% interval [${signed(paired.low90)}, ${signed(paired.high90)}]`
+          : "") +
         ")"
       : "";
   return (
@@ -539,15 +568,18 @@ function renderM4Section(
       "trees that learn nothing leave M3 as it was. M3 at a training day is M3 as it would have been made " +
       "that day — the fit from the first of the month, the stance over the thirty days before, earlier " +
       "years' inflow — and at every scored origin it reproduces the shipped M3's median " +
-      (snapshot.m3AnchorMaxAbsDifferenceM === 0
-        ? "exactly."
-        : `to within ${f(snapshot.m3AnchorMaxAbsDifferenceM, 6)} m.`),
+      (snapshot.m3AnchorMaxAbsDifferenceM === 0 ? "exactly." : `to within ${f(snapshot.m3AnchorMaxAbsDifferenceM, 6)} m.`),
   );
   out.push("");
 
   out.push("### Mean absolute error, metres, on the same origins");
   out.push("");
-  out.push(table(headers, scoreRows(snapshot.scores, H, (h) => f(h.maeM))));
+  out.push(
+    table(
+      headers,
+      scoreRows(snapshot.scores, H, (h) => f(h.maeM)),
+    ),
+  );
   out.push("");
   out.push("Skill against persistence, and against M3 (1 − MAE/MAE_M3):");
   out.push("");
@@ -569,9 +601,7 @@ function renderM4Section(
   );
   out.push("");
 
-  out.push(
-    `### Paired against ${snapshot.referenceId}: mean of |error| − |error of M3|, metres, with a 90% interval`,
-  );
+  out.push(`### Paired against ${snapshot.referenceId}: mean of |error| − |error of M3|, metres, with a 90% interval`);
   out.push("");
   out.push(
     "Negative means M4 was closer. The interval is a circular block bootstrap over origins in blocks of " +
@@ -601,29 +631,41 @@ function renderM4Section(
       "analogue ensemble):",
   );
   out.push("");
-  out.push(table(headers, scoreRows(snapshot.scores.filter((s) => s.modelId !== "M0-persistence"), H, (h) => pct(h.coverageP10P90))));
+  out.push(
+    table(
+      headers,
+      scoreRows(
+        snapshot.scores.filter((s) => s.modelId !== "M0-persistence"),
+        H,
+        (h) => pct(h.coverageP10P90),
+      ),
+    ),
+  );
   out.push("");
   out.push(
     table(
       headers,
-      snapshot.native.map((n) => [
-        n.modelId,
-        ...H.map((horizon) => pct(n.horizons.find((x) => x.horizonDays === horizon)?.coverage)),
-      ]),
+      snapshot.native.map((n) => [n.modelId, ...H.map((horizon) => pct(n.horizons.find((x) => x.horizonDays === horizon)?.coverage))]),
     ),
   );
   out.push("");
   out.push("Pinball loss, metres, calibrated band and then own quantiles, on the same banded origins:");
   out.push("");
-  out.push(table(headers, scoreRows(snapshot.scores.filter((s) => s.modelId !== "M0-persistence"), H, (h) => f(h.pinballMeanM))));
+  out.push(
+    table(
+      headers,
+      scoreRows(
+        snapshot.scores.filter((s) => s.modelId !== "M0-persistence"),
+        H,
+        (h) => f(h.pinballMeanM),
+      ),
+    ),
+  );
   out.push("");
   out.push(
     table(
       headers,
-      snapshot.native.map((n) => [
-        n.modelId,
-        ...H.map((horizon) => f(n.horizons.find((x) => x.horizonDays === horizon)?.pinballMeanM)),
-      ]),
+      snapshot.native.map((n) => [n.modelId, ...H.map((horizon) => f(n.horizons.find((x) => x.horizonDays === horizon)?.pinballMeanM))]),
     ),
   );
   out.push("");

@@ -26,8 +26,18 @@ const MAZAR = payload.reservoirs.findIndex((r) => r.site === "mazar");
 const PAD = " El texto describe la situación general de los embalses sin añadir cifras nuevas.".repeat(9);
 
 const DRIVERS = [
-  { text: "La pendiente de 30 días es de -0,3313 m/día.", factor: "mazar_level", direction: "down", payload_ref: `reservoirs[${MAZAR}].slopes_m_per_day.d30` },
-  { text: "Cobertura de la banda: 74 % a 7 días.", factor: "mazar_forecast", direction: "steady", payload_ref: "mazar_forecast.horizons[0].coverage_p10_p90" },
+  {
+    text: "La pendiente de 30 días es de -0,3313 m/día.",
+    factor: "mazar_level",
+    direction: "down",
+    payload_ref: `reservoirs[${MAZAR}].slopes_m_per_day.d30`,
+  },
+  {
+    text: "Cobertura de la banda: 74 % a 7 días.",
+    factor: "mazar_forecast",
+    direction: "steady",
+    payload_ref: "mazar_forecast.horizons[0].coverage_p10_p90",
+  },
   { text: "El ONI de 2026-07 fue 1,8.", factor: "enso", direction: "up", payload_ref: "enso.oni" },
 ] as const;
 
@@ -72,7 +82,12 @@ describe("narrative.json", () => {
   it("says which tier the text was given and from where, and carries the structured drivers beside the sentences", async () => {
     const result = await generateNarrative(payload, { model: answering(0.02), modelId: "mock/model" });
     expect(result.status).toBe("ok");
-    const document = narrativeDocument({ generatedAt: "2026-09-22T12:40:05Z", result: { ...result, output: result.output! }, payload, payloadHash: payloadHash(payload) });
+    const document = narrativeDocument({
+      generatedAt: "2026-09-22T12:40:05Z",
+      result: { ...result, output: result.output! },
+      payload,
+      payloadHash: payloadHash(payload),
+    });
     expect(document.risk_tier_given).toMatchObject({ tier: "holgado", horizon_days: 60, tier_at_7d: "holgado" });
     expect(document.drivers).toEqual(DRIVERS.map((d) => d.text));
     expect(document.drivers_structured).toEqual(DRIVERS);
@@ -84,7 +99,10 @@ describe("narrative.json", () => {
       doGenerate: async () => ({
         content: [{ type: "text", text: JSON.stringify({ ...answer, outlook_es: "Mazar está en 2138,37 m; nivel holgado." }) }],
         finishReason: { unified: "stop", raw: undefined },
-        usage: { inputTokens: { total: 1, noCache: 1, cacheRead: undefined, cacheWrite: undefined }, outputTokens: { total: 1, text: 1, reasoning: undefined } },
+        usage: {
+          inputTokens: { total: 1, noCache: 1, cacheRead: undefined, cacheWrite: undefined },
+          outputTokens: { total: 1, text: 1, reasoning: undefined },
+        },
         warnings: [],
       }),
     });
@@ -96,7 +114,10 @@ describe("narrative.json", () => {
 
 describe("the prompt version follows the rain basin (§1.1)", () => {
   it("writes the rain line, and the version, for the basin the rain came from", () => {
-    const verified = { ...payload, precipitation_16d: { ...payload.precipitation_16d!, basin: "paute_mazar", coordinate_status: "verified" } };
+    const verified = {
+      ...payload,
+      precipitation_16d: { ...payload.precipitation_16d!, basin: "paute_mazar", coordinate_status: "verified" },
+    };
     expect(promptVersionFor(payload)).toBe(PROMPT_VERSION);
     expect(promptVersionFor(verified)).toBe(`${PROMPT_VERSION}+paute_mazar`);
     expect(instructionsFor(payload)).toContain("provisional sampling point");
@@ -121,7 +142,11 @@ describe("the offline evaluation", () => {
 
   it("revalidates each committed answer under today's rules, against its own payload", () => {
     const rows = evaluateRecorded(
-      [recorded(answer.outlook_es, [...DRIVERS]), recorded("Muy corto, nivel holgado.", ["uno"]), recorded(answer.outlook_es, [...DRIVERS], "0".repeat(64))],
+      [
+        recorded(answer.outlook_es, [...DRIVERS]),
+        recorded("Muy corto, nivel holgado.", ["uno"]),
+        recorded(answer.outlook_es, [...DRIVERS], "0".repeat(64)),
+      ],
       new Map([[hash, payload]]),
     );
     expect(rows.map((r) => r.validatorOk)).toEqual([true, false, null]);
@@ -144,7 +169,12 @@ describe("the offline evaluation", () => {
     expect(calls).toEqual(["cheap/model", "dear/model"]);
     expect(rows.every((r) => r.status === "ok" && r.validatorOk)).toBe(true);
     expect(rows.map((r) => r.costUsd)).toEqual([0.001, 0.04]);
-    const report = renderNarrativeReport({ generatedAt: "2026-09-23T00:00:00Z", rows, sizes: [payloadSize("fixture", payload)], replayed: true });
+    const report = renderNarrativeReport({
+      generatedAt: "2026-09-23T00:00:00Z",
+      rows,
+      sizes: [payloadSize("fixture", payload)],
+      replayed: true,
+    });
     expect(report).toContain("`cheap/model`");
   });
 });

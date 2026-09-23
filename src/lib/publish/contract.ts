@@ -307,9 +307,7 @@ export function withContract<T extends object>(name: DocumentName, document: T):
     delete body[key];
   }
   const dataDate =
-    stringOr(doc["data_date"], null) ??
-    stringOr(doc["origin_date"], null) ??
-    (name === "status" ? statusDataDate(body["feeds"]) : null);
+    stringOr(doc["data_date"], null) ?? stringOr(doc["origin_date"], null) ?? (name === "status" ? statusDataDate(body["feeds"]) : null);
   const existing = doc["see_also"];
   return {
     schema_version: SCHEMA_VERSION,

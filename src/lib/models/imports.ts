@@ -62,7 +62,12 @@ export function importSensitivity(forecast: AdequacyForecast): SensitivityCase[]
       const supply = floor + imports;
       const deficit = h.requirementGwhDay - supply;
       const p90 = h.requirementP90 === null ? null : h.requirementP90 - supply;
-      return { horizonDays: h.horizonDays, deficitGwhDay: deficit, deficitP90: p90, tier: tierFor(deficit, p90, forecast.rules.tightGwhDay) };
+      return {
+        horizonDays: h.horizonDays,
+        deficitGwhDay: deficit,
+        deficitP90: p90,
+        tier: tierFor(deficit, p90, forecast.rules.tightGwhDay),
+      };
     });
     const worst = horizons.reduce((a, b) => (TIER_ORDER.indexOf(b.tier) > TIER_ORDER.indexOf(a.tier) ? b : a));
     return [{ case: name, importGwhDay: imports, horizons, worstTier: worst.tier, worstTierHorizonDays: worst.horizonDays }];
@@ -185,7 +190,9 @@ export function fitLinear(rows: readonly number[][], targets: readonly number[],
   const x = rows.map((r) => r.map((v, j) => (v - means[j]!) / sds[j]!));
   const yMean = targets.reduce((a, b) => a + b, 0) / n;
   // Normal equations (XᵀX + λI) β = Xᵀy, solved by Gaussian elimination: k is four or five.
-  const a = Array.from({ length: k }, (_, i) => Array.from({ length: k }, (_, j) => x.reduce((s, r) => s + r[i]! * r[j]!, 0) + (i === j ? ridge : 0)));
+  const a = Array.from({ length: k }, (_, i) =>
+    Array.from({ length: k }, (_, j) => x.reduce((s, r) => s + r[i]! * r[j]!, 0) + (i === j ? ridge : 0)),
+  );
   const b = Array.from({ length: k }, (_, i) => x.reduce((s, r, m) => s + r[i]! * (targets[m]! - yMean), 0));
   for (let col = 0; col < k; col++) {
     let pivot = col;

@@ -146,7 +146,10 @@ describe("per-plant hourly energy", () => {
 
   it("writes nothing for a partial day", () => {
     const partial = JSON.stringify({
-      items: [{ loctimestamp: "2024-10-15T06:00:00Z", valueedit: 100 }, { loctimestamp: "2024-10-15T07:00:00Z", valueedit: null }],
+      items: [
+        { loctimestamp: "2024-10-15T06:00:00Z", valueedit: 100 },
+        { loctimestamp: "2024-10-15T07:00:00Z", valueedit: null },
+      ],
     });
     const result = parseEnerDia(partial, "mazar", "maz", "2024-10-15");
     expect(result.observations).toEqual([]);
@@ -169,8 +172,16 @@ describe("the historian and live endpoints", () => {
       items: [
         {
           loctimestamp: "2018-10-01T05:00:00Z",
-          nivelmsf: null, q_ingresadomsf: -4999995, limmsf: 793, min_msf: 750, qmax_msf: 600,
-          nivelmaz: 2144.64, q_ingresadomaz: 24, limmaz: 2153, min_maz: 2100, qmax_maz: 800,
+          nivelmsf: null,
+          q_ingresadomsf: -4999995,
+          limmsf: 793,
+          min_msf: 750,
+          qmax_msf: 600,
+          nivelmaz: 2144.64,
+          q_ingresadomaz: 24,
+          limmaz: 2153,
+          min_maz: 2100,
+          qmax_maz: 800,
         },
       ],
     });

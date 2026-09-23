@@ -68,7 +68,9 @@ function readTable(name: string): Record<string, string>[] {
   const directory = join(DATA_CURATED, name);
   if (!existsSync(directory)) return [];
   const rows: Record<string, string>[] = [];
-  for (const file of readdirSync(directory).filter((f) => f.endsWith(".csv")).sort()) {
+  for (const file of readdirSync(directory)
+    .filter((f) => f.endsWith(".csv"))
+    .sort()) {
     rows.push(...parseCsv(readFileSync(join(directory, file), "utf8")));
   }
   return rows;
@@ -156,7 +158,9 @@ function main(): void {
 
   console.log(
     `imports: ${forecast.imports.state}` +
-      (forecast.imports.trailingGwhDay === null ? "" : `, ${forecast.imports.trailingGwhDay.toFixed(2)} GWh/day over the last ${forecast.imports.days} usable days`) +
+      (forecast.imports.trailingGwhDay === null
+        ? ""
+        : `, ${forecast.imports.trailingGwhDay.toFixed(2)} GWh/day over the last ${forecast.imports.days} usable days`) +
       `; central case assumes ${forecast.imports.centralGwhDay.toFixed(2)}`,
   );
   const crisis = crisisCheck(balance.days, episodes, ceilings, backtest, backtestOptions);
@@ -179,7 +183,9 @@ function main(): void {
 
   const sensitivity = importSensitivity(forecast);
   for (const c of sensitivity) {
-    console.log(`  imports ${c.case.padEnd(15)} ${c.importGwhDay.toFixed(2)} GWh/day → worst tier ${c.worstTier} at ${c.worstTierHorizonDays} d`);
+    console.log(
+      `  imports ${c.case.padEnd(15)} ${c.importGwhDay.toFixed(2)} GWh/day → worst tier ${c.worstTier} at ${c.worstTierHorizonDays} d`,
+    );
   }
 
   const experiments: ReportSection[] = [];
@@ -193,7 +199,9 @@ function main(): void {
     }
     const oni = readOni();
     const oniHydro = oniHydroExperiment(backtest.points.hydro, oni, DEFAULT_ADEQUACY_BACKTEST.horizonDays);
-    console.log(`  ONI on hydro: ${oniHydro.map((r) => `${r.horizonDays}d ${r.maeWithout.toFixed(2)}→${r.maeWith.toFixed(2)}`).join("  ")}`);
+    console.log(
+      `  ONI on hydro: ${oniHydro.map((r) => `${r.horizonDays}d ${r.maeWithout.toFixed(2)}→${r.maeWith.toFixed(2)}`).join("  ")}`,
+    );
     const xm = xmSeries(readTable(XM_SYSTEM_DAILY.name));
     const rules = referenceAdequacyRules();
     const plain = importExperiment(balance.days, xm, ceilings, rules, [7, 14, 30], DEFAULT_EXPORT_MODEL, oni);

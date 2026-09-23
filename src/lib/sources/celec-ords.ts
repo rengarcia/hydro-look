@@ -26,16 +26,7 @@ import {
 } from "../parse/ords.ts";
 import type { ParseResult } from "../parse/types.ts";
 import { ENERGY_MODULES, rowFloor, type EnergyPlantCode } from "../registry.ts";
-import {
-  addDays,
-  monthStart,
-  nextMonth,
-  ordsFecha,
-  ordsMidnightZ,
-  todayEc,
-  type IsoDate,
-  type YearMonth,
-} from "../util/dates.ts";
+import { addDays, monthStart, nextMonth, ordsFecha, ordsMidnightZ, todayEc, type IsoDate, type YearMonth } from "../util/dates.ts";
 import type { IngestBatch } from "./batch.ts";
 
 export const ORDS_BASE = "https://generacioncsr.celec.gob.ec:8443/ords/csr";
@@ -265,7 +256,11 @@ export class CelecOrds {
   }
 
   /** Live endpoints: a snapshot for the "now" tile, never a series. */
-  async latest(): Promise<{ units: ReturnType<typeof parseEstUnidades>; live: ReturnType<typeof parseProdLineaLast2h>; fetchedAt: string }> {
+  async latest(): Promise<{
+    units: ReturnType<typeof parseEstUnidades>;
+    live: ReturnType<typeof parseProdLineaLast2h>;
+    fetchedAt: string;
+  }> {
     const [unitsResponse, liveResponse] = [
       await this.http.fetch({ key: "csrEstUnidades", url: `${ORDS_MODULE_CSR}/csrEstUnidades` }),
       await this.http.fetch({ key: "csrProdLineaLast2h", url: `${ORDS_MODULE_CSR}/csrProdLineaLast2h` }),

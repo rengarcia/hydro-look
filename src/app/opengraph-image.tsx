@@ -47,68 +47,82 @@ export default function OpenGraphImage() {
   const date = now?.data_date ?? null;
 
   return new ImageResponse(
-    (
-      <div style={{ width: "100%", height: "100%", display: "flex", background: BG, color: INK, padding: "64px 72px", fontFamily: "Geist" }}>
-        <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", width: 760 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 30, fontFamily: "Instrument Serif" }}>
-            <span>hydro</span>
-            <span style={{ color: WATER, marginLeft: -12, marginRight: -12 }}>·</span>
-            <span>look</span>
-            {date ? (
-              <span style={{ marginLeft: 24, fontFamily: "Geist Mono", fontSize: 20, color: INK_2 }}>
-                Ecuador · datos al {dateWithYear(date)}
-              </span>
-            ) : null}
-          </div>
-          {/* One element per word: satori wraps flex items, not the text inside one. */}
-          <div style={{ display: "flex", flexWrap: "wrap", fontFamily: "Instrument Serif", fontSize: 84, lineHeight: 1.02, letterSpacing: -2 }}>
-            {[
-              ...words(headline.share !== null ? headline.before : headline.text, INK),
-              ...words(headline.emphasis, WATER),
-              ...words(headline.after, INK),
-            ].map((w, i) => (
-              <span key={i} style={{ color: w.color, marginRight: 20 }}>
-                {w.text}
-              </span>
-            ))}
-          </div>
-          <div style={{ display: "flex", fontSize: 26, color: INK_2 }}>
-            {level
-              ? `Mazar, el único embalse con semanas de reserva: ${num(level.masl, 2)} m${dir === "down" ? ", bajando" : dir === "up" ? ", subiendo" : ", estable"}.`
-              : "Embalses, caudales y balance nacional, día a día."}
-          </div>
+    <div style={{ width: "100%", height: "100%", display: "flex", background: BG, color: INK, padding: "64px 72px", fontFamily: "Geist" }}>
+      <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", width: 760 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 30, fontFamily: "Instrument Serif" }}>
+          <span>hydro</span>
+          <span style={{ color: WATER, marginLeft: -12, marginRight: -12 }}>·</span>
+          <span>look</span>
+          {date ? (
+            <span style={{ marginLeft: 24, fontFamily: "Geist Mono", fontSize: 20, color: INK_2 }}>
+              Ecuador · datos al {dateWithYear(date)}
+            </span>
+          ) : null}
         </div>
-        {level && fill !== null ? (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginLeft: "auto", width: 230 }}>
-            <div style={{ display: "flex", fontFamily: "Geist Mono", fontSize: 20, color: INK_2 }}>{num(band!.max_masl, 0)} m</div>
+        {/* One element per word: satori wraps flex items, not the text inside one. */}
+        <div
+          style={{ display: "flex", flexWrap: "wrap", fontFamily: "Instrument Serif", fontSize: 84, lineHeight: 1.02, letterSpacing: -2 }}
+        >
+          {[
+            ...words(headline.share !== null ? headline.before : headline.text, INK),
+            ...words(headline.emphasis, WATER),
+            ...words(headline.after, INK),
+          ].map((w, i) => (
+            <span key={i} style={{ color: w.color, marginRight: 20 }}>
+              {w.text}
+            </span>
+          ))}
+        </div>
+        <div style={{ display: "flex", fontSize: 26, color: INK_2 }}>
+          {level
+            ? `Mazar, el único embalse con semanas de reserva: ${num(level.masl, 2)} m${dir === "down" ? ", bajando" : dir === "up" ? ", subiendo" : ", estable"}.`
+            : "Embalses, caudales y balance nacional, día a día."}
+        </div>
+      </div>
+      {level && fill !== null ? (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginLeft: "auto", width: 230 }}>
+          <div style={{ display: "flex", fontFamily: "Geist Mono", fontSize: 20, color: INK_2 }}>{num(band!.max_masl, 0)} m</div>
+          <div
+            style={{
+              display: "flex",
+              position: "relative",
+              width: 150,
+              height: 360,
+              marginTop: 8,
+              marginBottom: 8,
+              borderRadius: 22,
+              background: SUNK,
+              overflow: "hidden",
+              border: `2px solid ${INK}`,
+            }}
+          >
             <div
               style={{
-                display: "flex",
-                position: "relative",
-                width: 150,
-                height: 360,
-                marginTop: 8,
-                marginBottom: 8,
-                borderRadius: 22,
-                background: SUNK,
-                overflow: "hidden",
-                border: `2px solid ${INK}`,
+                position: "absolute",
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: `${Math.min(100, Math.max(0, fill))}%`,
+                background: WATER,
               }}
-            >
-              <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: `${Math.min(100, Math.max(0, fill))}%`, background: WATER }} />
-              <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 4, background: DEFICIT }} />
-            </div>
-            <div style={{ display: "flex", fontFamily: "Geist Mono", fontSize: 20, color: DEFICIT }}>{num(band!.min_masl, 0)} m mín.</div>
-            <div style={{ display: "flex", marginTop: 14, fontFamily: "Instrument Serif", fontSize: 44 }}>{pct(fill, 1)}</div>
-            <div style={{ display: "flex", fontSize: 18, color: INK_2 }}>de la banda, no de agua</div>
+            />
+            <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 4, background: DEFICIT }} />
           </div>
-        ) : null}
-      </div>
-    ),
+          <div style={{ display: "flex", fontFamily: "Geist Mono", fontSize: 20, color: DEFICIT }}>{num(band!.min_masl, 0)} m mín.</div>
+          <div style={{ display: "flex", marginTop: 14, fontFamily: "Instrument Serif", fontSize: 44 }}>{pct(fill, 1)}</div>
+          <div style={{ display: "flex", fontSize: 18, color: INK_2 }}>de la banda, no de agua</div>
+        </div>
+      ) : null}
+    </div>,
     {
       ...size,
       fonts: [
-        { name: "Instrument Serif", data: readFileSync(join(FONTS, "instrument-serif-latin-400-normal.woff")), weight: 400, style: "normal" },
+        {
+          name: "Instrument Serif",
+          data: readFileSync(join(FONTS, "instrument-serif-latin-400-normal.woff")),
+          weight: 400,
+          style: "normal",
+        },
         { name: "Geist", data: readFileSync(join(FONTS, "geist-sans-latin-400-normal.woff")), weight: 400, style: "normal" },
         { name: "Geist", data: readFileSync(join(FONTS, "geist-sans-latin-500-normal.woff")), weight: 500, style: "normal" },
         { name: "Geist Mono", data: readFileSync(join(FONTS, "geist-mono-latin-400-normal.woff")), weight: 400, style: "normal" },

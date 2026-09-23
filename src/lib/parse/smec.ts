@@ -156,7 +156,7 @@ export function parseSmecInforme1(html: string, requestedDate: IsoDate): SmecRep
       pct_anio: null,
       ultimos365_kwh: null,
     };
-    (columns).forEach((key, index) => {
+    columns.forEach((key, index) => {
       row[key] = parseEsNumber(cells[index + 1] ?? "");
     });
     rows.push(row);
@@ -180,7 +180,9 @@ export function parseSmecInforme1(html: string, requestedDate: IsoDate): SmecRep
     // though, and saying it might would keep a permanent gap on the list of things to retry:
     // the fifteen days missing from 2016-05-01 onwards were re-fetched on 2026-09-22 (run
     // 35726456802), one of them six years after the fact, and every page came back identical.
-    notes.push(`smec ${date}: report is incomplete (${why}); the running day fills in at D+1, but a stored-as-missing day has come back identical on every retry`);
+    notes.push(
+      `smec ${date}: report is incomplete (${why}); the running day fills in at D+1, but a stored-as-missing day has come back identical on every retry`,
+    );
   }
   return { date, tipo_dia, tipo_dia_anio_anterior, rows, complete, notes };
 }

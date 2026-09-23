@@ -175,9 +175,7 @@ async function main(): Promise<void> {
           "",
           "| site | our source | days overlapping | note |",
           "|---|---|---|---|",
-          ...[...tooShort.values()].map(
-            (r) => `| ${r.site} | ${r.source} | ${r.compared} | not enough overlap to judge alignment |`,
-          ),
+          ...[...tooShort.values()].map((r) => `| ${r.site} | ${r.source} | ${r.compared} | not enough overlap to judge alignment |`),
           "",
         ]),
     "## All alignments tried",
@@ -185,8 +183,12 @@ async function main(): Promise<void> {
     "| site | our source | offset | days | mean abs diff (m) |",
     "|---|---|---|---|---|",
     ...results
-      .sort((a, b) => (a.site + a.source < b.site + b.source ? -1 : a.site + a.source > b.site + b.source ? 1 : a.offset_days - b.offset_days))
-      .map((r) => `| ${r.site} | ${r.source} | ${r.offset_days >= 0 ? "+" : ""}${r.offset_days} d | ${r.compared} | ${r.mean_abs_diff_m} |`),
+      .sort((a, b) =>
+        a.site + a.source < b.site + b.source ? -1 : a.site + a.source > b.site + b.source ? 1 : a.offset_days - b.offset_days,
+      )
+      .map(
+        (r) => `| ${r.site} | ${r.source} | ${r.offset_days >= 0 ? "+" : ""}${r.offset_days} d | ${r.compared} | ${r.mean_abs_diff_m} |`,
+      ),
     "",
   ];
 

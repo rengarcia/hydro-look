@@ -13,7 +13,14 @@ import { join } from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { adequacyHeadline, heroHeadline, importDependence, inflowHeadline, inflowVerdict, scorecardSummary } from "../src/lib/site/story.ts";
+import {
+  adequacyHeadline,
+  heroHeadline,
+  importDependence,
+  inflowHeadline,
+  inflowVerdict,
+  scorecardSummary,
+} from "../src/lib/site/story.ts";
 import type { LatestDocument } from "../src/lib/publish/latest.ts";
 import type { AdequacyDocument, ForecastDocument, ScorecardBlock, ScorecardRow } from "../src/lib/site/documents.ts";
 // Types only: the modules themselves are imported after HYDRO_LOOK_SITE_ROOT is set.
@@ -134,7 +141,11 @@ describe("the additive blocks, rendered", () => {
   const committed = <T>(name: string) => JSON.parse(readFileSync(join(api, name), "utf8")) as T;
   const liveForecast = committed<ForecastDocument>("forecast.json");
   const liveAdequacy = committed<AdequacyDocument>("adequacy.json");
-  const forecast = { ...readJson<ForecastDocument>("forecast.json"), scorecard: liveForecast.scorecard, precipitation_basin: liveForecast.precipitation_basin };
+  const forecast = {
+    ...readJson<ForecastDocument>("forecast.json"),
+    scorecard: liveForecast.scorecard,
+    precipitation_basin: liveForecast.precipitation_basin,
+  };
   const adequacy = {
     ...readJson<AdequacyDocument>("adequacy.json"),
     scorecard: liveAdequacy.scorecard,
@@ -236,7 +247,9 @@ describe("the additive blocks, rendered", () => {
   });
 
   it("once rows are scored, shows them in a real table by horizon, with the rows folded under it", () => {
-    const html = render(createElement(components.ScorecardPanel, { card: scoredCard, nextDue: "2026-10-05", subject: "la cota de Mazar", digits: 2 }));
+    const html = render(
+      createElement(components.ScorecardPanel, { card: scoredCard, nextDue: "2026-10-05", subject: "la cota de Mazar", digits: 2 }),
+    );
     expect(html).toMatch(/<th scope="col"[^>]*>Error medio<\/th>/);
     expect(html).toMatch(/<th scope="row"[^>]*>7 días<\/th>/);
     expect(html).toContain('<details class="chart-data">');
@@ -265,16 +278,26 @@ describe("the additive blocks, rendered", () => {
       { horizon_days: 7, target_date: "2026-09-28" },
       { horizon_days: 14, target_date: "2026-10-05" },
     ];
-    const pending = textOf(render(createElement(components.DayScore, { card: pendingCard, runId: scoredRow.run_id, horizons, digits: 2, subject: "x", href: "/#m" })));
+    const pending = textOf(
+      render(
+        createElement(components.DayScore, { card: pendingCard, runId: scoredRow.run_id, horizons, digits: 2, subject: "x", href: "/#m" }),
+      ),
+    );
     expect(pending).toContain("Ninguno de sus horizontes ha llegado a su fecha; el primero, a 7 días, vence el 28 de septiembre de 2026.");
-    const scored = render(createElement(components.DayScore, { card: scoredCard, runId: scoredRow.run_id, horizons, digits: 2, subject: "x", href: "/#m" }));
+    const scored = render(
+      createElement(components.DayScore, { card: scoredCard, runId: scoredRow.run_id, horizons, digits: 2, subject: "x", href: "/#m" }),
+    );
     expect(textOf(scored)).toContain("Uno de sus 2 horizontes ya pasó su fecha");
     expect(scored).toMatch(/<th scope="row"[^>]*>28 sep 2026<\/th>/);
-    expect(render(createElement(components.DayScore, { card: undefined, runId: "x", horizons, digits: 2, subject: "x", href: "/#m" }))).toBe("");
+    expect(
+      render(createElement(components.DayScore, { card: undefined, runId: "x", horizons, digits: 2, subject: "x", href: "/#m" })),
+    ).toBe("");
   });
 
   it("on a plant's page, lists every inflow horizon with its backtest, and why the unpublished ones are not", () => {
-    const plant = liveForecast.inflow_forecasts!.plants.find((p) => p.horizons.some((h) => h.published) && p.horizons.some((h) => !h.published))!;
+    const plant = liveForecast.inflow_forecasts!.plants.find(
+      (p) => p.horizons.some((h) => h.published) && p.horizons.some((h) => !h.published),
+    )!;
     const html = render(createElement(components.InflowForecastPanel, { plant, report: "data/reports/inflow.md", label: plant.site }));
     const text = textOf(html);
     for (const h of plant.horizons) {
@@ -289,7 +312,13 @@ describe("the additive blocks, rendered", () => {
 describe("Mazar's page, from fixtures", () => {
   it("keeps its sections: record, crossing, foresight, inflow and floors", () => {
     const text = textOf(mazar);
-    for (const heading of ["El registro completo", "¿Cuándo cruzaría", "¿Lo habría visto venir?", "Caudal frente a su historia", "Dos pisos, los dos de CELEC"]) {
+    for (const heading of [
+      "El registro completo",
+      "¿Cuándo cruzaría",
+      "¿Lo habría visto venir?",
+      "Caudal frente a su historia",
+      "Dos pisos, los dos de CELEC",
+    ]) {
       expect(text).toContain(heading);
     }
   });

@@ -39,8 +39,8 @@ export function Data({ status, narrative }: { status: StatusDocument | null; nar
             </span>
           </div>
           <p className="panel-lede">
-            Cada fuente, con la última fecha que publicó. El límite de cada una es su retraso de publicación más margen
-            para una ejecución fallida: el ONI siempre tiene unos dos meses.
+            Cada fuente, con la última fecha que publicó. El límite de cada una es su retraso de publicación más margen para una ejecución
+            fallida: el ONI siempre tiene unos dos meses.
             {status.findings.length > 0
               ? ` ${status.findings.length === 1 ? "Un aviso abierto" : `${status.findings.length} avisos abiertos`}: ${status.findings.map(findingText).join(" · ")}.`
               : ""}
@@ -69,8 +69,8 @@ export function Data({ status, narrative }: { status: StatusDocument | null; nar
           Llévate los datos
         </h2>
         <p className="panel-lede">
-          JSON abiertos, actualizados cada día, con la respuesta original archivada junto a cada número. Sus campos,
-          unidades y lo que se promete de ellos, en <a href="/datos/">la documentación</a>.
+          JSON abiertos, actualizados cada día, con la respuesta original archivada junto a cada número. Sus campos, unidades y lo que se
+          promete de ellos, en <a href="/datos/">la documentación</a>.
         </p>
         {downloads.map((d) => (
           <a key={d.path} href={d.path} className="download lift">

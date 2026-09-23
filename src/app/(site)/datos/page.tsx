@@ -20,7 +20,16 @@ import type { StatusDocument } from "../../../lib/site/documents.ts";
 import { dateWithYear, num } from "../../../lib/site/format.ts";
 import { cronTimes, fieldRows, utcToEc } from "../../../lib/site/schema-doc.ts";
 import { curatedTables } from "../../../lib/publish/bulk.ts";
-import { ATTRIBUTION, DOCUMENTS, LICENSE, SCHEMA_VERSION, SITE_URL, apiUrl, schemaUrl, type DocumentName } from "../../../lib/publish/contract.ts";
+import {
+  ATTRIBUTION,
+  DOCUMENTS,
+  LICENSE,
+  SCHEMA_VERSION,
+  SITE_URL,
+  apiUrl,
+  schemaUrl,
+  type DocumentName,
+} from "../../../lib/publish/contract.ts";
 import type { Schema } from "../../../lib/publish/schema.ts";
 
 export const metadata: Metadata = {
@@ -74,7 +83,10 @@ export default function DataPage() {
   const workflow = join(ROOT, ".github", "workflows", "daily.yml");
   const slots = existsSync(workflow) ? cronTimes(readFileSync(workflow, "utf8")) : [];
   const tables = curatedTables(join(ROOT, "data", "curated"));
-  const firstReading = now?.reservoirs.map((r) => r.inflow?.first_reading ?? r.level?.first_reading).filter((d): d is string => !!d).sort()[0];
+  const firstReading = now?.reservoirs
+    .map((r) => r.inflow?.first_reading ?? r.level?.first_reading)
+    .filter((d): d is string => !!d)
+    .sort()[0];
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -97,7 +109,12 @@ export default function DataPage() {
     variableMeasured: ["cota de embalse (m s. n. m.)", "caudal de entrada (m³/s)", "generación por tipo (GWh)", "importación (GWh)"],
     citation: ATTRIBUTION.map((a) => `${a.name}: ${a.url}`),
     distribution: [
-      ...DOCUMENTS.map((name) => ({ "@type": "DataDownload", name: `${name}.json`, encodingFormat: "application/json", contentUrl: apiUrl(name) })),
+      ...DOCUMENTS.map((name) => ({
+        "@type": "DataDownload",
+        name: `${name}.json`,
+        encodingFormat: "application/json",
+        contentUrl: apiUrl(name),
+      })),
       ...tables.map((t) => ({
         "@type": "DataDownload",
         name: `${t.table}.csv.gz`,
@@ -114,10 +131,16 @@ export default function DataPage() {
       <Crumbs trail={[{ href: "/", label: "Inicio" }, { label: "Datos abiertos" }]} />
 
       <section className="shell section" aria-labelledby="datos-doc-title">
-        <SectionIntro index="—" eyebrow="Datos abiertos" titleId="datos-doc-title" title="Todo lo que la página muestra, para usarlo fuera de ella." wide>
-          Cinco documentos JSON con el estado del día y los modelos, y cada tabla completa en CSV. Sin clave, sin
-          límite y con CORS abierto: se pueden pedir desde cualquier sitio web. Cada número es una copia de lo que
-          publicaron CELEC, CENACE, XM, Open-Meteo o la NOAA; cítelos a ellos y a este proyecto.
+        <SectionIntro
+          index="—"
+          eyebrow="Datos abiertos"
+          titleId="datos-doc-title"
+          title="Todo lo que la página muestra, para usarlo fuera de ella."
+          wide
+        >
+          Cinco documentos JSON con el estado del día y los modelos, y cada tabla completa en CSV. Sin clave, sin límite y con CORS abierto:
+          se pueden pedir desde cualquier sitio web. Cada número es una copia de lo que publicaron CELEC, CENACE, XM, Open-Meteo o la NOAA;
+          cítelos a ellos y a este proyecto.
         </SectionIntro>
 
         <div className="split even">
@@ -125,28 +148,26 @@ export default function DataPage() {
             <h2 className="panel-title">Lo que se promete</h2>
             <ul className="promise">
               <li>
-                <strong>schema_version</strong> ({SCHEMA_VERSION} hoy) es la versión del formato, no de un modelo. Solo cambia
-                cuando se quita, se renombra o cambia de tipo un campo. Añadir un campo no la cambia: un lector debe
-                ignorar los campos que no conoce.
+                <strong>schema_version</strong> ({SCHEMA_VERSION} hoy) es la versión del formato, no de un modelo. Solo cambia cuando se
+                quita, se renombra o cambia de tipo un campo. Añadir un campo no la cambia: un lector debe ignorar los campos que no conoce.
               </li>
               <li>
-                Cada documento se valida en cada cambio contra su <a href="#esquemas">esquema JSON</a>; un cambio de forma
-                es una prueba que falla antes de ser un lector roto.
+                Cada documento se valida en cada cambio contra su <a href="#esquemas">esquema JSON</a>; un cambio de forma es una prueba que
+                falla antes de ser un lector roto.
               </li>
               <li>
-                <strong>data_date</strong> es la misma fecha en todos: el día de Ecuador que describen las lecturas del
-                documento. En los modelos es igual a origin_date, el día sobre el que se paran.
+                <strong>data_date</strong> es la misma fecha en todos: el día de Ecuador que describen las lecturas del documento. En los
+                modelos es igual a origin_date, el día sobre el que se paran.
               </li>
               <li>
-                Los códigos son palabras en inglés estables (<code>ords_levels</code>, <code>report_endpoint</code>,{" "}
-                <code>watch</code>); junto a cada uno va su etiqueta en español (<code>label_es</code>,{" "}
-                <code>declaration_es</code>, <code>tier_label_es</code>).
+                Los códigos son palabras en inglés estables (<code>ords_levels</code>, <code>report_endpoint</code>, <code>watch</code>);
+                junto a cada uno va su etiqueta en español (<code>label_es</code>, <code>declaration_es</code>, <code>tier_label_es</code>).
               </li>
               <li>
-                Un campo que se va a quitar se anuncia en el bloque <code>deprecated</code> del documento y se mantiene una
-                versión. Hoy: <code>as_of</code> en latest.json y status.json (use data_date) y{" "}
-                <code>feeds[].feed</code> en status.json (use id y label_es). El campo <code>tier</code> de la suficiencia
-                conserva la palabra del modelo; el código estable es <code>tier_code</code>.
+                Un campo que se va a quitar se anuncia en el bloque <code>deprecated</code> del documento y se mantiene una versión. Hoy:{" "}
+                <code>as_of</code> en latest.json y status.json (use data_date) y <code>feeds[].feed</code> en status.json (use id y
+                label_es). El campo <code>tier</code> de la suficiencia conserva la palabra del modelo; el código estable es{" "}
+                <code>tier_code</code>.
               </li>
               <li>Lo que no se promete: que un modelo no cambie. Cada documento dice qué modelo y qué versión lo produjo.</li>
             </ul>
@@ -161,15 +182,19 @@ export default function DataPage() {
                   <code>generated_at</code>.
                 </>
               ) : (
-                <>La hora de cada documento es su <code>generated_at</code>.</>
+                <>
+                  La hora de cada documento es su <code>generated_at</code>.
+                </>
               )}{" "}
-              Las cotas de CELEC llegan la mañana siguiente al día que describen, y el balance de CENACE cierra el día
-              anterior hacia las 11:15 de Ecuador, así que data_date suele ser ayer. La lectura del día se genera después
-              de los modelos y puede quedarse un día atrás; lo dice su propia fecha.
+              Las cotas de CELEC llegan la mañana siguiente al día que describen, y el balance de CENACE cierra el día anterior hacia las
+              11:15 de Ecuador, así que data_date suele ser ayer. La lectura del día se genera después de los modelos y puede quedarse un
+              día atrás; lo dice su propia fecha.
             </p>
             <p className="panel-lede spaced">
               Los documentos se sirven con <code>Access-Control-Allow-Origin: *</code> y una caché de cinco minutos.{" "}
-              {status ? `La última comprobación, del ${dateWithYear(status.generated_at.slice(0, 10))}, vio ${status.feeds.filter((f) => f.state === "current").length} de ${status.feeds.length} fuentes al día.` : ""}
+              {status
+                ? `La última comprobación, del ${dateWithYear(status.generated_at.slice(0, 10))}, vio ${status.feeds.filter((f) => f.state === "current").length} de ${status.feeds.length} fuentes al día.`
+                : ""}
             </p>
             <p className="panel-lede spaced">
               Licencia: código {LICENSE.code}. Datos: {ATTRIBUTION.map((a) => `${a.name} (${a.terms_es})`).join("; ")}.
@@ -203,7 +228,13 @@ export default function DataPage() {
                     <Table
                       className="fields-table"
                       caption={`Campos de ${name}.json, con su tipo y su unidad`}
-                      columns={[{ label: "Campo" }, { label: "Tipo" }, { label: "Unidad" }, { label: "Siempre" }, { label: "Descripción (del esquema)" }]}
+                      columns={[
+                        { label: "Campo" },
+                        { label: "Tipo" },
+                        { label: "Unidad" },
+                        { label: "Siempre" },
+                        { label: "Descripción (del esquema)" },
+                      ]}
                       rows={rows.map((r) => [
                         <code key="p" className={r.deprecated ? "deprecated" : undefined}>
                           {r.path}
@@ -234,10 +265,9 @@ export default function DataPage() {
           Las tablas completas
         </h2>
         <p className="section-lede">
-          Cada tabla del repositorio en un solo CSV comprimido con gzip, de su primer día al último, reconstruido en
-          cada publicación del sitio: la cabecera una vez y cada fila exactamente como está en{" "}
-          <a href={`${REPO}/tree/main/data/curated`}>data/curated</a>, donde se guardan partidas por año. La lista con
-          filas y columnas, en <a href="/api/bulk/index.json">/api/bulk/index.json</a>.
+          Cada tabla del repositorio en un solo CSV comprimido con gzip, de su primer día al último, reconstruido en cada publicación del
+          sitio: la cabecera una vez y cada fila exactamente como está en <a href={`${REPO}/tree/main/data/curated`}>data/curated</a>, donde
+          se guardan partidas por año. La lista con filas y columnas, en <a href="/api/bulk/index.json">/api/bulk/index.json</a>.
         </p>
         <div className="panel tight">
           <div className="table-scroll">
@@ -272,8 +302,8 @@ export default function DataPage() {
               <a href={`/api/schema/${name}.schema.json`}>{name}.schema.json</a>
             </span>
           ))}
-          . También hay un <a href="/feed.xml">feed Atom</a> de la lectura del día y un <a href="/dia/">archivo</a> con lo que
-          se publicó sobre cada día.
+          . También hay un <a href="/feed.xml">feed Atom</a> de la lectura del día y un <a href="/dia/">archivo</a> con lo que se publicó
+          sobre cada día.
         </p>
       </section>
     </main>

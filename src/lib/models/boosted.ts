@@ -304,12 +304,7 @@ function baseRow(frame: Frame, covariates: Covariates, date: IsoDate): Float64Ar
   ]);
 }
 
-function monthlyFit(
-  context: ForecastContext,
-  month: IsoDate,
-  cache: M4Cache,
-  options: WaterBalanceOptions,
-): MonthlyFit | null {
+function monthlyFit(context: ForecastContext, month: IsoDate, cache: M4Cache, options: WaterBalanceOptions): MonthlyFit | null {
   const cached = cache.monthly.get(month);
   if (cached !== undefined) return cached;
   const cut: ForecastContext = {
@@ -500,9 +495,7 @@ export function boostedModel(
 
         const binned = binMatrix(rows, settings.gbm.maxBins);
         const predicted = settings.quantiles
-          .map((alpha) =>
-            predictGbm(fitGbmBinned(binned, targets, { ...settings.gbm, loss: { kind: "quantile", alpha } }), here.features),
-          )
+          .map((alpha) => predictGbm(fitGbmBinned(binned, targets, { ...settings.gbm, loss: { kind: "quantile", alpha } }), here.features))
           // Separately fitted quantiles can cross; sorting them is the standard repair and
           // leaves each one's marginal calibration intact.
           .sort((a, b) => a - b);

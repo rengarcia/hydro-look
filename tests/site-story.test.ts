@@ -221,7 +221,9 @@ describe("scorecardSummary", () => {
   });
 
   it("has nothing to score before the first run", () => {
-    expect(scorecardSummary({ ...pending, rows_pending: 0, runs_considered: 0 }, null).headline).toBe("Todavía no hay pronósticos publicados que puntuar.");
+    expect(scorecardSummary({ ...pending, rows_pending: 0, runs_considered: 0 }, null).headline).toBe(
+      "Todavía no hay pronósticos publicados que puntuar.",
+    );
   });
 
   it("counts scored rows against the last observed day, with what is still waiting", () => {
@@ -246,7 +248,9 @@ describe("dayScoreNote", () => {
   });
 
   it("counts the horizons already past and names the next", () => {
-    expect(dayScoreNote(horizons, "2026-09-30")).toBe("Uno de sus 2 horizontes ya pasó su fecha; el siguiente, a 14 días, vence el 5 de octubre de 2026.");
+    expect(dayScoreNote(horizons, "2026-09-30")).toBe(
+      "Uno de sus 2 horizontes ya pasó su fecha; el siguiente, a 14 días, vence el 5 de octubre de 2026.",
+    );
   });
 
   it("says when every horizon has passed, and nothing for an empty run", () => {
@@ -342,7 +346,13 @@ describe("importDependence", () => {
 describe("the method notes the documents carry", () => {
   it("say which basin the rain is read from, and why not the verified centroid", () => {
     const [note] = modelNotes({
-      precipitation_basin: { basin: "paute", verified_centroid: false, era5_days: 13407, share_since_1990: 1, fallback_reason: "paute_mazar: no ERA5 rows" },
+      precipitation_basin: {
+        basin: "paute",
+        verified_centroid: false,
+        era5_days: 13407,
+        share_since_1990: 1,
+        fallback_reason: "paute_mazar: no ERA5 rows",
+      },
     });
     expect(note!.title).toBe("La lluvia se lee en `paute`");
     expect(note!.body).toContain("punto provisional");

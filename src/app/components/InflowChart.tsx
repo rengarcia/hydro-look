@@ -70,9 +70,7 @@ export function InflowChart({
         desc={`Caudal diario entre el ${first} y el ${last}, sobre la franja p10–p90 de los mismos días del año en todos los años disponibles.`}
       >
         {upper.length > 1 ? <path d={bandPath(upper, lower)} fill="var(--water-3)" opacity={0.8} /> : null}
-        {median.length > 1 ? (
-          <path d={linePath(median)} fill="none" stroke="var(--muted)" strokeWidth={1.3} strokeDasharray="4 4" />
-        ) : null}
+        {median.length > 1 ? <path d={linePath(median)} fill="none" stroke="var(--muted)" strokeWidth={1.3} strokeDasharray="4 4" /> : null}
         {segments(readings, at, frame).map((d, i) => (
           <path key={i} d={d} fill="none" stroke="var(--water)" strokeWidth={1.8} strokeLinejoin="round" strokeLinecap="round" />
         ))}
@@ -87,7 +85,13 @@ export function InflowChart({
       </Plot>
       <ChartData
         caption={`${subject}, m³/s, una lectura por semana, con la franja histórica del mismo día`}
-        columns={[{ label: "Día" }, { label: "Caudal", numeric: true }, { label: "p10", numeric: true }, { label: "Mediana", numeric: true }, { label: "p90", numeric: true }]}
+        columns={[
+          { label: "Día" },
+          { label: "Caudal", numeric: true },
+          { label: "p10", numeric: true },
+          { label: "Mediana", numeric: true },
+          { label: "p90", numeric: true },
+        ]}
         rows={sampleBack(readings, 7).map((r) => {
           const band = bandOn.get(r.date);
           return [dateWithYear(r.date), num(r.value, 1), num(band?.p10, 1), num(band?.p50, 1), num(band?.p90, 1)];

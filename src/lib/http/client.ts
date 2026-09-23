@@ -23,8 +23,7 @@ import { request } from "undici";
 import { checkPin, dispatcherFor, type PinCheck } from "./tls.ts";
 import { nowUtc } from "../util/dates.ts";
 
-export const USER_AGENT =
-  "hydro-look/0.1 (+https://github.com/rengarcia/hydro-look; open data pipeline; contact via GitHub issues)";
+export const USER_AGENT = "hydro-look/0.1 (+https://github.com/rengarcia/hydro-look; open data pipeline; contact via GitHub issues)";
 
 export interface RequestSpec {
   /** Stable identifier used as the archive key, e.g. `repDiaHid12m:2026-09-20`. */
@@ -208,8 +207,7 @@ export class HttpClient {
 
           wait = this.backoff(attempt);
           if (status === 429) wait = retryAfterMs(response.headers["retry-after"]) ?? wait;
-          const retry =
-            isRetryableStatus(status) && !allow.has(status) && attempt <= this.maxRetries && Date.now() + wait < deadline;
+          const retry = isRetryableStatus(status) && !allow.has(status) && attempt <= this.maxRetries && Date.now() + wait < deadline;
           if (!retry) {
             // A retryable status that is out of attempts or out of time is returned, not
             // thrown: the source archives the body and records the final status as its error.

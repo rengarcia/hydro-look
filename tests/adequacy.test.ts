@@ -102,10 +102,7 @@ describe("readBalance", () => {
     const high = csvDay("2026-01-03", { ...WHOLE_DAY, total_generacion: 183, total_importacion: 0, total_exportacion: 0 });
     const { days, rejected } = readBalance([...low, ...high]);
     expect(rejected).toHaveLength(0);
-    expect(days.map((d) => d.loadGwh / d.distributionDemandGwh)).toEqual([
-      USABLE_LOAD_RATIO.min,
-      183 / 92,
-    ]);
+    expect(days.map((d) => d.loadGwh / d.distributionDemandGwh)).toEqual([USABLE_LOAD_RATIO.min, 183 / 92]);
   });
 
   it("reports a day carrying too few concepts as incomplete rather than rejected", () => {
@@ -178,9 +175,7 @@ function syntheticDays(options: { days: number; from: string; growthPerYear: num
 describe("fitDemand", () => {
   const from = "2022-01-01";
   const days = syntheticDays({ days: 1500, from, growthPerYear: 0.08, episode: ["2025-06-01", "2025-09-30"] });
-  const episodes = rationingEpisodes([
-    { start: "2025-06-01", end: "2025-09-30", kind: "rationing", hydro_related: "yes" },
-  ]);
+  const episodes = rationingEpisodes([{ start: "2025-06-01", end: "2025-09-30", kind: "rationing", hydro_related: "yes" }]);
 
   it("recovers the growth rate it was given", () => {
     const fit = fitDemand(days, "2026-01-01", episodes)!;
@@ -223,9 +218,7 @@ describe("fitHydro", () => {
 
   it("carries a dry fortnight forward, and lets it decay", () => {
     const origin = "2025-12-01";
-    const dry = days.map((d) =>
-      d.date > addDays(origin, -14) && d.date <= origin ? { ...d, hydroGwh: d.hydroGwh * 0.6 } : d,
-    );
+    const dry = days.map((d) => (d.date > addDays(origin, -14) && d.date <= origin ? { ...d, hydroGwh: d.hydroGwh * 0.6 } : d));
     const demand = fitDemand(dry, origin, episodes)!;
     const fit = fitHydro(dry, origin, demand, DEFAULT_HYDRO)!;
     expect(fit.anomaly).toBeCloseTo(0.6, 1);
@@ -248,10 +241,7 @@ describe("fitHydro", () => {
     const shifted = { ...demand, predict: (d: string) => demand.predict(d) * 1.2 };
     const hydroShifted = fitHydro(days, origin, shifted)!;
     const target = addDays(origin, 30);
-    expect(hydroShifted.predict(target, shifted.predict(target))!).toBeCloseTo(
-      hydro.predict(target, demand.predict(target))!,
-      6,
-    );
+    expect(hydroShifted.predict(target, shifted.predict(target))!).toBeCloseTo(hydro.predict(target, demand.predict(target))!, 6);
   });
 });
 
@@ -353,9 +343,7 @@ describe("forecastAdequacy", () => {
   });
 
   it("declines rather than guessing when there is too little history", () => {
-    expect(
-      forecastAdequacy({ days: days.slice(0, 30), episodes: [], ceilings, origin: "2020-01-30" }),
-    ).toBeNull();
+    expect(forecastAdequacy({ days: days.slice(0, 30), episodes: [], ceilings, origin: "2020-01-30" })).toBeNull();
   });
 });
 
@@ -389,7 +377,12 @@ describe("importRegime", () => {
     );
     const on = forecastAdequacy({ days, episodes: [], ceilings, origin: "2025-12-01", horizonDays: [7] })!;
     const off = forecastAdequacy({
-      days, episodes: [], ceilings, origin: "2025-12-01", horizonDays: [7], ignoreImportRegime: true,
+      days,
+      episodes: [],
+      ceilings,
+      origin: "2025-12-01",
+      horizonDays: [7],
+      ignoreImportRegime: true,
     })!;
     expect(on.imports.state).toBe("cutoff");
     expect(on.horizons[0]!.deficitGwhDay - off.horizons[0]!.deficitGwhDay).toBeCloseTo(10 - 0.1, 6);
@@ -406,7 +399,13 @@ describe("buildAdequacyDocument", () => {
     otherGwhDay: 2,
     basis: "test",
   };
-  const backtest = { origins: [], scores: [], calibration: new Map(), hydroCalibration: new Map(), points: { demand: [], hydro: [], requirement: [] } };
+  const backtest = {
+    origins: [],
+    scores: [],
+    calibration: new Map(),
+    hydroCalibration: new Map(),
+    points: { demand: [], hydro: [], requirement: [] },
+  };
   const crisis = { episodes: [], calls: [] };
 
   function documentWith(basis: string) {

@@ -113,7 +113,14 @@ describe("simulation", () => {
   });
 
   it("conserves water on a day with no release and no spill", () => {
-    const quiet: ReleaseRule = { points: [{ level: 2100, releaseM3s: 0 }, { level: 2150, releaseM3s: 0 }], zeroAtM: 2060, days: 10 };
+    const quiet: ReleaseRule = {
+      points: [
+        { level: 2100, releaseM3s: 0 },
+        { level: 2150, releaseM3s: 0 },
+      ],
+      zeroAtM: 2060,
+      days: 10,
+    };
     const [step] = simulatePath(CURVE, quiet, 2130, "2024-01-01", [100], 0, 2153);
     expect(volumeAt(CURVE, step!.level) - volumeAt(CURVE, 2130)).toBeCloseTo(100 * 86_400, 0);
   });

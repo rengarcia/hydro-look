@@ -46,11 +46,7 @@ import {
   selectPrecipBasin,
 } from "../src/lib/features/weather.ts";
 import { climatologicalDrift, persistence, seasonalAnomalyDecay } from "../src/lib/models/baselines.ts";
-import {
-  createFitCache,
-  DEFAULT_WATER_BALANCE,
-  waterBalanceModel,
-} from "../src/lib/models/water-balance.ts";
+import { createFitCache, DEFAULT_WATER_BALANCE, waterBalanceModel } from "../src/lib/models/water-balance.ts";
 import {
   crisisEpisodes,
   crisisLeadTime,
@@ -106,7 +102,9 @@ function comparison(scores: readonly ModelScore[], shippedId: string, candidateI
     const ref = shipped.horizons.find((r) => r.horizonDays === h.horizonDays);
     if (!ref) continue;
     const bandWorse =
-      h.coverageP10P90 !== null && ref.coverageP10P90 !== null && Math.abs(h.coverageP10P90 - 0.8) > Math.abs(ref.coverageP10P90 - 0.8) + 1e-9;
+      h.coverageP10P90 !== null &&
+      ref.coverageP10P90 !== null &&
+      Math.abs(h.coverageP10P90 - 0.8) > Math.abs(ref.coverageP10P90 - 0.8) + 1e-9;
     if (!(h.maeM < ref.maeM) || bandWorse) worseAt.push(h.horizonDays);
   }
   return { better: worseAt.length === 0, worseAt };
@@ -143,7 +141,9 @@ function main(): void {
   const inflow = series.get(site, "caudal_m3s");
   const production = series.get(site, "produccion_mwh");
   if (levels.size === 0 || inflow.size === 0 || production.size === 0) {
-    console.error(`${site} needs ${VARIABLE}, caudal_m3s and produccion_mwh under its own id to be forecast; it has ${levels.size}, ${inflow.size} and ${production.size} days`);
+    console.error(
+      `${site} needs ${VARIABLE}, caudal_m3s and produccion_mwh under its own id to be forecast; it has ${levels.size}, ${inflow.size} and ${production.size} days`,
+    );
     process.exitCode = 1;
     return;
   }
@@ -172,10 +172,7 @@ function main(): void {
   const ladder = runBacktest(inputs, [persistence, climatologicalDrift, seasonalAnomalyDecay, shipped], options);
   console.log(`ladder: ${ladder.origins.length} origins`);
   for (const score of ladder.scores) {
-    console.log(
-      `  ${score.modelId.padEnd(26)}` +
-        score.horizons.map((h) => `${h.horizonDays}d ${h.maeM.toFixed(2)}m`).join("  "),
-    );
+    console.log(`  ${score.modelId.padEnd(26)}` + score.horizons.map((h) => `${h.horizonDays}d ${h.maeM.toFixed(2)}m`).join("  "));
   }
 
   let variant: { scores: ReturnType<typeof runBacktest>["scores"]; sharedOrigins: number } | null = null;
@@ -228,7 +225,9 @@ function main(): void {
       crestM,
       fits: cache,
     });
-    console.log(`${PUBLISHED_M4_ID} at ${PUBLISHED_M4_HORIZON} d fitted at the live origin in ${((performance.now() - started) / 1000).toFixed(1)} s`);
+    console.log(
+      `${PUBLISHED_M4_ID} at ${PUBLISHED_M4_HORIZON} d fitted at the live origin in ${((performance.now() - started) / 1000).toFixed(1)} s`,
+    );
     if (!live) fallback = `${PUBLISHED_M4_ID} could not be fitted at the origin ${dates.at(-1)} (no M3 anchor or too few training rows)`;
   }
   if (fallback) console.log(`${PUBLISHED_M4_HORIZON} d falls back to ${shipped.id}: ${fallback}`);
@@ -279,8 +278,14 @@ function main(): void {
     thresholdSource: critical.status === "unverified" ? `${critical.source}; no upstream source publishes it` : critical.source,
     episodes: crisisEpisodes(levels, critical.levelMasl).map((episode) => ({
       crossedOn: episode.crossedOn,
-      p50: crisisLeadTime(episode, calls.map((c) => ({ origin: c.origin, predictedCrossing: c.p50 }))),
-      p10: crisisLeadTime(episode, calls.map((c) => ({ origin: c.origin, predictedCrossing: c.p10 }))),
+      p50: crisisLeadTime(
+        episode,
+        calls.map((c) => ({ origin: c.origin, predictedCrossing: c.p50 })),
+      ),
+      p10: crisisLeadTime(
+        episode,
+        calls.map((c) => ({ origin: c.origin, predictedCrossing: c.p10 })),
+      ),
       // Six months of run-up is enough to show the model turning, without burying the table.
       runUp: calls.filter((c) => c.origin < episode.crossedOn).slice(-6),
     })),
@@ -376,7 +381,9 @@ function main(): void {
   const switched = (forecast.document["forecast"] as Record<string, unknown>[]).find((h) => h["would_have_published"]);
   if (switched) {
     const m3 = switched["would_have_published"] as { p10: number; p50: number; p90: number };
-    console.log(`  (${shipped.id} would have published +${PUBLISHED_M4_HORIZON}d p10 ${m3.p10.toFixed(2)}  p50 ${m3.p50.toFixed(2)}  p90 ${m3.p90.toFixed(2)})`);
+    console.log(
+      `  (${shipped.id} would have published +${PUBLISHED_M4_HORIZON}d p10 ${m3.p10.toFixed(2)}  p50 ${m3.p50.toFixed(2)}  p90 ${m3.p90.toFixed(2)})`,
+    );
   }
 
   if (dryRun) {
@@ -446,7 +453,9 @@ function rainExperiment(
         "No forecaster has that; it is the most a rain forecast could ever be worth to this model. Same origins as the ladder:",
       scoreTable(run.scores, options.horizonDays, (h) => `${h.maeM.toFixed(3)} (${((h.skillVsPersistence ?? 0) * 100).toFixed(1)}%)`),
       "MAE in metres, skill against persistence in brackets. Coverage of the calibrated p10–p90 band:",
-      scoreTable(run.scores.slice(1), options.horizonDays, (h) => (h.coverageP10P90 === null ? "—" : `${(h.coverageP10P90 * 100).toFixed(1)}%`)),
+      scoreTable(run.scores.slice(1), options.horizonDays, (h) =>
+        h.coverageP10P90 === null ? "—" : `${(h.coverageP10P90 * 100).toFixed(1)}%`,
+      ),
       helps14
         ? `**Perfect foresight helps at 14 days** (${candidate14.maeM.toFixed(3)} m against ${shipped14.maeM.toFixed(3)} m). The next step is ` +
           "to replay Open-Meteo's previous-runs archive for the real forecast's skill before anything is published; nothing is wired until then."

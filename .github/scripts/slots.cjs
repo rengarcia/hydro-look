@@ -39,7 +39,7 @@ async function missed({ github, context }, workflow, slot) {
     owner: context.repo.owner,
     repo: context.repo.repo,
     workflow_id: workflow,
-    event: 'schedule',
+    event: "schedule",
     per_page: 10,
   });
   return !data.workflow_runs.some((run) => new Date(run.created_at) >= slot);

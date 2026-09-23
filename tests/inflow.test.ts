@@ -3,14 +3,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import {
-  backtestInflow,
-  DEFAULT_INFLOW,
-  inflowEntry,
-  inflowOrigins,
-  predictInflow,
-  windowMean,
-} from "../src/lib/models/inflow.ts";
+import { backtestInflow, DEFAULT_INFLOW, inflowEntry, inflowOrigins, predictInflow, windowMean } from "../src/lib/models/inflow.ts";
 import { nearestByRain, perfectForesightRain, rainAfter } from "../src/lib/models/rain.ts";
 import type { AnalogPath } from "../src/lib/models/water-balance.ts";
 import type { DailySeries } from "../src/lib/features/series.ts";
@@ -89,7 +82,9 @@ describe("backtestInflow", () => {
   });
 
   it("publishes a live band around the median only where it ships", () => {
-    const entry = inflowEntry(result, inflow, null, null) as { horizons: { published: boolean; p10?: number; p50?: number; p90?: number }[] };
+    const entry = inflowEntry(result, inflow, null, null) as {
+      horizons: { published: boolean; p10?: number; p50?: number; p90?: number }[];
+    };
     for (const h of entry.horizons) {
       expect(h.published).toBe(true);
       expect(h.p10!).toBeLessThanOrEqual(h.p50!);

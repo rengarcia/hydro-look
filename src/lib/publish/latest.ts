@@ -436,8 +436,7 @@ function dayOf(day: Map<string, number>) {
 
   const imports = value("total_importacion") ?? 0;
   const supply = (value("total_generacion") ?? 0) + imports;
-  const share = (gwh: number | null): number | null =>
-    gwh === null || supply <= 0 ? null : roundTo((gwh / supply) * 100, 2);
+  const share = (gwh: number | null): number | null => (gwh === null || supply <= 0 ? null : roundTo((gwh / supply) * 100, 2));
 
   const parts: { concept: string; gwh: number; pct: number }[] = [];
   for (const concept of [...GENERATION_CONCEPTS, "total_importacion"]) {

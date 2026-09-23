@@ -171,11 +171,7 @@ describe("nationalSnapshot", () => {
 
   it("orders the mix largest first and keeps imports in it", () => {
     const snapshot = nationalSnapshot(balanceByDay(rows))!;
-    expect(snapshot.supply_gwh.map((p) => p.concept)).toEqual([
-      "generacion_hidraulica",
-      "generacion_turbinas_gas",
-      "total_importacion",
-    ]);
+    expect(snapshot.supply_gwh.map((p) => p.concept)).toEqual(["generacion_hidraulica", "generacion_turbinas_gas", "total_importacion"]);
   });
 
   it("has no snapshot at all when the table is empty", () => {

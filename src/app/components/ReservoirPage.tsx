@@ -38,8 +38,7 @@ export function ReservoirHero({
         <div className="eyebrow">Embalse · {basinLabel(reservoir.basin)}</div>
         <h1 id="reservoir-title">{reservoir.label}</h1>
         <p className="hero-lede">
-          {lede}{" "}
-          {years >= 1 ? `${countWord(years, true)} ${years === 1 ? "año" : "años"} de cota diaria` : "Cota diaria"} desde el{" "}
+          {lede} {years >= 1 ? `${countWord(years, true)} ${years === 1 ? "año" : "años"} de cota diaria` : "Cota diaria"} desde el{" "}
           {longDate(level.first_reading)}
           {inflow ? ` y caudal desde el ${longDate(inflow.first_reading)}` : ""}.
         </p>
@@ -101,7 +100,9 @@ export function RecordSection({ reservoir, forecast }: { reservoir: ReservoirSna
   const own = forecast && forecast.site === reservoir.site ? forecast : null;
   const unverified = own?.thresholds.find((t) => t.status === "unverified") ?? null;
   const rules = [
-    ...(unverified ? [{ level_masl: unverified.level_masl, label: `${num(unverified.level_masl, 0)} m · marcador propio`, unverified: true }] : []),
+    ...(unverified
+      ? [{ level_masl: unverified.level_masl, label: `${num(unverified.level_masl, 0)} m · marcador propio`, unverified: true }]
+      : []),
     ...(primary ? [{ level_masl: primary.min_masl, label: `${num(primary.min_masl, 0)} m · mínimo declarado`, unverified: false }] : []),
   ];
 
@@ -140,10 +141,10 @@ export function FloorsPanel({ reservoir }: { reservoir: ReservoirSnapshot }) {
       <div className="panel">
         <h3 className="panel-title">Sin banda declarada</h3>
         <p className="panel-lede">
-          Ninguna fuente que alcance este proyecto publica un mínimo ni un máximo de operación para {name}. Su columna en
-          la portada se dibuja rayada y sobre el rango que este repositorio ha registrado
-          {level ? `, de ${num(level.observed_min_masl, 2)} a ${num(level.observed_max_masl, 2)} m` : ""}: una
-          descripción de lo que se ha visto, no de lo que el embalse puede hacer.
+          Ninguna fuente que alcance este proyecto publica un mínimo ni un máximo de operación para {name}. Su columna en la portada se
+          dibuja rayada y sobre el rango que este repositorio ha registrado
+          {level ? `, de ${num(level.observed_min_masl, 2)} a ${num(level.observed_max_masl, 2)} m` : ""}: una descripción de lo que se ha
+          visto, no de lo que el embalse puede hacer.
         </p>
       </div>
     );
@@ -158,7 +159,11 @@ export function FloorsPanel({ reservoir }: { reservoir: ReservoirSnapshot }) {
       .join(" y ");
   };
   const title =
-    floors.length === 1 ? "Un piso declarado" : floors.length === 2 ? "Dos pisos, los dos de CELEC" : `${countWord(floors.length, true)} pisos, todos de CELEC`;
+    floors.length === 1
+      ? "Un piso declarado"
+      : floors.length === 2
+        ? "Dos pisos, los dos de CELEC"
+        : `${countWord(floors.length, true)} pisos, todos de CELEC`;
 
   return (
     <div className="panel">
@@ -166,8 +171,8 @@ export function FloorsPanel({ reservoir }: { reservoir: ReservoirSnapshot }) {
       <p className="panel-lede">
         {floors.length > 1 ? (
           <>
-            El mínimo de {name} es {floors.map((f) => `${num(f, 0)} m según ${who(f)}`).join(" y ")}. Este sitio no elige
-            entre ellos: dibuja {floors.length === 2 ? "los dos" : "todos"}.
+            El mínimo de {name} es {floors.map((f) => `${num(f, 0)} m según ${who(f)}`).join(" y ")}. Este sitio no elige entre ellos:
+            dibuja {floors.length === 2 ? "los dos" : "todos"}.
           </>
         ) : (
           <>
@@ -191,8 +196,8 @@ export function FloorsPanel({ reservoir }: { reservoir: ReservoirSnapshot }) {
         ])}
       />
       <p className="fine spaced">
-        Hoy la cota está en el {pct(bands[0]!.band_pct, 1)} de la banda {num(bands[0]!.min_masl, 0)}–{num(bands[0]!.max_masl, 0)} m.
-        La banda mide metros de carga útil, no agua almacenada.
+        Hoy la cota está en el {pct(bands[0]!.band_pct, 1)} de la banda {num(bands[0]!.min_masl, 0)}–{num(bands[0]!.max_masl, 0)} m. La
+        banda mide metros de carga útil, no agua almacenada.
       </p>
     </div>
   );

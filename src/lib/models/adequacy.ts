@@ -51,11 +51,7 @@ import { DATA_REFERENCE } from "../util/paths.ts";
 import { addDays, daysBetween, nowUtc, type IsoDate } from "../util/dates.ts";
 import { dayOfYear, quantile } from "../util/stats.ts";
 import { roundOrNull, roundTo } from "../util/numbers.ts";
-import {
-  suppressed,
-  type BalanceDay,
-  type RationingEpisode,
-} from "../features/balance.ts";
+import { suppressed, type BalanceDay, type RationingEpisode } from "../features/balance.ts";
 
 /**
  * Bumped when the method changes in a way that makes old rows incomparable to new ones.
@@ -262,12 +258,7 @@ export function fitDemand(
   }
 
   const shape = (date: IsoDate): number =>
-    Math.exp(
-      intercept +
-        slope * (epochDay(date) - t0) +
-        (weekday.get(weekdayOf(date)) ?? 0) +
-        (season.get(dayOfYear(date)) ?? 0),
-    );
+    Math.exp(intercept + slope * (epochDay(date) - t0) + (weekday.get(weekdayOf(date)) ?? 0) + (season.get(dayOfYear(date)) ?? 0));
 
   // The anchor walks back day by day taking only unsuppressed days, so a rationing episode
   // sitting on the origin is stepped over rather than averaged into the current level.
@@ -283,9 +274,7 @@ export function fitDemand(
   }
   const meanFitted = fitted.length > 0 ? fitted.reduce((a, b) => a + b, 0) / fitted.length : 0;
   const anchor =
-    observed.length >= options.minAnchorDays && meanFitted > 0
-      ? observed.reduce((a, b) => a + b, 0) / observed.length / meanFitted
-      : 1;
+    observed.length >= options.minAnchorDays && meanFitted > 0 ? observed.reduce((a, b) => a + b, 0) / observed.length / meanFitted : 1;
 
   return {
     intercept,
@@ -409,9 +398,7 @@ export function fitHydro(
       if (norm === undefined) return null;
       const ahead = Math.max(0, daysBetween(origin, date));
       const decayed =
-        options.anomalyHalfLifeDays === Infinity
-          ? anomaly
-          : 1 + (anomaly - 1) * Math.pow(2, -ahead / options.anomalyHalfLifeDays);
+        options.anomalyHalfLifeDays === Infinity ? anomaly : 1 + (anomaly - 1) * Math.pow(2, -ahead / options.anomalyHalfLifeDays);
       return norm * decayed * demandGwh;
     },
   };
@@ -461,8 +448,7 @@ export function demonstratedCeilings(
 ): Ceilings {
   const from = addDays(asOf, -windowDays);
   const window = days.filter((d) => d.date >= from && d.date <= asOf);
-  const max = (pick: (day: BalanceDay) => number): number =>
-    window.reduce((best, day) => Math.max(best, pick(day)), 0);
+  const max = (pick: (day: BalanceDay) => number): number => window.reduce((best, day) => Math.max(best, pick(day)), 0);
   const median = (pick: (day: BalanceDay) => number): number => quantile(window.map(pick), 0.5) ?? 0;
 
   return {
@@ -576,9 +562,7 @@ export function applyOverrides(base: Ceilings, rows: readonly CeilingRow[]): Cei
   if (overridden.size === 0) return out;
 
   const remaining = CEILING_QUANTITIES.filter((q) => !overridden.has(q));
-  out.basis =
-    [...overridden.values()].join("; ") +
-    (remaining.length > 0 ? `; ${remaining.join(", ")} from the ${base.basis}` : "");
+  out.basis = [...overridden.values()].join("; ") + (remaining.length > 0 ? `; ${remaining.join(", ")} from the ${base.basis}` : "");
   return out;
 }
 
@@ -936,12 +920,7 @@ function realisedOver(
 }
 
 /** Trailing 28-day mean, the baseline every component is scored against. */
-function trailingMean(
-  byDate: Map<IsoDate, BalanceDay>,
-  origin: IsoDate,
-  pick: (day: BalanceDay) => number,
-  days = 28,
-): number | null {
+function trailingMean(byDate: Map<IsoDate, BalanceDay>, origin: IsoDate, pick: (day: BalanceDay) => number, days = 28): number | null {
   const values: number[] = [];
   for (let back = 0; back < days; back++) {
     const found = byDate.get(addDays(origin, -back));
@@ -1091,7 +1070,10 @@ function calibrate(
   band: BandMethod = DEFAULT_BAND,
   issued: ReadonlyMap<number, readonly IssuedBand[]> = new Map(),
 ): Map<number, { q10: number; q50: number; q90: number; n: number; stretch: number; raw: { lo: number; mid: number; hi: number } }> {
-  const calibration = new Map<number, { q10: number; q50: number; q90: number; n: number; stretch: number; raw: { lo: number; mid: number; hi: number } }>();
+  const calibration = new Map<
+    number,
+    { q10: number; q50: number; q90: number; n: number; stretch: number; raw: { lo: number; mid: number; hi: number } }
+  >();
   for (const [horizon, all] of seen) {
     if (all.length < minOrigins) continue;
     const residuals = band.windowOrigins === null ? all : all.slice(-band.windowOrigins);
@@ -1160,13 +1142,16 @@ export function crisisCheck(
   for (const episode of episodes) {
     const end = episode.end === "" ? days.at(-1)!.date : episode.end;
     // Fitted at the origin before the episode, so the trend is not bent by the episode itself.
-    const fit = fitDemand(days.filter((d) => d.date < episode.start), addDays(episode.start, -1), episodes);
+    const fit = fitDemand(
+      days.filter((d) => d.date < episode.start),
+      addDays(episode.start, -1),
+      episodes,
+    );
     if (!fit) continue;
     const inside = days.filter((d) => d.date >= episode.start && d.date <= end);
     if (inside.length === 0) continue;
 
-    const mean = (pick: (day: BalanceDay) => number): number =>
-      inside.reduce((a, d) => a + pick(d), 0) / inside.length;
+    const mean = (pick: (day: BalanceDay) => number): number => inside.reduce((a, d) => a + pick(d), 0) / inside.length;
     const modelled = inside.reduce((a, d) => a + fit.predict(d.date), 0) / inside.length;
     const hydro = mean((d) => d.hydroGwh);
     const imports = mean((d) => d.importGwh);
@@ -1385,7 +1370,10 @@ export function buildAdequacyDocument(inputs: DocumentInputs): AdequacyDocument 
         : "residual quantiles from earlier origins",
       quantiles: [...(inputs.band ?? DEFAULT_BAND).quantiles],
       nominal_coverage: (inputs.band ?? DEFAULT_BAND).nominal ?? 0.8,
-      stretch_by_horizon: [...backtest.calibration].map(([horizon, c]) => ({ horizon_days: horizon, stretch: roundOrNull(c.stretch ?? null, 2) })),
+      stretch_by_horizon: [...backtest.calibration].map(([horizon, c]) => ({
+        horizon_days: horizon,
+        stretch: roundOrNull(c.stretch ?? null, 2),
+      })),
     },
     tiers: {
       definition: {
@@ -1412,9 +1400,7 @@ export function buildAdequacyDocument(inputs: DocumentInputs): AdequacyDocument 
         flagged_and_followed: hits.length,
         share_of_flagged_that_preceded_cuts: flagged.length > 0 ? roundTo(hits.length / flagged.length, 4) : null,
         share_of_cuts_that_were_flagged: followed.length > 0 ? roundTo(hits.length / followed.length, 4) : null,
-        note:
-          "Tres episodios no son una muestra con la que ajustar un umbral, y ningún umbral de aquí " +
-          "se ajustó a ellos.",
+        note: "Tres episodios no son una muestra con la que ajustar un umbral, y ningún umbral de aquí " + "se ajustó a ellos.",
       };
     })(),
     crisis_check: {

@@ -148,18 +148,22 @@ describe("reference integrity", () => {
 
   it("catches an inverted band and an episode that ends before it starts", () => {
     expect(
-      checkReference({ ...ok, thresholds: [{ site: "mazar", cota_min_masl: "2153", cota_max_masl: "2100", source: "x" }] })
-        .some((f) => f.level === "fail" && /min 2153 >= max 2100/.test(f.message)),
+      checkReference({ ...ok, thresholds: [{ site: "mazar", cota_min_masl: "2153", cota_max_masl: "2100", source: "x" }] }).some(
+        (f) => f.level === "fail" && /min 2153 >= max 2100/.test(f.message),
+      ),
     ).toBe(true);
     expect(
-      checkReference({ ...ok, rationing: [{ start: "2024-12-20", end: "2024-09-23", end_status: "exact", status: "unverified" }] })
-        .some((f) => f.level === "fail"),
+      checkReference({ ...ok, rationing: [{ start: "2024-12-20", end: "2024-09-23", end_status: "exact", status: "unverified" }] }).some(
+        (f) => f.level === "fail",
+      ),
     ).toBe(true);
   });
 
   it("catches an open-ended episode that nonetheless carries an end date", () => {
     const rationing = [{ start: "2025-01-01", end: "2025-02-01", end_status: "open", status: "unverified" }];
-    expect(checkReference({ ...ok, rationing }).some((f) => f.level === "fail" && /marked open but carries an end date/.test(f.message))).toBe(true);
+    expect(
+      checkReference({ ...ok, rationing }).some((f) => f.level === "fail" && /marked open but carries an end date/.test(f.message)),
+    ).toBe(true);
   });
 });
 
@@ -191,8 +195,18 @@ describe("freshness", () => {
 describe("worstLevel", () => {
   it("reports the most severe finding present", () => {
     expect(worstLevel([{ check: "a", level: "info", message: "" }])).toBe("info");
-    expect(worstLevel([{ check: "a", level: "info", message: "" }, { check: "b", level: "warn", message: "" }])).toBe("warn");
-    expect(worstLevel([{ check: "a", level: "warn", message: "" }, { check: "b", level: "fail", message: "" }])).toBe("fail");
+    expect(
+      worstLevel([
+        { check: "a", level: "info", message: "" },
+        { check: "b", level: "warn", message: "" },
+      ]),
+    ).toBe("warn");
+    expect(
+      worstLevel([
+        { check: "a", level: "warn", message: "" },
+        { check: "b", level: "fail", message: "" },
+      ]),
+    ).toBe("fail");
     expect(worstLevel([])).toBe("info");
   });
 });

@@ -146,7 +146,9 @@ export class CenaceOperativa {
 
     const floor = rowFloor("InformacionOperativa", null, result.fetchedAt.slice(0, 10));
     if (floor && snapshot.metrics.length < floor.rows) {
-      batch.errors.push(`operativa: HTTP 200 but ${snapshot.metrics.length} metrics, expected at least ${floor.rows} (archived at ${rawRef})`);
+      batch.errors.push(
+        `operativa: HTTP 200 but ${snapshot.metrics.length} metrics, expected at least ${floor.rows} (archived at ${rawRef})`,
+      );
     }
 
     batch.notes.push(...snapshot.notes);

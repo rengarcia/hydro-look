@@ -116,7 +116,8 @@ function usableInflow(
     return null;
   };
   if (value < 0) return say("is negative, which q_ingresado cannot be");
-  if (value === 0 && opts.zeroIsMissing) return say("is zero on a route that publishes decimals, so it is a missing reading rather than a stopped river");
+  if (value === 0 && opts.zeroIsMissing)
+    return say("is zero on a route that publishes decimals, so it is a missing reading rather than a stopped river");
   if (value > INFLOW_CEILING_M3S) return say(`exceeds ${INFLOW_CEILING_M3S} m3/s, which no Ecuadorian intake sees`);
   return value;
 }
@@ -306,7 +307,9 @@ export function parseRepDiaVolAlm(body: string, date: IsoDate): ParseResult {
     if (level !== null && min !== null && max !== null && pct !== null && max !== min) {
       const linear = ((level - min) / (max - min)) * 100;
       if (Math.abs(linear - pct) > 0.01) {
-        notes.push(`${endpoint}: ${site} volutilalm=${pct} is no longer band-linear (expected ${linear.toFixed(4)}); a real volume curve may have appeared`);
+        notes.push(
+          `${endpoint}: ${site} volutilalm=${pct} is no longer band-linear (expected ${linear.toFixed(4)}); a real volume curve may have appeared`,
+        );
       }
     }
   }
@@ -451,7 +454,7 @@ export function parseProdLineaLast2h(body: string): LiveReading[] {
 
   const out: LiveReading[] = [];
   for (const rowsOfBlock of blocks.values()) {
-    const qRow = rowsOfBlock.find((r) => typeof r["magnitud"] === "string" && (r["magnitud"]).startsWith("Q "));
+    const qRow = rowsOfBlock.find((r) => typeof r["magnitud"] === "string" && r["magnitud"].startsWith("Q "));
     if (!qRow) continue; // a block with no flow row names no site; the dashboard shows nothing for it either
     const site = siteFromQLabel(requireString(qRow, "magnitud", endpoint));
     for (const row of rowsOfBlock) {

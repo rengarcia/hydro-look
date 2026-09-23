@@ -33,7 +33,10 @@ export function curatedTables(curated: string): { table: string; paths: string[]
   for (const entry of readdirSync(curated).sort()) {
     const path = join(curated, entry);
     if (statSync(path).isDirectory()) {
-      const parts = readdirSync(path).filter((f) => f.endsWith(".csv")).sort().map((f) => join(path, f));
+      const parts = readdirSync(path)
+        .filter((f) => f.endsWith(".csv"))
+        .sort()
+        .map((f) => join(path, f));
       if (parts.length > 0) out.push({ table: entry, paths: parts });
     } else if (entry.endsWith(".csv")) {
       out.push({ table: entry.slice(0, -4), paths: [path] });

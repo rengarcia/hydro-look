@@ -180,16 +180,16 @@ function FanDrawing({
       />
       <circle cx={originX} cy={y(originLevel)} r={5} fill="var(--ink)" stroke="var(--surface)" strokeWidth={2} />
       {compact ? null : (
-      <text
-        x={WIDTH - MARGIN.right - 4}
-        y={round(Math.max(y(end.p90) - font, top + 2.8 * font))}
-        textAnchor="end"
-        fontFamily="var(--mono)"
-        fontSize={font + 1}
-        fill="var(--water)"
-      >
-        p50 {num(end.p50, 2)} m · {shortDate(end.target_date)}
-      </text>
+        <text
+          x={WIDTH - MARGIN.right - 4}
+          y={round(Math.max(y(end.p90) - font, top + 2.8 * font))}
+          textAnchor="end"
+          fontFamily="var(--mono)"
+          fontSize={font + 1}
+          fill="var(--water)"
+        >
+          p50 {num(end.p50, 2)} m · {shortDate(end.target_date)}
+        </text>
       )}
     </Plot>
   );
@@ -227,10 +227,24 @@ export function FanChart(props: FanChartProps) {
       </div>
       <ChartData
         caption="Cota de Mazar, m s. n. m.: la observada, una lectura por semana, y el pronóstico p10, p50 y p90 en cada horizonte"
-        columns={[{ label: "Día" }, { label: "Observada", numeric: true }, { label: "p10", numeric: true }, { label: "p50", numeric: true }, { label: "p90", numeric: true }, { label: "Modelo" }]}
+        columns={[
+          { label: "Día" },
+          { label: "Observada", numeric: true },
+          { label: "p10", numeric: true },
+          { label: "p50", numeric: true },
+          { label: "p90", numeric: true },
+          { label: "Modelo" },
+        ]}
         rows={[
           ...sampleBack(history, 7).map((p) => [dateWithYear(p.date), num(p.value, 2), "", "", "", ""]),
-          ...horizons.map((h) => [dateWithYear(h.target_date), "", num(h.p10, 2), num(h.p50, 2), num(h.p90, 2), h.model ?? primaryModel ?? ""]),
+          ...horizons.map((h) => [
+            dateWithYear(h.target_date),
+            "",
+            num(h.p10, 2),
+            num(h.p50, 2),
+            num(h.p90, 2),
+            h.model ?? primaryModel ?? "",
+          ]),
         ]}
         note="La cota diaria completa está en /api/bulk/observations_daily.csv.gz; el pronóstico, en /api/forecast.json."
       />

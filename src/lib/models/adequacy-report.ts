@@ -6,14 +6,7 @@
  * the method rather than the people reading the number.
  */
 
-import type {
-  AdequacyBacktest,
-  AdequacyForecast,
-  Ceilings,
-  ComponentScores,
-  CrisisCheck,
-  HorizonScore,
-} from "./adequacy.ts";
+import type { AdequacyBacktest, AdequacyForecast, Ceilings, ComponentScores, CrisisCheck, HorizonScore } from "./adequacy.ts";
 import type { RejectedDay } from "../features/balance.ts";
 import type { SensitivityCase } from "./imports.ts";
 import type { ReportSection } from "./adequacy-experiments.ts";
@@ -43,9 +36,7 @@ function pct(value: number | null | undefined, digits = 1): string {
 }
 
 function scoreTable(scores: ComponentScores): string {
-  const header =
-    "| Horizon | n | MAE GWh/day | Bias | Persistence MAE | Skill vs persistence |\n" +
-    "|---|---:|---:|---:|---:|---:|\n";
+  const header = "| Horizon | n | MAE GWh/day | Bias | Persistence MAE | Skill vs persistence |\n" + "|---|---:|---:|---:|---:|---:|\n";
   const rows = scores.horizons
     .map(
       (h: HorizonScore) =>
@@ -212,7 +203,7 @@ export function renderAdequacyReport(inputs: ReportInputs): string {
     "mean a trailing 28-day mean is a very strong predictor of load — load is that persistent at",
     "the monthly scale — and the fitted model ties it or loses by a few per cent. What the",
     "baseline cannot do is answer the question at all during an episode: a trailing mean of",
-    "measured load *is* the suppressed load, so used as \"unsuppressed demand\" it would have",
+    'measured load *is* the suppressed load, so used as "unsuppressed demand" it would have',
     "reported that Ecuador wanted 55 GWh/day in late October 2024 and that there was therefore no",
     "shortfall, at the precise moment there were fourteen hours a day of cuts. The crisis check",
     "below is where this rung earns its place; the MAE table is here to show it costs nothing",
@@ -277,18 +268,14 @@ export function renderAdequacyReport(inputs: ReportInputs): string {
     "",
     "| Horizon | Origins with a band | Coverage |",
     "|---|---:|---:|",
-    requirement.horizons
-      .map((h) => `| ${h.horizonDays} d | ${h.nBand} | ${pct(h.coverageP10P90, 0)} |`)
-      .join("\n"),
+    requirement.horizons.map((h) => `| ${h.horizonDays} d | ${h.nBand} | ${pct(h.coverageP10P90, 0)} |`).join("\n"),
     "",
     "Against a nominal 80%. Version 1 took the 10th and 90th percentile of every earlier residual",
     "and covered 60–67%, falling with the horizon, because the residual distribution is not",
     "stationary — the fleet that produced the errors of 2019 is not the fleet of 2026. Since version",
     "2 those quantiles are stretched, per horizon, by the smallest factor at which the bands already",
     "issued at earlier origins would have covered 80%; at the live origin the stretch is " +
-      [...backtest.calibration]
-        .map(([h, c]) => `×${fixed(c.stretch ?? 1)} at ${h} d`)
-        .join(", ") +
+      [...backtest.calibration].map(([h, c]) => `×${fixed(c.stretch ?? 1)} at ${h} d`).join(", ") +
       ".",
     `The longest horizon is calibrated from the fewest origins (${requirement.horizons.at(-1)?.nBand ?? 0} at ninety days) and`,
     "is the one to read with care. Every method tried is compared under §5.5 below.",

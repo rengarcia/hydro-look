@@ -117,8 +117,7 @@ describe("fitGbm, pinball loss", () => {
   const q90 = fit(0.9);
 
   it("puts about the stated share of held-out outcomes below each quantile", () => {
-    const below = (model: ReturnType<typeof fit>) =>
-      test.y.filter((y, i) => y < predictGbm(model, test.x[i]!)).length / test.y.length;
+    const below = (model: ReturnType<typeof fit>) => test.y.filter((y, i) => y < predictGbm(model, test.x[i]!)).length / test.y.length;
     expect(below(q10)).toBeGreaterThan(0.07);
     expect(below(q10)).toBeLessThan(0.13);
     expect(below(q50)).toBeGreaterThan(0.46);
@@ -132,7 +131,10 @@ describe("fitGbm, pinball loss", () => {
       [0, 2],
       [2, 4],
     ] as const) {
-      const idx = test.x.map((row, i) => [row[0]!, i] as const).filter(([v]) => v >= lo && v < hi).map(([, i]) => i);
+      const idx = test.x
+        .map((row, i) => [row[0]!, i] as const)
+        .filter(([v]) => v >= lo && v < hi)
+        .map(([, i]) => i);
       const inside = idx.filter((i) => {
         const y = test.y[i]!;
         return y >= predictGbm(q10, test.x[i]!) && y <= predictGbm(q90, test.x[i]!);

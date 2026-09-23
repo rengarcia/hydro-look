@@ -20,8 +20,8 @@ export function National({ now }: { now: LatestDocument | null }) {
   return (
     <section id="balance" className="section section-tight" aria-labelledby="balance-title">
       <SectionIntro index="04" eyebrow="Balance nacional" titleId="balance-title" title="De dónde salió la electricidad.">
-        El balance que CENACE cierra cada mañana para el día anterior, en GWh. Los porcentajes van sobre generación
-        más importación: un kWh importado alumbra igual que uno generado.
+        El balance que CENACE cierra cada mañana para el día anterior, en GWh. Los porcentajes van sobre generación más importación: un kWh
+        importado alumbra igual que uno generado.
       </SectionIntro>
       <div className="panel tight">
         <div className="supply-head">
@@ -37,7 +37,12 @@ export function National({ now }: { now: LatestDocument | null }) {
             aria-label={`Suministro del ${longDate(national.date)}: hidroeléctrica ${pct(national.hydro_share_pct, 1)}, térmica ${pct(national.thermal_share_pct, 1)}, importación ${pct(national.import_share_pct, 1)}.`}
           >
             {parts.map((p) => (
-              <span key={p.concept} className={mixClass(p.concept)} style={{ width: `${p.pct.toFixed(2)}%` }} title={`${conceptLabel(p.concept)}: ${pct(p.pct, 1)}`} />
+              <span
+                key={p.concept}
+                className={mixClass(p.concept)}
+                style={{ width: `${p.pct.toFixed(2)}%` }}
+                title={`${conceptLabel(p.concept)}: ${pct(p.pct, 1)}`}
+              />
             ))}
           </div>
         </div>

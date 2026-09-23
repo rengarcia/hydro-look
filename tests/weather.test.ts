@@ -32,14 +32,24 @@ const provisional = daily("1990-01-01", "2026-09-16");
 
 describe("selectPrecipBasin", () => {
   it("stays on the provisional point while the centroid has only the daily samples", () => {
-    const choice = selectPrecipBasin(new Map([[PROVISIONAL_PRECIP_BASIN, provisional], [MAZAR_PRECIP_BASIN, daily("2026-09-10", "2026-09-16")]]));
+    const choice = selectPrecipBasin(
+      new Map([
+        [PROVISIONAL_PRECIP_BASIN, provisional],
+        [MAZAR_PRECIP_BASIN, daily("2026-09-10", "2026-09-16")],
+      ]),
+    );
     expect(choice.basin).toBe(PROVISIONAL_PRECIP_BASIN);
     expect(choice.preferred).toBe(false);
     expect(choice.fallbackReason).toMatch(/starts 2026-09-10/);
   });
 
   it("moves to the centroid once its climatology reaches back to 1990 with enough days", () => {
-    const choice = selectPrecipBasin(new Map([[PROVISIONAL_PRECIP_BASIN, provisional], [MAZAR_PRECIP_BASIN, daily("1990-01-01", "2026-09-16", 50)]]));
+    const choice = selectPrecipBasin(
+      new Map([
+        [PROVISIONAL_PRECIP_BASIN, provisional],
+        [MAZAR_PRECIP_BASIN, daily("1990-01-01", "2026-09-16", 50)],
+      ]),
+    );
     expect(choice.basin).toBe(MAZAR_PRECIP_BASIN);
     expect(choice.fallbackReason).toBeNull();
     expect(choice.coverage.share).toBeGreaterThanOrEqual(ERA5_ADEQUATE.minShare);
@@ -48,12 +58,24 @@ describe("selectPrecipBasin", () => {
   it("refuses a backfill with holes, however far back it starts", () => {
     const holey = daily("1990-01-01", "2026-09-16", 10);
     expect(inadequacy(era5Coverage(holey))).toMatch(/90\.0% of days/);
-    expect(selectPrecipBasin(new Map([[PROVISIONAL_PRECIP_BASIN, provisional], [MAZAR_PRECIP_BASIN, holey]])).basin).toBe(PROVISIONAL_PRECIP_BASIN);
+    expect(
+      selectPrecipBasin(
+        new Map([
+          [PROVISIONAL_PRECIP_BASIN, provisional],
+          [MAZAR_PRECIP_BASIN, holey],
+        ]),
+      ).basin,
+    ).toBe(PROVISIONAL_PRECIP_BASIN);
   });
 
   it("refuses a centroid that was backfilled once and then stopped being sampled", () => {
     const stale = daily("1990-01-01", "2026-06-30");
-    const choice = selectPrecipBasin(new Map([[PROVISIONAL_PRECIP_BASIN, provisional], [MAZAR_PRECIP_BASIN, stale]]));
+    const choice = selectPrecipBasin(
+      new Map([
+        [PROVISIONAL_PRECIP_BASIN, provisional],
+        [MAZAR_PRECIP_BASIN, stale],
+      ]),
+    );
     expect(choice.basin).toBe(PROVISIONAL_PRECIP_BASIN);
     expect(choice.fallbackReason).toMatch(/more than 30 days behind/);
   });

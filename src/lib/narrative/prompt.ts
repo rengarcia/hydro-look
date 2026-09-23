@@ -87,9 +87,5 @@ export function instructionsFor(payload: NarrativePayload | null): string {
 export const INSTRUCTIONS = instructionsFor(null);
 
 export function buildPrompt(payload: NarrativePayload): string {
-  return [
-    "Payload (JSON). It is the complete set of facts available to you.",
-    "",
-    canonicalJson(payload),
-  ].join("\n");
+  return ["Payload (JSON). It is the complete set of facts available to you.", "", canonicalJson(payload)].join("\n");
 }

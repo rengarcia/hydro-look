@@ -105,7 +105,8 @@ export class CuratedStore {
     if (rejected.length > 0) {
       const root = options.quarantine!.root ?? DATA_QUARANTINE;
       const path = join(root, spec.name, `${options.quarantine!.run}.csv`);
-      const cell = (value: unknown) => (value === null || value === undefined ? "" : typeof value === "object" ? JSON.stringify(value) : String(value));
+      const cell = (value: unknown) =>
+        value === null || value === undefined ? "" : typeof value === "object" ? JSON.stringify(value) : String(value);
       const lines = rejected.map(({ row, reason }) => {
         const record = (row ?? {}) as Record<string, unknown>;
         return { ...Object.fromEntries(spec.columns.map((c) => [c, cell(record[c])])), reason };
@@ -166,9 +167,7 @@ export class CuratedStore {
   /** Keys already present, so a resumable backfill can skip work it has already done. */
   existingKeys<T>(spec: TableSpec<T>, years: number[]): Set<string> {
     const keys = new Set<string>();
-    const paths = spec.partitionBy
-      ? years.map((y) => join(this.root, spec.name, `${y}.csv`))
-      : [join(this.root, `${spec.name}.csv`)];
+    const paths = spec.partitionBy ? years.map((y) => join(this.root, spec.name, `${y}.csv`)) : [join(this.root, `${spec.name}.csv`)];
     for (const path of paths) {
       for (const row of this.read(path)) keys.add(keyOf(spec, row));
     }
@@ -184,15 +183,43 @@ export function foldBands(
   readings: { date: string; site: string; cota_min: number | null; cota_max: number | null; qmax_m3s: number | null; source: string }[],
   existing: Record<string, string>[] = [],
 ): Record<string, unknown>[] {
-  const folded = new Map<string, { site: string; cota_min: number | null; cota_max: number | null; qmax_m3s: number | null; source: string; first_date: string; last_date: string }>();
+  const folded = new Map<
+    string,
+    {
+      site: string;
+      cota_min: number | null;
+      cota_max: number | null;
+      qmax_m3s: number | null;
+      source: string;
+      first_date: string;
+      last_date: string;
+    }
+  >();
 
-  const add = (r: { date?: string; first_date?: string; last_date?: string; site: string; cota_min: number | null; cota_max: number | null; qmax_m3s: number | null; source: string }) => {
+  const add = (r: {
+    date?: string;
+    first_date?: string;
+    last_date?: string;
+    site: string;
+    cota_min: number | null;
+    cota_max: number | null;
+    qmax_m3s: number | null;
+    source: string;
+  }) => {
     const first = r.first_date ?? r.date!;
     const last = r.last_date ?? r.date!;
     const key = [r.site, r.source, r.cota_min, r.cota_max, r.qmax_m3s].join("|");
     const current = folded.get(key);
     if (!current) {
-      folded.set(key, { site: r.site, cota_min: r.cota_min, cota_max: r.cota_max, qmax_m3s: r.qmax_m3s, source: r.source, first_date: first, last_date: last });
+      folded.set(key, {
+        site: r.site,
+        cota_min: r.cota_min,
+        cota_max: r.cota_max,
+        qmax_m3s: r.qmax_m3s,
+        source: r.source,
+        first_date: first,
+        last_date: last,
+      });
       return;
     }
     if (first < current.first_date) current.first_date = first;

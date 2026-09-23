@@ -31,7 +31,11 @@ const rows = existsSync(directory)
       .flatMap((f) => parseCsv(readFileSync(join(directory, f), "utf8")))
   : [];
 const since = values.since ?? "";
-const latest = rows.filter((r) => (r["generated_at"] ?? "") >= since).sort((a, b) => ((a["generated_at"] ?? "") < (b["generated_at"] ?? "") ? -1 : 1)).at(-1) ?? null;
+const latest =
+  rows
+    .filter((r) => (r["generated_at"] ?? "") >= since)
+    .sort((a, b) => ((a["generated_at"] ?? "") < (b["generated_at"] ?? "") ? -1 : 1))
+    .at(-1) ?? null;
 const latency = values["latency-ms"] ? Number(values["latency-ms"]) : undefined;
 
 process.stdout.write(

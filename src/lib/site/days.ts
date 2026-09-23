@@ -38,7 +38,14 @@ export interface DayAdequacyHorizon {
 
 export interface DayRecord {
   date: IsoDate;
-  forecast: { run_id: string; generated_at: string; site: string; model_id: string; origin_level_masl: number | null; horizons: DayHorizon[] } | null;
+  forecast: {
+    run_id: string;
+    generated_at: string;
+    site: string;
+    model_id: string;
+    origin_level_masl: number | null;
+    horizons: DayHorizon[];
+  } | null;
   adequacy: { run_id: string; generated_at: string; model_id: string; horizons: DayAdequacyHorizon[] } | null;
   narrative: {
     run_id: string;

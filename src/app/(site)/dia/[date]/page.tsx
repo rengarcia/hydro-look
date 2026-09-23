@@ -59,8 +59,8 @@ export default async function DayPage({ params }: { params: Promise<{ date: stri
       <Crumbs trail={[{ href: "/", label: "Inicio" }, { href: "/dia/", label: "Archivo diario" }, { label: dateWithYear(date) }]} />
       <section className="shell section" aria-labelledby="dia-title">
         <SectionIntro index="—" eyebrow={`Archivo · ${weekday(date)}`} titleId="dia-title" title={`El ${longDate(date)}.`}>
-          Lo que se publicó sobre este día, tal como quedó: los datos que describe son los del {longDate(date)}, y cada
-          corrida lleva la hora en que se hizo.
+          Lo que se publicó sobre este día, tal como quedó: los datos que describe son los del {longDate(date)}, y cada corrida lleva la
+          hora en que se hizo.
         </SectionIntro>
 
         {day.narrative ? (
@@ -79,9 +79,11 @@ export default async function DayPage({ params }: { params: Promise<{ date: stri
                 <p className="reading-rest">“{day.narrative.outlook_es}”</p>
               </blockquote>
               <p className="reading-fine">
-                Redactado por <code>{day.narrative.model_id}</code> el {ecStamp(day.narrative.generated_at)}; confianza
-                declarada {CONFIDENCE_ES[day.narrative.confidence as keyof typeof CONFIDENCE_ES] ?? day.narrative.confidence}.
-                {day.runs.narrative > 1 ? ` Hubo ${day.runs.narrative} intentos para este día; esta es la última lectura que el validador aprobó.` : ""}
+                Redactado por <code>{day.narrative.model_id}</code> el {ecStamp(day.narrative.generated_at)}; confianza declarada{" "}
+                {CONFIDENCE_ES[day.narrative.confidence as keyof typeof CONFIDENCE_ES] ?? day.narrative.confidence}.
+                {day.runs.narrative > 1
+                  ? ` Hubo ${day.runs.narrative} intentos para este día; esta es la última lectura que el validador aprobó.`
+                  : ""}
               </p>
             </div>
             {day.narrative.drivers.length > 0 ? (
@@ -159,7 +161,14 @@ function ForecastPanel({ day, card }: { day: DayRecord; card: ScorecardBlock | n
         })}
       />
       <p className="fine spaced">«Aún no» es un día que todavía no llega o que la fuente no publicó.</p>
-      <DayScore card={card} runId={forecast.run_id} horizons={forecast.horizons} digits={2} subject="la cota de Mazar" href="/#marcador-mazar" />
+      <DayScore
+        card={card}
+        runId={forecast.run_id}
+        horizons={forecast.horizons}
+        digits={2}
+        subject="la cota de Mazar"
+        href="/#marcador-mazar"
+      />
     </div>
   );
 }

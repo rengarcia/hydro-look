@@ -121,7 +121,14 @@ function RecordDrawing({
       desc={`Cota semanal entre el ${first} y el ${last}. Mínimo del registro: ${num(minimum.value, 2)} m el ${minimum.date}.`}
     >
       {band ? (
-        <rect x={MARGIN.left} y={y(band.max)} width={frame.innerWidth} height={round(y(band.min) - y(band.max))} fill="var(--water-4)" opacity=".5" />
+        <rect
+          x={MARGIN.left}
+          y={y(band.max)}
+          width={frame.innerWidth}
+          height={round(y(band.min) - y(band.max))}
+          fill="var(--water-4)"
+          opacity=".5"
+        />
       ) : null}
       {rules.map((rule, i) => (
         <g key={rule.level_masl}>
@@ -171,7 +178,6 @@ function RecordDrawing({
     </Plot>
   );
 }
-
 
 /** Mean level per `size`-day block counted from `first`, dated at the block's middle. */
 function blocks(readings: SeriesPoint[], first: string, size: number): SeriesPoint[] {

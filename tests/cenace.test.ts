@@ -39,7 +39,9 @@ describe("SMEC daily balance", () => {
     const report = parseSmecInforme1(smec("informe1_2024-10-15.html"), "2024-10-15");
     expect(dayKwh(report, "generacion_hidraulica")).toBe(41491824.655);
     // Half of a normal day's hydro: the rationing period is in the history, not smoothed away.
-    expect(dayKwh(report, "generacion_hidraulica")!).toBeLessThan(dayKwh(parseSmecInforme1(smec("informe1_2026-09-20.html"), "2026-09-20"), "generacion_hidraulica")! / 1.5);
+    expect(dayKwh(report, "generacion_hidraulica")!).toBeLessThan(
+      dayKwh(parseSmecInforme1(smec("informe1_2026-09-20.html"), "2026-09-20"), "generacion_hidraulica")! / 1.5,
+    );
   });
 
   it("marks the running day incomplete so it is never written as a real day", () => {

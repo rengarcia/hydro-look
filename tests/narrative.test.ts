@@ -31,7 +31,15 @@ import {
   precipitationOutlook,
   type NarrativePayload,
 } from "../src/lib/narrative/payload.ts";
-import { allowedSet, countWords, fieldNames, inventedFigures, numberAllowed, readNumber, validateNarrative } from "../src/lib/narrative/validate.ts";
+import {
+  allowedSet,
+  countWords,
+  fieldNames,
+  inventedFigures,
+  numberAllowed,
+  readNumber,
+  validateNarrative,
+} from "../src/lib/narrative/validate.ts";
 import {
   costFromMetadata,
   generateNarrative,
@@ -65,8 +73,18 @@ const PAD = pad(9);
 
 /** Three drivers that check out against the fixture payload. */
 const DRIVERS = [
-  { text: "Las pendientes de 7 y 30 días son negativas (-0,2129 y -0,3313 m/día).", factor: "mazar_level", direction: "down", payload_ref: `reservoirs[${MAZAR}].slopes_m_per_day.d30` },
-  { text: "Cobertura de la banda: 74 % en la validación histórica a 7 días.", factor: "mazar_forecast", direction: "steady", payload_ref: "mazar_forecast.horizons[0].coverage_p10_p90" },
+  {
+    text: "Las pendientes de 7 y 30 días son negativas (-0,2129 y -0,3313 m/día).",
+    factor: "mazar_level",
+    direction: "down",
+    payload_ref: `reservoirs[${MAZAR}].slopes_m_per_day.d30`,
+  },
+  {
+    text: "Cobertura de la banda: 74 % en la validación histórica a 7 días.",
+    factor: "mazar_forecast",
+    direction: "steady",
+    payload_ref: "mazar_forecast.horizons[0].coverage_p10_p90",
+  },
   { text: "El ONI de 2026-07 fue 1,8.", factor: "enso", direction: "up", payload_ref: "enso.oni" },
 ] as const;
 
@@ -100,7 +118,13 @@ describe("the payload for 2026-09-21", () => {
     expect(mazar.analog_years!.map((y) => y.year)).toEqual([2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]);
     expect(mazar.analog_years!.find((y) => y.year === 2023)).toEqual({ year: 2023, level_masl: 2146.85, change_30d_m: -24.82 });
     expect(mazar.analog_years!.find((y) => y.year === 2024)!.level_masl).toBe(2116.46);
-    expect(mazar.analog_30d).toEqual({ years: 12, change_30d_p10_m: -7.32, change_30d_p50_m: 1.07, change_30d_p90_m: 3.45, years_falling: 5 });
+    expect(mazar.analog_30d).toEqual({
+      years: 12,
+      change_30d_p10_m: -7.32,
+      change_30d_p50_m: 1.07,
+      change_30d_p90_m: 3.45,
+      years_falling: 5,
+    });
     // Year-by-year detail is for the forecast reservoir only; the rest get the summary.
     expect(payload.reservoirs.find((r) => r.site === "amaluza")!.analog_years).toBeUndefined();
   });
@@ -157,7 +181,11 @@ describe("the payload for 2026-09-21", () => {
       Array.isArray(value)
         ? value.map(reverse)
         : value !== null && typeof value === "object"
-          ? Object.fromEntries(Object.entries(value).reverse().map(([k, v]) => [k, reverse(v)]))
+          ? Object.fromEntries(
+              Object.entries(value)
+                .reverse()
+                .map(([k, v]) => [k, reverse(v)]),
+            )
           : value;
     const reordered = reverse(payload) as NarrativePayload;
     expect(JSON.stringify(reordered)).not.toBe(JSON.stringify(payload));
@@ -302,7 +330,9 @@ describe("the validator", () => {
     expect(check({ ...DRIVERS[0], direction: "up" })).toEqual([
       `drivers[0]: direction "up" contradicts reservoirs[${MAZAR}].slopes_m_per_day.d30 = -0.3313 against 0`,
     ]);
-    expect(check({ ...DRIVERS[0], factor: "enso" })).toEqual([`drivers[0]: factor "enso" does not match payload_ref "reservoirs[${MAZAR}].slopes_m_per_day.d30"`]);
+    expect(check({ ...DRIVERS[0], factor: "enso" })).toEqual([
+      `drivers[0]: factor "enso" does not match payload_ref "reservoirs[${MAZAR}].slopes_m_per_day.d30"`,
+    ]);
     const other = payload.reservoirs.findIndex((r) => r.site !== "mazar");
     expect(check({ ...DRIVERS[0], payload_ref: `reservoirs[${other}].level_masl` })[0]).toMatch(/factor "mazar_level" points at/);
     expect(check({ ...DRIVERS[0], payload_ref: "not a path!" })).toEqual(['drivers[0]: payload_ref "not a path!" is not a path']);
@@ -448,7 +478,12 @@ describe("generateNarrative, against a mock model", () => {
       doGenerate: async () => {
         calls++;
         if (calls === 1) throw rateLimited();
-        return { content: [{ type: "text", text: JSON.stringify(goodAnswer) }], finishReason: { unified: "stop", raw: undefined }, usage: USAGE, warnings: [] };
+        return {
+          content: [{ type: "text", text: JSON.stringify(goodAnswer) }],
+          finishReason: { unified: "stop", raw: undefined },
+          usage: USAGE,
+          warnings: [],
+        };
       },
     });
     const result = await generateNarrative(payload, { model, retryDelayMs: 1234, sleep: async (ms) => void waits.push(ms) });

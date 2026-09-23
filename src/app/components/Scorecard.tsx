@@ -123,8 +123,10 @@ export function ScorecardPanel({
         {children}
         {children ? " " : ""}
         Cada fila se puntúa bajo el modelo y la versión que la publicaron, y de cada origen solo la última corrida
-        {card.runs_superseded > 0 ? ` (${card.runs_superseded} ${card.runs_superseded === 1 ? "corrida reemplazada queda" : "corridas reemplazadas quedan"} fuera)` : ""}.
-        Unas pocas filas son una anécdota, no una puntuación: lea la n antes que el error.
+        {card.runs_superseded > 0
+          ? ` (${card.runs_superseded} ${card.runs_superseded === 1 ? "corrida reemplazada queda" : "corridas reemplazadas quedan"} fuera)`
+          : ""}
+        . Unas pocas filas son una anécdota, no una puntuación: lea la n antes que el error.
       </p>
     </div>
   );

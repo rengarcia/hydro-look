@@ -82,7 +82,12 @@ export function evaluateRecorded(snapshots: readonly Record<string, string>[], p
 export type ModelCall = (payload: NarrativePayload, modelId: string) => Promise<GenerateResult>;
 
 /** Every payload through every model, with the call injected. Sequential: the gateway rate-limits. */
-export async function replay(payloads: readonly NarrativePayload[], models: readonly string[], call: ModelCall, promptVersion: (p: NarrativePayload) => string): Promise<EvalRow[]> {
+export async function replay(
+  payloads: readonly NarrativePayload[],
+  models: readonly string[],
+  call: ModelCall,
+  promptVersion: (p: NarrativePayload) => string,
+): Promise<EvalRow[]> {
   const out: EvalRow[] = [];
   for (const payload of payloads) {
     for (const modelId of models) {
@@ -182,7 +187,9 @@ export function renderNarrativeReport(input: {
   lines.push("");
   lines.push(
     `Generated ${input.generatedAt} by \`npm run narrative:eval\` from the committed snapshots and payloads; ` +
-      (input.replayed ? "including a replay through the gateway." : "no network. Replaying through the gateway is `npm run narrative:eval -- --replay --models <slug,slug>` with a key."),
+      (input.replayed
+        ? "including a replay through the gateway."
+        : "no network. Replaying through the gateway is `npm run narrative:eval -- --replay --models <slug,slug>` with a key."),
   );
   lines.push("");
   lines.push(
@@ -192,7 +199,9 @@ export function renderNarrativeReport(input: {
       "decided at the time; 'passes now' is the same text under the rules a new answer faces.",
   );
   lines.push("");
-  lines.push("| Source | Model | Prompt | Attempts | Answered | OK then | Passes now (checked) | Mean words | Mean input tokens | Mean cost USD | Total USD |");
+  lines.push(
+    "| Source | Model | Prompt | Attempts | Answered | OK then | Passes now (checked) | Mean words | Mean input tokens | Mean cost USD | Total USD |",
+  );
   lines.push("|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|");
   for (const s of summary) {
     lines.push(
@@ -211,7 +220,8 @@ export function renderNarrativeReport(input: {
   lines.push("");
   lines.push("| Payload | Version | Hash | Characters | ≈ tokens |");
   lines.push("|---|---:|---|---:|---:|");
-  for (const s of input.sizes) lines.push(`| ${s.label} | ${s.payloadVersion} | \`${s.hash.slice(0, 12)}\` | ${s.characters} | ${s.estimatedTokens} |`);
+  for (const s of input.sizes)
+    lines.push(`| ${s.label} | ${s.payloadVersion} | \`${s.hash.slice(0, 12)}\` | ${s.characters} | ${s.estimatedTokens} |`);
   lines.push("");
   lines.push(
     `The instructions add about ${Math.ceil(instructionsFor(null).length / 4)} tokens. At two calls a day, caching the fixed ` +

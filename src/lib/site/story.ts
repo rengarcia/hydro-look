@@ -135,8 +135,27 @@ export function marginClause(tier: RiskTier, horizonDays: number, lastHorizonDay
 }
 
 const WORDS = [
-  "cero", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve", "diez",
-  "once", "doce", "trece", "catorce", "quince", "dieciséis", "diecisiete", "dieciocho", "diecinueve", "veinte",
+  "cero",
+  "uno",
+  "dos",
+  "tres",
+  "cuatro",
+  "cinco",
+  "seis",
+  "siete",
+  "ocho",
+  "nueve",
+  "diez",
+  "once",
+  "doce",
+  "trece",
+  "catorce",
+  "quince",
+  "dieciséis",
+  "diecisiete",
+  "dieciocho",
+  "diecinueve",
+  "veinte",
 ];
 
 /** Small counts in words, as Spanish prose writes them; anything larger stays a numeral. */
@@ -160,8 +179,18 @@ export function weekday(iso: string): string {
 }
 
 const MONTHS = [
-  "enero", "febrero", "marzo", "abril", "mayo", "junio",
-  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+  "enero",
+  "febrero",
+  "marzo",
+  "abril",
+  "mayo",
+  "junio",
+  "julio",
+  "agosto",
+  "septiembre",
+  "octubre",
+  "noviembre",
+  "diciembre",
 ];
 
 /** `2026-07` or `2026-07-01` -> `julio`. */
@@ -226,7 +255,11 @@ export function splitLead(text: string): [string, string] {
  */
 export function narrativeTierNote(
   narrative: { origin_date: string },
-  adequacy: { origin_date: string; current: { worst_tier_horizon_days: number; narrative_tier_field?: string }; horizons: { horizon_days: number }[] } | null,
+  adequacy: {
+    origin_date: string;
+    current: { worst_tier_horizon_days: number; narrative_tier_field?: string };
+    horizons: { horizon_days: number }[];
+  } | null,
 ): string | null {
   if (adequacy === null || adequacy.origin_date !== narrative.origin_date) return null;
   if ((adequacy.current.narrative_tier_field ?? "worst_tier") === "worst_tier") {
@@ -331,7 +364,10 @@ export function scorecardSummary(
  * the next one falls due. `observedThrough` is the scorecard's own last observed day, so this
  * says exactly what the scorecard could have scored.
  */
-export function dayScoreNote(horizons: readonly { horizon_days: number; target_date: string }[], observedThrough: string | null): string | null {
+export function dayScoreNote(
+  horizons: readonly { horizon_days: number; target_date: string }[],
+  observedThrough: string | null,
+): string | null {
   if (horizons.length === 0) return null;
   const waiting = horizons
     .filter((h) => observedThrough === null || h.target_date > observedThrough)

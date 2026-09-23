@@ -50,8 +50,18 @@ export function countWords(text: string): number {
 }
 
 const MONTHS = [
-  "enero", "febrero", "marzo", "abril", "mayo", "junio",
-  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+  "enero",
+  "febrero",
+  "marzo",
+  "abril",
+  "mayo",
+  "junio",
+  "julio",
+  "agosto",
+  "septiembre",
+  "octubre",
+  "noviembre",
+  "diciembre",
 ] as const;
 
 /** Month name (with the old spelling "setiembre" too) -> "01".."12". */
@@ -178,7 +188,10 @@ export function numberAllowed(readings: readonly NumberReading[], allowed: Allow
 
 /** Strip accents and case, for comparing a tier name in prose with its identifier. */
 export function fold(text: string): string {
-  return text.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+  return text
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase();
 }
 
 /** Every problem with one piece of text; empty means it may be published. */

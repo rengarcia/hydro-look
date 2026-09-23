@@ -173,7 +173,13 @@ async function main(): Promise<void> {
   // A closed month for the control, in case only the running month is blanked.
   const control = TARGETS[0]!;
   rows.push(
-    await probe(http, `MesH24 ${prevYear}-${String(prevMonth).padStart(2, "0")}`, "pointValuesMesH24", control, monthWindow(prevYear, prevMonth)),
+    await probe(
+      http,
+      `MesH24 ${prevYear}-${String(prevMonth).padStart(2, "0")}`,
+      "pointValuesMesH24",
+      control,
+      monthWindow(prevYear, prevMonth),
+    ),
   );
   // Hourly points for yesterday: the control and one target plant.
   rows.push(await probe(http, `hourly ${yesterday}`, "pointValues", control, dayWindow(yesterday)));

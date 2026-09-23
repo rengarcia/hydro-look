@@ -6,12 +6,7 @@
 import { describe, expect, it } from "vitest";
 import type { BalanceDay } from "../src/lib/features/balance.ts";
 import type { DailySeries } from "../src/lib/features/series.ts";
-import {
-  backtestAdequacy,
-  crisisCheck,
-  DEFAULT_ADEQUACY_BACKTEST,
-  forecastAdequacy,
-} from "../src/lib/models/adequacy.ts";
+import { backtestAdequacy, crisisCheck, DEFAULT_ADEQUACY_BACKTEST, forecastAdequacy } from "../src/lib/models/adequacy.ts";
 import { renderAdequacyReport } from "../src/lib/models/adequacy-report.ts";
 import { importSensitivity } from "../src/lib/models/imports.ts";
 import { backtestInflow } from "../src/lib/models/inflow.ts";

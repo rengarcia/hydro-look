@@ -78,7 +78,9 @@ export function ReservoirCut({
   const surface = y(level);
   const labelX = DAM + 96;
 
-  const rules: Rule[] = [{ y: TOP, long: `${num(crest, 0)} m · cresta de la banda`, short: `${num(crest, 0)} cresta`, color: "var(--ink-2)", width: 1 }];
+  const rules: Rule[] = [
+    { y: TOP, long: `${num(crest, 0)} m · cresta de la banda`, short: `${num(crest, 0)} cresta`, color: "var(--ink-2)", width: 1 },
+  ];
   if (forecast) {
     rules.push({
       y: y(forecast.p50),
@@ -123,14 +125,25 @@ export function ReservoirCut({
       </defs>
 
       <path d={`M0 ${VALLEY_TOP} L${r(bankBottom)} ${BOTTOM} L${DAM} ${BOTTOM} L${DAM} ${HEIGHT} L0 ${HEIGHT} Z`} fill="var(--sunk)" />
-      <path d={`M${r(bank(surface))} ${r(surface)} L${DAM} ${r(surface)} L${DAM} ${BOTTOM} L${r(bankBottom)} ${BOTTOM} Z`} fill="url(#cut-water)" />
+      <path
+        d={`M${r(bank(surface))} ${r(surface)} L${DAM} ${r(surface)} L${DAM} ${BOTTOM} L${r(bankBottom)} ${BOTTOM} Z`}
+        fill="url(#cut-water)"
+      />
       <g clipPath="url(#cut-clip)">
         <path className="wave" d={wave.join(" ")} fill="none" stroke="var(--water-3)" strokeWidth="2" opacity=".85" />
       </g>
 
       {rules.map((rule, i) => (
         <g key={`${rule.long}-${rule.y}`}>
-          <line x1={r(bank(rule.y))} x2={DAM} y1={r(rule.y)} y2={r(rule.y)} stroke={rule.color} strokeWidth={rule.width} strokeDasharray={rule.dash} />
+          <line
+            x1={r(bank(rule.y))}
+            x2={DAM}
+            y1={r(rule.y)}
+            y2={r(rule.y)}
+            stroke={rule.color}
+            strokeWidth={rule.width}
+            strokeDasharray={rule.dash}
+          />
           <line x1={DAM + 84} x2={DAM + 90} y1={r(rule.y)} y2={r(rule.y)} stroke={rule.color} strokeWidth="1" />
           <text className="cut-label wide-label" x={labelX} y={r(wideY[i]!)} fill={rule.color}>
             {rule.long}
@@ -141,7 +154,12 @@ export function ReservoirCut({
         </g>
       ))}
 
-      <path d={`M${DAM} 49.7 L${DAM + 26} 49.7 L${DAM + 80} ${HEIGHT} L${DAM} ${HEIGHT} Z`} fill="var(--surface)" stroke="var(--ink)" strokeWidth="1.5" />
+      <path
+        d={`M${DAM} 49.7 L${DAM + 26} 49.7 L${DAM + 80} ${HEIGHT} L${DAM} ${HEIGHT} Z`}
+        fill="var(--surface)"
+        stroke="var(--ink)"
+        strokeWidth="1.5"
+      />
 
       {forecast ? (
         <g>

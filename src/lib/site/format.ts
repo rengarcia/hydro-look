@@ -31,8 +31,18 @@ export function pct(value: number | null | undefined, digits = 1): string {
 }
 
 const MONTHS = [
-  "enero", "febrero", "marzo", "abril", "mayo", "junio",
-  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+  "enero",
+  "febrero",
+  "marzo",
+  "abril",
+  "mayo",
+  "junio",
+  "julio",
+  "agosto",
+  "septiembre",
+  "octubre",
+  "noviembre",
+  "diciembre",
 ];
 
 /** `2026-09-21` -> `21 de septiembre de 2026`. Built from the parts, never from `new Date`. */

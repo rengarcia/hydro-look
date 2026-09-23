@@ -204,7 +204,11 @@ export function checkReference(reference: { plants: Rows; thresholds: Rows; rati
   for (const row of reference.plants) {
     const site = row["site_id"] ?? "";
     if (site && !known.has(site)) {
-      out.push({ check: "reference:plants", level: "fail", message: `plants.csv names site_id "${site}", which the registry does not have` });
+      out.push({
+        check: "reference:plants",
+        level: "fail",
+        message: `plants.csv names site_id "${site}", which the registry does not have`,
+      });
     }
     if (row["capacity_mw"] && !isNumeric(row["capacity_mw"])) {
       out.push({ check: "reference:plants", level: "fail", message: `plants.csv capacity_mw "${row["capacity_mw"]}" is not a number` });
@@ -220,13 +224,21 @@ export function checkReference(reference: { plants: Rows; thresholds: Rows; rati
   for (const row of reference.thresholds) {
     const site = row["site"] ?? "";
     if (!known.has(site)) {
-      out.push({ check: "reference:thresholds", level: "fail", message: `thresholds.csv names site "${site}", which the registry does not have` });
+      out.push({
+        check: "reference:thresholds",
+        level: "fail",
+        message: `thresholds.csv names site "${site}", which the registry does not have`,
+      });
     }
     const min = Number(row["cota_min_masl"]);
     // A marker row (Mazar's unverified 2115) has a floor and no ceiling; `Number("")` is 0.
     const max = row["cota_max_masl"] ? Number(row["cota_max_masl"]) : Number.NaN;
     if (Number.isFinite(min) && Number.isFinite(max) && min >= max) {
-      out.push({ check: "reference:thresholds", level: "fail", message: `thresholds.csv has ${site} min ${min} >= max ${max} (${row["source"]})` });
+      out.push({
+        check: "reference:thresholds",
+        level: "fail",
+        message: `thresholds.csv has ${site} min ${min} >= max ${max} (${row["source"]})`,
+      });
     }
   }
 
@@ -241,7 +253,11 @@ export function checkReference(reference: { plants: Rows; thresholds: Rows; rati
       out.push({ check: "reference:rationing", level: "fail", message: `rationing_episodes.csv episode from ${start} ends "${end}"` });
     }
     if (row["end_status"] === "open" && end !== "") {
-      out.push({ check: "reference:rationing", level: "fail", message: `rationing_episodes.csv row from ${start} is marked open but carries an end date` });
+      out.push({
+        check: "reference:rationing",
+        level: "fail",
+        message: `rationing_episodes.csv row from ${start} is marked open but carries an end date`,
+      });
     }
   }
 
@@ -337,7 +353,11 @@ export function checkFreshness(rules: FreshnessRule[], today: string): Finding[]
     }
     const age = Math.round((Date.parse(`${today}T00:00:00Z`) - Date.parse(`${rule.latest}T00:00:00Z`)) / 86_400_000);
     if (age > rule.maxAgeDays) {
-      return { check: "freshness", level: "fail", message: `${rule.label} is ${age} days old (limit ${rule.maxAgeDays}), latest ${rule.latest}` };
+      return {
+        check: "freshness",
+        level: "fail",
+        message: `${rule.label} is ${age} days old (limit ${rule.maxAgeDays}), latest ${rule.latest}`,
+      };
     }
     return { check: "freshness", level: "info", message: `${rule.label} is ${age} days old, latest ${rule.latest}` };
   });
@@ -384,10 +404,18 @@ export function checkRawRefs(tables: { name: string; rows: Rows }[], resolve: (r
     }
     const check = `raw_ref:${table.name}`;
     if (missing.length > 0) {
-      out.push({ check, level: "fail", message: `${table.name}: ${missing.length} raw_refs resolve to no archived response; first: ${missing[0]}` });
+      out.push({
+        check,
+        level: "fail",
+        message: `${table.name}: ${missing.length} raw_refs resolve to no archived response; first: ${missing[0]}`,
+      });
     }
     if (legacy > 0) {
-      out.push({ check, level: "warn", message: `${table.name}: ${legacy} raw_refs still name a pre-2026-09 gzip bundle (scripts/migrate-raw.ts rewrites them)` });
+      out.push({
+        check,
+        level: "warn",
+        message: `${table.name}: ${legacy} raw_refs still name a pre-2026-09 gzip bundle (scripts/migrate-raw.ts rewrites them)`,
+      });
     }
     out.push({ check, level: "info", message: `${table.name}: ${refs} raw_refs checked` });
   }

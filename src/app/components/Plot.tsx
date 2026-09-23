@@ -120,7 +120,13 @@ export function Plot({
           </g>
         ))}
         {xLabels.map((label) => (
-          <text key={`${label.at}-${label.text}`} className={label.className} x={round(frame.x(label.at))} y={height - 8} textAnchor="middle">
+          <text
+            key={`${label.at}-${label.text}`}
+            className={label.className}
+            x={round(frame.x(label.at))}
+            y={height - 8}
+            textAnchor="middle"
+          >
             {label.text}
           </text>
         ))}

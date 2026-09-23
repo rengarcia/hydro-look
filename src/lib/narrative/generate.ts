@@ -254,9 +254,7 @@ export function isNoOp(
   modelId = NARRATIVE_MODEL,
 ): boolean {
   const last = lastAnswered(rows);
-  return (
-    last !== null && last.payload_hash === payloadHash && last.prompt_version === promptVersion && last.model_id === modelId
-  );
+  return last !== null && last.payload_hash === payloadHash && last.prompt_version === promptVersion && last.model_id === modelId;
 }
 
 /** `2026-09-21-narrative-es-1-1a2b3c4d-121503`: origin, prompt, payload, and the attempt's time. */

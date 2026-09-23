@@ -59,14 +59,16 @@ export default async function EmbedCard({ params }: { params: Promise<{ site: st
         <small>m s. n. m.</small>
       </div>
       {fill !== null ? (
-        <div className="embed-bar" role="img" aria-label={`${pct(fill, 1)} de la banda ${num(primary!.min_masl, 0)}–${num(primary!.max_masl, 0)} m`}>
+        <div
+          className="embed-bar"
+          role="img"
+          aria-label={`${pct(fill, 1)} de la banda ${num(primary!.min_masl, 0)}–${num(primary!.max_masl, 0)} m`}
+        >
           <span style={{ width: `${Math.min(100, Math.max(0, fill)).toFixed(1)}%` }} />
         </div>
       ) : null}
       <ul className="embed-facts">
-        <li>
-          {fill !== null ? `${pct(fill, 1)} de la banda declarada` : "sin banda declarada"}
-        </li>
+        <li>{fill !== null ? `${pct(fill, 1)} de la banda declarada` : "sin banda declarada"}</li>
         <li>
           <span className={`arrow tone-${DIRECTION_TONE[dir]}`} aria-hidden="true">
             {ARROW[dir]}

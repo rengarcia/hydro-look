@@ -15,9 +15,7 @@ export function repoPath(...parts: string[]): string {
  * exercises the real CLI without writing into the repository's own tables.
  * `data/reference/` is committed input, not output, so it always comes from the repository.
  */
-export const DATA_ROOT = process.env["HYDRO_LOOK_DATA_ROOT"]
-  ? resolve(process.env["HYDRO_LOOK_DATA_ROOT"])
-  : repoPath("data");
+export const DATA_ROOT = process.env["HYDRO_LOOK_DATA_ROOT"] ? resolve(process.env["HYDRO_LOOK_DATA_ROOT"]) : repoPath("data");
 
 export const DATA_RAW = resolve(DATA_ROOT, "raw");
 export const DATA_CURATED = resolve(DATA_ROOT, "curated");

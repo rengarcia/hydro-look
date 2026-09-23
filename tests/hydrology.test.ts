@@ -76,8 +76,8 @@ describe("level and volume", () => {
 
   it("gives an area that grows with level, and a storage that matches the integral", () => {
     expect(areaAt(TRUTH, 2150)).toBeGreaterThan(areaAt(TRUTH, 2110));
-    const numeric = Array.from({ length: 10_000 }, (_, i) => areaAt(TRUTH, 2100 + (i + 0.5) * (53 / 10_000)))
-      .reduce((a, b) => a + b, 0) * (53 / 10_000);
+    const numeric =
+      Array.from({ length: 10_000 }, (_, i) => areaAt(TRUTH, 2100 + (i + 0.5) * (53 / 10_000))).reduce((a, b) => a + b, 0) * (53 / 10_000);
     expect(storageHm3(TRUTH, 2100, 2153)).toBeCloseTo(numeric / 1e6, 1);
   });
 });
@@ -96,16 +96,13 @@ describe("fitHypsometry", () => {
       expect(areaAt(fitted, level) / areaAt(TRUTH, level)).toBeCloseTo(1, 1);
     }
     expect(fitted.turbineM3sPerMw).toBeCloseTo(TRUTH.turbineM3sPerMw, 2);
-    expect(storageHm3(fitted, occupied.low, occupied.high) / storageHm3(TRUTH, occupied.low, occupied.high))
-      .toBeCloseTo(1, 1);
+    expect(storageHm3(fitted, occupied.low, occupied.high) / storageHm3(TRUTH, occupied.low, occupied.high)).toBeCloseTo(1, 1);
     expect(fitted.rmseDeltaLevelM).toBeLessThan(0.01);
   });
 
   it("refuses rather than guessing when there is almost no history", () => {
     const { levels, inflow, production } = synthetic(20);
-    expect(() => fitHypsometry(balanceDays(levels, inflow, production), { fitCeilingM: 2150 })).toThrow(
-      /at least 60/,
-    );
+    expect(() => fitHypsometry(balanceDays(levels, inflow, production), { fitCeilingM: 2150 })).toThrow(/at least 60/);
   });
 });
 

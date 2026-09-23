@@ -12,7 +12,16 @@ import { ScorecardPanel } from "../Scorecard.tsx";
 import { nextScoreDue } from "../../../lib/site/data.ts";
 import type { AdequacyDocument, ImportSensitivity } from "../../../lib/site/documents.ts";
 import { num, signed } from "../../../lib/site/format.ts";
-import { IMPORT_CASES, adequacyHeadline, countWord, importCaseLabel, importDependence, monthName, monthSpan, tierOf } from "../../../lib/site/story.ts";
+import {
+  IMPORT_CASES,
+  adequacyHeadline,
+  countWord,
+  importCaseLabel,
+  importDependence,
+  monthName,
+  monthSpan,
+  tierOf,
+} from "../../../lib/site/story.ts";
 
 /** The day the import maximum was set, read from the assumptions' own prose when it names one. */
 function importPeakDate(basis: string | undefined): string | null {
@@ -46,17 +55,23 @@ export function Adequacy({ adequacy }: { adequacy: AdequacyDocument | null }) {
       digits={2}
       id="marcador-suficiencia"
     >
-      Se puntúa el requerimiento neto —demanda menos hidroeléctrica, en promedio sobre la ventana—, que es lo que el
-      balance mide; el déficit es un contrafactual y no se puntúa. Una ventana con un día de racionamiento queda fuera.
+      Se puntúa el requerimiento neto —demanda menos hidroeléctrica, en promedio sobre la ventana—, que es lo que el balance mide; el
+      déficit es un contrafactual y no se puntúa. Una ventana con un día de racionamiento queda fuera.
     </ScorecardPanel>
   ) : null;
 
   return (
     <section id="suficiencia" className="shell section" aria-labelledby="suficiencia-title">
-      <SectionIntro index="05" eyebrow="Suficiencia energética" titleId="suficiencia-title" title={adequacyHeadline(adequacy.horizons)} wide>
-        Una sola identidad: demanda no suprimida menos hidroeléctrica menos el techo térmico menos la importación. Lo
-        que queda es el superávit; en negativo, el déficit esperado. La demanda excluye los días de racionamiento,
-        porque durante un corte los contadores miden la demanda que se permitió, no la que había.
+      <SectionIntro
+        index="05"
+        eyebrow="Suficiencia energética"
+        titleId="suficiencia-title"
+        title={adequacyHeadline(adequacy.horizons)}
+        wide
+      >
+        Una sola identidad: demanda no suprimida menos hidroeléctrica menos el techo térmico menos la importación. Lo que queda es el
+        superávit; en negativo, el déficit esperado. La demanda excluye los días de racionamiento, porque durante un corte los contadores
+        miden la demanda que se permitió, no la que había.
       </SectionIntro>
 
       <div className="split wide-left">
@@ -94,8 +109,8 @@ export function Adequacy({ adequacy }: { adequacy: AdequacyDocument | null }) {
           </div>
           {worst && first ? (
             <p className="fine spaced tier-note">
-              Dos niveles salen de este documento: el del primer horizonte ({first.label.toLowerCase()}) y el peor de
-              todos ({worst.label.toLowerCase()}, a {adequacy.current.worst_tier_horizon_days} días).{" "}
+              Dos niveles salen de este documento: el del primer horizonte ({first.label.toLowerCase()}) y el peor de todos (
+              {worst.label.toLowerCase()}, a {adequacy.current.worst_tier_horizon_days} días).{" "}
               {usesWorst
                 ? "La lectura del día y el titular de la página usan el peor; en adequacy.json es el campo current.worst_tier."
                 : "La lectura del día usa el del primer horizonte; en adequacy.json es el campo current.tier."}
@@ -124,9 +139,8 @@ export function Adequacy({ adequacy }: { adequacy: AdequacyDocument | null }) {
             </div>
           </div>
           <p className="fine spaced">
-            Los techos son máximos demostrados en los últimos tres años, no declaraciones de disponibilidad: ninguna
-            fuente que alcance este proyecto publica los mantenimientos programados. Se editan en{" "}
-            <code>{a.editable_at}</code>.
+            Los techos son máximos demostrados en los últimos tres años, no declaraciones de disponibilidad: ninguna fuente que alcance este
+            proyecto publica los mantenimientos programados. Se editan en <code>{a.editable_at}</code>.
           </p>
         </div>
 
@@ -140,8 +154,8 @@ export function Adequacy({ adequacy }: { adequacy: AdequacyDocument | null }) {
               {peak ? `En ${monthName(peak)} de ${peak.slice(0, 4)} llegó a ${num(a.import_gwh_day, 2)}.` : ""}
             </p>
             <p className="fragile-fine">
-              Un interconector no es firme cuando la sequía es compartida: entre el 1 de octubre y el 10 de noviembre
-              de 2024, con el país racionando, llegaron {num(a.stressed_import_gwh_day, 2)} GWh/día.
+              Un interconector no es firme cuando la sequía es compartida: entre el 1 de octubre y el 10 de noviembre de 2024, con el país
+              racionando, llegaron {num(a.stressed_import_gwh_day, 2)} GWh/día.
               {cutoff ? " El caso central usa lo que está llegando, no el máximo." : ""}
             </p>
           </div>
@@ -152,8 +166,8 @@ export function Adequacy({ adequacy }: { adequacy: AdequacyDocument | null }) {
                 <span>GWh/día</span>
               </div>
               <p className="check-lede">
-                En cada racionamiento, la demanda suprimida que midieron los contadores frente al déficit que calcula
-                el modelo. Si la identidad es correcta, deben tener el mismo tamaño.
+                En cada racionamiento, la demanda suprimida que midieron los contadores frente al déficit que calcula el modelo. Si la
+                identidad es correcta, deben tener el mismo tamaño.
               </p>
               {episodes.map((e) => (
                 <div className="episode" key={e.start}>
@@ -257,13 +271,13 @@ export function ImportSensitivityPanel({ sensitivity }: { sensitivity: ImportSen
           />
         </div>
         <p className="fine">
-          El caso p90 es el requerimiento en su percentil 90: el nivel pasa de holgado a vigilancia cuando ese caso queda
-          corto.
+          El caso p90 es el requerimiento en su percentil 90: el nivel pasa de holgado a vigilancia cuando ese caso queda corto.
         </p>
       </details>
       <p className="fine spaced">
-        Todo lo demás —demanda, hidroeléctrica, techo térmico— es igual en {sensitivity.cases.length === 1 ? "la fila" : `las ${countWord(sensitivity.cases.length)} filas`}; solo cambia lo que se supone
-        que llega por el interconector. El caso central es {importCaseLabel(sensitivity.central_case).toLowerCase()}.
+        Todo lo demás —demanda, hidroeléctrica, techo térmico— es igual en{" "}
+        {sensitivity.cases.length === 1 ? "la fila" : `las ${countWord(sensitivity.cases.length)} filas`}; solo cambia lo que se supone que
+        llega por el interconector. El caso central es {importCaseLabel(sensitivity.central_case).toLowerCase()}.
       </p>
     </div>
   );

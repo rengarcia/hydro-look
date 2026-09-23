@@ -10,8 +10,8 @@ export function Inflow({ mazar }: { mazar: ReservoirSnapshot | null }) {
   return (
     <section id="caudal" className="section section-tight" aria-labelledby="caudal-title">
       <SectionIntro index="03" eyebrow="Caudal" titleId="caudal-title" title={inflowHeadline(mazar.inflow?.climatology?.percentile_today)}>
-        Caudal de entrada a Mazar del último año sobre la franja p10–p90 de los mismos días en todo el registro desde
-        2010. La franja describe lo que este río ha hecho, no lo que vaya a hacer.
+        Caudal de entrada a Mazar del último año sobre la franja p10–p90 de los mismos días en todo el registro desde 2010. La franja
+        describe lo que este río ha hecho, no lo que vaya a hacer.
       </SectionIntro>
       <InflowPanel reservoir={mazar} />
     </section>

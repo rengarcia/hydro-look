@@ -59,7 +59,9 @@ export function bandExperiment(
   shippedBacktest: AdequacyBacktest,
 ): BandResult[] {
   const coverage = (b: AdequacyBacktest, component: "requirement" | "hydro") =>
-    b.scores.find((s) => s.component === component)!.horizons.map((h) => ({ horizonDays: h.horizonDays, coverage: h.coverageP10P90, nBand: h.nBand }));
+    b.scores
+      .find((s) => s.component === component)!
+      .horizons.map((h) => ({ horizonDays: h.horizonDays, coverage: h.coverageP10P90, nBand: h.nBand }));
   const runs = BAND_VARIANTS.map((v) => ({
     ...v,
     backtest: v.band === DEFAULT_BAND ? shippedBacktest : backtestAdequacy(days, episodes, ceilings, { ...options, band: v.band }),
@@ -69,13 +71,18 @@ export function bandExperiment(
     const requirement = coverage(run.backtest, "requirement");
     const hydro = coverage(run.backtest, "hydro");
     const nearer = (mine: { coverage: number | null }[], theirs: { coverage: number | null }[]) =>
-      mine.every((m, i) => m.coverage !== null && theirs[i]?.coverage !== null && Math.abs(m.coverage - 0.8) < Math.abs(theirs[i]!.coverage - 0.8));
+      mine.every(
+        (m, i) => m.coverage !== null && theirs[i]?.coverage !== null && Math.abs(m.coverage - 0.8) < Math.abs(theirs[i]!.coverage - 0.8),
+      );
     return {
       name: run.name,
       shipped: run.band === DEFAULT_BAND,
       requirement,
       hydro,
-      honestEverywhere: run.backtest !== reference && nearer(requirement, coverage(reference, "requirement")) && nearer(hydro, coverage(reference, "hydro")),
+      honestEverywhere:
+        run.backtest !== reference &&
+        nearer(requirement, coverage(reference, "requirement")) &&
+        nearer(hydro, coverage(reference, "hydro")),
       worstDistance: Math.max(...[...requirement, ...hydro].map((h) => (h.coverage === null ? 1 : Math.abs(h.coverage - 0.8)))),
     };
   });
@@ -103,8 +110,7 @@ export function bandSection(results: readonly BandResult[]): ReportSection {
         `|---|---|${horizons.map(() => "---:").join("|")}|---|---:|`,
         ...results.flatMap((r) => [row(r, "requirement"), row(r, "hydro")]),
       ].join("\n"),
-      "Among the methods nearer 80% everywhere, the one shipped is the one whose worst horizon is nearest 80%, the " +
-        "simpler on a tie.",
+      "Among the methods nearer 80% everywhere, the one shipped is the one whose worst horizon is nearest 80%, the " + "simpler on a tie.",
       shipped && best && shipped.worstDistance <= best.worstDistance + 1e-9
         ? `**Shipped: ${shipped.name}** — worst horizon ${worst(shipped)} from 80%. It is the published band from model ` +
           "version 2. The longest horizon rests on the fewest origins, and the stretch can only learn from bands already " +
@@ -113,10 +119,16 @@ export function bandSection(results: readonly BandResult[]): ReportSection {
           (best ? `: ${best.name} is, at ${worst(best)} from 80%` : "") +
           " — revisit before trusting the band.",
       `Recorded negatives (not nearer 80% than version 1 at every horizon): ${
-        results.filter((r) => !r.honestEverywhere && r !== results[0]).map((r) => r.name).join("; ") || "none"
+        results
+          .filter((r) => !r.honestEverywhere && r !== results[0])
+          .map((r) => r.name)
+          .join("; ") || "none"
       }.` +
         (honest.some((r) => !r.shipped)
-          ? ` Nearer 80% everywhere but not shipped: ${honest.filter((r) => !r.shipped).map((r) => `${r.name} (worst ${worst(r)})`).join("; ")}.`
+          ? ` Nearer 80% everywhere but not shipped: ${honest
+              .filter((r) => !r.shipped)
+              .map((r) => `${r.name} (worst ${worst(r)})`)
+              .join("; ")}.`
           : ""),
     ],
   };
@@ -137,7 +149,12 @@ export interface OniHydroResult {
  * shipped model then made, fitted on earlier origins whose outcome was already in, is added to
  * the forecast. Scored on the same points as the shipped model.
  */
-export function oniHydroExperiment(points: readonly BacktestPoint[], oni: OniSeries, horizons: readonly number[], minPrior = 12): OniHydroResult[] {
+export function oniHydroExperiment(
+  points: readonly BacktestPoint[],
+  oni: OniSeries,
+  horizons: readonly number[],
+  minPrior = 12,
+): OniHydroResult[] {
   return horizons.flatMap((h) => {
     const list = points.filter((p) => p.horizonDays === h).sort((a, b) => (a.origin < b.origin ? -1 : 1));
     let without = 0;
@@ -191,10 +208,13 @@ export function oniSection(results: readonly OniHydroResult[]): ReportSection {
 
 export function importSection(plain: ImportExperiment, withOni: ImportExperiment): ReportSection {
   const rows = (e: ImportExperiment) =>
-    e.summary.map((s) => `| ${e.withOni ? "export model + ONI" : "export model"} | ${s.window} | ${s.horizonDays} d | ${s.n} | ${f2(s.ruleMae)} | ${f2(s.modelMae)} |`);
+    e.summary.map(
+      (s) =>
+        `| ${e.withOni ? "export model + ONI" : "export model"} | ${s.window} | ${s.horizonDays} d | ${s.n} | ${f2(s.ruleMae)} | ${f2(s.modelMae)} |`,
+    );
   const ships = plain.better || withOni.better;
   const where = (e: ImportExperiment, wins: boolean) =>
-    e.summary.filter((s) => (s.modelMae < s.ruleMae) === wins).map((s) => `${s.window} at ${s.horizonDays} d`);
+    e.summary.filter((s) => s.modelMae < s.ruleMae === wins).map((s) => `${s.window} at ${s.horizonDays} d`);
   return {
     heading: "An export-availability model from XM's side of the border (§5.5)",
     body: [

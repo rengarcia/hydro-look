@@ -39,7 +39,12 @@ describe("niceTicks", () => {
 
 describe("linePath", () => {
   it("moves once and then draws", () => {
-    expect(linePath([{ x: 0, y: 1 }, { x: 2, y: 3 }])).toBe("M0 1 L2 3");
+    expect(
+      linePath([
+        { x: 0, y: 1 },
+        { x: 2, y: 3 },
+      ]),
+    ).toBe("M0 1 L2 3");
   });
 
   it("draws nothing from a single point, rather than a zero-length stroke", () => {
@@ -49,13 +54,27 @@ describe("linePath", () => {
 
 describe("bandPath", () => {
   it("walks the lower edge backwards so the band closes along itself", () => {
-    const upper = [{ x: 0, y: 0 }, { x: 10, y: 0 }];
-    const lower = [{ x: 0, y: 5 }, { x: 10, y: 5 }];
+    const upper = [
+      { x: 0, y: 0 },
+      { x: 10, y: 0 },
+    ];
+    const lower = [
+      { x: 0, y: 5 },
+      { x: 10, y: 5 },
+    ];
     expect(bandPath(upper, lower)).toBe("M0 0 L10 0 L10 5 L0 5 Z");
   });
 
   it("refuses edges of different lengths rather than resampling one to fit", () => {
-    expect(bandPath([{ x: 0, y: 0 }, { x: 1, y: 0 }], [{ x: 0, y: 1 }])).toBe("");
+    expect(
+      bandPath(
+        [
+          { x: 0, y: 0 },
+          { x: 1, y: 0 },
+        ],
+        [{ x: 0, y: 1 }],
+      ),
+    ).toBe("");
   });
 });
 
@@ -70,9 +89,18 @@ describe("stack", () => {
   });
 
   it("keeps the order when the mix inverts, so a band can be followed across days", () => {
-    const bands = stack([{ hidraulica: 10, gas: 90 }, { hidraulica: 90, gas: 10 }], keys);
+    const bands = stack(
+      [
+        { hidraulica: 10, gas: 90 },
+        { hidraulica: 90, gas: 10 },
+      ],
+      keys,
+    );
     expect(bands.map((b) => b.key)).toEqual(keys);
-    expect(bands[0]!.extents).toEqual([[0, 10], [0, 90]]);
+    expect(bands[0]!.extents).toEqual([
+      [0, 10],
+      [0, 90],
+    ]);
   });
 
   it("treats a missing concept as zero so every band keeps the same length", () => {

@@ -55,7 +55,10 @@ export function MixChart({ days, label }: { days: MixDay[]; label: string }) {
   const at = (date: string) => daysBetween(first, date);
 
   const keys = MIX_SERIES.map((s) => s.concept);
-  const bands = stack(days.map((d) => d.values), keys);
+  const bands = stack(
+    days.map((d) => d.values),
+    keys,
+  );
   const frame = frameOf({
     width: WIDTH,
     height: HEIGHT,

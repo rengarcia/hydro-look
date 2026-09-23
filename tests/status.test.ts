@@ -17,7 +17,18 @@ import { narrativeSummary, runSummary } from "../src/lib/store/summary.ts";
 
 const temp = () => mkdtempSync(join(tmpdir(), "hydro-status-"));
 
-const NARRATIVE_COLUMNS = ["run_id", "generated_at", "origin_date", "status", "model_id", "prompt_version", "input_tokens", "output_tokens", "cost_usd", "reason"];
+const NARRATIVE_COLUMNS = [
+  "run_id",
+  "generated_at",
+  "origin_date",
+  "status",
+  "model_id",
+  "prompt_version",
+  "input_tokens",
+  "output_tokens",
+  "cost_usd",
+  "reason",
+];
 
 function curatedWithNarrative(rows: Record<string, string | number>[]): string {
   const root = temp();
@@ -32,7 +43,12 @@ describe("summariseTable", () => {
     mkdirSync(join(root, "observations_daily"));
     writeFileSync(join(root, "observations_daily", "2025.csv"), "date,value\n2025-12-31,1\n");
     writeFileSync(join(root, "observations_daily", "2026.csv"), "date,value\n2026-01-01,1\n2026-09-20,2\n");
-    expect(summariseTable("observations_daily", "date", root)).toEqual({ rows: 3, first_date: "2025-12-31", last_date: "2026-09-20", files: 2 });
+    expect(summariseTable("observations_daily", "date", root)).toEqual({
+      rows: 3,
+      first_date: "2025-12-31",
+      last_date: "2026-09-20",
+      files: 2,
+    });
     expect(summariseTable("absent", "date", root)).toEqual({ rows: 0, first_date: null, last_date: null, files: 0 });
   });
 });
@@ -40,10 +56,54 @@ describe("summariseTable", () => {
 describe("narrative spend", () => {
   it("sums cost by month and counts billed calls with no reported cost", () => {
     const root = curatedWithNarrative([
-      { run_id: "a", generated_at: "2026-08-31T23:00:00Z", origin_date: "2026-08-30", status: "ok", model_id: "m", prompt_version: "es-1", input_tokens: 6000, output_tokens: 400, cost_usd: 0.039, reason: "" },
-      { run_id: "b", generated_at: "2026-09-23T02:15:31Z", origin_date: "2026-09-21", status: "rejected", model_id: "m", prompt_version: "es-1", input_tokens: 4746, output_tokens: 1769, cost_usd: "", reason: "schema" },
-      { run_id: "c", generated_at: "2026-09-23T12:00:00Z", origin_date: "2026-09-22", status: "ok", model_id: "m", prompt_version: "es-1", input_tokens: 6400, output_tokens: 500, cost_usd: 0.0412, reason: "" },
-      { run_id: "d", generated_at: "2026-09-23T13:00:00Z", origin_date: "2026-09-22", status: "failed", model_id: "m", prompt_version: "es-1", input_tokens: "", output_tokens: "", cost_usd: "", reason: "no access" },
+      {
+        run_id: "a",
+        generated_at: "2026-08-31T23:00:00Z",
+        origin_date: "2026-08-30",
+        status: "ok",
+        model_id: "m",
+        prompt_version: "es-1",
+        input_tokens: 6000,
+        output_tokens: 400,
+        cost_usd: 0.039,
+        reason: "",
+      },
+      {
+        run_id: "b",
+        generated_at: "2026-09-23T02:15:31Z",
+        origin_date: "2026-09-21",
+        status: "rejected",
+        model_id: "m",
+        prompt_version: "es-1",
+        input_tokens: 4746,
+        output_tokens: 1769,
+        cost_usd: "",
+        reason: "schema",
+      },
+      {
+        run_id: "c",
+        generated_at: "2026-09-23T12:00:00Z",
+        origin_date: "2026-09-22",
+        status: "ok",
+        model_id: "m",
+        prompt_version: "es-1",
+        input_tokens: 6400,
+        output_tokens: 500,
+        cost_usd: 0.0412,
+        reason: "",
+      },
+      {
+        run_id: "d",
+        generated_at: "2026-09-23T13:00:00Z",
+        origin_date: "2026-09-22",
+        status: "failed",
+        model_id: "m",
+        prompt_version: "es-1",
+        input_tokens: "",
+        output_tokens: "",
+        cost_usd: "",
+        reason: "no access",
+      },
     ]);
     expect(summariseNarrativeSpend(root)).toEqual({
       calls: 4,
@@ -65,9 +125,34 @@ describe("narrative spend", () => {
 
   it("puts a call's cost, latency and the spend to date in the step summary", () => {
     const root = curatedWithNarrative([
-      { run_id: "c", generated_at: "2026-09-23T12:00:00Z", origin_date: "2026-09-22", status: "ok", model_id: "anthropic/claude-opus-5.5", prompt_version: "es-1", input_tokens: 6400, output_tokens: 500, cost_usd: 0.0412, reason: "" },
+      {
+        run_id: "c",
+        generated_at: "2026-09-23T12:00:00Z",
+        origin_date: "2026-09-22",
+        status: "ok",
+        model_id: "anthropic/claude-opus-5.5",
+        prompt_version: "es-1",
+        input_tokens: 6400,
+        output_tokens: 500,
+        cost_usd: 0.0412,
+        reason: "",
+      },
     ]);
-    const text = narrativeSummary({ latest: { generated_at: "2026-09-23T12:00:00Z", status: "ok", model_id: "anthropic/claude-opus-5.5", prompt_version: "es-1", origin_date: "2026-09-22", cost_usd: "0.0412", input_tokens: "6400", output_tokens: "500", reason: "" }, spend: summariseNarrativeSpend(root), latencyMs: 8400 });
+    const text = narrativeSummary({
+      latest: {
+        generated_at: "2026-09-23T12:00:00Z",
+        status: "ok",
+        model_id: "anthropic/claude-opus-5.5",
+        prompt_version: "es-1",
+        origin_date: "2026-09-22",
+        cost_usd: "0.0412",
+        input_tokens: "6400",
+        output_tokens: "500",
+        reason: "",
+      },
+      spend: summariseNarrativeSpend(root),
+      latencyMs: 8400,
+    });
     expect(text).toMatch(/\*\*ok\*\* with `anthropic\/claude-opus-5\.5`/);
     expect(text).toMatch(/Cost \$0\.0412; tokens 6400 in \/ 500 out; step took 8\.4 s/);
     expect(text).toMatch(/Spend to date: \$0\.0412 over 1 calls \(\$0\.0412 in 2026-09\)/);
@@ -96,7 +181,16 @@ describe("status.json", () => {
 });
 
 describe("quarantine", () => {
-  const good = { date: "2026-09-20", site: "mazar", variable: "cota_masl", value: 2139.1, source: "ords:repDiaNivQIng", mrid: "", fetched_at: "2026-09-22T00:00:00Z", raw_ref: "r#k" };
+  const good = {
+    date: "2026-09-20",
+    site: "mazar",
+    variable: "cota_masl",
+    value: 2139.1,
+    source: "ords:repDiaNivQIng",
+    mrid: "",
+    fetched_at: "2026-09-22T00:00:00Z",
+    raw_ref: "r#k",
+  };
 
   it("writes the good rows and sets the bad ones aside with their reason", () => {
     const root = temp();
@@ -150,7 +244,15 @@ describe("run summary", () => {
     const text = runSummary({
       command: "daily",
       reports: [
-        { table: "observations_daily", files: [], added: 3, updated: 1, unchanged: 90, bySource: { "ords:repDiaHid12m": { added: 2, updated: 1 }, "ords:repDiaVolAlm": { added: 1, updated: 0 } }, quarantined: 0 },
+        {
+          table: "observations_daily",
+          files: [],
+          added: 3,
+          updated: 1,
+          unchanged: 90,
+          bySource: { "ords:repDiaHid12m": { added: 2, updated: 1 }, "ords:repDiaVolAlm": { added: 1, updated: 0 } },
+          quarantined: 0,
+        },
         { table: "operating_bands", files: [], added: 0, updated: 0, unchanged: 7, bySource: {}, quarantined: 0 },
       ],
       requests: { total: 61, byHost: { "generacioncsr.celec.gob.ec": 52, "smec.cenace.gob.ec": 8, "www.cenace.gob.ec": 1 } },
@@ -159,7 +261,9 @@ describe("run summary", () => {
     });
     expect(text).toContain("| observations_daily | ords:repDiaHid12m | 2 | 1 |");
     expect(text).toContain("| operating_bands |  | 0 | 0 |");
-    expect(text).toContain("**Requests:** 61, retries included (generacioncsr.celec.gob.ec 52, smec.cenace.gob.ec 8, www.cenace.gob.ec 1).");
+    expect(text).toContain(
+      "**Requests:** 61, retries included (generacioncsr.celec.gob.ec 52, smec.cenace.gob.ec 8, www.cenace.gob.ec 1).",
+    );
     expect(text).toContain("**Errors:** 1");
     // A pipe in an error would break the table it is not in, but escape it anyway.
     expect(text).toContain("0 rows \\| expected 1");

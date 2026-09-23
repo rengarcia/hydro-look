@@ -76,7 +76,9 @@ export function readEra5ByBasin(root: string = DATA_CURATED): Map<string, DailyS
   const directory = join(root, WEATHER_DAILY.name);
   const out = new Map<string, DailySeries>();
   if (!existsSync(directory)) return out;
-  for (const file of readdirSync(directory).filter((f) => f.endsWith(".csv")).sort()) {
+  for (const file of readdirSync(directory)
+    .filter((f) => f.endsWith(".csv"))
+    .sort()) {
     for (const row of parseCsv(readFileSync(join(directory, file), "utf8"))) {
       if ((row["kind"] ?? "") !== "era5") continue;
       const raw = row["precip_mm"] ?? "";

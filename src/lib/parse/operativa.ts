@@ -156,7 +156,14 @@ export function parseInformacionOperativa(html: string): OperativaSnapshot {
       if (production && section.block !== "demanda") {
         const value = parseEsNumber(next);
         if (value !== null) {
-          metrics.push({ block: section.block, period_label: periodLabel, period_date: periodDate, metric: production, value, unit: energyUnit });
+          metrics.push({
+            block: section.block,
+            period_label: periodLabel,
+            period_date: periodDate,
+            metric: production,
+            value,
+            unit: energyUnit,
+          });
           j++;
         }
         continue;

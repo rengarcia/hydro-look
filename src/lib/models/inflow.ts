@@ -32,14 +32,7 @@ import { nextDay } from "../features/hydrology.ts";
 import { mean, pinballLoss, quantile } from "../util/stats.ts";
 import { roundOrNull, roundTo } from "../util/numbers.ts";
 
-export const INFLOW_PLANTS = [
-  "amaluza",
-  "coca_codo_sinclair",
-  "agoyan",
-  "manduriacu",
-  "minas_san_francisco",
-  "delsitanisagua",
-] as const;
+export const INFLOW_PLANTS = ["amaluza", "coca_codo_sinclair", "agoyan", "manduriacu", "minas_san_francisco", "delsitanisagua"] as const;
 
 export const INFLOW_HORIZONS = [7, 14] as const;
 
@@ -145,14 +138,24 @@ export function predictInflow(
 
   if (model === "climatology") {
     if (candidates.length < options.minYears) return null;
-    return { p50: quantile(candidates.map((c) => c.future), 0.5)!, members: [], years: candidates.length, rainConditioned: false };
+    return {
+      p50: quantile(
+        candidates.map((c) => c.future),
+        0.5,
+      )!,
+      members: [],
+      years: candidates.length,
+      rainConditioned: false,
+    };
   }
 
   const now = trailingMean(inflow, origin, options.stateDays);
   if (now === null) return null;
   let pool = candidates.flatMap((c) => {
     const then = trailingMean(inflow, c.start, options.stateDays);
-    return then === null || !(then > 0) ? [] : [{ ...c, ratio: Math.min(options.ratioBounds[1], Math.max(options.ratioBounds[0], now / then)) }];
+    return then === null || !(then > 0)
+      ? []
+      : [{ ...c, ratio: Math.min(options.ratioBounds[1], Math.max(options.ratioBounds[0], now / then)) }];
   });
 
   let rainConditioned = false;
@@ -276,7 +279,12 @@ export function backtestInflow(
         residuals.push(row.actual - p50);
       }
       if (model === "analogue" && residuals.length > 0) {
-        calibration.set(h, { q10: quantile(residuals, 0.1)!, q50: quantile(residuals, 0.5)!, q90: quantile(residuals, 0.9)!, n: residuals.length });
+        calibration.set(h, {
+          q10: quantile(residuals, 0.1)!,
+          q50: quantile(residuals, 0.5)!,
+          q90: quantile(residuals, 0.9)!,
+          n: residuals.length,
+        });
       }
       scores.push({
         model,
@@ -289,7 +297,13 @@ export function backtestInflow(
         pinballMeanM3s:
           banded.length === 0
             ? null
-            : mean(banded.flatMap((b) => [pinballLoss(b.actual, b.p10, 0.1), pinballLoss(b.actual, b.p50, 0.5), pinballLoss(b.actual, b.p90, 0.9)])),
+            : mean(
+                banded.flatMap((b) => [
+                  pinballLoss(b.actual, b.p10, 0.1),
+                  pinballLoss(b.actual, b.p50, 0.5),
+                  pinballLoss(b.actual, b.p90, 0.9),
+                ]),
+              ),
       });
     }
     const mae = (m: InflowModelId) => scores.find((s) => s.model === m && s.horizonDays === h)?.maeM3s ?? Number.NaN;

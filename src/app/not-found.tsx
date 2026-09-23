@@ -20,8 +20,8 @@ export default function NotFound() {
             <div className="eyebrow">Error 404</div>
             <h1 id="nf-title">Esta página no existe.</h1>
             <p className="hero-lede">
-              Puede que el enlace esté mal escrito, o que apunte a un día o a un embalse que este sitio no publica. Los
-              números del día están en la portada; lo publicado sobre cada día, en el archivo.
+              Puede que el enlace esté mal escrito, o que apunte a un día o a un embalse que este sitio no publica. Los números del día
+              están en la portada; lo publicado sobre cada día, en el archivo.
             </p>
             <div className="actions">
               <a href="/" className="btn btn-solid">

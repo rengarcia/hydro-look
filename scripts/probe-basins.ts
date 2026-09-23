@@ -160,8 +160,7 @@ const PLANTS = [
 const HYBAS_SA = "https://data.hydrosheds.org/file/hydrobasins/standard/hybas_sa_lev01-12_v1c.zip";
 
 /** What a browser sends, used once, to tell a User-Agent block apart from an address block. */
-const BROWSER_UA =
-  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36";
+const BROWSER_UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36";
 
 /**
  * Overpass instances, tried in order, and every one of them carrying the whole planet.
@@ -265,7 +264,17 @@ const bytesOf = (n: number | null): string => (n === null ? "—" : n.toLocaleSt
  * two sources are not describing different structures at all — they are describing one thing, and
  * the distance between them is somebody's error rather than a headrace.
  */
-const STRUCTURE_TAGS = ["wikidata", "waterway", "man_made", "power", "plant:source", "generator:source", "plant:output:electricity", "operator", "start_date"];
+const STRUCTURE_TAGS = [
+  "wikidata",
+  "waterway",
+  "man_made",
+  "power",
+  "plant:source",
+  "generator:source",
+  "plant:output:electricity",
+  "operator",
+  "start_date",
+];
 const structureOf = (tags: Record<string, string>): string =>
   STRUCTURE_TAGS.filter((k) => tags[k])
     .map((k) => `${k}=${tags[k]}`)
@@ -281,7 +290,20 @@ const structureOf = (tags: Record<string, string>): string =>
  * probe that cannot tell the difference is worse than one that finds nothing, because the report
  * is what the plan gets written from.
  */
-const HYDRO_WORDS = ["cuenca", "subcuenca", "microcuenca", "hidrograf", "pfafstetter", "watershed", "basin", "drenaje", "catchment", "hydrobasins", "hydroatlas", "hydrosheds"];
+const HYDRO_WORDS = [
+  "cuenca",
+  "subcuenca",
+  "microcuenca",
+  "hidrograf",
+  "pfafstetter",
+  "watershed",
+  "basin",
+  "drenaje",
+  "catchment",
+  "hydrobasins",
+  "hydroatlas",
+  "hydrosheds",
+];
 const hydroScore = (s: string): number => HYDRO_WORDS.filter((w) => fold(s).includes(w)).length;
 
 /** Size and reachability without pulling the file: HEAD, or a one-byte range when HEAD is refused. */
@@ -379,12 +401,21 @@ async function probeHydroshedsBlock(): Promise<void> {
       url: page,
       status: response.status,
       bytes: body.length,
-      note: links.length ? `${links.length} archive links on ${hosts.join(", ")}; e.g. ${links[0]}` : "no archive links in the HTML (the page builds them in JS)",
+      note: links.length
+        ? `${links.length} archive links on ${hosts.join(", ")}; e.g. ${links[0]}`
+        : "no archive links in the HTML (the page builds them in JS)",
     });
     for (const link of links.filter((l) => /hybas_sa_/i.test(l)).slice(0, 1)) {
       await sleep(1000);
       const bytes = await probeDownload("hydrobasins sa (link from the page)", link);
-      if (bytes) boundaries.push({ source: "hydrosheds", title: "HydroBASINS South America, levels 1-12", url: link, bytes, note: "NEXT_DOWN topology and SUB_AREA per sub-basin" });
+      if (bytes)
+        boundaries.push({
+          source: "hydrosheds",
+          title: "HydroBASINS South America, levels 1-12",
+          url: link,
+          bytes,
+          note: "NEXT_DOWN topology and SUB_AREA per sub-basin",
+        });
     }
   } catch (error) {
     record({ probe: "hydrosheds product page", url: page, error: String(error) });
@@ -411,7 +442,15 @@ async function probeMirrors(): Promise<void> {
         continue;
       }
       const json = JSON.parse(body) as {
-        hits: { total?: number; hits: { title: string; doi?: string; links?: { self_html?: string }; files?: { key: string; size: number; links?: { self?: string } }[] }[] };
+        hits: {
+          total?: number;
+          hits: {
+            title: string;
+            doi?: string;
+            links?: { self_html?: string };
+            files?: { key: string; size: number; links?: { self?: string } }[];
+          }[];
+        };
       };
       const hits = json.hits.hits ?? [];
       // The title has to name the thing searched for, or it is a coincidence, not a mirror.
@@ -433,7 +472,12 @@ async function probeMirrors(): Promise<void> {
         url,
         status: response.status,
         bytes: body.length,
-        note: `${json.hits.total ?? hits.length} records; kept ${hits.filter((h) => fold(h.title).includes(needle)).length} whose title names it; top: ${hits.slice(0, 3).map((h) => h.title.slice(0, 44)).join(" / ") || "none"}`,
+        note: `${json.hits.total ?? hits.length} records; kept ${hits.filter((h) => fold(h.title).includes(needle)).length} whose title names it; top: ${
+          hits
+            .slice(0, 3)
+            .map((h) => h.title.slice(0, 44))
+            .join(" / ") || "none"
+        }`,
       });
     } catch (error) {
       record({ probe: `zenodo "${q}"`, url, error: String(error) });
@@ -476,7 +520,13 @@ async function probeMirrors(): Promise<void> {
     const article = JSON.parse(dbody) as { title: string; files?: { name: string; size: number; download_url: string }[] };
     const files = article.files ?? [];
     for (const file of files.sort((a, b) => b.size - a.size).slice(0, 2)) {
-      boundaries.push({ source: "figshare", title: `${article.title.slice(0, 60)} — ${file.name}`, url: file.download_url, bytes: file.size, note: "HydroATLAS is HydroBASINS lev12 with topology and upstream area columns" });
+      boundaries.push({
+        source: "figshare",
+        title: `${article.title.slice(0, 60)} — ${file.name}`,
+        url: file.download_url,
+        bytes: file.size,
+        note: "HydroATLAS is HydroBASINS lev12 with topology and upstream area columns",
+      });
     }
     record({
       probe: `figshare article ${first.id}`,
@@ -533,7 +583,12 @@ async function probeArcgis(): Promise<void> {
         url,
         status: response.status,
         bytes: body.length,
-        note: `${json.total ?? results.length} items; ${results.slice(0, 4).map((r) => `${r.title.slice(0, 40)} [${r.type}]${hydroScore(r.title) ? " *" : ""}`).join(" / ") || "none"}`,
+        note: `${json.total ?? results.length} items; ${
+          results
+            .slice(0, 4)
+            .map((r) => `${r.title.slice(0, 40)} [${r.type}]${hydroScore(r.title) ? " *" : ""}`)
+            .join(" / ") || "none"
+        }`,
       });
     } catch (error) {
       record({ probe: `arcgis "${q}"`, url, error: String(error) });
@@ -737,14 +792,26 @@ out center tags;`;
         const response = await get(candidate, { method: "POST", body: new URLSearchParams({ data: query }) });
         const body = await response.text();
         if (!response.ok) {
-          record({ probe: `overpass ${plant.site}`, url: candidate, status: response.status, note: body.slice(0, 80).replace(/\s+/g, " ") });
+          record({
+            probe: `overpass ${plant.site}`,
+            url: candidate,
+            status: response.status,
+            note: body.slice(0, 80).replace(/\s+/g, " "),
+          });
           // 429 is "you, slower" and 504 is "me, busy". Both deserve another server and a pause
           // long enough to be an apology rather than a retry storm.
           await sleep(response.status === 429 ? 5000 : 1500);
           continue;
         }
         const json = JSON.parse(body) as {
-          elements: { type: string; id: number; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> }[];
+          elements: {
+            type: string;
+            id: number;
+            lat?: number;
+            lon?: number;
+            center?: { lat: number; lon: number };
+            tags?: Record<string, string>;
+          }[];
         };
         const items = json.elements
           .map((e) => ({
@@ -756,7 +823,10 @@ out center tags;`;
             // off a name, and the answer is already in the response the query paid for.
             tags: e.tags ?? {},
           }))
-          .filter((i): i is { name: string; id: string; lat: number; lon: number; tags: Record<string, string> } => i.lat !== undefined && i.lon !== undefined);
+          .filter(
+            (i): i is { name: string; id: string; lat: number; lon: number; tags: Record<string, string> } =>
+              i.lat !== undefined && i.lon !== undefined,
+          );
         // Nothing found is only a finding if this instance holds Ecuador at all.
         if (items.length === 0 && control.get(candidate) !== "yes") {
           let verdict = control.get(candidate);
@@ -793,13 +863,23 @@ out center tags;`;
         // the nearest: a QID match is the two sources naming one entity, which is the whole test.
         const named = items.filter((i) => plant.aliases.some((a) => fold(i.name).includes(fold(a))));
         const byName = [...named].sort(
-          (a, b) => Number(b.tags["wikidata"] === plant.qid) - Number(a.tags["wikidata"] === plant.qid) || kmApart(anchor, a) - kmApart(anchor, b),
+          (a, b) =>
+            Number(b.tags["wikidata"] === plant.qid) - Number(a.tags["wikidata"] === plant.qid) || kmApart(anchor, a) - kmApart(anchor, b),
         )[0];
         const nearest = items.filter((i) => i.name).sort((a, b) => kmApart(anchor, a) - kmApart(anchor, b))[0];
         const hit = byName ?? nearest;
         found[plant.site] = {
           hit: hit
-            ? { lat: hit.lat, lon: hit.lon, id: hit.id, name: hit.name || "(unnamed)", kmFromWikidata: kmApart(anchor, hit), byName: Boolean(byName), tags: hit.tags, via: "overpass" }
+            ? {
+                lat: hit.lat,
+                lon: hit.lon,
+                id: hit.id,
+                name: hit.name || "(unnamed)",
+                kmFromWikidata: kmApart(anchor, hit),
+                byName: Boolean(byName),
+                tags: hit.tags,
+                via: "overpass",
+              }
             : null,
           outcome: byName ? "match" : nearest ? "nearest-only" : "empty box",
         };
@@ -860,7 +940,10 @@ interface ContainmentRow {
  * would mean the disagreement is not intake-versus-powerhouse at all and one source is simply
  * wrong. One request carries every point, so the whole fleet costs what a single reading costs.
  */
-async function probeElevation(points: { key: string; lat: number; lon: number }[], probe = "elevation (open-meteo)"): Promise<Record<string, number | null>> {
+async function probeElevation(
+  points: { key: string; lat: number; lon: number }[],
+  probe = "elevation (open-meteo)",
+): Promise<Record<string, number | null>> {
   const out: Record<string, number | null> = {};
   if (points.length === 0) return out;
   const url =
@@ -881,7 +964,10 @@ async function probeElevation(points: { key: string; lat: number; lon: number }[
       status: response.status,
       bytes: body.length,
       note: values.length
-        ? points.map((p, i) => `${p.key} ${values[i] ?? "?"}`).join("; ").slice(0, 600)
+        ? points
+            .map((p, i) => `${p.key} ${values[i] ?? "?"}`)
+            .join("; ")
+            .slice(0, 600)
         : `no elevations returned: ${body.slice(0, 80).replace(/\s+/g, " ")}`,
     });
   } catch (error) {
@@ -924,7 +1010,14 @@ out center tags;`;
         continue;
       }
       const json = JSON.parse(body) as {
-        elements: { type: string; id: number; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> }[];
+        elements: {
+          type: string;
+          id: number;
+          lat?: number;
+          lon?: number;
+          center?: { lat: number; lon: number };
+          tags?: Record<string, string>;
+        }[];
       };
       const found = json.elements
         .map((e) => ({
@@ -934,7 +1027,9 @@ out center tags;`;
           lat: e.lat ?? e.center?.lat,
           lon: e.lon ?? e.center?.lon,
         }))
-        .filter((e): e is { id: string; name: string; what: string; lat: number; lon: number } => e.lat !== undefined && e.lon !== undefined)
+        .filter(
+          (e): e is { id: string; name: string; what: string; lat: number; lon: number } => e.lat !== undefined && e.lon !== undefined,
+        )
         .map((e) => ({ ...e, kmFromWikidata: kmApart(a, e), kmFromOsm: kmApart(b, e) }))
         .sort((x, y) => x.kmFromWikidata - y.kmFromWikidata);
       record({
@@ -976,8 +1071,7 @@ const MAX_NOMINATIM_KM = 13;
 async function probeNominatim(plant: (typeof PLANTS)[number], anchor: Point): Promise<OsmHit | null> {
   for (const alias of plant.aliases) {
     const url =
-      "https://nominatim.openstreetmap.org/search" +
-      `?format=jsonv2&limit=10&countrycodes=ec&extratags=1&q=${encodeURIComponent(alias)}`;
+      "https://nominatim.openstreetmap.org/search" + `?format=jsonv2&limit=10&countrycodes=ec&extratags=1&q=${encodeURIComponent(alias)}`;
     try {
       const response = await get(url, { headers: { accept: "application/json" } });
       const body = await response.text();
@@ -986,7 +1080,19 @@ async function probeNominatim(plant: (typeof PLANTS)[number], anchor: Point): Pr
         await sleep(2000);
         continue;
       }
-      const items = (JSON.parse(body) as { lat: string; lon: string; name?: string; display_name?: string; osm_type?: string; osm_id?: number; category?: string; type?: string; extratags?: Record<string, string> }[])
+      const items = (
+        JSON.parse(body) as {
+          lat: string;
+          lon: string;
+          name?: string;
+          display_name?: string;
+          osm_type?: string;
+          osm_id?: number;
+          category?: string;
+          type?: string;
+          extratags?: Record<string, string>;
+        }[]
+      )
         .map((i) => ({
           lat: Number(i.lat),
           lon: Number(i.lon),
@@ -1002,14 +1108,25 @@ async function probeNominatim(plant: (typeof PLANTS)[number], anchor: Point): Pr
         status: response.status,
         bytes: body.length,
         note:
-        `"${alias}": ${items.length} results; ` +
-        (byName
-          ? `name match ${byName.name} at ${kmApart(anchor, byName)} km [${structureOf(byName.tags)}]` +
-            (kmApart(anchor, byName) > MAX_NOMINATIM_KM ? ` — beyond ${MAX_NOMINATIM_KM} km, so this is something else with the same name, not this dam` : "")
-          : `no name match${items.length ? `, first is ${items[0]!.name}` : ""}`),
+          `"${alias}": ${items.length} results; ` +
+          (byName
+            ? `name match ${byName.name} at ${kmApart(anchor, byName)} km [${structureOf(byName.tags)}]` +
+              (kmApart(anchor, byName) > MAX_NOMINATIM_KM
+                ? ` — beyond ${MAX_NOMINATIM_KM} km, so this is something else with the same name, not this dam`
+                : "")
+            : `no name match${items.length ? `, first is ${items[0]!.name}` : ""}`),
       });
       if (byName && kmApart(anchor, byName) <= MAX_NOMINATIM_KM) {
-        return { lat: byName.lat, lon: byName.lon, id: byName.id, name: byName.name, kmFromWikidata: kmApart(anchor, byName), byName: true, tags: byName.tags, via: "nominatim" };
+        return {
+          lat: byName.lat,
+          lon: byName.lon,
+          id: byName.id,
+          name: byName.name,
+          kmFromWikidata: kmApart(anchor, byName),
+          byName: true,
+          tags: byName.tags,
+          via: "nominatim",
+        };
       }
       await sleep(2000);
     } catch (error) {
@@ -1112,11 +1229,23 @@ async function probeContains(
       const url = containmentUrl(layer, point);
       const title = layer.typeName && layer.kind !== "arcgis" ? `${layer.title} [${layer.kind} ${layer.typeName}]` : layer.title;
       if (!stillTime()) {
-        out.push({ group, site: point.key, layer: title, url, status: null, attributes: "", note: "not asked: the phase's time budget was spent" });
+        out.push({
+          group,
+          site: point.key,
+          layer: title,
+          url,
+          status: null,
+          attributes: "",
+          note: "not asked: the phase's time budget was spent",
+        });
         continue;
       }
       try {
-        const response = await get(url, { headers: { accept: "application/json" } }, layer.kind === "arcgis" ? DEADLINE_MS : OFFICIAL_DEADLINE_MS);
+        const response = await get(
+          url,
+          { headers: { accept: "application/json" } },
+          layer.kind === "arcgis" ? DEADLINE_MS : OFFICIAL_DEADLINE_MS,
+        );
         const body = await response.text();
         type Answer = {
           features?: { attributes?: Record<string, unknown>; properties?: Record<string, unknown>; geometry?: GeoJsonGeometry | null }[];
@@ -1140,7 +1269,15 @@ async function probeContains(
             note: json?.error?.message ? `error: ${json.error.message}` : feature ? "contained" : "no polygon contains this point",
           });
         } else if (!json) {
-          out.push({ group, site: point.key, layer: title, url, status: response.status, attributes: "", note: `not JSON: ${body.slice(0, 120).replace(/\s+/g, " ")}` });
+          out.push({
+            group,
+            site: point.key,
+            layer: title,
+            url,
+            status: response.status,
+            attributes: "",
+            note: `not JSON: ${body.slice(0, 120).replace(/\s+/g, " ")}`,
+          });
         } else if (layer.kind === "wfs") {
           const features = json.features ?? [];
           const verdicts = features.map((f) => ({ f, inside: geometryContains(f.geometry, point.lon, point.lat) }));
@@ -1201,7 +1338,7 @@ interface OverpassElement {
 /** Why a request failed, with the cause Node hides behind "fetch failed" — a TLS code, a DNS miss, a reset. */
 function describeError(error: unknown): string {
   const cause = (error as { cause?: { code?: string; message?: string } })?.cause;
-  const detail = cause ? cause.code ?? cause.message ?? "" : "";
+  const detail = cause ? (cause.code ?? cause.message ?? "") : "";
   return `${String(error)}${detail ? ` (${detail})` : ""}`.slice(0, 200);
 }
 
@@ -1224,7 +1361,11 @@ const geometryOf = (e: OverpassElement): LatLon[] => (e.geometry ?? []).filter((
  * result unless the remark is checked. And an empty answer is believed only from an instance that
  * has shown it holds Ecuador, for the reason the `OVERPASS` list records.
  */
-async function askOverpass(probe: string, query: string, deadlineMs = 60_000): Promise<{ elements: OverpassElement[]; endpoint: string } | null> {
+async function askOverpass(
+  probe: string,
+  query: string,
+  deadlineMs = 60_000,
+): Promise<{ elements: OverpassElement[]; endpoint: string } | null> {
   for (const endpoint of OVERPASS) {
     try {
       const response = await get(endpoint, { method: "POST", body: new URLSearchParams({ data: query }) }, deadlineMs);
@@ -1237,7 +1378,13 @@ async function askOverpass(probe: string, query: string, deadlineMs = 60_000): P
       const json = JSON.parse(body) as { elements?: OverpassElement[]; remark?: string };
       const elements = json.elements ?? [];
       if (json.remark && /error|timed out|out of memory/i.test(json.remark)) {
-        record({ probe, url: endpoint, status: response.status, bytes: body.length, note: `partial answer, discarded: ${json.remark.slice(0, 100)}` });
+        record({
+          probe,
+          url: endpoint,
+          status: response.status,
+          bytes: body.length,
+          note: `partial answer, discarded: ${json.remark.slice(0, 100)}`,
+        });
         await sleep(1500);
         continue;
       }
@@ -1245,7 +1392,13 @@ async function askOverpass(probe: string, query: string, deadlineMs = 60_000): P
         await sleep(1500);
         const holds = await overpassHoldsEcuador(endpoint);
         if (holds !== "yes") {
-          record({ probe, url: endpoint, status: response.status, bytes: body.length, note: `empty, and the instance ${holds === "no" ? "does not hold" : "could not show it holds"} Ecuador; not believed` });
+          record({
+            probe,
+            url: endpoint,
+            status: response.status,
+            bytes: body.length,
+            note: `empty, and the instance ${holds === "no" ? "does not hold" : "could not show it holds"} Ecuador; not believed`,
+          });
           await sleep(1000);
           continue;
         }
@@ -1436,7 +1589,16 @@ const conduitOf = (tags: Tags): string =>
  * which end of the chain is bare.
  */
 async function probeDelsitanisagua(wikidataPoint: LatLon | null, flush: () => void): Promise<void> {
-  delsita = { intake: null, powerhouse: null, carriedBy: [], conduits: [], structures: [], chain: null, heights: { intake: null, powerhouse: null, wikidata: null }, answered: "not answered" };
+  delsita = {
+    intake: null,
+    powerhouse: null,
+    carriedBy: [],
+    conduits: [],
+    structures: [],
+    chain: null,
+    heights: { intake: null, powerhouse: null, wikidata: null },
+    answered: "not answered",
+  };
   const byId = `[out:json][timeout:25];
 node(${DELSITA_INTAKE_NODE});
 out;
@@ -1504,7 +1666,15 @@ out center;`;
         .flatMap((e) => {
           const p = elementPoint(e);
           return p
-            ? [{ id: `${e.type}/${e.id}`, name: e.tags?.["name"] ?? "", what: structureOf(e.tags ?? {}), kmFromIntake: kmApart(intakePoint, p), kmFromPowerhouse: kmApart(houseCentre, p) }]
+            ? [
+                {
+                  id: `${e.type}/${e.id}`,
+                  name: e.tags?.["name"] ?? "",
+                  what: structureOf(e.tags ?? {}),
+                  kmFromIntake: kmApart(intakePoint, p),
+                  kmFromPowerhouse: kmApart(houseCentre, p),
+                },
+              ]
             : [];
         })
         .sort((a, b) => a.kmFromIntake - b.kmFromIntake),
@@ -1522,7 +1692,14 @@ out center;`;
     ],
     "elevation, Delsitanisagua intake lead",
   );
-  delsita = { ...delsita, heights: { intake: heights["delsita/intake"] ?? null, powerhouse: heights["delsita/powerhouse"] ?? null, wikidata: heights["delsita/wikidata"] ?? null } };
+  delsita = {
+    ...delsita,
+    heights: {
+      intake: heights["delsita/intake"] ?? null,
+      powerhouse: heights["delsita/powerhouse"] ?? null,
+      wikidata: heights["delsita/wikidata"] ?? null,
+    },
+  };
   flush();
 }
 
@@ -1550,33 +1727,112 @@ interface OfficialSource {
 
 const OFFICIAL_SOURCES: OfficialSource[] = [
   // Directories: harvested for service URLs.
-  { label: "SNI geoservicios directory", kind: "directory", url: "https://sni.gob.ec/geoservicios-ecuador", origin: "web search 2026-09-22: SNI's list of national geoservices by institution" },
-  { label: "IEDG service list (SNI)", kind: "directory", url: "https://iedg.sni.gob.ec/geoportal-iedg/servicios.html", origin: "web search 2026-09-22: IEDG list of geographic web services with URL, by institution" },
-  { label: "SNI coberturas (downloads)", kind: "directory", url: "https://sni.gob.ec/coberturas", origin: "web search 2026-09-22: SNI 'Archivos de Información Geográfica', reported to carry unidades hidrográficas nivel 5, 1:50.000, 2014" },
-  { label: "MAG list of other institutions' services", kind: "directory", url: "http://geoportal.agricultura.gob.ec/geoservicios/otras_instituciones.html", origin: "web search 2026-09-22: MAG geoportal's page of other institutions' geoservices" },
-  { label: "IGM geoservicios page", kind: "directory", url: "https://www.geoportaligm.gob.ec/portal/index.php/geoservicios/", origin: "web search 2026-09-22: IGM geoportal's geoservices page" },
-  { label: "ARCA GeoARCA announcement", kind: "directory", url: "https://www.regulacionagua.gob.ec/geoarca-tecnologia-e-informacion-para-fortalecer-la-gestion-del-agua-en-el-ecuador/", origin: "web search 2026-09-22: the water regulator's geoportal (GeoARCA); harvested for any service links" },
+  {
+    label: "SNI geoservicios directory",
+    kind: "directory",
+    url: "https://sni.gob.ec/geoservicios-ecuador",
+    origin: "web search 2026-09-22: SNI's list of national geoservices by institution",
+  },
+  {
+    label: "IEDG service list (SNI)",
+    kind: "directory",
+    url: "https://iedg.sni.gob.ec/geoportal-iedg/servicios.html",
+    origin: "web search 2026-09-22: IEDG list of geographic web services with URL, by institution",
+  },
+  {
+    label: "SNI coberturas (downloads)",
+    kind: "directory",
+    url: "https://sni.gob.ec/coberturas",
+    origin:
+      "web search 2026-09-22: SNI 'Archivos de Información Geográfica', reported to carry unidades hidrográficas nivel 5, 1:50.000, 2014",
+  },
+  {
+    label: "MAG list of other institutions' services",
+    kind: "directory",
+    url: "http://geoportal.agricultura.gob.ec/geoservicios/otras_instituciones.html",
+    origin: "web search 2026-09-22: MAG geoportal's page of other institutions' geoservices",
+  },
+  {
+    label: "IGM geoservicios page",
+    kind: "directory",
+    url: "https://www.geoportaligm.gob.ec/portal/index.php/geoservicios/",
+    origin: "web search 2026-09-22: IGM geoportal's geoservices page",
+  },
+  {
+    label: "ARCA GeoARCA announcement",
+    kind: "directory",
+    url: "https://www.regulacionagua.gob.ec/geoarca-tecnologia-e-informacion-para-fortalecer-la-gestion-del-agua-en-el-ecuador/",
+    origin: "web search 2026-09-22: the water regulator's geoportal (GeoARCA); harvested for any service links",
+  },
   // The method, as a citation, not a dataset.
-  { label: "SNI Pfafstetter methodology (PDF)", kind: "document", url: "https://app.sni.gob.ec/sni-link/sni/PORTAL_SNI/PORTAL/IG/7_delimitacion_codificacion_metodologia_pfafstetter.pdf", origin: "web search 2026-09-22: 'delimitación y codificación de unidades hidrográficas del Ecuador'" },
+  {
+    label: "SNI Pfafstetter methodology (PDF)",
+    kind: "document",
+    url: "https://app.sni.gob.ec/sni-link/sni/PORTAL_SNI/PORTAL/IG/7_delimitacion_codificacion_metodologia_pfafstetter.pdf",
+    origin: "web search 2026-09-22: 'delimitación y codificación de unidades hidrográficas del Ecuador'",
+  },
   // OGC endpoints: WFS capabilities first, WMS if there is no WFS.
-  { label: "MAATE mapainteractivo GeoServer", kind: "ogc", url: "http://mapainteractivo.ambiente.gob.ec/geoserver/ows", origin: "web search 2026-09-22: cited as MAE's WMS (cobertura vegetal) at mapainteractivo.ambiente.gob.ec:80/geoserver/wms" },
-  { label: "MAATE ide GeoServer", kind: "ogc", url: "http://ide.ambiente.gob.ec/geoserver/ows", origin: "guess: GeoServer path on ide.ambiente.gob.ec, whose /mapainteractivo/ viewer appeared in the search" },
-  { label: "SENAGUA geoportal GeoServer", kind: "ogc", url: "https://geoportal.agua.gob.ec/geoserver/ows", origin: "guess: the former Secretaría del Agua host; no search result names it, so a DNS failure here is itself the answer" },
-  { label: "MAG geoportal GeoServer", kind: "ogc", url: "http://geoportal.agricultura.gob.ec/geoserver/ows", origin: "web search 2026-09-22 shows MAG publishes OGC services; the /geoserver/ows path is GeoServer's convention" },
-  { label: "IGM GeoServer", kind: "ogc", url: "https://www.geoportaligm.gob.ec/geoserver/ows", origin: "web search 2026-09-22: www.geoportaligm.gob.ec/geoserver/wms?request=GetCapabilities" },
-  { label: "IGM 1:250.000 base cartography", kind: "ogc", url: "https://www.geoportaligm.gob.ec/regional/wms", origin: "web search 2026-09-22: 'WMS Ecuador Cartografia Base escala 1:250.000'" },
-  { label: "IGM 1:1.000.000 base cartography", kind: "ogc", url: "https://www.geoportaligm.gob.ec/nacional/wms", origin: "web search 2026-09-22: 'WMS Ecuador Cartografia Base escala 1:1'000.000'" },
-  { label: "INAMHI GeoServer (GeoNode)", kind: "ogc", url: "https://geoservicios.inamhi.gob.ec/geoserver/ows", origin: "web search 2026-09-22: INAMHI's GeoNode node; a tile path names layer geonode:u95_el_coca" },
-  { label: "IEDG GeoServer (SNI)", kind: "ogc", url: "https://iedg.sni.gob.ec/geoserver/ows", origin: "guess: GeoServer path on the IEDG host found by the search" },
+  {
+    label: "MAATE mapainteractivo GeoServer",
+    kind: "ogc",
+    url: "http://mapainteractivo.ambiente.gob.ec/geoserver/ows",
+    origin: "web search 2026-09-22: cited as MAE's WMS (cobertura vegetal) at mapainteractivo.ambiente.gob.ec:80/geoserver/wms",
+  },
+  {
+    label: "MAATE ide GeoServer",
+    kind: "ogc",
+    url: "http://ide.ambiente.gob.ec/geoserver/ows",
+    origin: "guess: GeoServer path on ide.ambiente.gob.ec, whose /mapainteractivo/ viewer appeared in the search",
+  },
+  {
+    label: "SENAGUA geoportal GeoServer",
+    kind: "ogc",
+    url: "https://geoportal.agua.gob.ec/geoserver/ows",
+    origin: "guess: the former Secretaría del Agua host; no search result names it, so a DNS failure here is itself the answer",
+  },
+  {
+    label: "MAG geoportal GeoServer",
+    kind: "ogc",
+    url: "http://geoportal.agricultura.gob.ec/geoserver/ows",
+    origin: "web search 2026-09-22 shows MAG publishes OGC services; the /geoserver/ows path is GeoServer's convention",
+  },
+  {
+    label: "IGM GeoServer",
+    kind: "ogc",
+    url: "https://www.geoportaligm.gob.ec/geoserver/ows",
+    origin: "web search 2026-09-22: www.geoportaligm.gob.ec/geoserver/wms?request=GetCapabilities",
+  },
+  {
+    label: "IGM 1:250.000 base cartography",
+    kind: "ogc",
+    url: "https://www.geoportaligm.gob.ec/regional/wms",
+    origin: "web search 2026-09-22: 'WMS Ecuador Cartografia Base escala 1:250.000'",
+  },
+  {
+    label: "IGM 1:1.000.000 base cartography",
+    kind: "ogc",
+    url: "https://www.geoportaligm.gob.ec/nacional/wms",
+    origin: "web search 2026-09-22: 'WMS Ecuador Cartografia Base escala 1:1'000.000'",
+  },
+  {
+    label: "INAMHI GeoServer (GeoNode)",
+    kind: "ogc",
+    url: "https://geoservicios.inamhi.gob.ec/geoserver/ows",
+    origin: "web search 2026-09-22: INAMHI's GeoNode node; a tile path names layer geonode:u95_el_coca",
+  },
+  {
+    label: "IEDG GeoServer (SNI)",
+    kind: "ogc",
+    url: "https://iedg.sni.gob.ec/geoserver/ows",
+    origin: "guess: GeoServer path on the IEDG host found by the search",
+  },
   // Catalogues with an API.
-  ...["hidrograf", "cuenca", "pfafstetter"].map(
-    (term): OfficialSource => ({
-      label: `INAMHI GeoNode search "${term}"`,
-      kind: "geonode",
-      url: `https://geoservicios.inamhi.gob.ec/api/v2/datasets?search=${term}&page_size=50`,
-      origin: "guess: GeoNode 4's REST API on the INAMHI host the search found",
-    }),
-  ),
+  ...["hidrograf", "cuenca", "pfafstetter"].map((term): OfficialSource => ({
+    label: `INAMHI GeoNode search "${term}"`,
+    kind: "geonode",
+    url: `https://geoservicios.inamhi.gob.ec/api/v2/datasets?search=${term}&page_size=50`,
+    origin: "guess: GeoNode 4's REST API on the INAMHI host the search found",
+  })),
   {
     label: "datosabiertos.gob.ec CKAN 'pfafstetter'",
     kind: "ckan",
@@ -1637,16 +1893,35 @@ async function probeOfficial(points: { key: string; lat: number; lon: number }[]
   const deadHosts = new Map<string, string>();
   const robotsAsked = new Set<string>();
   const layers: OfficialLayer[] = [];
-  const ogcQueue: { label: string; url: string; origin: string }[] = OFFICIAL_SOURCES.filter((s) => s.kind === "ogc").map((s) => ({ ...s }));
+  const ogcQueue: { label: string; url: string; origin: string }[] = OFFICIAL_SOURCES.filter((s) => s.kind === "ogc").map((s) => ({
+    ...s,
+  }));
   const arcgisQueue: { label: string; url: string; origin: string }[] = [];
   const downloads: HarvestedService[] = [];
 
   const row = (source: { label: string; url: string; origin: string }, kind: string, fields: Partial<OfficialRow>): void => {
-    officialRows.push({ label: source.label, kind, origin: source.origin, url: source.url, status: null, bytes: null, service: "", layers: null, matched: [], note: "", ...fields });
+    officialRows.push({
+      label: source.label,
+      kind,
+      origin: source.origin,
+      url: source.url,
+      status: null,
+      bytes: null,
+      service: "",
+      layers: null,
+      matched: [],
+      note: "",
+      ...fields,
+    });
   };
 
   /** One polite GET: robots first for a new host, a dead host skipped, one second after every request. */
-  const fetchText = async (source: { label: string; url: string; origin: string }, kind: string, url = source.url, method = "GET"): Promise<{ status: number; body: string; type: string } | null> => {
+  const fetchText = async (
+    source: { label: string; url: string; origin: string },
+    kind: string,
+    url = source.url,
+    method = "GET",
+  ): Promise<{ status: number; body: string; type: string } | null> => {
     const host = new URL(url).host;
     if (!stillTime()) {
       row(source, kind, { url, note: "not asked: the phase's time budget was spent" });
@@ -1662,7 +1937,11 @@ async function probeOfficial(points: { key: string; lat: number; lon: number }[]
       await sleep(1000);
     }
     try {
-      const response = await get(url, { method, headers: { accept: "application/json, application/xml, text/xml, text/html;q=0.9, */*;q=0.5" } }, OFFICIAL_DEADLINE_MS);
+      const response = await get(
+        url,
+        { method, headers: { accept: "application/json, application/xml, text/xml, text/html;q=0.9, */*;q=0.5" } },
+        OFFICIAL_DEADLINE_MS,
+      );
       const body = method === "HEAD" ? "" : await response.text();
       return { status: response.status, body, type: response.headers.get("content-type") ?? "?" };
     } catch (error) {
@@ -1692,10 +1971,18 @@ async function probeOfficial(points: { key: string; lat: number; lon: number }[]
     const relevant = harvested.filter(relevantService);
     for (const h of relevant) {
       const origin = `harvested from ${source.label}: “${h.context.slice(0, 90)}”`;
-      if (h.kind === "ogc" && !ogcQueue.some((q) => serviceKey(q.url) === serviceKey(h.url)) && ogcQueue.length < OFFICIAL_SOURCES.filter((s) => s.kind === "ogc").length + MAX_HARVESTED) {
+      if (
+        h.kind === "ogc" &&
+        !ogcQueue.some((q) => serviceKey(q.url) === serviceKey(h.url)) &&
+        ogcQueue.length < OFFICIAL_SOURCES.filter((s) => s.kind === "ogc").length + MAX_HARVESTED
+      ) {
         ogcQueue.push({ label: `${new URL(h.url).host} (harvested)`, url: h.url, origin });
       } else if (h.kind === "arcgis" && !arcgisQueue.some((q) => q.url === h.url) && arcgisQueue.length < 4) {
-        arcgisQueue.push({ label: `${new URL(h.url).host} (harvested)`, url: h.url.replace(/(MapServer|FeatureServer)\/.*$/i, "$1"), origin });
+        arcgisQueue.push({
+          label: `${new URL(h.url).host} (harvested)`,
+          url: h.url.replace(/(MapServer|FeatureServer)\/.*$/i, "$1"),
+          origin,
+        });
       } else if (h.kind === "download" && matchesLayerPattern(h.url, h.context)) {
         downloads.push(h);
       }
@@ -1705,7 +1992,12 @@ async function probeOfficial(points: { key: string; lat: number; lon: number }[]
       bytes: r.body.length,
       note:
         `${harvested.length} service/download links, ${relevant.length} about water, environment or basins` +
-        (relevant.length ? `: ${relevant.slice(0, 5).map((h) => `${h.kind} ${h.url.slice(0, 70)}`).join("; ")}` : ""),
+        (relevant.length
+          ? `: ${relevant
+              .slice(0, 5)
+              .map((h) => `${h.kind} ${h.url.slice(0, 70)}`)
+              .join("; ")}`
+          : ""),
     });
     flush();
   }
@@ -1718,30 +2010,60 @@ async function probeOfficial(points: { key: string; lat: number; lon: number }[]
     const matched: string[] = [];
     try {
       if (r.status === 200 && source.kind === "geonode") {
-        const json = JSON.parse(r.body) as { total?: number; datasets?: { alternate?: string; title?: string; abstract?: string; subtype?: string }[] };
+        const json = JSON.parse(r.body) as {
+          total?: number;
+          datasets?: { alternate?: string; title?: string; abstract?: string; subtype?: string }[];
+        };
         const datasets = json.datasets ?? [];
         for (const d of datasets.filter((x) => x.alternate && matchesLayerPattern(x.alternate, x.title, x.abstract))) {
           matched.push(`${d.alternate} (${d.title ?? ""})`);
           const base = `${new URL(source.url).origin}/geoserver/ows`;
           if (!layers.some((l) => l.typeName === d.alternate)) {
-            layers.push({ title: `INAMHI GeoNode ${d.title ?? d.alternate}`, kind: "wfs", url: base, typeName: d.alternate!, priority: layerPriority(d.alternate!, d.title), source: "official wfs" });
+            layers.push({
+              title: `INAMHI GeoNode ${d.title ?? d.alternate}`,
+              kind: "wfs",
+              url: base,
+              typeName: d.alternate!,
+              priority: layerPriority(d.alternate!, d.title),
+              source: "official wfs",
+            });
           }
         }
-        note = `${json.total ?? datasets.length} datasets; titles: ${datasets.slice(0, 5).map((d) => d.title ?? d.alternate).join(" / ") || "none"}`;
+        note = `${json.total ?? datasets.length} datasets; titles: ${
+          datasets
+            .slice(0, 5)
+            .map((d) => d.title ?? d.alternate)
+            .join(" / ") || "none"
+        }`;
       } else if (r.status === 200 && source.kind === "ckan") {
-        const json = JSON.parse(r.body) as { result?: { count?: number; results?: { title: string; organization?: { title?: string }; resources?: { format?: string; url?: string; name?: string }[] }[] } };
+        const json = JSON.parse(r.body) as {
+          result?: {
+            count?: number;
+            results?: {
+              title: string;
+              organization?: { title?: string };
+              resources?: { format?: string; url?: string; name?: string }[];
+            }[];
+          };
+        };
         const results = json.result?.results ?? [];
         for (const p of results) {
           for (const res of p.resources ?? []) {
             if (!res.url) continue;
             matched.push(`${p.title.slice(0, 50)} [${res.format ?? "?"}] ${res.url.slice(0, 80)}`);
             for (const h of harvestServiceUrls(`<a href="${res.url}">${p.title}</a>`, source.url)) {
-              if (h.kind === "ogc" && !ogcQueue.some((q) => serviceKey(q.url) === serviceKey(h.url))) ogcQueue.push({ label: `${new URL(h.url).host} (from CKAN)`, url: h.url, origin: `CKAN dataset "${p.title}"` });
+              if (h.kind === "ogc" && !ogcQueue.some((q) => serviceKey(q.url) === serviceKey(h.url)))
+                ogcQueue.push({ label: `${new URL(h.url).host} (from CKAN)`, url: h.url, origin: `CKAN dataset "${p.title}"` });
               if (h.kind === "download") downloads.push({ ...h, context: p.title });
             }
           }
         }
-        note = `${json.result?.count ?? results.length} datasets: ${results.slice(0, 4).map((p) => `${p.title.slice(0, 40)} (${p.organization?.title ?? "?"})`).join(" / ") || "none"}`;
+        note = `${json.result?.count ?? results.length} datasets: ${
+          results
+            .slice(0, 4)
+            .map((p) => `${p.title.slice(0, 40)} (${p.organization?.title ?? "?"})`)
+            .join(" / ") || "none"
+        }`;
       }
     } catch (error) {
       note = `unparseable: ${describeError(error)}`;
@@ -1767,7 +2089,15 @@ async function probeOfficial(points: { key: string; lat: number; lon: number }[]
         service: caps?.service ?? "",
         layers: caps ? caps.layers.length : null,
         matched: matches.map((l) => `${l.name}${l.title && l.title !== l.name ? ` (${l.title})` : ""}`),
-        note: caps ? caps.error || (caps.layers.length ? `sample: ${caps.layers.slice(0, 4).map((l) => l.name).join(", ")}` : "") : r.body.slice(0, 100).replace(/\s+/g, " "),
+        note: caps
+          ? caps.error ||
+            (caps.layers.length
+              ? `sample: ${caps.layers
+                  .slice(0, 4)
+                  .map((l) => l.name)
+                  .join(", ")}`
+              : "")
+          : r.body.slice(0, 100).replace(/\s+/g, " "),
       });
       if (caps && caps.service === service && caps.layers.length > 0) {
         done = true;
@@ -1795,18 +2125,33 @@ async function probeOfficial(points: { key: string; lat: number; lon: number }[]
   const items: ArcgisItem[] = [];
   const owners: string[] = [];
   for (const q of ["senagua", "maate", "secretaria del agua"]) {
-    const source = { label: `ArcGIS Online users "${q}"`, url: `${agol}/community/users?f=json&num=10&q=${encodeURIComponent(q)}`, origin: "ArcGIS Online community search (public profiles), as §2.4's probe already uses for items" };
+    const source = {
+      label: `ArcGIS Online users "${q}"`,
+      url: `${agol}/community/users?f=json&num=10&q=${encodeURIComponent(q)}`,
+      origin: "ArcGIS Online community search (public profiles), as §2.4's probe already uses for items",
+    };
     const r = await fetchText(source, "arcgis users");
     if (!r) continue;
     if (r.status !== 200) {
-      row(source, "arcgis users", { status: r.status, bytes: r.body.length, note: `refused: ${r.body.slice(0, 120).replace(/\s+/g, " ")}` });
+      row(source, "arcgis users", {
+        status: r.status,
+        bytes: r.body.length,
+        note: `refused: ${r.body.slice(0, 120).replace(/\s+/g, " ")}`,
+      });
       continue;
     }
     try {
-      const json = JSON.parse(r.body) as { results?: { username: string; fullName?: string; orgId?: string }[]; error?: { message?: string } };
+      const json = JSON.parse(r.body) as {
+        results?: { username: string; fullName?: string; orgId?: string }[];
+        error?: { message?: string };
+      };
       const users = json.results ?? [];
       for (const u of users) if (!owners.includes(u.username) && owners.length < 4) owners.push(u.username);
-      row(source, "arcgis users", { status: r.status, bytes: r.body.length, note: json.error?.message ?? (users.map((u) => `${u.username} (${u.fullName ?? ""})`).join("; ") || "no public users") });
+      row(source, "arcgis users", {
+        status: r.status,
+        bytes: r.body.length,
+        note: json.error?.message ?? (users.map((u) => `${u.username} (${u.fullName ?? ""})`).join("; ") || "no public users"),
+      });
     } catch (error) {
       row(source, "arcgis users", { status: r.status, note: `unparseable: ${describeError(error)}` });
     }
@@ -1820,11 +2165,19 @@ async function probeOfficial(points: { key: string; lat: number; lon: number }[]
     "pfafstetter Ecuador",
   ];
   for (const q of itemQueries) {
-    const source = { label: `ArcGIS Online items ${q.slice(0, 50)}`, url: `${agol}/search?f=json&num=25&q=${encodeURIComponent(q)}`, origin: "ArcGIS Online item search, restricted to agency owners/tags/credits" };
+    const source = {
+      label: `ArcGIS Online items ${q.slice(0, 50)}`,
+      url: `${agol}/search?f=json&num=25&q=${encodeURIComponent(q)}`,
+      origin: "ArcGIS Online item search, restricted to agency owners/tags/credits",
+    };
     const r = await fetchText(source, "arcgis search");
     if (!r) continue;
     if (r.status !== 200) {
-      row(source, "arcgis search", { status: r.status, bytes: r.body.length, note: `refused: ${r.body.slice(0, 120).replace(/\s+/g, " ")}` });
+      row(source, "arcgis search", {
+        status: r.status,
+        bytes: r.body.length,
+        note: `refused: ${r.body.slice(0, 120).replace(/\s+/g, " ")}`,
+      });
       continue;
     }
     try {
@@ -1834,8 +2187,15 @@ async function probeOfficial(points: { key: string; lat: number; lon: number }[]
       row(source, "arcgis search", {
         status: r.status,
         bytes: r.body.length,
-        matched: results.filter((i) => matchesLayerPattern(i.title, i.snippet ?? "", ...(i.tags ?? []))).map((i) => `${i.title.slice(0, 50)} [${i.type}] (${i.owner})`),
-        note: `${json.total ?? results.length} items; top: ${results.slice(0, 3).map((i) => `${i.title.slice(0, 36)} (${i.owner})`).join(" / ") || "none"}`,
+        matched: results
+          .filter((i) => matchesLayerPattern(i.title, i.snippet ?? "", ...(i.tags ?? [])))
+          .map((i) => `${i.title.slice(0, 50)} [${i.type}] (${i.owner})`),
+        note: `${json.total ?? results.length} items; top: ${
+          results
+            .slice(0, 3)
+            .map((i) => `${i.title.slice(0, 36)} (${i.owner})`)
+            .join(" / ") || "none"
+        }`,
       });
     } catch (error) {
       row(source, "arcgis search", { status: r.status, note: `unparseable: ${describeError(error)}` });
@@ -1845,7 +2205,9 @@ async function probeOfficial(points: { key: string; lat: number; lon: number }[]
     arcgisQueue.push({
       label: `${item.title.slice(0, 40)} (${item.owner})`,
       url: item.url!,
-      origin: item.agency.length ? `ArcGIS Online, agency tie: ${item.agency.join("; ")}` : "ArcGIS Online, NO agency tie (listed because its title matches)",
+      origin: item.agency.length
+        ? `ArcGIS Online, agency tie: ${item.agency.join("; ")}`
+        : "ArcGIS Online, NO agency tie (listed because its title matches)",
     });
   }
   for (const source of arcgisQueue) {
@@ -1853,7 +2215,12 @@ async function probeOfficial(points: { key: string; lat: number; lon: number }[]
     const r = await fetchText(source, "arcgis service", url);
     if (!r) continue;
     if (r.status !== 200) {
-      row(source, "arcgis service", { url, status: r.status, bytes: r.body.length, note: `refused: ${r.body.slice(0, 120).replace(/\s+/g, " ")}` });
+      row(source, "arcgis service", {
+        url,
+        status: r.status,
+        bytes: r.body.length,
+        note: `refused: ${r.body.slice(0, 120).replace(/\s+/g, " ")}`,
+      });
       continue;
     }
     try {
@@ -1861,9 +2228,23 @@ async function probeOfficial(points: { key: string; lat: number; lon: number }[]
       const all = json.layers ?? [];
       const matches = all.filter((l) => matchesLayerPattern(l.name) && (!l.geometryType || l.geometryType === "esriGeometryPolygon"));
       for (const l of matches) {
-        layers.push({ title: `${source.label} — ${l.name}`, kind: "arcgis", url: `${source.url.replace(/\/+$/, "")}/${l.id}/query`, priority: layerPriority(l.name), source: "official arcgis" });
+        layers.push({
+          title: `${source.label} — ${l.name}`,
+          kind: "arcgis",
+          url: `${source.url.replace(/\/+$/, "")}/${l.id}/query`,
+          priority: layerPriority(l.name),
+          source: "official arcgis",
+        });
       }
-      row(source, "arcgis service", { url, status: r.status, bytes: r.body.length, service: "ArcGIS REST", layers: all.length, matched: matches.map((l) => l.name), note: json.error?.message ?? "" });
+      row(source, "arcgis service", {
+        url,
+        status: r.status,
+        bytes: r.body.length,
+        service: "ArcGIS REST",
+        layers: all.length,
+        matched: matches.map((l) => l.name),
+        note: json.error?.message ?? "",
+      });
     } catch (error) {
       row(source, "arcgis service", { url, status: r.status, note: `unparseable: ${describeError(error)}` });
     }
@@ -1874,17 +2255,37 @@ async function probeOfficial(points: { key: string; lat: number; lon: number }[]
   for (const d of downloads.slice(0, 3)) {
     if (!stillTime()) break;
     const bytes = await probeDownload(`official download ${new URL(d.url).host}`, d.url);
-    boundaries.push({ source: "official download", title: d.context.slice(0, 90) || d.url, url: d.url, bytes, note: "archive linked from an agency page; not opened by this probe" });
+    boundaries.push({
+      source: "official download",
+      title: d.context.slice(0, 90) || d.url,
+      url: d.url,
+      bytes,
+      note: "archive linked from an agency page; not opened by this probe",
+    });
     await sleep(1000);
   }
 
   // 6. The same point-in-polygon test as the ArcGIS candidates, on the best-named matching layers.
   const chosen = [...layers].sort((a, b) => b.priority - a.priority).slice(0, MAX_CONTAINMENT_LAYERS);
   for (const l of chosen) {
-    boundaries.push({ source: l.source, title: l.title, url: l.kind === "arcgis" ? l.url : `${l.url} (${l.typeName})`, bytes: null, note: `matched ${LAYER_PATTERN_TEXT}; asked for containment below` });
+    boundaries.push({
+      source: l.source,
+      title: l.title,
+      url: l.kind === "arcgis" ? l.url : `${l.url} (${l.typeName})`,
+      bytes: null,
+      note: `matched ${LAYER_PATTERN_TEXT}; asked for containment below`,
+    });
   }
   if (layers.length > chosen.length) {
-    record({ probe: "official layers", url: "", note: `${layers.length} matching layers, containment asked of the ${chosen.length} best-named: ${layers.slice(chosen.length).map((l) => l.typeName ?? l.title).join(", ").slice(0, 200)} not asked` });
+    record({
+      probe: "official layers",
+      url: "",
+      note: `${layers.length} matching layers, containment asked of the ${chosen.length} best-named: ${layers
+        .slice(chosen.length)
+        .map((l) => l.typeName ?? l.title)
+        .join(", ")
+        .slice(0, 200)} not asked`,
+    });
   }
   flush();
   containment = [...containment, ...(await probeContains(points, chosen, "official", stillTime))];
@@ -1927,7 +2328,8 @@ function schemeSection(): string[] {
 const cell = (s: string): string => s.replace(/\|/g, "\\|").replace(/\s+/g, " ");
 
 /** The tags that say what a candidate is and whose it is; everything else is dropped from the table. */
-const TIE_TAG_KEYS = /^(name(:\w+)?|alt_name|official_name|old_name|short_name|waterway|man_made|power|plant:.*|generator:.*|water|natural|landuse|reservoir_type|operator|owner|wikidata|wikipedia|start_date|ele|height|usage|tunnel)$/;
+const TIE_TAG_KEYS =
+  /^(name(:\w+)?|alt_name|official_name|old_name|short_name|waterway|man_made|power|plant:.*|generator:.*|water|natural|landuse|reservoir_type|operator|owner|wikidata|wikipedia|start_date|ele|height|usage|tunnel)$/;
 const tagText = (tags: Tags): string =>
   cell(
     Object.entries(tags)
@@ -1996,10 +2398,15 @@ function delsitaSection(): string[] {
     `- **Intake lead node/${DELSITA_INTAKE_NODE}**: ${d.intake ? `${d.intake.lat}, ${d.intake.lon}; tags: ${tagText(d.intake.tags)}; ties to the scheme: ${d.intake.ties.join("; ") || "none"}` : "not returned"}`,
     `- **Powerhouse way/${DELSITA_POWERHOUSE_WAY}**: ${d.powerhouse ? `centre ${d.powerhouse.centre.lat.toFixed(5)}, ${d.powerhouse.centre.lon.toFixed(5)}; tags: ${tagText(d.powerhouse.tags)}` : "not returned"}`,
     `- **Ways carrying the intake node**: ${
-      !d.intake ? "not answered" : d.carriedBy.map((w) => `${w.id} ${w.name ? `"${w.name}" ` : ""}[${w.what}]`).join("; ") || "none (the node is not on any mapped way)"
+      !d.intake
+        ? "not answered"
+        : d.carriedBy.map((w) => `${w.id} ${w.name ? `"${w.name}" ` : ""}[${w.what}]`).join("; ") ||
+          "none (the node is not on any mapped way)"
     }`,
     `- **Heights**: intake ${d.heights.intake ?? "—"} m, powerhouse ${d.heights.powerhouse ?? "—"} m, Wikidata point ${d.heights.wikidata ?? "—"} m` +
-      (d.heights.intake !== null && d.heights.powerhouse !== null ? ` — the intake is ${Math.round(d.heights.intake - d.heights.powerhouse)} m above the powerhouse` : ""),
+      (d.heights.intake !== null && d.heights.powerhouse !== null
+        ? ` — the intake is ${Math.round(d.heights.intake - d.heights.powerhouse)} m above the powerhouse`
+        : ""),
     "",
     verdict,
     "",
@@ -2009,7 +2416,12 @@ function delsitaSection(): string[] {
     "| way | what it is | length km | km from intake | km from powerhouse | on the chain |",
     "|---|---|---|---|---|---|",
     ...(d.conduits.length
-      ? d.conduits.slice(0, 30).map((c) => `| ${c.id} | ${cell(c.what)} | ${c.lengthKm} | ${c.kmFromIntake} | ${c.kmFromPowerhouse} | ${chain?.path.includes(c.id) ? "yes" : ""} |`)
+      ? d.conduits
+          .slice(0, 30)
+          .map(
+            (c) =>
+              `| ${c.id} | ${cell(c.what)} | ${c.lengthKm} | ${c.kmFromIntake} | ${c.kmFromPowerhouse} | ${chain?.path.includes(c.id) ? "yes" : ""} |`,
+          )
       : ["| — | none mapped or not answered | — | — | — | — |"]),
     "",
     ...(d.structures.length
@@ -2018,7 +2430,9 @@ function delsitaSection(): string[] {
           "",
           "| element | name | what it is | km from intake | km from powerhouse |",
           "|---|---|---|---|---|",
-          ...d.structures.slice(0, 20).map((s) => `| ${s.id} | ${cell(s.name || "(unnamed)")} | ${cell(s.what)} | ${s.kmFromIntake} | ${s.kmFromPowerhouse} |`),
+          ...d.structures
+            .slice(0, 20)
+            .map((s) => `| ${s.id} | ${cell(s.name || "(unnamed)")} | ${cell(s.what)} | ${s.kmFromIntake} | ${s.kmFromPowerhouse} |`),
           "",
         ]
       : []),
@@ -2152,7 +2566,9 @@ function buildReport(startedAt: string): { report: string; coordinates: unknown[
     "",
     "| site | element | identifying tags |",
     "|---|---|---|",
-    ...coordinates.map((c) => `| ${c.site} | ${c.osm ? `${c.osm.id} (${c.osm.name})` : "—"} | ${c.osm ? structureOf(c.osm.tags) : "not answered"} |`),
+    ...coordinates.map(
+      (c) => `| ${c.site} | ${c.osm ? `${c.osm.id} (${c.osm.name})` : "—"} | ${c.osm ? structureOf(c.osm.tags) : "not answered"} |`,
+    ),
     "",
     ...schemeSection(),
     "## Which mapped unit contains each dam",
@@ -2170,7 +2586,10 @@ function buildReport(startedAt: string): { report: string; coordinates: unknown[
       ? [
           "| group | site | layer | status | attributes | note |",
           "|---|---|---|---|---|---|",
-          ...containment.map((r) => `| ${r.group} | ${r.site} | ${cell(r.layer.slice(0, 80))} | ${r.status ?? "—"} | ${cell(r.attributes) || "—"} | ${cell(r.note)} |`),
+          ...containment.map(
+            (r) =>
+              `| ${r.group} | ${r.site} | ${cell(r.layer.slice(0, 80))} | ${r.status ?? "—"} | ${cell(r.attributes) || "—"} | ${cell(r.note)} |`,
+          ),
           "",
         ]
       : []),
@@ -2271,7 +2690,15 @@ async function main(): Promise<void> {
   await phase("mirrors", probeMirrors);
   await phase("arcgis", probeArcgis);
   await phase("robots", async () => {
-    for (const host of ["data.hydrosheds.org", "zenodo.org", "api.figshare.com", "www.arcgis.com", "query.wikidata.org", "overpass-api.de", "nominatim.openstreetmap.org"]) {
+    for (const host of [
+      "data.hydrosheds.org",
+      "zenodo.org",
+      "api.figshare.com",
+      "www.arcgis.com",
+      "query.wikidata.org",
+      "overpass-api.de",
+      "nominatim.openstreetmap.org",
+    ]) {
       await probeRobots(host);
       await sleep(1000);
     }
@@ -2319,7 +2746,9 @@ async function main(): Promise<void> {
   // And the read the last run promised: which polygon of which ArcGIS lead contains each dam.
   await phase("contains", async () => {
     await sleep(1000);
-    const leads = boundaries.filter((b) => b.source === "arcgis").map((b): ContainableLayer => ({ title: b.title, kind: "arcgis", url: b.url }));
+    const leads = boundaries
+      .filter((b) => b.source === "arcgis")
+      .map((b): ContainableLayer => ({ title: b.title, kind: "arcgis", url: b.url }));
     containment = [...containment, ...(await probeContains(pourPoints(), leads, "lead"))];
   });
 

@@ -103,7 +103,9 @@ async function main(): Promise<void> {
       if (check.ok) log(`TLS pin ok for ${check.host}:${check.port}`);
       else {
         log(`TLS pin CHANGED for ${check.host}:${check.port} (advisory): ${check.observed}`);
-        batch.notes.push(`TLS pin changed for ${check.host}:${check.port} (advisory): observed ${check.observed}, pinned ${check.expected}`);
+        batch.notes.push(
+          `TLS pin changed for ${check.host}:${check.port} (advisory): observed ${check.observed}, pinned ${check.expected}`,
+        );
       }
     },
   });
@@ -173,8 +175,7 @@ async function main(): Promise<void> {
       // to confirm the caudal mrids really are `q_ingresado`.
       log("ORDS: historian month for the plants the reports do not cover");
       const runningMonth = monthOfDate(end);
-      const historianMonths =
-        Number(end.slice(8, 10)) <= 3 ? [runningMonth, previousMonth(runningMonth)] : [runningMonth];
+      const historianMonths = Number(end.slice(8, 10)) <= 3 ? [runningMonth, previousMonth(runningMonth)] : [runningMonth];
       for (const ym of historianMonths) {
         for (const series of HISTORIAN_SERIES) {
           await ords.pointValuesMesH24(batch, series.site, series.variable, series.mrid, ym);
@@ -201,9 +202,7 @@ async function main(): Promise<void> {
       const runs = (name: BackfillSource) => wanted === "all" || wanted === name;
       const years = Array.from({ length: yearOf(to) - yearOf(from) + 1 }, (_, i) => yearOf(from) + i);
       const present = indexBySourceAndDate(store, years);
-      const smecDates = new Set(
-        [...store.existingKeys(NATIONAL_BALANCE_DAILY, years)].map((key) => key.split("\u0000")[0]!),
-      );
+      const smecDates = new Set([...store.existingKeys(NATIONAL_BALANCE_DAILY, years)].map((key) => key.split("\u0000")[0]!));
 
       if (runs("ords-levels")) {
         // One request per year returns 365 days ending the day before `fecha`.
@@ -261,8 +260,7 @@ async function main(): Promise<void> {
           // nothing left to ask for. The running month is never skipped — its days are still
           // arriving, and re-asking is how a day that was null yesterday gets filled.
           isDone: (ym, mrid) =>
-            monthEnd(ym) < today &&
-            eachDay(monthStart(ym), monthEnd(ym)).some((day) => present.has(`${day}|ords:pointValues|${mrid}`)),
+            monthEnd(ym) < today && eachDay(monthStart(ym), monthEnd(ym)).some((day) => present.has(`${day}|ords:pointValues|${mrid}`)),
           fetchMonth: async (series, ym) => {
             let added: number | null = null;
             await spend(async () => {
@@ -351,7 +349,9 @@ function stageBatch(archive: RawArchive, batch: IngestBatch, options: Options, r
     join(directory, "batch.json"),
     `${JSON.stringify({ generated_at: nowUtc(), run_id: runId(), command: options.command, source: options.source, requests, ...batch }, null, 1)}\n`,
   );
-  log(`staged ${batch.observations.length + batch.national.length + batch.operativa.length + batch.weather.length + batch.enso.length + batch.xmExchange.length + batch.xmSystem.length} rows and ${files.length} raw files in ${directory}`);
+  log(
+    `staged ${batch.observations.length + batch.national.length + batch.operativa.length + batch.weather.length + batch.enso.length + batch.xmExchange.length + batch.xmSystem.length} rows and ${files.length} raw files in ${directory}`,
+  );
   for (const note of dedupe(batch.notes).slice(0, 40)) log(`note: ${note}`);
   for (const error of batch.errors.slice(0, 40)) log(`ERROR ${error}`);
 }
@@ -425,7 +425,15 @@ function runId(): string {
 
 /** Rewrites every row's legacy bundle refs to the day files that now hold them. */
 function canonicaliseRefs(archive: RawArchive, batch: IngestBatch): void {
-  const tables = [batch.observations, batch.national, batch.operativa, batch.weather ?? [], batch.enso ?? [], batch.xmExchange ?? [], batch.xmSystem ?? []];
+  const tables = [
+    batch.observations,
+    batch.national,
+    batch.operativa,
+    batch.weather ?? [],
+    batch.enso ?? [],
+    batch.xmExchange ?? [],
+    batch.xmSystem ?? [],
+  ];
   for (const rows of tables) {
     for (const row of rows as { raw_ref: string }[]) {
       if (!row.raw_ref?.includes(".ndjson.gz#")) continue;
@@ -479,10 +487,15 @@ function writeBatch(
 
   const errors = [
     ...batch.errors,
-    ...reports.filter((r) => r.quarantined > 0).map((r) => `${r.table}: ${r.quarantined} rows failed the contract and were quarantined to ${r.quarantinePath}`),
+    ...reports
+      .filter((r) => r.quarantined > 0)
+      .map((r) => `${r.table}: ${r.quarantined} rows failed the contract and were quarantined to ${r.quarantinePath}`),
   ];
   if (options.summary) {
-    writeFileAtomic(options.summary, runSummary({ command: options.command, source: options.source, reports, requests, errors, notes: dedupe(batch.notes) }));
+    writeFileAtomic(
+      options.summary,
+      runSummary({ command: options.command, source: options.source, reports, requests, errors, notes: dedupe(batch.notes) }),
+    );
   }
 
   if (!options.dryRun) {

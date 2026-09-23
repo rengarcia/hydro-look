@@ -19,7 +19,11 @@ export function escapeXml(text: string): string {
 
 export function atomFeed(days: readonly DayRecord[], siteUrl: string): string {
   const entries = days.filter((d) => d.narrative !== null).slice(0, FEED_ENTRIES);
-  const updated = entries.map((d) => d.narrative!.generated_at).sort().at(-1) ?? "1970-01-01T00:00:00Z";
+  const updated =
+    entries
+      .map((d) => d.narrative!.generated_at)
+      .sort()
+      .at(-1) ?? "1970-01-01T00:00:00Z";
   const lines = [
     `<?xml version="1.0" encoding="utf-8"?>`,
     `<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="es">`,

@@ -53,7 +53,10 @@ export function parseEnerDiaHours(body: string, code: EnergyPlantCode, record: P
 }
 
 /** Every plant-hour the archive holds, latest fetch per plant-hour, in date, site and hour order. */
-export function energyHourlyFromRaw(read: RawReader, codes: readonly EnergyPlantCode[] = Object.keys(ENERGY_MODULES) as EnergyPlantCode[]): EnergyHourlyRow[] {
+export function energyHourlyFromRaw(
+  read: RawReader,
+  codes: readonly EnergyPlantCode[] = Object.keys(ENERGY_MODULES) as EnergyPlantCode[],
+): EnergyHourlyRow[] {
   const best = new Map<string, EnergyHourlyRow>();
   for (const code of codes) {
     for (const record of read(`${code}EnerDia`)) {

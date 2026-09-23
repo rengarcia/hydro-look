@@ -16,7 +16,7 @@ async function openIssues({ github, context }, label) {
   const { data } = await github.rest.issues.listForRepo({
     owner: context.repo.owner,
     repo: context.repo.repo,
-    state: 'open',
+    state: "open",
     labels: label,
     per_page: 100,
   });
@@ -52,14 +52,14 @@ async function resolve({ github, context }, { label, body }) {
       owner: context.repo.owner,
       repo: context.repo.repo,
       issue_number: issue.number,
-      body: `${body ?? 'Resolved: a later run of the same workflow succeeded.'}\n\nRun: ${runUrl(context)}`,
+      body: `${body ?? "Resolved: a later run of the same workflow succeeded."}\n\nRun: ${runUrl(context)}`,
     });
     await github.rest.issues.update({
       owner: context.repo.owner,
       repo: context.repo.repo,
       issue_number: issue.number,
-      state: 'closed',
-      state_reason: 'completed',
+      state: "closed",
+      state_reason: "completed",
     });
   }
 }

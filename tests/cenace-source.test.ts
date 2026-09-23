@@ -23,7 +23,17 @@ function stub(reply: (spec: RequestSpec) => Partial<FetchResult>) {
   const http = {
     fetch: async (spec: RequestSpec): Promise<FetchResult> => {
       asked.push(spec);
-      return { key: spec.key, url: spec.url, method: spec.method ?? "GET", status: 200, body: "", fetchedAt: FETCHED_AT, durationMs: 1, attempts: 1, ...reply(spec) };
+      return {
+        key: spec.key,
+        url: spec.url,
+        method: spec.method ?? "GET",
+        status: 200,
+        body: "",
+        fetchedAt: FETCHED_AT,
+        durationMs: 1,
+        attempts: 1,
+        ...reply(spec),
+      };
     },
   } as unknown as HttpClient;
   return { http, asked };
@@ -70,7 +80,9 @@ describe("SMEC day", () => {
   });
 
   it("records a transport failure, including a failed pin check, and carries on", async () => {
-    const http = { fetch: async () => Promise.reject(new Error("TLS pin check failed for smec.cenace.gob.ec:443: TLS pin mismatch")) } as unknown as HttpClient;
+    const http = {
+      fetch: async () => Promise.reject(new Error("TLS pin check failed for smec.cenace.gob.ec:443: TLS pin mismatch")),
+    } as unknown as HttpClient;
     const batch = emptyBatch();
     await new CenaceSmec(http, archive()).day(batch, "2026-09-20");
     expect(batch.errors).toEqual(["smec 2026-09-20: Error: TLS pin check failed for smec.cenace.gob.ec:443: TLS pin mismatch"]);
@@ -81,7 +93,9 @@ describe("SMEC day", () => {
     const { http } = stub(() => ({ body: doctored }));
     const batch = emptyBatch();
     await new CenaceSmec(http, archive()).day(batch, "2026-09-20");
-    expect(batch.errors[0]).toMatch(/parse failed.*archived at cenace_smec\/2026\/09\/ResultadoInforme1\.2026-09-20\.ndjson#informe1:2026-09-20/);
+    expect(batch.errors[0]).toMatch(
+      /parse failed.*archived at cenace_smec\/2026\/09\/ResultadoInforme1\.2026-09-20\.ndjson#informe1:2026-09-20/,
+    );
   });
 });
 
@@ -125,7 +139,9 @@ describe("ORDS row floors", () => {
     const batch = emptyBatch();
     await new CelecOrds(http, archive(), () => "2026-09-23").repDiaPotQTurb(batch, "2026-09-20");
     expect(batch.errors).toHaveLength(1);
-    expect(batch.errors[0]).toMatch(/^repDiaPotQTurb:2026-09-20: HTTP 200 but 0 rows, expected at least 1 \(archived at celec_ords\/2026\/09\/repDiaPotQTurb\.2026-09-20\.ndjson/);
+    expect(batch.errors[0]).toMatch(
+      /^repDiaPotQTurb:2026-09-20: HTTP 200 but 0 rows, expected at least 1 \(archived at celec_ords\/2026\/09\/repDiaPotQTurb\.2026-09-20\.ndjson/,
+    );
   });
 
   it("accepts an empty answer for a day that has not been published yet", async () => {
@@ -150,7 +166,10 @@ describe("ORDS row floors", () => {
   it("holds the historian to no floor: a blank month is its known behaviour", async () => {
     const { http } = empty();
     const batch = emptyBatch();
-    await new CelecOrds(http, archive(), () => "2026-09-23").pointValuesMesH24(batch, "agoyan", "cota_masl", 140031, { year: 2020, month: 1 });
+    await new CelecOrds(http, archive(), () => "2026-09-23").pointValuesMesH24(batch, "agoyan", "cota_masl", 140031, {
+      year: 2020,
+      month: 1,
+    });
     expect(batch.errors).toEqual([]);
   });
 

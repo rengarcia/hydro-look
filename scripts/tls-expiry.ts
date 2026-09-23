@@ -27,7 +27,10 @@ import { DATA_REFERENCE } from "../src/lib/util/paths.ts";
 const WARN_DAYS = 30;
 
 async function main(): Promise<void> {
-  const { values } = parseArgs({ args: process.argv.slice(2), options: { live: { type: "boolean", default: false }, out: { type: "string" } } });
+  const { values } = parseArgs({
+    args: process.argv.slice(2),
+    options: { live: { type: "boolean", default: false }, out: { type: "string" } },
+  });
   const today = todayEc();
   const pins = loadPins();
   const directory = join(DATA_REFERENCE, "tls");
@@ -46,7 +49,13 @@ async function main(): Promise<void> {
         const check = await checkPin(host, Number(port));
         if (!check) continue;
         if (!check.ok) {
-          findings.push({ subject, not_after: "", days_left: 0, level: "warn", message: `${subject} no longer matches its ${check.mode} pin: observed ${check.observed}, pinned ${check.expected}` });
+          findings.push({
+            subject,
+            not_after: "",
+            days_left: 0,
+            level: "warn",
+            message: `${subject} no longer matches its ${check.mode} pin: observed ${check.observed}, pinned ${check.expected}`,
+          });
         }
         // SMEC's leaf expired in 2009 and is trusted by fingerprint alone; its date means nothing.
         if (check.mode === "advisory") findings.push(judgeExpiry(subject, check.observedNotAfter, today, WARN_DAYS));
@@ -64,7 +73,9 @@ async function main(): Promise<void> {
     "|---|---|---:|---|",
     ...findings.map((f) => `| ${f.subject} | ${f.not_after || "—"} | ${f.not_after ? f.days_left : "—"} | ${f.level} |`),
     "",
-    ...(flagged.length === 0 ? ["Nothing expires within 30 days and every pin matches."] : flagged.map((f) => `- **${f.level}**: ${f.message}`)),
+    ...(flagged.length === 0
+      ? ["Nothing expires within 30 days and every pin matches."]
+      : flagged.map((f) => `- **${f.level}**: ${f.message}`)),
   ];
   const text = `${lines.join("\n")}\n`;
   process.stdout.write(text);

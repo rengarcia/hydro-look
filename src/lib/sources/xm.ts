@@ -46,13 +46,7 @@ export class Xm {
     private readonly archive: RawArchive,
   ) {}
 
-  async metric(
-    endpoint: "hourly" | "daily",
-    metricId: string,
-    entity: "Sistema" | "Enlace",
-    from: IsoDate,
-    to: IsoDate,
-  ): Promise<Answer> {
+  async metric(endpoint: "hourly" | "daily", metricId: string, entity: "Sistema" | "Enlace", from: IsoDate, to: IsoDate): Promise<Answer> {
     if (monthOf(from) !== monthOf(to) || yearOf(from) !== yearOf(to)) {
       throw new Error(`xm: ${metricId} window ${from}..${to} crosses a month; XM caps a request at one`);
     }
@@ -102,10 +96,7 @@ export class Xm {
     const spec = XM_SYSTEM_METRICS[metric];
     try {
       const answer = await this.metric(spec.endpoint, metric, "Sistema", from, to);
-      const values =
-        spec.endpoint === "hourly"
-          ? dailyMeanOfFullDays(parseXmHourly(answer.body), batch.notes)
-          : parseXmDaily(answer.body);
+      const values = spec.endpoint === "hourly" ? dailyMeanOfFullDays(parseXmHourly(answer.body), batch.notes) : parseXmDaily(answer.body);
       batch.xmSystem.push(
         ...validateRows(
           XM_SYSTEM_DAILY,
@@ -147,13 +138,7 @@ export const REQUESTS_PER_WINDOW = 2 + Object.keys(XM_SYSTEM_METRICS).length;
  * Routine runs re-read the last five weeks; `--from` walks history month by month, skipping a
  * month that is already complete and settled so a budgeted backfill resumes where it stopped.
  */
-export async function ingestXm(
-  source: Xm,
-  store: CuratedStore,
-  batch: IngestBatch,
-  options: Options,
-  today = todayEc(),
-): Promise<void> {
+export async function ingestXm(source: Xm, store: CuratedStore, batch: IngestBatch, options: Options, today = todayEc()): Promise<void> {
   if (options.date || (options.to && !options.from)) throw new Error("xm: use --from and optional --to for a historical run");
   const yesterday = addDays(today, -1);
   const from = options.from ?? addDays(today, -RECENT_DAYS);
@@ -188,7 +173,5 @@ function isSettledAndComplete(store: CuratedStore, from: IsoDate, to: IsoDate, t
   const years = [yearOf(from)];
   const exchange = store.existingKeys(XM_EXCHANGE_DAILY, years);
   const system = store.existingKeys(XM_SYSTEM_DAILY, years);
-  return eachDay(from, to).every(
-    (d) => exchange.has(`${d}\u0000${XM_LINKS[0]}`) && system.has(`${d}\u0000PorcVoluUtilDiar`),
-  );
+  return eachDay(from, to).every((d) => exchange.has(`${d}\u0000${XM_LINKS[0]}`) && system.has(`${d}\u0000PorcVoluUtilDiar`));
 }

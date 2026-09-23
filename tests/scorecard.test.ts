@@ -116,7 +116,9 @@ describe("scoreAdequacyRuns", () => {
     generationGwh: 106,
     distributionDemandGwh: 100,
   }));
-  const runs = [{ run_id: "r", generated_at: "2026-09-02T00:00:00Z", origin_date: "2026-09-01", model_id: "adequacy-v1", model_version: "2" }];
+  const runs = [
+    { run_id: "r", generated_at: "2026-09-02T00:00:00Z", origin_date: "2026-09-01", model_id: "adequacy-v1", model_version: "2" },
+  ];
   const values = [7, 14, 60].map((h) => ({
     run_id: "r",
     origin_date: "2026-09-01",

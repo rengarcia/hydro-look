@@ -47,7 +47,9 @@ function readTable(name: string): Record<string, string>[] {
   const directory = join(DATA_CURATED, name);
   if (!existsSync(directory)) return [];
   const rows: Record<string, string>[] = [];
-  for (const file of readdirSync(directory).filter((f) => f.endsWith(".csv")).sort()) {
+  for (const file of readdirSync(directory)
+    .filter((f) => f.endsWith(".csv"))
+    .sort()) {
     rows.push(...parseCsv(readFileSync(join(directory, file), "utf8")));
   }
   return rows;

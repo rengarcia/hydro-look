@@ -120,9 +120,9 @@ export function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
           titleId="mazar-title"
           title="Hacia dónde va el único embalse con semanas de reserva."
         >
-          Un balance hídrico cerrado en torno al operador: la curva cota–superficie y los m³/s por MW se ajustan con
-          las lecturas de este repositorio, y la descarga sale cada día simulado de una regla de operación contra la
-          propia cota. Junto a cada horizonte, cuánto le gana a suponer que la cota no cambia.
+          Un balance hídrico cerrado en torno al operador: la curva cota–superficie y los m³/s por MW se ajustan con las lecturas de este
+          repositorio, y la descarga sale cada día simulado de una regla de operación contra la propia cota. Junto a cada horizonte, cuánto
+          le gana a suponer que la cota no cambia.
         </SectionIntro>
         <a href="/embalses/mazar/" className="btn btn-ghost">
           Ficha completa de Mazar →
@@ -169,9 +169,8 @@ export function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
           <HorizonsTable forecast={forecast} />
           <p className="fine spaced">
             {forecast.model.backtest_origins} orígenes mensuales desde 2018.
-            {ties.length > 0 ? ` A ${joinDays(ties)} días el modelo empata con la persistencia, y así se publica.` : ""}{" "}
-            La banda p10–p90 cubre entre el {num(Math.min(...coverage), 0)} % y el {num(Math.max(...coverage), 0)} % de
-            los casos, frente al 80 % nominal.
+            {ties.length > 0 ? ` A ${joinDays(ties)} días el modelo empata con la persistencia, y así se publica.` : ""} La banda p10–p90
+            cubre entre el {num(Math.min(...coverage), 0)} % y el {num(Math.max(...coverage), 0)} % de los casos, frente al 80 % nominal.
             {switched.length > 0
               ? ` La fila de ${joinDays(switched.map((h) => h.horizon_days))} días viene de ${modelOf(switched[0]!)}, que corrige el error del balance hídrico y es el único que le gana a la persistencia a una semana.`
               : ""}
@@ -202,7 +201,9 @@ export function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
                   </div>
                   <div className="scenario-verdict">{s.crossesOn ? `Cruza ${num(critical.level_masl, 0)} m` : "No cruza"}</div>
                   <div className="scenario-detail">
-                    {s.crossesOn ? `el ${longDate(s.crossesOn)}, en ${num(s.days, 0)} días` : `en los próximos ${forecast.days_to_threshold.horizon_days} días`}
+                    {s.crossesOn
+                      ? `el ${longDate(s.crossesOn)}, en ${num(s.days, 0)} días`
+                      : `en los próximos ${forecast.days_to_threshold.horizon_days} días`}
                     <br />
                     mínimo {num(s.minimumLevelMasl, 2)} m
                   </div>
@@ -231,7 +232,9 @@ export function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
       >
         Se compara la cota observada el día objetivo con la p50 y la banda p10–p90 que se publicaron.
       </ScorecardPanel>
-      <p className="fine">Pronóstico del {dateWithYear(forecast.origin_date)}; los de días anteriores quedan en el <a href="/dia/">archivo diario</a>.</p>
+      <p className="fine">
+        Pronóstico del {dateWithYear(forecast.origin_date)}; los de días anteriores quedan en el <a href="/dia/">archivo diario</a>.
+      </p>
     </section>
   );
 }

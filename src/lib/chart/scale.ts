@@ -89,7 +89,10 @@ export function linePath(points: readonly Point[]): string {
 export function bandPath(upper: readonly Point[], lower: readonly Point[]): string {
   if (upper.length < 2 || lower.length !== upper.length) return "";
   const forward = upper.map((p, i) => `${i === 0 ? "M" : "L"}${fmt(p.x)} ${fmt(p.y)}`).join(" ");
-  const back = [...lower].reverse().map((p) => `L${fmt(p.x)} ${fmt(p.y)}`).join(" ");
+  const back = [...lower]
+    .reverse()
+    .map((p) => `L${fmt(p.x)} ${fmt(p.y)}`)
+    .join(" ");
   return `${forward} ${back} Z`;
 }
 

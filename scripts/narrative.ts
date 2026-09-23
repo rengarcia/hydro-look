@@ -27,13 +27,7 @@
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { parseArgs } from "node:util";
-import {
-  buildPayload,
-  estimateTokens,
-  loadPayloadInputs,
-  payloadHash,
-  type NarrativePayload,
-} from "../src/lib/narrative/payload.ts";
+import { buildPayload, estimateTokens, loadPayloadInputs, payloadHash, type NarrativePayload } from "../src/lib/narrative/payload.ts";
 import { promptVersionFor } from "../src/lib/narrative/prompt.ts";
 import {
   generateNarrative,
@@ -58,7 +52,9 @@ function readSnapshots(): (SnapshotRef & { run_id: string })[] {
   const directory = join(DATA_CURATED, NARRATIVE_SNAPSHOTS.name);
   if (!existsSync(directory)) return [];
   const rows: (SnapshotRef & { run_id: string })[] = [];
-  for (const file of readdirSync(directory).filter((f) => f.endsWith(".csv")).sort()) {
+  for (const file of readdirSync(directory)
+    .filter((f) => f.endsWith(".csv"))
+    .sort()) {
     for (const row of parseCsv(readFileSync(join(directory, file), "utf8"))) {
       rows.push({
         run_id: row["run_id"] ?? "",
@@ -108,7 +104,9 @@ function summarise(payload: NarrativePayload, hash: string): void {
       `${payload.reservoirs.length} reservoirs` +
       (mazar ? `, Mazar ${mazar.level_masl} m` : "") +
       (payload.adequacy ? `, tier ${payload.adequacy.risk_tier}` : ", no adequacy") +
-      (payload.precipitation_16d ? `, rain ${payload.precipitation_16d.forecast_total_mm} mm vs p50 ${payload.precipitation_16d.climatology_p50_mm ?? "?"}` : "") +
+      (payload.precipitation_16d
+        ? `, rain ${payload.precipitation_16d.forecast_total_mm} mm vs p50 ${payload.precipitation_16d.climatology_p50_mm ?? "?"}`
+        : "") +
       (payload.enso ? `, ONI ${payload.enso.month} ${payload.enso.oni} (${payload.enso.phase})` : ""),
   );
 }
@@ -160,7 +158,9 @@ async function main(): Promise<void> {
 
   const snapshots = readSnapshots();
   if (isNoOp(snapshots, hash, promptVersionFor(payload))) {
-    console.log(`unchanged since ${lastAnswered(snapshots)?.run_id ?? "the last snapshot"} (same payload and prompt ${promptVersionFor(payload)}): no call made`);
+    console.log(
+      `unchanged since ${lastAnswered(snapshots)?.run_id ?? "the last snapshot"} (same payload and prompt ${promptVersionFor(payload)}): no call made`,
+    );
     return;
   }
 
@@ -175,7 +175,10 @@ async function main(): Promise<void> {
   const row = snapshotRow({ generatedAt, result, payload, payloadHash: hash });
   const document =
     result.status === "ok" && result.output
-      ? withContract("narrative", narrativeDocument({ generatedAt, result: { ...result, output: result.output }, payload, payloadHash: hash }))
+      ? withContract(
+          "narrative",
+          narrativeDocument({ generatedAt, result: { ...result, output: result.output }, payload, payloadHash: hash }),
+        )
       : null;
 
   const stageDir = values.stage?.trim();

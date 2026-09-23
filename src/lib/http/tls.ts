@@ -81,12 +81,7 @@ export function judgeExpiry(subject: string, notAfter: string, today: string, wa
  * A pin without `not_after` is skipped: SMEC's
  * certificate expired in 2009 and is trusted by fingerprint alone, which is the point of it.
  */
-export function expiryFindings(
-  pins: PinFile,
-  bundles: { name: string; pem: string }[],
-  today: string,
-  warnDays = 30,
-): ExpiryFinding[] {
+export function expiryFindings(pins: PinFile, bundles: { name: string; pem: string }[], today: string, warnDays = 30): ExpiryFinding[] {
   const findings: ExpiryFinding[] = [];
   const judge = (subject: string, notAfter: string): void => void findings.push(judgeExpiry(subject, notAfter, today, warnDays));
   for (const [host, pin] of Object.entries(pins.hosts)) {

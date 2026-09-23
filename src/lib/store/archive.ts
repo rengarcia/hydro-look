@@ -83,7 +83,8 @@ function runStamp(fetchedAt: string): string {
 /** The file (relative to the archive root) a response lands in. */
 export function archiveFile(source: string, endpoint: string, slot: ArchiveSlot, fetchedAt: string): string {
   const day = slot === "run" || slot === null ? fetchedAt.slice(0, 10) : slot;
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) throw new Error(`archive: ${source}/${endpoint} needs a YYYY-MM-DD day, got ${JSON.stringify(day)}`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day))
+    throw new Error(`archive: ${source}/${endpoint} needs a YYYY-MM-DD day, got ${JSON.stringify(day)}`);
   const stamp = slot === "run" ? runStamp(fetchedAt) : day;
   return `${source}/${day.slice(0, 4)}/${day.slice(5, 7)}/${endpoint}.${stamp}${SUFFIX}`;
 }
@@ -249,9 +250,7 @@ export class RawArchive {
     const written: string[] = [];
     for (const rel of [...this.touched].sort()) {
       const records = this.files.get(rel)!;
-      const lines = [...records.values()]
-        .sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0))
-        .map((r) => JSON.stringify(r));
+      const lines = [...records.values()].sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0)).map((r) => JSON.stringify(r));
       const path = join(this.root, rel);
       const text = `${lines.join("\n")}\n`;
       // An unchanged file is left alone, so a re-fetch of an unrevised day is not even a touch.

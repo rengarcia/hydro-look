@@ -43,14 +43,7 @@ import { persistence } from "../src/lib/models/baselines.ts";
 import { createFitCache, DEFAULT_WATER_BALANCE, waterBalanceModel } from "../src/lib/models/water-balance.ts";
 import { crisisEpisodes, crisisLeadTime, DEFAULT_BACKTEST, runBacktest } from "../src/lib/models/backtest.ts";
 import { falseAlarms, type OriginCrossing } from "../src/lib/models/forecast.ts";
-import {
-  baseFeatures,
-  boostedModel,
-  createM4Cache,
-  DEFAULT_M4,
-  M3_FEATURES,
-  M4_VARIANTS,
-} from "../src/lib/models/boosted.ts";
+import { baseFeatures, boostedModel, createM4Cache, DEFAULT_M4, M3_FEATURES, M4_VARIANTS } from "../src/lib/models/boosted.ts";
 import {
   gridCrossings,
   M4_SNAPSHOT_PATH,
@@ -87,7 +80,8 @@ function main(): void {
   const lastOrigin = values["last-origin"]?.trim() || DEFAULT_BACKTEST.lastOrigin;
   // Mazar's snapshot is what the daily forecast stands on; another site's run is written only
   // where it is explicitly asked to go.
-  const write = !(values["dry-run"] ?? false) && values["last-origin"] === undefined && (SITE === PUBLISHED_M4_SITE || values.out !== undefined);
+  const write =
+    !(values["dry-run"] ?? false) && values["last-origin"] === undefined && (SITE === PUBLISHED_M4_SITE || values.out !== undefined);
   const outPath = values.out?.trim() || M4_SNAPSHOT_PATH;
   // The plan's critical marker (`thresholds.csv`, unverified), or the site's highest declared floor.
   const PLAN_CRITICAL_LEVEL = (criticalMarker(SITE) ?? thresholdsFor(SITE)[0])?.levelMasl ?? Number.NaN;
@@ -123,7 +117,10 @@ function main(): void {
     console.log(
       `  ${score.modelId.padEnd(22)}` +
         score.horizons
-          .map((h) => `${h.horizonDays}d ${h.maeM.toFixed(2)}m ${h.skillVsPersistence === null ? "" : `(${(h.skillVsPersistence * 100).toFixed(1)}%)`}`)
+          .map(
+            (h) =>
+              `${h.horizonDays}d ${h.maeM.toFixed(2)}m ${h.skillVsPersistence === null ? "" : `(${(h.skillVsPersistence * 100).toFixed(1)}%)`}`,
+          )
           .join("  "),
     );
   }
@@ -164,7 +161,11 @@ function main(): void {
       const runUp = p50
         .filter((c) => c.origin < episode.crossedOn)
         .slice(-6)
-        .map((c) => ({ origin: c.origin, p50: c.predictedCrossing, p10: p10.find((d) => d.origin === c.origin)?.predictedCrossing ?? null }));
+        .map((c) => ({
+          origin: c.origin,
+          p50: c.predictedCrossing,
+          p10: p10.find((d) => d.origin === c.origin)?.predictedCrossing ?? null,
+        }));
       return {
         modelId: id,
         p50CalledFrom: at50.calledFrom,

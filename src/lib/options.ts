@@ -103,8 +103,7 @@ export function parseOptions(argv: string[]): Options {
     if (!Object.hasOwn(ENERGY_MODULES, plant)) throw new Error(`unknown plant code "${plant}"`);
   }
 
-  const optionalDate = (raw: string | undefined): IsoDate | undefined =>
-    raw && raw.trim() !== "" ? assertIsoDate(raw.trim()) : undefined;
+  const optionalDate = (raw: string | undefined): IsoDate | undefined => (raw && raw.trim() !== "" ? assertIsoDate(raw.trim()) : undefined);
 
   return {
     command: positionals[0] ?? "daily",

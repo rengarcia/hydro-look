@@ -89,8 +89,22 @@ describe("site/data against the fixture", () => {
 describe("daysFrom", () => {
   const tables: DayTables = {
     forecastRuns: [
-      { run_id: "a", origin_date: "2026-09-21", generated_at: "2026-09-22T19:00:00Z", site: "mazar", model_id: "M3", origin_level_masl: "2138.37" },
-      { run_id: "b", origin_date: "2026-09-21", generated_at: "2026-09-23T02:00:00Z", site: "mazar", model_id: "M3", origin_level_masl: "2138.37" },
+      {
+        run_id: "a",
+        origin_date: "2026-09-21",
+        generated_at: "2026-09-22T19:00:00Z",
+        site: "mazar",
+        model_id: "M3",
+        origin_level_masl: "2138.37",
+      },
+      {
+        run_id: "b",
+        origin_date: "2026-09-21",
+        generated_at: "2026-09-23T02:00:00Z",
+        site: "mazar",
+        model_id: "M3",
+        origin_level_masl: "2138.37",
+      },
     ],
     forecastValues: [
       { run_id: "b", horizon_days: "90", target_date: "2026-12-20", p10: "2106", p50: "2126.47", p90: "2133", model_id: "" },
@@ -104,7 +118,17 @@ describe("daysFrom", () => {
     ],
     narrativeSnapshots: [
       { run_id: "n1", origin_date: "2026-09-21", generated_at: "2026-09-23T01:00:00Z", status: "rejected", outlook_es: "" },
-      { run_id: "n2", origin_date: "2026-09-21", generated_at: "2026-09-23T02:30:00Z", status: "ok", model_id: "m", risk_tier: "ajustado", confidence: "medium", outlook_es: "Texto.", drivers_json: '["uno","dos"]' },
+      {
+        run_id: "n2",
+        origin_date: "2026-09-21",
+        generated_at: "2026-09-23T02:30:00Z",
+        status: "ok",
+        model_id: "m",
+        risk_tier: "ajustado",
+        confidence: "medium",
+        outlook_es: "Texto.",
+        drivers_json: '["uno","dos"]',
+      },
     ],
   };
 

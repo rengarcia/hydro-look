@@ -19,9 +19,8 @@ export function Reservoirs({ now }: { now: LatestDocument | null }) {
           titleId="embalses-title"
           title={`${count === 8 ? "Ocho" : count} embalses, una misma escala: metros de carga útil.`}
         >
-          Cada columna va del mínimo declarado a la cresta de su banda y se llena hasta la cota de hoy. Mide metros, no
-          agua almacenada: la superficie de Mazar más que se duplica entre los 2.110 y los 2.150 m. Cada una lleva a la
-          ficha del embalse.
+          Cada columna va del mínimo declarado a la cresta de su banda y se llena hasta la cota de hoy. Mide metros, no agua almacenada: la
+          superficie de Mazar más que se duplica entre los 2.110 y los 2.150 m. Cada una lleva a la ficha del embalse.
           {hatched ? " Las columnas rayadas no tienen banda publicada en ninguna fuente; su escala es el rango registrado." : ""}
         </SectionIntro>
         <div className="legend-stack">

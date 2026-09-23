@@ -23,7 +23,7 @@ import { addDays } from "../src/lib/util/dates.ts";
 /** Balance days with a noisy, drifting hydro share, so a pooled band under-covers. */
 function days(n: number, from = "2016-01-01", importGwh = 5): BalanceDay[] {
   let seed = 7;
-  const random = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   return Array.from({ length: n }, (_, i) => {
     const load = 80 * Math.pow(1.05, i / 365) * (1 + 0.03 * Math.sin((i / 7) * 2 * Math.PI));
     const drift = 1 + (i / n) * 0.6;
@@ -96,7 +96,9 @@ describe("the adaptive band stretch", () => {
     const [p, a] = [cov(pooled), cov(adaptive)];
     for (let i = 0; i < p.length; i++) expect(Math.abs(a[i]! - 0.8)).toBeLessThanOrEqual(Math.abs(p[i]! - 0.8) + 1e-9);
     // Medians are untouched: only the band moved.
-    expect(adaptive.scores.map((s) => s.horizons.map((h) => h.maeGwhDay))).toEqual(pooled.scores.map((s) => s.horizons.map((h) => h.maeGwhDay)));
+    expect(adaptive.scores.map((s) => s.horizons.map((h) => h.maeGwhDay))).toEqual(
+      pooled.scores.map((s) => s.horizons.map((h) => h.maeGwhDay)),
+    );
     expect([...adaptive.calibration.values()].every((c) => (c.stretch ?? 1) >= 1)).toBe(true);
   }, 60_000);
 });

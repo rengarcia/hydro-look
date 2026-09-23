@@ -28,6 +28,8 @@ jobs:
       - run: shellcheck -x .github/scripts/*.sh
       - run: npm run typecheck
       - run: npm run lint
+      # Formatting is Prettier's (.prettierrc.json; data, fixtures and Markdown are left alone).
+      - run: npm run format:check
       # Every parser runs against the recorded Phase 0 responses, so CI needs no network. Run with
       # coverage over all of src/lib, against floors in vitest.config.ts: a module nobody tests
       # counts as a zero, so the list of untested modules cannot grow unnoticed.

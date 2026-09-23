@@ -29,11 +29,7 @@ export function writeFileAtomic(path: string, content: string | Buffer): void {
  * into a commit and makes "did this run find anything" unanswerable from `git log`. Returns
  * whether the file was written.
  */
-export function writeJsonUnlessOnlyStamped(
-  path: string,
-  document: object,
-  stamps: readonly string[] = ["generated_at"],
-): boolean {
+export function writeJsonUnlessOnlyStamped(path: string, document: object, stamps: readonly string[] = ["generated_at"]): boolean {
   const text = `${JSON.stringify(document, null, 2)}\n`;
   if (existsSync(path)) {
     try {

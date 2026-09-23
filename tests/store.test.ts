@@ -29,7 +29,11 @@ describe("CSV", () => {
   });
 
   it("never writes scientific notation", () => {
-    expect(toCsv(["v"], [{ v: 0.0000001 }]).trim().split("\n")[1]).toBe("0.0000001");
+    expect(
+      toCsv(["v"], [{ v: 0.0000001 }])
+        .trim()
+        .split("\n")[1],
+    ).toBe("0.0000001");
   });
 });
 
@@ -103,7 +107,15 @@ describe("operating bands", () => {
 
   it("extends an existing row's span rather than duplicating it", () => {
     const existing = [
-      { site: "mazar", cota_min: "2100", cota_max: "2153", qmax_m3s: "800", source: "ords:repDiaHid12m", first_date: "2024-01-01", last_date: "2025-01-01" },
+      {
+        site: "mazar",
+        cota_min: "2100",
+        cota_max: "2153",
+        qmax_m3s: "800",
+        source: "ords:repDiaHid12m",
+        first_date: "2024-01-01",
+        last_date: "2025-01-01",
+      },
     ];
     const folded = foldBands(
       [{ date: "2025-06-01", site: "mazar", cota_min: 2100, cota_max: 2153, qmax_m3s: 800, source: "ords:repDiaHid12m" }],
@@ -118,7 +130,14 @@ describe("raw archive", () => {
   it("files a day of responses as one plain NDJSON file, deduped by key, and reads them back", () => {
     const root = temp();
     const archive = new RawArchive(root);
-    const record = (key: string, body: string) => ({ key, url: "https://example/x", method: "GET", status: 200, fetched_at: "2026-09-22T00:00:00Z", body });
+    const record = (key: string, body: string) => ({
+      key,
+      url: "https://example/x",
+      method: "GET",
+      status: 200,
+      fetched_at: "2026-09-22T00:00:00Z",
+      body,
+    });
 
     const ref = archive.add("celec_ords", "repDiaNivQIng", "2024-10-15", record("repDiaNivQIng:2024-10-15", '{"items":[]}'));
     archive.add("celec_ords", "repDiaNivQIng", "2024-10-16", record("repDiaNivQIng:2024-10-16", '{"items":[1]}'));
@@ -140,7 +159,9 @@ describe("raw archive", () => {
   });
 
   it("files a response under the day of the data, not the fetch; live ones by fetch day or per run", () => {
-    expect(archiveFile("celec_ords", "repDiaHid12m", "2016-09-20", "2026-09-22T00:00:00Z")).toBe("celec_ords/2016/09/repDiaHid12m.2016-09-20.ndjson");
+    expect(archiveFile("celec_ords", "repDiaHid12m", "2016-09-20", "2026-09-22T00:00:00Z")).toBe(
+      "celec_ords/2016/09/repDiaHid12m.2016-09-20.ndjson",
+    );
     expect(archiveFile("noaa", "oni", null, "2026-09-22T04:41:56Z")).toBe("noaa/2026/09/oni.2026-09-22.ndjson");
     expect(archiveFile("cenace_operativa", "InformacionOperativa", "run", "2026-09-22T14:36:42Z")).toBe(
       "cenace_operativa/2026/09/InformacionOperativa.2026-09-22T143642Z.ndjson",
@@ -149,8 +170,22 @@ describe("raw archive", () => {
 
   it("keeps a failed answer beside the good one instead of replacing it", () => {
     const archive = new RawArchive(temp());
-    const good = archive.add("celec_ords", "repDiaHid12m", "2026-09-20", { key: "repDiaHid12m:2026-09-20", url: "u", method: "GET", status: 200, fetched_at: "2026-09-22T00:00:00Z", body: "good" });
-    const bad = archive.add("celec_ords", "repDiaHid12m", "2026-09-20", { key: "repDiaHid12m:2026-09-20", url: "u", method: "GET", status: 503, fetched_at: "2026-09-23T00:00:00Z", body: "down" });
+    const good = archive.add("celec_ords", "repDiaHid12m", "2026-09-20", {
+      key: "repDiaHid12m:2026-09-20",
+      url: "u",
+      method: "GET",
+      status: 200,
+      fetched_at: "2026-09-22T00:00:00Z",
+      body: "good",
+    });
+    const bad = archive.add("celec_ords", "repDiaHid12m", "2026-09-20", {
+      key: "repDiaHid12m:2026-09-20",
+      url: "u",
+      method: "GET",
+      status: 503,
+      fetched_at: "2026-09-23T00:00:00Z",
+      body: "down",
+    });
     expect(bad).toBe("celec_ords/2026/09/repDiaHid12m.2026-09-20.ndjson#repDiaHid12m:2026-09-20~http503@2026-09-23T00:00:00Z");
     expect(archive.read(good)?.body).toBe("good");
     expect(archive.read(bad)?.body).toBe("down");
@@ -193,15 +228,24 @@ describe("raw archive", () => {
 
   it("refiles a legacy record by the date in its key, or by fetch time for live endpoints", () => {
     const at = (key: string, fetched_at: string) => ({ key, url: "u", method: "GET", status: 200, fetched_at, body: "" });
-    expect(legacyTarget("celec_ords/2027/01/csrCaudCuenAniosAvg.ndjson.gz", at("csrCaudCuenAniosAvg:2010-01-01:2027-01-01", "2026-09-23T02:36:13Z"))).toBe(
-      "celec_ords/2027/01/csrCaudCuenAniosAvg.2027-01-01.ndjson",
-    );
-    expect(legacyTarget("open_meteo/2026/09/forecast.ndjson.gz", at("forecast:paute:-2.6:-78.6:2026-09-21:2026-10-06:2026-09-22T04:41:56Z", "2026-09-22T04:41:56Z"))).toBe(
-      "open_meteo/2026/09/forecast.2026-09-22.ndjson",
-    );
-    expect(legacyTarget("cenace_operativa/2026/09/InformacionOperativa.ndjson.gz", at("InformacionOperativa:2026-09-22T01:19:06Z", "2026-09-22T01:19:06Z"))).toBe(
-      "cenace_operativa/2026/09/InformacionOperativa.2026-09-22T011906Z.ndjson",
-    );
+    expect(
+      legacyTarget(
+        "celec_ords/2027/01/csrCaudCuenAniosAvg.ndjson.gz",
+        at("csrCaudCuenAniosAvg:2010-01-01:2027-01-01", "2026-09-23T02:36:13Z"),
+      ),
+    ).toBe("celec_ords/2027/01/csrCaudCuenAniosAvg.2027-01-01.ndjson");
+    expect(
+      legacyTarget(
+        "open_meteo/2026/09/forecast.ndjson.gz",
+        at("forecast:paute:-2.6:-78.6:2026-09-21:2026-10-06:2026-09-22T04:41:56Z", "2026-09-22T04:41:56Z"),
+      ),
+    ).toBe("open_meteo/2026/09/forecast.2026-09-22.ndjson");
+    expect(
+      legacyTarget(
+        "cenace_operativa/2026/09/InformacionOperativa.ndjson.gz",
+        at("InformacionOperativa:2026-09-22T01:19:06Z", "2026-09-22T01:19:06Z"),
+      ),
+    ).toBe("cenace_operativa/2026/09/InformacionOperativa.2026-09-22T011906Z.ndjson");
     expect(legacyTarget("xm/2016/05/ExpoEner_Enlace.ndjson.gz", at("ExpoEner:Enlace:2016-05-01:2016-05-31", "2026-09-22T18:59:13Z"))).toBe(
       "xm/2016/05/ExpoEner_Enlace.2016-05-01.ndjson",
     );

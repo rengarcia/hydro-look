@@ -33,7 +33,8 @@ esac
 
 // Whatever the machine's global git config says about push negotiation, a local bare remote needs none.
 const GIT_ENV = { GIT_CONFIG_COUNT: "1", GIT_CONFIG_KEY_0: "push.negotiate", GIT_CONFIG_VALUE_0: "false" };
-const git = (cwd: string, ...args: string[]) => execFileSync("git", args, { cwd, encoding: "utf8", env: { ...process.env, ...GIT_ENV } }).trim();
+const git = (cwd: string, ...args: string[]) =>
+  execFileSync("git", args, { cwd, encoding: "utf8", env: { ...process.env, ...GIT_ENV } }).trim();
 
 function setup() {
   const root = mkdtempSync(join(tmpdir(), "hydro-push-"));
@@ -54,7 +55,15 @@ function setup() {
     spawnSync("bash", [script, "Test ingest"], {
       cwd: work,
       encoding: "utf8",
-      env: { ...process.env, ...GIT_ENV, PATH: `${bin}:${process.env["PATH"]}`, BRANCH: "main", BATCH_DIR: batch, FAKE_ROWS: rows, ...extra },
+      env: {
+        ...process.env,
+        ...GIT_ENV,
+        PATH: `${bin}:${process.env["PATH"]}`,
+        BRANCH: "main",
+        BATCH_DIR: batch,
+        FAKE_ROWS: rows,
+        ...extra,
+      },
     });
   return { root, origin, work, run };
 }

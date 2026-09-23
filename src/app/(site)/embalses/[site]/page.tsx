@@ -92,8 +92,8 @@ export default async function ReservoirPage({ params }: { params: Promise<{ site
               ? ` De ${reservoir.label} se pronostica el caudal de entrada, en /api/forecast.json.`
               : ` De ${reservoir.label} se prueba un pronóstico de caudal de entrada, que hoy no se publica.`
             : ""}{" "}
-          Para insertar esta ficha en otra página,{" "}
-          <a href={`/embed/${site}/`}>/embed/{site}/</a>; sus números, en <a href="/api/latest.json">/api/latest.json</a>.
+          Para insertar esta ficha en otra página, <a href={`/embed/${site}/`}>/embed/{site}/</a>; sus números, en{" "}
+          <a href="/api/latest.json">/api/latest.json</a>.
         </p>
       </div>
       <div className="shell footer-bar flush">

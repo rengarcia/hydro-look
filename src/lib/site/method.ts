@@ -56,8 +56,14 @@ export function precipFallbackText(reason: string): string {
   const rules: [RegExp, (m: RegExpExecArray) => string][] = [
     [/^no ERA5 rows$/, () => "todavía no tiene filas de ERA5"],
     [/^ERA5 starts (\d{4}-\d{2}-\d{2}), not by/, (m) => `su ERA5 empieza el ${m[1]}, no en enero de 1990`],
-    [/^([\d.]+)% of days since (\d{4})-\d{2}-\d{2}, under ([\d.]+)%$/, (m) => `tiene el ${m[1]!.replace(".", ",")} % de los días desde ${m[2]}, por debajo del ${m[3]} % exigido`],
-    [/^newest ERA5 day (\d{4}-\d{2}-\d{2}) is more than (\d+) days behind/, (m) => `su día de ERA5 más reciente, el ${m[1]}, va más de ${m[2]} días por detrás`],
+    [
+      /^([\d.]+)% of days since (\d{4})-\d{2}-\d{2}, under ([\d.]+)%$/,
+      (m) => `tiene el ${m[1]!.replace(".", ",")} % de los días desde ${m[2]}, por debajo del ${m[3]} % exigido`,
+    ],
+    [
+      /^newest ERA5 day (\d{4}-\d{2}-\d{2}) is more than (\d+) days behind/,
+      (m) => `su día de ERA5 más reciente, el ${m[1]}, va más de ${m[2]} días por detrás`,
+    ],
   ];
   for (const [pattern, say] of rules) {
     const m = pattern.exec(why);
@@ -72,7 +78,13 @@ export function precipFallbackText(reason: string): string {
  * block is — a document written before the block existed has nothing to say about it.
  */
 export function modelNotes(input: {
-  precipitation_basin?: { basin: string; verified_centroid: boolean; era5_days: number; share_since_1990: number; fallback_reason: string | null } | null;
+  precipitation_basin?: {
+    basin: string;
+    verified_centroid: boolean;
+    era5_days: number;
+    share_since_1990: number;
+    fallback_reason: string | null;
+  } | null;
   band_method?: { method: string; nominal_coverage: number; stretch_by_horizon: { horizon_days: number; stretch: number | null }[] } | null;
 }): MethodNote[] {
   const notes: MethodNote[] = [];
@@ -111,5 +123,8 @@ export function modelNotes(input: {
 
 /** `a `b` c` ->`["a ", {code: "b"}, " c"]`: the only markup a note may carry. */
 export function splitCode(text: string): (string | { code: string })[] {
-  return text.split(/(`[^`]+`)/).filter((part) => part !== "").map((part) => (part.startsWith("`") ? { code: part.slice(1, -1) } : part));
+  return text
+    .split(/(`[^`]+`)/)
+    .filter((part) => part !== "")
+    .map((part) => (part.startsWith("`") ? { code: part.slice(1, -1) } : part));
 }

@@ -40,7 +40,9 @@ export function readCuratedTable(name: string, root: string = DATA_CURATED): Row
   const directory = join(root, name);
   if (!existsSync(directory)) return [];
   const rows: Row[] = [];
-  for (const file of readdirSync(directory).filter((f) => f.endsWith(".csv")).sort()) {
+  for (const file of readdirSync(directory)
+    .filter((f) => f.endsWith(".csv"))
+    .sort()) {
     rows.push(...parseCsv(readFileSync(join(directory, file), "utf8")));
   }
   return rows;
@@ -122,11 +124,18 @@ export function summarise(rows: readonly ScoredRow[]): ScoreGroup[] {
         mae: mean(list.map((r) => Math.abs(r.observed - r.p50))),
         bias: mean(list.map((r) => r.observed - r.p50)),
         nBand: banded.length,
-        coverageP10P90: banded.length === 0 ? null : banded.filter((r) => r.observed >= r.p10! && r.observed <= r.p90!).length / banded.length,
+        coverageP10P90:
+          banded.length === 0 ? null : banded.filter((r) => r.observed >= r.p10! && r.observed <= r.p90!).length / banded.length,
         pinballMean:
           banded.length === 0
             ? null
-            : mean(banded.flatMap((r) => [pinballLoss(r.observed, r.p10!, 0.1), pinballLoss(r.observed, r.p50, 0.5), pinballLoss(r.observed, r.p90!, 0.9)])),
+            : mean(
+                banded.flatMap((r) => [
+                  pinballLoss(r.observed, r.p10!, 0.1),
+                  pinballLoss(r.observed, r.p50, 0.5),
+                  pinballLoss(r.observed, r.p90!, 0.9),
+                ]),
+              ),
         firstOrigin: origins[0] ?? null,
         lastOrigin: origins.at(-1) ?? null,
       };
@@ -268,7 +277,8 @@ export function scorecardBlock(card: Scorecard, generatedAt: string, recent = 10
   return {
     generated_at: generatedAt,
     observed_through: card.observedThrough,
-    target: card.kind === "level" ? "level on the target day, m" : "net requirement (demand − hydro), mean over the horizon window, GWh/day",
+    target:
+      card.kind === "level" ? "level on the target day, m" : "net requirement (demand − hydro), mean over the horizon window, GWh/day",
     units: card.units,
     runs_considered: card.runsConsidered,
     runs_superseded: card.runsSuperseded,
@@ -278,7 +288,9 @@ export function scorecardBlock(card: Scorecard, generatedAt: string, recent = 10
     method:
       "Every published run whose horizon has passed, scored under the model and version that made it; the last run " +
       "generated for each origin and version only. Pending rows have not reached their target date yet" +
-      (card.kind === "requirement" ? "; excluded rows fall on a missing or rationed day." : "; excluded rows have no observation on the target day."),
+      (card.kind === "requirement"
+        ? "; excluded rows fall on a missing or rationed day."
+        : "; excluded rows have no observation on the target day."),
     by_horizon: card.groups.map((g) => ({
       model_id: g.modelId,
       model_version: g.modelVersion,

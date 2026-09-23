@@ -82,8 +82,7 @@ function Crossing({ forecast }: { forecast: ForecastDocument }) {
     <div className="panel">
       <h3 className="panel-title">¿Cuándo cruzaría los {level} m?</h3>
       <p className="panel-lede">
-        Cada año análogo es un año real de caudal —de los registrados para esta época del año— pasado por la misma
-        regla de descarga.
+        Cada año análogo es un año real de caudal —de los registrados para esta época del año— pasado por la misma regla de descarga.
         {threshold.status === "unverified" ? ` ${level} m es un marcador de este proyecto (PLAN.md §7), no de CELEC.` : ""}
       </p>
       {/* One square per analogue year, filled when that year crosses. A picture of a count: the
@@ -106,7 +105,12 @@ function Crossing({ forecast }: { forecast: ForecastDocument }) {
         className="scenarios-table"
         caption={`Tres años análogos con nombre, frente a los ${level} m`}
         captionHidden
-        columns={[{ label: "Escenario" }, { label: "Año", numeric: true }, { label: "Caudal medio", numeric: true, wideOnly: true }, { label: "Resultado" }]}
+        columns={[
+          { label: "Escenario" },
+          { label: "Año", numeric: true },
+          { label: "Caudal medio", numeric: true, wideOnly: true },
+          { label: "Resultado" },
+        ]}
         rows={threshold.scenarios.map((s) => [
           scenarioOf(s.scenario).name,
           s.analogYear,
@@ -136,7 +140,11 @@ function Foresight({ forecast }: { forecast: ForecastDocument }) {
         {check.episodes.map((e) => {
           const verdict =
             e.p50_lead_time_days !== null
-              ? { text: `La mediana lo anticipó ${e.p50_lead_time_days} días antes.`, pill: `${e.p50_lead_time_days} días antes`, tone: "good" }
+              ? {
+                  text: `La mediana lo anticipó ${e.p50_lead_time_days} días antes.`,
+                  pill: `${e.p50_lead_time_days} días antes`,
+                  tone: "good",
+                }
               : e.p10_lead_time_days !== null
                 ? {
                     text: `La cola seca (p10) lo marcó ${e.p10_lead_time_days} días antes; la mediana, no.`,

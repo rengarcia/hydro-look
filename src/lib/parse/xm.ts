@@ -133,11 +133,7 @@ export interface XmExchangeDay {
  * be for the same window: a day present in one and absent from the other is a day of one-way
  * flow, which is only true if the other answer was actually received.
  */
-export function combineExchange(
-  exports: readonly XmHourlyDay[],
-  imports: readonly XmHourlyDay[],
-  notes: string[] = [],
-): XmExchangeDay[] {
+export function combineExchange(exports: readonly XmHourlyDay[], imports: readonly XmHourlyDay[], notes: string[] = []): XmExchangeDay[] {
   const rows = new Map<string, XmExchangeDay>();
   const known = new Set<string>(XM_LINKS);
   const add = (day: XmHourlyDay, direction: "export" | "import") => {

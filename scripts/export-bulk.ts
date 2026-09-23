@@ -31,7 +31,13 @@ function main(): void {
     console.log(`${meta.file.padEnd(34)} ${String(meta.rows).padStart(7)} rows  ${(gz.length / 1024).toFixed(0).padStart(6)} KiB`);
   }
 
-  const index = { schema_version: SCHEMA_VERSION, format: "csv, gzip, UTF-8, header on the first line", tables, license: LICENSE, attribution: ATTRIBUTION };
+  const index = {
+    schema_version: SCHEMA_VERSION,
+    format: "csv, gzip, UTF-8, header on the first line",
+    tables,
+    license: LICENSE,
+    attribution: ATTRIBUTION,
+  };
   writeFileSync(join(outDir, "index.json"), `${JSON.stringify(index, null, 2)}\n`);
   console.log(`wrote ${tables.length} tables and index.json to ${outDir}`);
 }

@@ -61,7 +61,9 @@ export function ReservoirCutFor({ reservoir, forecast }: { reservoir: ReservoirS
       label={
         `Corte del embalse de ${reservoir.label}: cota de ${num(reservoir.level.masl, 2)} m el ${longDate(reservoir.level.date)}` +
         (lowest !== null ? `, entre el mínimo declarado más bajo, ${num(lowest, 0)} m,` : "") +
-        (declared ? ` y la cresta de la banda, ${num(crest, 0)} m.` : ` y el máximo registrado, ${num(crest, 0)} m; no hay banda declarada.`)
+        (declared
+          ? ` y la cresta de la banda, ${num(crest, 0)} m.`
+          : ` y el máximo registrado, ${num(crest, 0)} m; no hay banda declarada.`)
       }
     />
   );
@@ -125,8 +127,8 @@ export function InflowPanel({ reservoir, heading }: { reservoir: ReservoirSnapsh
           {heading ? <h3 className="panel-title">{heading}</h3> : null}
           {heading && climatology ? (
             <p className="panel-lede">
-              p10 {num(climatology.p10, 1)} · p50 {num(climatology.p50, 1)} · p90 {num(climatology.p90, 1)} m³/s en esta
-              época del año, {climatology.years} años.
+              p10 {num(climatology.p10, 1)} · p50 {num(climatology.p50, 1)} · p90 {num(climatology.p90, 1)} m³/s en esta época del año,{" "}
+              {climatology.years} años.
             </p>
           ) : null}
           <span className="big-figure num">
@@ -138,13 +140,15 @@ export function InflowPanel({ reservoir, heading }: { reservoir: ReservoirSnapsh
             {climatology ? ` · mediana histórica ${num(climatology.p50, 1)} m³/s` : ""}
           </span>
         </div>
-        {climatology?.percentile_today != null ? <PercentileTrack percentile={climatology.percentile_today} years={climatology.years} /> : null}
+        {climatology?.percentile_today != null ? (
+          <PercentileTrack percentile={climatology.percentile_today} years={climatology.years} />
+        ) : null}
       </div>
       <InflowLegend />
       <InflowChart readings={data.readings} ribbon={data.band} label={label} subject={`Caudal de entrada a ${reservoir.label}`} />
       <p className="fine spaced">
-        Los cortes en la línea son días que la fuente nunca publicó. Un cero no significa «el río se detuvo»: en los
-        reportes de doce meses es cualquier valor por debajo de 0,5 m³/s.
+        Los cortes en la línea son días que la fuente nunca publicó. Un cero no significa «el río se detuvo»: en los reportes de doce meses
+        es cualquier valor por debajo de 0,5 m³/s.
         {climatology === null ? " Este registro aún es corto para una franja histórica: se necesitan al menos cinco años." : ""}
       </p>
     </div>

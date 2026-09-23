@@ -49,7 +49,16 @@ export const SITE_READS = {
     "national.total_generation_gwh",
     "national.delta_1d",
   ],
-  status: ["generated_at", "feeds[].id", "feeds[].label_es", "feeds[].latest", "feeds[].limit_days", "feeds[].state", "findings[].message", "tables"],
+  status: [
+    "generated_at",
+    "feeds[].id",
+    "feeds[].label_es",
+    "feeds[].latest",
+    "feeds[].limit_days",
+    "feeds[].state",
+    "findings[].message",
+    "tables",
+  ],
   forecast: [
     "origin_date",
     "site",

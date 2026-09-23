@@ -69,23 +69,28 @@ export const operatingBandRow = z.object({
 });
 export type OperatingBandRow = z.infer<typeof operatingBandRow>;
 
-export const weatherRow = z.object({
-  date: z.string().date(),
-  basin: z.string().regex(/^[a-z][a-z0-9_]*$/),
-  latitude: z.number().finite().min(-90).max(90),
-  longitude: z.number().finite().min(-180).max(180),
-  kind: z.enum(["era5", "forecast"]),
-  precip_mm: z.number().finite().nonnegative().nullable(),
-  temp_mean_c: z.number().finite().min(-90).max(60).nullable(),
-  // Collection vintage, not the upstream model's initialization time. Empty for ERA5.
-  issued_at: z.union([isoTimestamp, z.literal("")]),
-  source: z.enum(["open_meteo:era5", "open_meteo:forecast"]),
-  fetched_at: isoTimestamp,
-  raw_ref: z.string().min(1),
-}).refine((r) => r.kind === "era5"
-  ? r.issued_at === "" && r.source === "open_meteo:era5"
-  : r.issued_at === r.fetched_at && r.source === "open_meteo:forecast",
-{ message: "weather kind, source and collection vintage must agree" });
+export const weatherRow = z
+  .object({
+    date: z.string().date(),
+    basin: z.string().regex(/^[a-z][a-z0-9_]*$/),
+    latitude: z.number().finite().min(-90).max(90),
+    longitude: z.number().finite().min(-180).max(180),
+    kind: z.enum(["era5", "forecast"]),
+    precip_mm: z.number().finite().nonnegative().nullable(),
+    temp_mean_c: z.number().finite().min(-90).max(60).nullable(),
+    // Collection vintage, not the upstream model's initialization time. Empty for ERA5.
+    issued_at: z.union([isoTimestamp, z.literal("")]),
+    source: z.enum(["open_meteo:era5", "open_meteo:forecast"]),
+    fetched_at: isoTimestamp,
+    raw_ref: z.string().min(1),
+  })
+  .refine(
+    (r) =>
+      r.kind === "era5"
+        ? r.issued_at === "" && r.source === "open_meteo:era5"
+        : r.issued_at === r.fetched_at && r.source === "open_meteo:forecast",
+    { message: "weather kind, source and collection vintage must agree" },
+  );
 export type WeatherRow = z.infer<typeof weatherRow>;
 
 export const ensoRow = z.object({
@@ -102,30 +107,34 @@ export type EnsoRow = z.infer<typeof ensoRow>;
  * because a blank hour in one direction is flow in the other (see parse/xm.ts), so the two are
  * only meaningful read together. `raw_ref` lists both archived answers the row was built from.
  */
-export const xmExchangeRow = z.object({
-  date: isoDate,
-  link: z.enum(XM_LINKS),
-  export_kwh: z.number().finite().nonnegative(),
-  import_kwh: z.number().finite().nonnegative(),
-  export_hours: z.number().int().min(0).max(24),
-  import_hours: z.number().int().min(0).max(24),
-  source: z.literal("xm:servapibi"),
-  fetched_at: isoTimestamp,
-  raw_ref: z.string().min(1),
-}).refine((r) => r.export_hours + r.import_hours <= 24, { message: "an hour cannot flow both ways" })
+export const xmExchangeRow = z
+  .object({
+    date: isoDate,
+    link: z.enum(XM_LINKS),
+    export_kwh: z.number().finite().nonnegative(),
+    import_kwh: z.number().finite().nonnegative(),
+    export_hours: z.number().int().min(0).max(24),
+    import_hours: z.number().int().min(0).max(24),
+    source: z.literal("xm:servapibi"),
+    fetched_at: isoTimestamp,
+    raw_ref: z.string().min(1),
+  })
+  .refine((r) => r.export_hours + r.import_hours <= 24, { message: "an hour cannot flow both ways" })
   .refine((r) => r.export_hours + r.import_hours > 0, { message: "a stored link-day has at least one published hour" });
 export type XmExchangeRow = z.infer<typeof xmExchangeRow>;
 
 /** Colombian system state, one metric per row, so each series keeps its own publication lag. */
-export const xmSystemRow = z.object({
-  date: isoDate,
-  metric: z.enum(Object.keys(XM_SYSTEM_METRICS) as [XmSystemMetric, ...XmSystemMetric[]]),
-  value: z.number().finite().nonnegative(),
-  unit: z.enum(["fraction", "kWh", "COP/kWh"]),
-  source: z.literal("xm:servapibi"),
-  fetched_at: isoTimestamp,
-  raw_ref: z.string().min(1),
-}).refine((r) => XM_SYSTEM_METRICS[r.metric].unit === r.unit, { message: "metric and unit must agree" });
+export const xmSystemRow = z
+  .object({
+    date: isoDate,
+    metric: z.enum(Object.keys(XM_SYSTEM_METRICS) as [XmSystemMetric, ...XmSystemMetric[]]),
+    value: z.number().finite().nonnegative(),
+    unit: z.enum(["fraction", "kWh", "COP/kWh"]),
+    source: z.literal("xm:servapibi"),
+    fetched_at: isoTimestamp,
+    raw_ref: z.string().min(1),
+  })
+  .refine((r) => XM_SYSTEM_METRICS[r.metric].unit === r.unit, { message: "metric and unit must agree" });
 export type XmSystemRow = z.infer<typeof xmSystemRow>;
 
 /**
@@ -165,25 +174,27 @@ export type ForecastRunRow = z.infer<typeof forecastRunRow>;
  * ensemble spans what the analogue inflow years do, the published band is that widened by the
  * model's own backtest error.
  */
-export const forecastValueRow = z.object({
-  run_id: z.string().min(1),
-  origin_date: isoDate,
-  horizon_days: z.number().int().positive(),
-  target_date: isoDate,
-  p10: z.number().finite(),
-  p50: z.number().finite(),
-  p90: z.number().finite(),
-  ensemble_p10: nullableNumber,
-  ensemble_p90: nullableNumber,
-  ensemble_n: z.number().int().nonnegative(),
-  /**
-   * The model whose median this row publishes. Since MODEL_VERSION 2 a run can publish its
-   * 7-day row from M4 and the rest from M3, so the run's `model_id` no longer names every row.
-   * Optional because rows written before the column existed carry it empty, which means the
-   * run's own `model_id`.
-   */
-  model_id: z.string().min(1).optional(),
-}).refine((r) => r.p10 <= r.p50 && r.p50 <= r.p90, { message: "quantiles must not cross" });
+export const forecastValueRow = z
+  .object({
+    run_id: z.string().min(1),
+    origin_date: isoDate,
+    horizon_days: z.number().int().positive(),
+    target_date: isoDate,
+    p10: z.number().finite(),
+    p50: z.number().finite(),
+    p90: z.number().finite(),
+    ensemble_p10: nullableNumber,
+    ensemble_p90: nullableNumber,
+    ensemble_n: z.number().int().nonnegative(),
+    /**
+     * The model whose median this row publishes. Since MODEL_VERSION 2 a run can publish its
+     * 7-day row from M4 and the rest from M3, so the run's `model_id` no longer names every row.
+     * Optional because rows written before the column existed carry it empty, which means the
+     * run's own `model_id`.
+     */
+    model_id: z.string().min(1).optional(),
+  })
+  .refine((r) => r.p10 <= r.p50 && r.p50 <= r.p90, { message: "quantiles must not cross" });
 export type ForecastValueRow = z.infer<typeof forecastValueRow>;
 
 export interface TableSpec<T> {
@@ -321,7 +332,19 @@ export const FORECAST_RUNS: TableSpec<ForecastRunRow> = {
 export const FORECAST_VALUES: TableSpec<ForecastValueRow> = {
   name: "forecast_values",
   // `model_id` is last so every earlier header is a prefix of this one.
-  columns: ["run_id", "origin_date", "horizon_days", "target_date", "p10", "p50", "p90", "ensemble_p10", "ensemble_p90", "ensemble_n", "model_id"],
+  columns: [
+    "run_id",
+    "origin_date",
+    "horizon_days",
+    "target_date",
+    "p10",
+    "p50",
+    "p90",
+    "ensemble_p10",
+    "ensemble_p90",
+    "ensemble_n",
+    "model_id",
+  ],
   key: ["run_id", "horizon_days"],
   partitionBy: "origin_date",
   schema: forecastValueRow,
@@ -353,26 +376,27 @@ export const adequacyRunRow = z.object({
 });
 export type AdequacyRunRow = z.infer<typeof adequacyRunRow>;
 
-export const adequacyValueRow = z.object({
-  run_id: z.string().min(1),
-  origin_date: isoDate,
-  horizon_days: z.number().int().positive(),
-  target_date: isoDate,
-  demand_gwh_day: z.number().finite().positive(),
-  hydro_gwh_day: z.number().finite(),
-  requirement_gwh_day: z.number().finite(),
-  requirement_p10: nullableNumber,
-  requirement_p90: nullableNumber,
-  deficit_gwh_day: z.number().finite(),
-  deficit_p10: nullableNumber,
-  deficit_p90: nullableNumber,
-  stressed_deficit_gwh_day: z.number().finite(),
-  margin_pct: z.number().finite(),
-  tier: z.enum(["holgado", "vigilancia", "ajustado", "deficit"]),
-}).refine(
-  (r) => r.requirement_p10 === null || r.requirement_p90 === null || r.requirement_p10 <= r.requirement_p90,
-  { message: "requirement quantiles must not cross" },
-);
+export const adequacyValueRow = z
+  .object({
+    run_id: z.string().min(1),
+    origin_date: isoDate,
+    horizon_days: z.number().int().positive(),
+    target_date: isoDate,
+    demand_gwh_day: z.number().finite().positive(),
+    hydro_gwh_day: z.number().finite(),
+    requirement_gwh_day: z.number().finite(),
+    requirement_p10: nullableNumber,
+    requirement_p90: nullableNumber,
+    deficit_gwh_day: z.number().finite(),
+    deficit_p10: nullableNumber,
+    deficit_p90: nullableNumber,
+    stressed_deficit_gwh_day: z.number().finite(),
+    margin_pct: z.number().finite(),
+    tier: z.enum(["holgado", "vigilancia", "ajustado", "deficit"]),
+  })
+  .refine((r) => r.requirement_p10 === null || r.requirement_p90 === null || r.requirement_p10 <= r.requirement_p90, {
+    message: "requirement quantiles must not cross",
+  });
 export type AdequacyValueRow = z.infer<typeof adequacyValueRow>;
 
 export const ADEQUACY_RUNS: TableSpec<AdequacyRunRow> = {
@@ -439,27 +463,29 @@ export const ADEQUACY_VALUES: TableSpec<AdequacyValueRow> = {
  * `drivers_json` is a JSON array in one cell because a CSV has no lists, and the text columns
  * are quoted by `toCsv` like any other cell containing a comma.
  */
-export const narrativeSnapshotRow = z.object({
-  run_id: z.string().min(1),
-  generated_at: isoTimestamp,
-  origin_date: isoDate,
-  status: z.enum(["ok", "skipped", "rejected", "failed"]),
-  model_id: z.string().min(1),
-  prompt_version: z.string().min(1),
-  payload_hash: z.string().regex(/^[0-9a-f]{64}$/, "expected a sha256 hex digest"),
-  forecast_run_id: z.string(),
-  adequacy_run_id: z.string(),
-  risk_tier: z.union([z.enum(["holgado", "vigilancia", "ajustado", "deficit"]), z.literal("")]),
-  confidence: z.union([z.enum(["low", "medium", "high"]), z.literal("")]),
-  input_tokens: z.number().int().nonnegative().nullable(),
-  output_tokens: z.number().int().nonnegative().nullable(),
-  cost_usd: z.number().finite().nonnegative().nullable(),
-  outlook_es: z.string(),
-  drivers_json: z.string(),
-  reason: z.string(),
-}).refine((r) => r.status !== "ok" || (r.outlook_es !== "" && r.confidence !== ""), {
-  message: "an ok snapshot must carry its text and confidence",
-});
+export const narrativeSnapshotRow = z
+  .object({
+    run_id: z.string().min(1),
+    generated_at: isoTimestamp,
+    origin_date: isoDate,
+    status: z.enum(["ok", "skipped", "rejected", "failed"]),
+    model_id: z.string().min(1),
+    prompt_version: z.string().min(1),
+    payload_hash: z.string().regex(/^[0-9a-f]{64}$/, "expected a sha256 hex digest"),
+    forecast_run_id: z.string(),
+    adequacy_run_id: z.string(),
+    risk_tier: z.union([z.enum(["holgado", "vigilancia", "ajustado", "deficit"]), z.literal("")]),
+    confidence: z.union([z.enum(["low", "medium", "high"]), z.literal("")]),
+    input_tokens: z.number().int().nonnegative().nullable(),
+    output_tokens: z.number().int().nonnegative().nullable(),
+    cost_usd: z.number().finite().nonnegative().nullable(),
+    outlook_es: z.string(),
+    drivers_json: z.string(),
+    reason: z.string(),
+  })
+  .refine((r) => r.status !== "ok" || (r.outlook_es !== "" && r.confidence !== ""), {
+    message: "an ok snapshot must carry its text and confidence",
+  });
 export type NarrativeSnapshotRow = z.infer<typeof narrativeSnapshotRow>;
 
 export const NARRATIVE_SNAPSHOTS: TableSpec<NarrativeSnapshotRow> = {

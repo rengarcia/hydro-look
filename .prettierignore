@@ -1,0 +1,11 @@
+# Data, generated documents and recorded responses are written by scripts, not by hand.
+data/
+public/
+tests/fixtures/
+scripts/recon/
+out/
+.next/
+coverage/
+node_modules/
+package-lock.json
+*.md

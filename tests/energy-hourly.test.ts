@@ -36,7 +36,12 @@ describe("parseEnerDiaHours", () => {
   });
 
   it("leaves an hour published as null out, rather than writing zero", () => {
-    const partial = JSON.stringify({ items: [{ loctimestamp: "2024-10-15T06:00:00Z", valueedit: null }, { loctimestamp: "2024-10-15T07:00:00Z", valueedit: 5 }] });
+    const partial = JSON.stringify({
+      items: [
+        { loctimestamp: "2024-10-15T06:00:00Z", valueedit: null },
+        { loctimestamp: "2024-10-15T07:00:00Z", valueedit: 5 },
+      ],
+    });
     expect(parseEnerDiaHours(partial, "mol", { fetched_at: "2026-09-22T00:00:00Z", ref: "x" }).map((r) => r.hour_ending)).toEqual([2]);
   });
 });
@@ -45,13 +50,23 @@ describe("energyHourlyFromRaw", () => {
   it("backfills through any reader, keeping the latest fetch of each plant-hour and skipping failures", () => {
     const later = body.replace(/"valueedit":([\d.]+)/, '"valueedit":1');
     const archive = new Map<string, RawRecord[]>([
-      ["molEnerDia", [record("molEnerDia:2024-10-15", "2026-09-21T00:00:00Z", body), record("molEnerDia:2024-10-15", "2026-09-22T00:00:00Z", later), record("molEnerDia:2024-10-16", "2026-09-22T00:00:00Z", "", 500)]],
+      [
+        "molEnerDia",
+        [
+          record("molEnerDia:2024-10-15", "2026-09-21T00:00:00Z", body),
+          record("molEnerDia:2024-10-15", "2026-09-22T00:00:00Z", later),
+          record("molEnerDia:2024-10-16", "2026-09-22T00:00:00Z", "", 500),
+        ],
+      ],
     ]);
     const requested: string[] = [];
-    const rows = energyHourlyFromRaw((endpoint) => {
-      requested.push(endpoint);
-      return archive.get(endpoint) ?? [];
-    }, ["mol", "maz"]);
+    const rows = energyHourlyFromRaw(
+      (endpoint) => {
+        requested.push(endpoint);
+        return archive.get(endpoint) ?? [];
+      },
+      ["mol", "maz"],
+    );
     expect(requested).toEqual(["molEnerDia", "mazEnerDia"]);
     expect(rows).toHaveLength(24);
     expect(rows.filter((r) => r.fetched_at === "2026-09-22T00:00:00Z")).toHaveLength(24);

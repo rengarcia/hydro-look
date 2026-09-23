@@ -610,7 +610,10 @@ export function buildPayload(inputs: PayloadInputs): NarrativePayload {
   // "today" and the fan chart's are the same day; otherwise the newest level reading.
   const origin =
     inputs.forecast?.origin_date ??
-    reservoirs.map((r) => r.observed_on).sort().at(-1) ??
+    reservoirs
+      .map((r) => r.observed_on)
+      .sort()
+      .at(-1) ??
     inputs.latest.as_of;
 
   // §1.1: the verified Mazar centroid once its ERA5 climatology is adequate, else the provisional point.
@@ -673,7 +676,9 @@ export function estimateTokens(payload: NarrativePayload): number {
 function readTableDir(directory: string): Record<string, string>[] {
   if (!existsSync(directory)) return [];
   const rows: Record<string, string>[] = [];
-  for (const file of readdirSync(directory).filter((f) => f.endsWith(".csv")).sort()) {
+  for (const file of readdirSync(directory)
+    .filter((f) => f.endsWith(".csv"))
+    .sort()) {
     rows.push(...parseCsv(readFileSync(join(directory, file), "utf8")));
   }
   return rows;
