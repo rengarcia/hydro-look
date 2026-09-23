@@ -14,7 +14,7 @@
  * which is why it does not always equal the fill.
  *
  * On a phone each reservoir becomes a horizontal bar; both are rendered and CSS shows one, so the
- * page stays free of client JavaScript.
+ * switch needs no script.
  */
 
 import { num, pct, signed } from "../../lib/site/format.ts";

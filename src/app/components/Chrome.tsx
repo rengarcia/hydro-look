@@ -3,8 +3,9 @@
  * drawn behind the top of the page.
  *
  * The navigation collapses into a `<details>` element on a phone rather than a scripted drawer.
- * The site ships no client JavaScript, and `<details>` is a disclosure the browser already
- * knows how to open, close, focus and announce.
+ * The page needs no JavaScript to read — the only scripts it ships are Next's runtime and the
+ * analytics beacon, and neither draws anything — and `<details>` is a disclosure the browser
+ * already knows how to open, close, focus and announce, with or without them.
  */
 
 import type { ReactNode } from "react";

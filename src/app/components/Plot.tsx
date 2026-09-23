@@ -1,11 +1,12 @@
 /**
  * The frame every time-series chart on the site shares: margins, gridlines, axis labels.
  *
- * Charts are inline SVG rendered on the server. No client JavaScript ships, so the interaction
- * a reader gets is the browser's own: `<title>` inside a shape is a native tooltip, and every
- * chart sits beside the same numbers in words or a list. That is a deliberate trade — a
- * crosshair would be nicer, and it is not worth a hydration pass on a page whose numbers change
- * once a day.
+ * Charts are inline SVG rendered on the server, and nothing in them depends on a script: the
+ * only JavaScript the page ships is Next's runtime and the analytics beacon. The interaction a
+ * reader gets is the browser's own — `<title>` inside a shape is a native tooltip — and every
+ * chart has its numbers beside it in words and in a collapsed table. That is a deliberate
+ * trade: a crosshair would be nicer, and it is not worth a client component on a page whose
+ * numbers change once a day.
  *
  * The grid is recessive by construction: hairlines in `--line`, labels in `--muted` monospace,
  * and no frame around the plot. The data is the only thing drawn in a strong colour.

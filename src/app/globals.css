@@ -3,8 +3,9 @@
  *
  * Tokens first, everything else against them, so light and dark are one set of rules. Dark mode
  * is declared twice on purpose: the media query follows the reader's operating system, and the
- * `data-theme` scope would let a toggle win over it. There is no toggle — the page ships no
- * client JavaScript — so the scope is here only so adding one is a button and not a refactor.
+ * `data-theme` scope would let a toggle win over it. There is no toggle — nothing on the page
+ * depends on a script, and the only ones shipped are Next's runtime and the analytics beacon —
+ * so the scope is here only so adding one is a button and not a refactor.
  *
  * Water is teal and everything burned is a run of terracottas, darkest first, so the national
  * mix reads as "water against fuel" before any single band is identified. The categorical

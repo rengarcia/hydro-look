@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES2023",
     // DOM is here for @types/react, not because anything runs in a browser: the site is
-    // server-rendered to static HTML and ships no client JavaScript. The ingestion CLI shares
+    // server-rendered to static HTML that needs no JavaScript to read. The ingestion CLI shares
     // this config, so treat a `document` or a `window` in src/lib as a mistake the compiler
     // will not catch for you.
     "lib": [

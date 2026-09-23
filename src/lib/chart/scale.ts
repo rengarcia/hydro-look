@@ -1,7 +1,7 @@
 /**
  * The geometry behind the site's charts: scales, ticks and SVG path strings.
  *
- * The site renders every chart as inline SVG on the server and ships no client JavaScript, so
+ * The site renders every chart as inline SVG on the server and no chart depends on a script, so
  * these run once at build time and their output is what a reader receives. That is the reason
  * they live here rather than inside the components: a path string is arithmetic, arithmetic can
  * be wrong in ways that look plausible on screen, and a unit test catches an off-by-one in a
