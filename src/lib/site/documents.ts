@@ -183,6 +183,12 @@ export interface ForecastDocument {
     false_alarms_p50: number;
     episodes: { crossed_on: string; p50_lead_time_days: number | null; p10_lead_time_days: number | null }[];
   };
+  /** Which basin's rain the run read. Absent before 2026-09-23. */
+  precipitation_basin?: PrecipitationBasin;
+  /** Inflow forecasts at the other plants. Absent before 2026-09-23, and when none ran. */
+  inflow_forecasts?: InflowForecasts;
+  /** How the published level forecasts did. Absent before 2026-09-23. */
+  scorecard?: ScorecardBlock;
 }
 
 export type RiskTier = "holgado" | "vigilancia" | "ajustado" | "deficit";
@@ -269,6 +275,12 @@ export interface AdequacyDocument {
   crisis_check: { episodes: AdequacyEpisode[] };
   /** The tier definitions in Spanish, as the document states them. */
   tiers?: { definition: Record<string, string> };
+  /** How the p10–p90 band is calibrated. Absent before 2026-09-23. */
+  band_method?: BandMethod;
+  /** The tier under each import assumption. Absent before 2026-09-23. */
+  import_sensitivity?: ImportSensitivity;
+  /** How the published net requirement did. Absent before 2026-09-23. */
+  scorecard?: ScorecardBlock;
 }
 
 export interface StatusFeed {
@@ -316,4 +328,130 @@ export interface NarrativeDocument {
   confidence: "low" | "medium" | "high";
   disclaimer: string;
   basis: NarrativePayload;
+}
+
+/* ------------------------------------------------------------------ additive blocks */
+
+/*
+ * The blocks below were added to `forecast.json` and `adequacy.json` after schema version 1 was
+ * published, and a document written before them has none of them. Every one is optional here and
+ * in the schemas, and every component that reads one renders nothing — or says it has nothing —
+ * when it is absent. They are not in `SITE_READS` for the same reason: nothing guarantees them.
+ */
+
+/** How one model, version and horizon scored once published rows reached their dates (§5.1). */
+export interface ScorecardHorizon {
+  model_id: string;
+  model_version: string;
+  horizon_days: number;
+  n: number;
+  mae: number | null;
+  bias: number | null;
+  n_band: number;
+  coverage_p10_p90: number | null;
+  pinball_mean: number | null;
+  first_origin: string | null;
+  last_origin: string | null;
+}
+
+/** One published row against what was then observed. */
+export interface ScorecardRow {
+  run_id: string;
+  model_id: string;
+  model_version: string;
+  origin_date: string;
+  horizon_days: number;
+  target_date: string;
+  p10: number | null;
+  p50: number;
+  p90: number | null;
+  observed: number | null;
+  error: number | null;
+  in_band: boolean | null;
+}
+
+/** The `scorecard` block of `forecast.json` (level, m) and `adequacy.json` (net requirement, GWh/day). */
+export interface ScorecardBlock {
+  generated_at: string;
+  observed_through: string | null;
+  target: string;
+  units: string;
+  runs_considered: number;
+  runs_superseded: number;
+  rows_scored: number;
+  rows_pending: number;
+  rows_excluded: number;
+  method: string;
+  by_horizon: ScorecardHorizon[];
+  recent: ScorecardRow[];
+}
+
+/** Which basin's ERA5 rain the Mazar run read, and why when it is not the verified centroid. */
+export interface PrecipitationBasin {
+  basin: string;
+  verified_centroid: boolean;
+  era5_days: number;
+  share_since_1990: number;
+  fallback_reason: string | null;
+}
+
+export interface InflowBacktest {
+  n: number;
+  mae_m3s: number | null;
+  persistence_mae_m3s: number | null;
+  climatology_mae_m3s: number | null;
+  coverage_p10_p90: number | null;
+}
+
+/** One horizon of a plant's inflow forecast: published with its quantiles, or not and why. */
+export interface InflowHorizon {
+  horizon_days: number;
+  published: boolean;
+  reason: string;
+  backtest: InflowBacktest;
+  target_date?: string;
+  p10?: number;
+  p50?: number;
+  p90?: number;
+  ensemble_years?: number;
+}
+
+export interface InflowPlant {
+  site: string;
+  origin_date: string;
+  variable: string;
+  target: string;
+  precip_basin: string | null;
+  rain_conditioned: boolean;
+  horizons: InflowHorizon[];
+}
+
+/** `forecast.json`'s `inflow_forecasts`: the mean inflow at the other plants (§5.3). */
+export interface InflowForecasts {
+  report: string;
+  note: string;
+  plants: InflowPlant[];
+}
+
+export type ImportCase = "demonstrated" | "stressed" | "current_regime";
+
+/** `adequacy.json`'s `import_sensitivity`: the tier under each import assumption (§5.5). */
+export interface ImportSensitivity {
+  note: string;
+  central_case: ImportCase;
+  cases: {
+    case: ImportCase;
+    import_gwh_day: number;
+    worst_tier: RiskTier;
+    worst_tier_horizon_days: number;
+    horizons: { horizon_days: number; deficit_gwh_day: number; deficit_p90: number | null; tier: RiskTier }[];
+  }[];
+}
+
+/** How the adequacy band is calibrated. */
+export interface BandMethod {
+  method: string;
+  quantiles: number[];
+  nominal_coverage: number;
+  stretch_by_horizon: { horizon_days: number; stretch: number | null }[];
 }

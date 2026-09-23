@@ -1,13 +1,18 @@
 /**
  * Section 05: will there be enough energy. The expected surplus at each horizon with its tier,
  * the ceilings it assumes, the one assumption the answer rests on, and the check against the
- * rationing episodes the model can be held to.
+ * rationing episodes the model can be held to. Under them, how far the tier moves with the import
+ * assumption and how the published requirement did once its window closed — each only when the
+ * document carries the block.
  */
 
 import { SectionIntro } from "../Chrome.tsx";
-import type { AdequacyDocument } from "../../../lib/site/documents.ts";
+import { Table } from "../DataTable.tsx";
+import { ScorecardPanel } from "../Scorecard.tsx";
+import { nextScoreDue } from "../../../lib/site/data.ts";
+import type { AdequacyDocument, ImportSensitivity } from "../../../lib/site/documents.ts";
 import { num, signed } from "../../../lib/site/format.ts";
-import { adequacyHeadline, monthName, monthSpan, tierOf } from "../../../lib/site/story.ts";
+import { IMPORT_CASES, adequacyHeadline, countWord, importCaseLabel, importDependence, monthName, monthSpan, tierOf } from "../../../lib/site/story.ts";
 
 /** The day the import maximum was set, read from the assumptions' own prose when it names one. */
 function importPeakDate(basis: string | undefined): string | null {
@@ -32,6 +37,19 @@ export function Adequacy({ adequacy }: { adequacy: AdequacyDocument | null }) {
       ? `linear-gradient(90deg, ${tones.map((t, i) => `${t} ${Math.round((i / (tones.length - 1)) * 100)}%`).join(", ")})`
       : tones[0];
   const usesWorst = (adequacy.current.narrative_tier_field ?? "worst_tier") === "worst_tier";
+  const sensitivity = adequacy.import_sensitivity ? <ImportSensitivityPanel sensitivity={adequacy.import_sensitivity} /> : null;
+  const scorecard = adequacy.scorecard ? (
+    <ScorecardPanel
+      card={adequacy.scorecard}
+      nextDue={nextScoreDue("adequacy", adequacy.scorecard.observed_through)}
+      subject="el requerimiento neto nacional"
+      digits={2}
+      id="marcador-suficiencia"
+    >
+      Se puntúa el requerimiento neto —demanda menos hidroeléctrica, en promedio sobre la ventana—, que es lo que el
+      balance mide; el déficit es un contrafactual y no se puntúa. Una ventana con un día de racionamiento queda fuera.
+    </ScorecardPanel>
+  ) : null;
 
   return (
     <section id="suficiencia" className="shell section" aria-labelledby="suficiencia-title">
@@ -159,6 +177,94 @@ export function Adequacy({ adequacy }: { adequacy: AdequacyDocument | null }) {
           ) : null}
         </div>
       </div>
+
+      {sensitivity && scorecard ? (
+        <div className="split wide-left">
+          {sensitivity}
+          {scorecard}
+        </div>
+      ) : (
+        (sensitivity ?? scorecard)
+      )}
     </section>
+  );
+}
+
+function TierCell({ tier, suffix }: { tier: string; suffix?: string }) {
+  const t = tierOf(tier);
+  return (
+    <span className="tier-cell">
+      <span className={`dot tone-${t?.tone ?? "muted"}`} aria-hidden="true" />
+      {t?.label ?? tier}
+      {suffix ? <small> {suffix}</small> : null}
+    </span>
+  );
+}
+
+/**
+ * The tier under each import ceiling (§5.5): the one assumption the answer rests on, shown as the
+ * three answers it would give. The worst tier per case is the table; every horizon of every case
+ * is folded under it.
+ */
+export function ImportSensitivityPanel({ sensitivity }: { sensitivity: ImportSensitivity }) {
+  if (sensitivity.cases.length === 0) return null;
+  const verdict = importDependence(sensitivity);
+  return (
+    <div className="panel tight">
+      <div className="panel-head">
+        <h3>¿Cuánto depende de Colombia?</h3>
+        <span className="meta">importación en GWh/día</span>
+      </div>
+      {verdict ? <p className="panel-lede">{verdict}</p> : null}
+      <Table
+        caption="Peor nivel de riesgo bajo cada supuesto de importación desde Colombia"
+        captionHidden
+        columns={[{ label: "Supuesto" }, { label: "Importación", numeric: true }, { label: "Peor nivel" }]}
+        rows={sensitivity.cases.map((c) => [
+          <span key="c">
+            {importCaseLabel(c.case)}
+            {c.case === sensitivity.central_case ? <small className="central-tag"> · caso central</small> : null}
+            {IMPORT_CASES[c.case] ? (
+              <>
+                <br />
+                <span className="source">{IMPORT_CASES[c.case]!.gloss}</span>
+              </>
+            ) : null}
+          </span>,
+          num(c.import_gwh_day, 2),
+          <TierCell key="t" tier={c.worst_tier} suffix={`a ${c.worst_tier_horizon_days} días`} />,
+        ])}
+      />
+      <details className="chart-data">
+        <summary>Ver cada horizonte bajo cada supuesto</summary>
+        <div className="table-scroll">
+          <Table
+            caption="Superávit esperado y nivel por horizonte bajo cada supuesto de importación, en GWh/día"
+            columns={[
+              { label: "Supuesto y horizonte" },
+              { label: "Superávit", numeric: true },
+              { label: "Superávit, caso p90", numeric: true },
+              { label: "Nivel" },
+            ]}
+            rows={sensitivity.cases.flatMap((c) =>
+              c.horizons.map((h) => [
+                `${importCaseLabel(c.case)} · ${h.horizon_days} días`,
+                signed(-h.deficit_gwh_day, 1),
+                signed(h.deficit_p90 === null ? null : -h.deficit_p90, 1),
+                <TierCell key="t" tier={h.tier} />,
+              ]),
+            )}
+          />
+        </div>
+        <p className="fine">
+          El caso p90 es el requerimiento en su percentil 90: el nivel pasa de holgado a vigilancia cuando ese caso queda
+          corto.
+        </p>
+      </details>
+      <p className="fine spaced">
+        Todo lo demás —demanda, hidroeléctrica, techo térmico— es igual en {sensitivity.cases.length === 1 ? "la fila" : `las ${countWord(sensitivity.cases.length)} filas`}; solo cambia lo que se supone
+        que llega por el interconector. El caso central es {importCaseLabel(sensitivity.central_case).toLowerCase()}.
+      </p>
+    </div>
   );
 }

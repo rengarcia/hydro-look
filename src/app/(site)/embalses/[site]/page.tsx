@@ -2,8 +2,9 @@
  * The page of every reservoir other than Mazar, from one template.
  *
  * Each has a level, its declared bands (or none), its slopes and a year of inflow against its own
- * climatology in `latest.json` and the curated tables; none of them is forecast yet, so the page
- * says what is measured and stops there. Mazar's page is its own file because it carries the
+ * climatology in `latest.json` and the curated tables. None has a level forecast; where
+ * `forecast.json` carries an inflow forecast for the plant (§5.3), the page shows every horizon with
+ * its backtest, published or not, and why not. Mazar's page is its own file because it carries the
  * forecast; `generateStaticParams` leaves it out, and the static folder wins over this one.
  *
  * `dynamicParams = false` makes the list closed: in a static export there is no server to render
@@ -14,8 +15,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Crumbs, MAIN_ID } from "../../../components/Chrome.tsx";
 import { InflowPanel } from "../../../components/ReservoirParts.tsx";
+import { InflowForecastPanel, inflowPlantOf } from "../../../components/InflowForecast.tsx";
 import { FloorsPanel, RecordSection, ReservoirHero } from "../../../components/ReservoirPage.tsx";
-import { latest } from "../../../../lib/site/data.ts";
+import { apiDocument, latest } from "../../../../lib/site/data.ts";
+import type { ForecastDocument } from "../../../../lib/site/documents.ts";
 import { basinLabel, num } from "../../../../lib/site/format.ts";
 import type { ReservoirSnapshot } from "../../../../lib/publish/latest.ts";
 
@@ -63,6 +66,9 @@ export default async function ReservoirPage({ params }: { params: Promise<{ site
   const { site } = await params;
   const reservoir = reservoirOf(site);
   if (reservoir === null) notFound();
+  const inflowForecasts = apiDocument<ForecastDocument>("forecast.json")?.inflow_forecasts;
+  const plant = inflowPlantOf(inflowForecasts, site);
+  const publishes = plant?.horizons.some((h) => h.published) ?? false;
 
   return (
     <main id={MAIN_ID} className="stack-lg">
@@ -73,9 +79,20 @@ export default async function ReservoirPage({ params }: { params: Promise<{ site
         <InflowPanel reservoir={reservoir} heading="Caudal frente a su historia" />
         <FloorsPanel reservoir={reservoir} />
       </section>
+      {plant ? (
+        <section className="shell" aria-label="Pronóstico de caudal de entrada">
+          <InflowForecastPanel plant={plant} report={inflowForecasts?.report} label={reservoir.label} />
+        </section>
+      ) : null}
       <div className="shell">
         <p className="fine">
-          Solo Mazar tiene pronóstico: es el único embalse con semanas de reserva. Para insertar esta ficha en otra página,{" "}
+          Solo Mazar tiene pronóstico de cota: es el único embalse con semanas de reserva.
+          {plant
+            ? publishes
+              ? ` De ${reservoir.label} se pronostica el caudal de entrada, en /api/forecast.json.`
+              : ` De ${reservoir.label} se prueba un pronóstico de caudal de entrada, que hoy no se publica.`
+            : ""}{" "}
+          Para insertar esta ficha en otra página,{" "}
           <a href={`/embed/${site}/`}>/embed/{site}/</a>; sus números, en <a href="/api/latest.json">/api/latest.json</a>.
         </p>
       </div>

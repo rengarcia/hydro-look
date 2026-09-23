@@ -25,7 +25,7 @@ import { parseCsv } from "../store/csv.ts";
 import { dayOfYear } from "../util/stats.ts";
 import { addDays, type IsoDate } from "../util/dates.ts";
 import { dataDateOf, type LatestDocument } from "../publish/latest.ts";
-import { daysFrom, type DayRecord } from "./days.ts";
+import { daysFrom, firstPendingTarget, type DayRecord } from "./days.ts";
 
 /**
  * `HYDRO_LOOK_SITE_ROOT` points the reads at another tree with the same `data/curated` and
@@ -156,6 +156,16 @@ export function days(): DayRecord[] {
     narrativeSnapshots: readTable("narrative_snapshots"),
   });
   return daysCache;
+}
+
+/**
+ * The day the first still-pending published row falls due, for the forecast's or the adequacy
+ * model's scorecard. See `firstPendingTarget`.
+ */
+export function nextScoreDue(kind: "forecast" | "adequacy", observedThrough: IsoDate | null): IsoDate | null {
+  return kind === "forecast"
+    ? firstPendingTarget(readTable("forecast_runs"), readTable("forecast_values"), observedThrough)
+    : firstPendingTarget(readTable("adequacy_runs"), readTable("adequacy_values"), observedThrough);
 }
 
 /** Where a reservoir's own page lives. Every reservoir `latest.json` carries has one. */

@@ -6,7 +6,7 @@
 import { REPO, SectionIntro } from "../Chrome.tsx";
 import type { AdequacyDocument, ForecastDocument } from "../../../lib/site/documents.ts";
 import { num, pct } from "../../../lib/site/format.ts";
-import { METHOD_NOTES, splitCode } from "../../../lib/site/method.ts";
+import { METHOD_NOTES, modelNotes, splitCode } from "../../../lib/site/method.ts";
 import { countWord } from "../../../lib/site/story.ts";
 
 /** Text with its backticked parts set as code. */
@@ -24,6 +24,12 @@ export function Method({ forecast, adequacy }: { forecast: ForecastDocument | nu
   const tiers = adequacy?.tier_history;
   const firstA = adequacy?.horizons[0];
   const ninetyA = adequacy?.horizons.find((h) => h.horizon_days === 90);
+  const coverageA = (adequacy?.horizons ?? [])
+    .map((h) => h.backtest.requirement_coverage_p10_p90)
+    .filter((c): c is number => c !== null && c !== undefined)
+    .map((c) => c * 100);
+  const nominalA = Math.round((adequacy?.band_method?.nominal_coverage ?? 0.8) * 100);
+  const notes = [...METHOD_NOTES, ...modelNotes({ precipitation_basin: forecast?.precipitation_basin, band_method: adequacy?.band_method })];
   return (
     <section id="metodo" className="shell section" aria-labelledby="metodo-title">
       <SectionIntro index="06" eyebrow="Método y advertencias" titleId="metodo-title" title="Lo que conviene saber antes de usar estos números.">
@@ -50,7 +56,10 @@ export function Method({ forecast, adequacy }: { forecast: ForecastDocument | nu
             {ninetyA?.backtest.requirement_skill_vs_persistence != null
               ? ` y ${pct(ninetyA.backtest.requirement_skill_vs_persistence * 100, 1)} a 90`
               : ""}
-            , y su banda p10–p90 cubre unos dos tercios de los casos, no cuatro quintos. Aplicados a{" "}
+            {coverageA.length > 0
+              ? `, y su banda p10–p90 cubre entre el ${num(Math.min(...coverageA), 0)} % y el ${num(Math.max(...coverageA), 0)} % de los casos, frente al ${nominalA} % nominal.`
+              : "."}{" "}
+            Aplicados a{" "}
             {tiers.origins} meses del registro, los niveles marcaron {tiers.origins_flagged}; de los marcados,{" "}
             {pct((tiers.share_of_flagged_that_preceded_cuts ?? 0) * 100, 0)} precedieron cortes, y de los cortes se marcó{" "}
             {pct((tiers.share_of_cuts_that_were_flagged ?? 0) * 100, 0)}: no da falsas alarmas, pero se le escapan la mayoría
@@ -60,7 +69,7 @@ export function Method({ forecast, adequacy }: { forecast: ForecastDocument | nu
         ) : null}
       </div>
       <div className="notes">
-        {METHOD_NOTES.map((note) => (
+        {notes.map((note) => (
           <article key={note.title}>
             <h3>
               <Rich text={note.title} />
