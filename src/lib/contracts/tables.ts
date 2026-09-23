@@ -487,3 +487,30 @@ export const NARRATIVE_SNAPSHOTS: TableSpec<NarrativeSnapshotRow> = {
   partitionBy: "generated_at",
   schema: narrativeSnapshotRow,
 };
+
+/**
+ * One plant-hour of energy (§5.8), from the 24 hour-ending values `{code}EnerDia` returns per
+ * plant-day — the values `parseEnerDia` sums into `produccion_mwh`, archived raw and never
+ * curated until now. `date` and `hour_ending` are Ecuadorian local time, hour 24 being the hour
+ * that ends at local midnight and so belongs to the day it ends. A peak-hour view of adequacy (MW
+ * rather than GWh/day) needs this; nothing reads it yet, so no generated table is committed:
+ * `energyHourlyFromRaw` backfills it from the raw archive when someone asks the peak question.
+ */
+export const energyHourlyRow = z.object({
+  date: isoDate,
+  hour_ending: z.number().int().min(1).max(24),
+  site: siteId,
+  energy_mwh: z.number().finite().nonnegative(),
+  source: z.string().min(1),
+  fetched_at: isoTimestamp,
+  raw_ref: z.string(),
+});
+export type EnergyHourlyRow = z.infer<typeof energyHourlyRow>;
+
+export const ENERGY_HOURLY: TableSpec<EnergyHourlyRow> = {
+  name: "energy_hourly",
+  columns: ["date", "hour_ending", "site", "energy_mwh", "source", "fetched_at", "raw_ref"],
+  key: ["date", "hour_ending", "site", "source"],
+  partitionBy: "date",
+  schema: energyHourlyRow,
+};
