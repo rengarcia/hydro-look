@@ -31,9 +31,10 @@
  *
  * What is *not* here, and is marked deferred rather than done: conditioning the analogue draw
  * on ONI phase or on the 16-day precipitation forecast. ONI is held back to 1950 and could be
- * used today; basin precipitation cannot, because `basins.csv` still carries one provisional
- * sampling point for Paute and nothing for the other six catchments (section 6, Phase 4). A
- * conditioner that reaches one basin is not a conditioner. ENSO phase on its own is available,
+ * used today; basin precipitation could not when this was written, because `basins.csv` carried
+ * one provisional sampling point for Paute and nothing for the other six catchments. It now has
+ * verified catchment centroids for all seven (Phase 4, 2026-09-23), but no ERA5 history at them
+ * yet, and the conditioner has not been tried against the backtest. ENSO phase on its own is available,
  * so it was tried rather than argued about: `M3-water-balance-enso` keeps only the analogue
  * years whose ENSO phase matches the phase in effect at the origin — using the phase a
  * forecaster could actually have read, two months stale, never the label of the month itself.

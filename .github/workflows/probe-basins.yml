@@ -3,8 +3,14 @@ name: Basin sources probe
 # The reconnaissance §3's basins.csv needs and the development sandbox cannot do: its proxy
 # answers 403 for every host but GitHub, so HydroSHEDS, Zenodo, figshare, ArcGIS Online,
 # Wikidata and Overpass — and Ecuador's own geoservers — can only be asked from a runner. A few
-# hundred read-only requests at one a second at most, nothing written under data/. Delete this
-# workflow once basins.csv carries verified rows and the answers are in PLAN.md §2.4.
+# hundred read-only requests at one a second at most, nothing written under data/.
+#
+# `phases: catchments` runs the other job instead: `npm run catchments` delineates each dam's
+# catchment from the Copernicus GLO-90 DEM, checks it against INAMHI's scheme polygons, and
+# commits the outlines, the report and INAMHI's raw answer to the branch it was dispatched on.
+# It lives here rather than in a workflow of its own because a dispatch can only name a workflow
+# that already exists on the default branch. Neither job touches basins.csv; which of its rows
+# become `verified` is decided by reading data/reports/catchments.md, in PLAN.md.
 # Dispatch-only now that it is on main: a dispatch names the ref it runs, so a probe under
 # development is run from its own branch without a push trigger pinned to a branch name that
 # stops existing the moment it merges.
@@ -16,6 +22,7 @@ on:
           Comma-separated phases, or "all". The open items are wikidata, jubones,
           delsitanisagua, official; the settled re-checks are hydrosheds, mirrors, arcgis,
           robots, overpass, contains. wikidata is added whenever a phase needs an anchor.
+          "catchments" alone runs the DEM delineation job instead, which commits its output.
         required: false
         default: all
 
@@ -23,6 +30,7 @@ permissions: {}
 
 jobs:
   probe:
+    if: inputs.phases != 'catchments'
     runs-on: ubuntu-latest
     # Ten was not enough: run 35732611773 was killed at the limit mid-walk. Overpass is the
     # slow part and the least predictable, since a busy instance answers late or not at all.
@@ -53,3 +61,39 @@ jobs:
             ${{ runner.temp }}/probe
             ${{ runner.temp }}/probe.log
           retention-days: 30
+
+  catchments:
+    if: inputs.phases == 'catchments'
+    runs-on: ubuntu-latest
+    # Seven basins, each a few 1° DEM tiles routed once or twice; about ten minutes in all.
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Delineate
+        run: npm run catchments 2>&1 | tee "$RUNNER_TEMP/catchments.log"
+      - name: Summarise
+        if: always()
+        run: cat data/reports/catchments.md >> "$GITHUB_STEP_SUMMARY" || true
+      - name: Commit
+        # Only files this job writes and nothing else does, so a rebase onto a newer tip cannot conflict.
+        if: always()
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/reference/catchments.geojson data/reports/catchments.md data/reports/catchments.json data/raw/inamhi 2>/dev/null || true
+          if git diff --cached --quiet; then echo "Nothing to commit."; exit 0; fi
+          git commit -m "Catchments from the Copernicus DEM (run ${{ github.run_id }})"
+          for attempt in 1 2 3 4; do
+            git pull --rebase origin "$BRANCH" && git push origin "HEAD:$BRANCH" && exit 0
+            sleep $((attempt * 5))
+          done
+          exit 1
