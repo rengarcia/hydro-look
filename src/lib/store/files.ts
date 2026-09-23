@@ -31,7 +31,7 @@ export function writeFileAtomic(path: string, content: string | Buffer): void {
  */
 export function writeJsonUnlessOnlyStamped(
   path: string,
-  document: Record<string, unknown>,
+  document: object,
   stamps: readonly string[] = ["generated_at"],
 ): boolean {
   const text = `${JSON.stringify(document, null, 2)}\n`;
@@ -47,7 +47,7 @@ export function writeJsonUnlessOnlyStamped(
   return true;
 }
 
-function withoutStamps(document: Record<string, unknown>, stamps: readonly string[]): Record<string, unknown> {
+function withoutStamps(document: object, stamps: readonly string[]): Record<string, unknown> {
   // Round-trip first so `undefined` fields compare the way they are written: absent.
   const copy = JSON.parse(JSON.stringify(document)) as Record<string, unknown>;
   for (const stamp of stamps) delete copy[stamp];

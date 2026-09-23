@@ -1,10 +1,15 @@
 /*
  * "Páramo": the site's one set of tokens, with two sets of values.
  *
- * Tokens first, everything else against them, so light and dark are one set of rules. Dark mode
- * is declared twice on purpose: the media query follows the reader's operating system, and the
- * `data-theme` scope would let a toggle win over it. There is no toggle — the page ships no
- * client JavaScript — so the scope is here only so adding one is a button and not a refactor.
+ * Tokens first, everything else against them, so light and dark are one set of rules. The dark
+ * values are declared once, under the reader's operating-system setting; `data-theme="light"` on
+ * the root opts out of them. There is no toggle — nothing on the page depends on a script, and
+ * the only ones shipped are Next's runtime and the analytics beacon — so a forced dark theme has
+ * no scope of its own: adding a toggle would move this one block under a selector, not copy it.
+ *
+ * No colour is written below the tokens. Every swatch, key and fill is a class here (`fill-*`,
+ * `mix-*`, `key-*`) rather than an inline style in a component, so a colour changes in one place
+ * and dark mode needs no second rule for it.
  *
  * Water is teal and everything burned is a run of terracottas, darkest first, so the national
  * mix reads as "water against fuel" before any single band is identified. The categorical
@@ -87,35 +92,64 @@
   }
 }
 
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --bg: #0b1513;
-  --surface: #12201e;
-  --sunk: #1a2b28;
-  --ink: #edf2ef;
-  --ink-2: #b6c3bf;
-  --muted: #8d9b97;
-  --line: rgba(237, 242, 239, 0.12);
-  --line-2: rgba(237, 242, 239, 0.24);
-  --water: #5cc6bf;
-  --water-2: #2f8f8a;
-  --water-3: #1b4a47;
-  --water-4: #143532;
-  --t1: #f0864f;
-  --t2: #d06a3a;
-  --t3: #a9542f;
-  --t4: #834226;
-  --sage: #a3c07a;
-  --import: #a898f2;
-  --good: #58c27b;
-  --watch: #e0b33e;
-  --tight: #f0864f;
-  --deficit: #ff7a6e;
-  --contour: rgba(92, 198, 191, 0.09);
-  --inv-bg: #17312d;
-  --inv-fg: #edf2ef;
-  --inv-accent: #9fdcd5;
-  --shadow: rgba(0, 0, 0, 0.6);
+/*
+ * The three families, self-hosted from `public/fonts/` (Latin subset, SIL Open Font License,
+ * licences beside the files). `swap` shows the fallback stack at once and the face when it lands.
+ */
+@font-face {
+  font-family: "Instrument Serif";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/instrument-serif-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Instrument Serif";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/instrument-serif-latin-400-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Geist";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/geist-sans-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Geist";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/geist-sans-latin-500-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Geist";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/geist-sans-latin-600-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/geist-mono-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/geist-mono-latin-500-normal.woff2") format("woff2");
 }
 
 /* ---- base ---------------------------------------------------------------- */
@@ -175,6 +209,56 @@ p {
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
+}
+
+/*
+ * Keyboard focus. A two-colour ring — the ink over a surface-coloured halo — reads on the page,
+ * on the inverse panels and on a chart, in both themes, because one of its two colours always
+ * contrasts with what is behind it. Mouse clicks do not draw it; `:focus-visible` is the browser's
+ * own judgement of when a ring is wanted.
+ */
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px var(--surface);
+  border-radius: 4px;
+}
+
+.inverse :focus-visible {
+  outline-color: var(--inv-accent);
+  box-shadow: 0 0 0 5px var(--inv-bg);
+}
+
+.btn:focus-visible,
+.pill:focus-visible,
+.menu summary:focus-visible {
+  border-radius: 999px;
+}
+
+.column:focus-visible,
+.download:focus-visible {
+  border-radius: 20px;
+}
+
+/* The first thing a keyboard reaches: off-screen until focused, then over the masthead. */
+.skip-link {
+  position: absolute;
+  z-index: 10;
+  left: 16px;
+  top: -64px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.skip-link:focus,
+.skip-link:focus-visible {
+  top: 16px;
+  color: var(--bg);
 }
 
 .site {
@@ -258,14 +342,46 @@ p {
   .lift:hover { transition: none; transform: none; }
 }
 
-/* Two drawings of the same chart, for wide and narrow screens; CSS shows one. */
-.only-compact {
+/*
+ * Two drawings of the same chart, for wide and narrow screens; CSS shows one. Only the fan and
+ * the twelve-year record still need two, because their shape changes on a phone. The scalable
+ * charts are one drawing whose labels come in two densities (`wide-label`, `compact-label`) and
+ * whose axis type is set here, larger on a phone where the whole drawing is scaled down.
+ */
+.only-compact,
+.compact-label {
   display: none !important;
 }
 
+.chart-scalable .axis {
+  font-size: 11px;
+}
+
+.cut .cut-label {
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.cut .cut-note {
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.cut .cut-level {
+  font-family: var(--serif);
+  font-size: 40px;
+}
+
 @media (max-width: 720px) {
-  .only-wide { display: none !important; }
+  .only-wide,
+  .wide-label,
+  .wide-cell { display: none !important; }
   .only-compact { display: block !important; }
+  .compact-label { display: inline !important; }
+  .chart-scalable .axis { font-size: 18px; }
+  .cut .cut-label { font-size: 22px; }
+  .cut .cut-note { font-size: 18px; }
+  .cut .cut-level { font-size: 54px; }
 }
 
 /* ---- header and footer --------------------------------------------------- */
@@ -1130,51 +1246,6 @@ a.column:hover {
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
 }
 
-.horizon {
-  display: grid;
-  grid-template-columns: 64px 64px minmax(0, 1fr) 132px 60px;
-  gap: 12px;
-  align-items: center;
-  padding: 12px 0;
-  border-top: 1px solid var(--line);
-  font-size: 13.5px;
-}
-
-.horizon .when {
-  font-weight: 600;
-}
-
-.horizon .date {
-  color: var(--muted);
-}
-
-.horizon .range {
-  font-family: var(--mono);
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.horizon .range strong {
-  font-weight: 500;
-  color: var(--water);
-}
-
-.horizon .skill {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--tone, var(--muted));
-}
-
-.horizon .model {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--muted);
-  text-align: right;
-}
-
 .scenarios {
   display: flex;
   flex-direction: column;
@@ -1283,32 +1354,6 @@ a.column:hover {
 .supply > span {
   height: 18px;
   min-width: 1px;
-}
-
-.mix-table > div {
-  display: grid;
-  grid-template-columns: 12px minmax(0, 1fr) 64px 56px;
-  gap: 10px;
-  align-items: center;
-  font-size: 13px;
-  padding: 7px 0;
-  border-top: 1px solid var(--line);
-}
-
-.mix-table .swatch {
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
-}
-
-.mix-table .num {
-  font-family: var(--mono);
-  font-size: 12px;
-  text-align: right;
-}
-
-.mix-table .gwh {
-  color: var(--ink-2);
 }
 
 /* ---- adequacy ------------------------------------------------------------ */
@@ -1693,13 +1738,13 @@ a.column:hover {
   list-style: none;
 }
 
-.years li {
+.years span {
   height: 64px;
   border-radius: 8px;
   background: var(--water-3);
 }
 
-.years li.crosses {
+.years span.crosses {
   background: var(--tight);
 }
 
@@ -1715,51 +1760,6 @@ a.column:hover {
 
 .years-caption strong {
   color: var(--tight);
-}
-
-.grid-table {
-  display: grid;
-  gap: 12px;
-  padding: 12px 0;
-  border-top: 1px solid var(--line);
-  font-size: 13.5px;
-  align-items: center;
-}
-
-.grid-table.head {
-  padding: 10px 0;
-  border-top-color: var(--line-2);
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.grid-table.scenarios-table {
-  grid-template-columns: 90px 70px 110px minmax(0, 1fr);
-}
-
-.grid-table.floors-table {
-  grid-template-columns: 140px minmax(0, 1fr) 150px;
-  gap: 16px;
-  padding: 14px 0;
-}
-
-.grid-table .mono {
-  font-size: 13px;
-}
-
-.grid-table .source {
-  font-family: var(--mono);
-  font-size: 11.5px;
-  color: var(--muted);
-}
-
-.grid-table .span {
-  font-size: 12px;
-  color: var(--muted);
-  text-align: right;
 }
 
 .foresight {
@@ -1798,6 +1798,544 @@ a.column:hover {
 .foresight .count small {
   font-size: 16px;
   color: var(--ink-2);
+}
+
+/* ---- colours as classes ---------------------------------------------------- */
+
+/* A swatch, chip, key or bar filled with one token. The components name the class; the colour
+   lives here, so it is declared once and follows the theme with the token. */
+.fill-ink { background: var(--ink); }
+.fill-water { background: var(--water); }
+.fill-water-2 { background: var(--water-2); }
+.fill-t1 { background: var(--t1); }
+.fill-t3 { background: var(--t3); }
+.fill-import { background: var(--import); }
+.fill-tight { background: var(--tight); }
+.fill-muted { background: var(--muted); }
+.fill-inv-accent { background: var(--inv-accent); }
+
+/* The national mix, one class per SMEC concept: the stacked chart's order and colours. */
+.mix-generacion_hidraulica { background: var(--water); }
+.mix-generacion_turbinas_gas { background: var(--t1); }
+.mix-generacion_motores_bunker { background: var(--t2); }
+.mix-generacion_vapor_bunker { background: var(--t3); }
+.mix-generacion_turbinas_diesel { background: var(--t4); }
+.mix-generacion_otros_tipos { background: var(--sage); }
+.mix-total_importacion { background: var(--import); }
+.mix-other { background: var(--muted); }
+
+.tone-water-2 { --tone: var(--water-2); }
+
+.key-water { background: var(--water); }
+.key-short { width: 16px; }
+.key-band { background: var(--water-3); }
+.key-fan { background: var(--water); opacity: 0.3; }
+.key-muted { border-top-color: var(--muted); }
+
+/* ---- small layout helpers -------------------------------------------------- */
+
+.spaced { margin-top: 14px; }
+.panel-head.flush { margin-bottom: 0; }
+.panel-head.roomy { margin-bottom: 36px; }
+.panel-head.centred { align-items: center; margin-bottom: 10px; }
+.panel-title + .panel-lede { margin-top: 6px; }
+.panel-lede + .table,
+.panel-lede + .feeds,
+.panel-lede + .foresight,
+.panel-lede + .years,
+.panel-lede + details { margin-top: 16px; }
+.section-tight { gap: 28px; }
+.section-intro.narrow { max-width: 760px; }
+.footer-bar.flush { padding-block: 0; }
+.legend-small { margin: 12px 0 10px; font-size: 12.5px; }
+.figure-stack { display: flex; flex-direction: column; gap: 4px; }
+.figure-caption { font-size: 13px; color: var(--ink-2); }
+.percentile-caption { font-size: 12px; color: var(--ink-2); }
+.column-percentile { color: var(--muted); }
+.meta a { color: inherit; }
+.supply-head { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+.supply-caption { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); }
+.strip-3 { --n: 3; }
+.strip-4 { --n: 4; }
+.strip-5 { --n: 5; }
+.strip-6 { --n: 6; }
+
+.crumbs {
+  padding-top: 28px;
+  margin-bottom: -48px;
+}
+
+.crumbs > span {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.footer-fine p + p {
+  margin-top: 10px;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+}
+
+.pill-note {
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+/* A pill that carries a note may wrap on a narrow screen rather than run out of its panel. */
+.reading-head .pill {
+  white-space: normal;
+  flex-wrap: wrap;
+  column-gap: 6px;
+}
+
+.pill-note::before {
+  content: "· ";
+}
+
+/* ---- tables ---------------------------------------------------------------- */
+
+/*
+ * Every table on the site: the horizons, the scenarios, the floors, the national mix, and the
+ * data tables folded under the charts. Rules between rows and none between columns, figures in
+ * tabular monospace and right-aligned, header cells in the small uppercase the page uses for
+ * labels.
+ */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.table caption {
+  text-align: left;
+  font-size: 12.5px;
+  color: var(--muted);
+  padding-bottom: 8px;
+}
+
+.table th,
+.table td {
+  padding: 11px 10px;
+  border-top: 1px solid var(--line);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.table th:first-child,
+.table td:first-child {
+  padding-left: 0;
+}
+
+.table th:last-child,
+.table td:last-child {
+  padding-right: 0;
+}
+
+.table thead th {
+  padding-block: 8px;
+  border-top-color: var(--line-2);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.table tbody th {
+  font-weight: 600;
+}
+
+.table .num {
+  font-family: var(--mono);
+  font-size: 0.95em;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.table .source {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.table abbr {
+  text-decoration: none;
+  cursor: help;
+}
+
+.horizons .range strong {
+  display: block;
+  font-weight: 500;
+  color: var(--water);
+}
+
+.horizons .range small {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.horizons .skill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--tone, var(--muted));
+  white-space: nowrap;
+}
+
+.horizons .model {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.mix-table {
+  margin-top: 14px;
+  font-size: 13px;
+}
+
+.mix-table th,
+.mix-table td {
+  padding-block: 7px;
+}
+
+.mix-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 400;
+}
+
+.swatch {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.tier-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fields-table code {
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.fields-table code.deprecated {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.bulk-table .columns {
+  font-size: 11.5px;
+  color: var(--ink-2);
+  white-space: normal;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+/* The numbers behind a chart, folded under it. The browser opens and closes it; no script. */
+.chart-data {
+  margin-top: 14px;
+  border-top: 1px dashed var(--line-2);
+  padding-top: 10px;
+}
+
+.chart-data summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--ink-2);
+  width: fit-content;
+}
+
+.chart-data[open] summary {
+  margin-bottom: 10px;
+}
+
+.chart-data .table {
+  font-size: 12.5px;
+}
+
+.chart-data .table th,
+.chart-data .table td {
+  padding-block: 6px;
+}
+
+.chart-data .fine {
+  margin-top: 8px;
+}
+
+/* ---- since yesterday ------------------------------------------------------- */
+
+.since {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.since-title {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--water);
+}
+
+.since-dates {
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--muted);
+}
+
+.since-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.since-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+  font-size: 13.5px;
+}
+
+.since-label {
+  width: 100%;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.since-now {
+  font-weight: 500;
+}
+
+.since-change {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.since-up { color: var(--water); }
+.since-down { color: var(--tight); }
+
+/* ---- documentation, archive, 404 ------------------------------------------ */
+
+.promise {
+  margin: 14px 0 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+
+.promise strong {
+  font-family: var(--mono);
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.doc + .doc {
+  margin-top: -16px;
+}
+
+.doc-title {
+  font-family: var(--mono);
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.doc-title a {
+  text-decoration: none;
+}
+
+.day-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 14px;
+}
+
+.tier-note {
+  max-width: 720px;
+}
+
+.not-found {
+  padding-block: 40px 24px;
+}
+
+/* ---- embeddable card ------------------------------------------------------- */
+
+/* A fixed box for an iframe: 400 × 260, nothing outside it, readable in both themes. */
+.embed-card {
+  box-sizing: border-box;
+  width: 400px;
+  height: 260px;
+  max-width: 100vw;
+  padding: 18px 20px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+}
+
+.embed-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.embed-name {
+  font-family: var(--serif);
+  font-size: 26px;
+  line-height: 1;
+}
+
+.embed-date {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.embed-level {
+  font-family: var(--serif);
+  font-size: 44px;
+  line-height: 1;
+}
+
+.embed-level small {
+  margin-left: 6px;
+  font-size: 15px;
+  color: var(--ink-2);
+}
+
+.embed-bar {
+  position: relative;
+  height: 10px;
+  border-radius: 5px;
+  background: var(--sunk);
+  overflow: hidden;
+}
+
+.embed-bar span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 5px;
+  background: linear-gradient(90deg, var(--water-2), var(--water));
+}
+
+.embed-facts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+.embed-foot {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.embed-foot a {
+  font-family: var(--serif);
+  font-size: 17px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.embed-foot em {
+  color: var(--water);
+}
+
+/* ---- print ------------------------------------------------------------------ */
+
+/*
+ * On paper the page is the numbers: no contours, no navigation, no animation, light colours on
+ * white, the desk drawing of each chart, panels kept whole across page breaks, and each link's
+ * address printed after it so a printed page can still be followed. A folded data table prints
+ * folded — browsers do not let a stylesheet open `<details>` — and its numbers are in the bulk
+ * files the note under it names.
+ */
+@media print {
+  :root {
+    color-scheme: light;
+    --bg: #fff;
+    --surface: #fff;
+    --inv-bg: #fff;
+    --inv-fg: #000;
+    --inv-accent: #0a6a70;
+  }
+
+  body { font-size: 11pt; }
+  .contours,
+  .masthead .nav,
+  .menu,
+  .skip-link,
+  .actions,
+  .footer-bar,
+  .day-nav { display: none !important; }
+  .rise,
+  .wave { animation: none !important; }
+  .stack-xl,
+  .stack-lg { gap: 28pt; padding-bottom: 0; }
+  .panel,
+  .inverse,
+  .reading,
+  .scenario,
+  .strip { border: 1px solid #999; box-shadow: none; break-inside: avoid; }
+  .split,
+  .split.even,
+  .split.wide-left,
+  .split.lean-left,
+  .hero,
+  .detail-hero,
+  .reading { grid-template-columns: minmax(0, 1fr); }
+  .only-compact { display: none !important; }
+  .only-wide { display: block !important; }
+  .lift:hover { transform: none; box-shadow: none; }
+  main a[href^="http"]::after,
+  main a[href^="/"]::after { content: " (" attr(href) ")"; font-size: 9pt; color: #555; word-break: break-all; }
+  .column::after,
+  .column-row::after,
+  .download::after,
+  .btn::after { content: none !important; }
 }
 
 /* ---- narrower screens ---------------------------------------------------- */
@@ -1863,11 +2401,11 @@ a.column:hover {
   .column-row .top .num { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); white-space: nowrap; }
   .column-row .bottom { font-size: 12px; color: var(--muted); }
 
-  .horizon { grid-template-columns: 56px minmax(0, 1fr) auto; row-gap: 4px; }
-  .horizon .date { grid-column: 1; grid-row: 2; font-size: 12px; }
-  .horizon .range { grid-column: 2 / 4; grid-row: 1; text-align: right; }
-  .horizon .skill { grid-column: 2; grid-row: 2; }
-  .horizon .model { grid-column: 3; grid-row: 2; }
+  .table { font-size: 12.5px; }
+  .table th,
+  .table td { padding: 9px 5px; }
+  .table thead th { white-space: normal; letter-spacing: 0.02em; font-size: 10px; }
+  .horizons .skill svg { display: none; }
   .scenario-verdict { font-size: 28px; }
 
   .timeline-track { display: none; }
@@ -1887,10 +2425,7 @@ a.column:hover {
 
   .panel-title { font-size: 28px; }
   .tile-value { font-size: 36px; }
-  .years li { height: 44px; }
-  .grid-table.scenarios-table { grid-template-columns: 70px 50px minmax(0, 1fr); }
-  .grid-table.scenarios-table > :nth-child(3) { display: none; }
-  .grid-table.floors-table { grid-template-columns: minmax(0, 1fr) auto; }
-  .grid-table.floors-table > :nth-child(3) { display: none; }
+  .years span { height: 44px; }
+  .since-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; }
   .foresight > div { flex-direction: column; align-items: flex-start; }
 }

@@ -9,6 +9,7 @@
   },
   "scripts": {
     "dev": "next dev",
+    "prebuild": "npm run export:bulk",
     "build": "next build",
     "ingest": "tsx scripts/ingest.ts",
     "test": "vitest run",
@@ -21,6 +22,7 @@
     "catchments": "tsx scripts/catchments.ts",
     "check": "tsx scripts/check.ts",
     "publish:api": "tsx scripts/publish.ts",
+    "export:bulk": "tsx scripts/export-bulk.ts",
     "forecast": "tsx scripts/forecast.ts",
     "adequacy": "tsx scripts/adequacy.ts",
     "narrative": "tsx scripts/narrative.ts",

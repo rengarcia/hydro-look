@@ -17,7 +17,7 @@ with the response that produced it archived alongside it.
 | 3 · Additional reservoir levels | **done 2026-09-22** — 21,541 historian rows: daily level and inflow for Coca Codo Sinclair (2016-03-07→), Agoyán (2016-07-05→) and Manduriacu (2017-08-01→). The Mazar control month matches `repDiaHid12m` on all 31 days to 0.0000 m, and the caudal semantics are now settled on 4,281 days rather than assumed: `mridCaud` is inflow, not turbined flow (`data/crosschecks/caudal-semantics.md`) |
 | 4 · Covariates and quality | reference tables (`plants`, `thresholds`, `rationing_episodes`) and the `npm run check` gates done, `public/api/status.json` published; ONI 1950-01 → 2026-07 and ERA5 1990-01-01 → 2026-09-16 ingested. **Catchments delineated 2026-09-23:** `npm run catchments` routes flow over the Copernicus GLO-90 DEM above each of the seven dams and checks every catchment against INAMHI's per-scheme polygons (`geonode:hidroelectricasshape`) — six agree at 99–100% IoU, and Mazar at 91%, where INAMHI leaves out a north-bank lobe beside the dam. `basins.csv` now carries a verified centroid per catchment (`data/reports/catchments.md`); their ERA5 history is not yet backfilled. See `PLAN.md` §2.4 |
 | 5 · Modelling v1 | **done 2026-09-22** — `public/api/forecast.json` carries p10/p50/p90 Mazar level at 7/14/30/60/90 days and days-to-threshold under three named analogue years, with the whole censored crossing distribution beside them. The shipped model is a water balance closed around the operator: the reservoir's area-elevation curve and its turbine's m³/s-per-MW are fitted from this repository's own readings, and release is a rule curve read back off the level every simulated day. Over 105 monthly origins from 2018-01 it is **24.5% better than persistence at 60 days and 34.8% at 90**, and indistinguishable from it under a month, which the document says rather than hides. §7's climatological-drift rung loses at every horizon and the open-loop water balance §7 specified loses by 69% at 90 days; both are kept in `data/reports/backtest.md` as recorded negatives. The crisis check is the unflattering one: of Mazar's two 2024 spells below 2115, the P50 called neither in advance, though the ensemble's dry tail put the October crossing 8.5 days out against an actual 7 |
-| 6 · Site and JSON API | **built and deployed 2026-09-22** — `public/api/latest.json` joins `status.json`, `forecast.json` and `adequacy.json`, and the Spanish page is a Next.js static export rendered from `data/curated` at build time: reservoir gauges against their declared bands, Mazar's forecast fan over six months of recorded cota, a year of inflow against its own climatology, six months of the national mix, the adequacy tile, feed freshness, downloads and the method notes. It ships no client JavaScript; every chart is inline SVG from tested pure functions. The **adequacy tile** is now built and backed by a model (Phase 6c). The one thing §6 asks for that is still absent, and said to be absent, is the **6b narrative panel**. The site is deployed on Vercel, connected to this repository |
+| 6 · Site and JSON API | **built and deployed 2026-09-22** — `public/api/latest.json` joins `status.json`, `forecast.json` and `adequacy.json`, and the Spanish page is a Next.js static export rendered from `data/curated` at build time: reservoir gauges against their declared bands, Mazar's forecast fan over six months of recorded cota, a year of inflow against its own climatology, six months of the national mix, the adequacy tile, feed freshness, downloads and the method notes. It needs no JavaScript to read — the only scripts are the Next runtime and the analytics beacon — and every chart is inline SVG from tested pure functions. The **adequacy tile** is now built and backed by a model (Phase 6c). The one thing §6 asks for that is still absent, and said to be absent, is the **6b narrative panel**. The site is deployed on Vercel, connected to this repository |
 | 6c · Energy adequacy (§7 target 3) | **done 2026-09-22** — `public/api/adequacy.json` publishes expected deficit in GWh/day at 7/14/30/60/90 days and a four-level risk tier, from one identity: unsuppressed demand − hydro − thermal − imports − other. Demand is *served load*, not `demanda_distribucion` (which misses 3–11 GWh/day of losses and unregulated consumers — more than the whole Colombian interconnection), and it is fitted excluding the rationing episodes, because measured load during a cut is the load that was allowed. Over 99 monthly origins the net requirement beats a trailing 28-day mean by 12.4% at 7 days and 11.4% at 90; band coverage is 60–67% against a nominal 80% and is published as such. §7's inflow→hydro link is a **recorded negative**: r = 0.47 on 30-day means, GWh per m³/s drifting 83% across the record, and five rungs built on it all losing to persistence. The check that makes it publishable is the 2024 episode, where measured suppression (20.3 GWh/day) and computed deficit (17.0) come from different sides of the identity and agree within 3.3; the two short episodes do not agree, and the page says so. Applied to every month of the record, the tiers flagged 3 of 99 origins and all 3 preceded cuts, while 6 of the 9 origins that preceded cuts went unflagged — it does not cry wolf and it misses most of the wolves. Building it also found that the SMEC completeness gate is one-sided — see `data/reports/adequacy.md` |
 | 7 · Extensions | XM's side of the Colombian interconnection is ingested (`xm_exchange_daily`, `xm_system_daily`, 2016-05-01 →) but not yet read by any model. The ranked candidate list, with the evidence behind each item, is `ENHANCEMENTS.md` (2026-09-23): ERA5 at the verified centroids, the raw-archive growth, a forecast scorecard, the public data contract, and an export-availability model over the XM series |
 
@@ -119,27 +119,80 @@ npx tsx scripts/tls-expiry.ts --live       # certificate expiry and pin drift, a
 
 npm run publish:api                        # write public/api/latest.json from the committed tables
 npm run publish:api -- --dry-run           # build it and print a summary; touch no file
+npm run publish:api -- --restamp           # also rewrite the contract block on the other documents
 
+npm run export:bulk                        # one <table>.csv.gz per curated table, into public/api/bulk/
 npm run dev                                # the site, against whatever is in data/ right now
-npm run build                              # the static export, into out/
+npm run build                              # export:bulk, then the static export, into out/
 ```
 
 The site is a build-time render of files already in this repository: `next build` reads
-`data/curated` and `public/api`, writes `out/`, and the page ships no client JavaScript. There
-is no request path and no server, which is decision 6 made literal — Vercel holds no
-credentials, runs no ingestion and queries nothing. A number changes on the site when a number
-changes in this repository, and not otherwise. `out/` is servable by anything static, so
-`npx serve out` is a faithful preview.
+`data/curated` and `public/api`, writes `out/`, and the page needs no JavaScript to read: every
+number, chart and data table is in the HTML, and the only scripts it ships are Next's runtime and
+the Vercel Analytics beacon. There is no request path and no server, which is decision 6 made
+literal — Vercel holds no credentials, runs no ingestion and queries nothing. A number changes on
+the site when a number changes in this repository, and not otherwise. `out/` is servable by
+anything static, so `npx serve out` is a faithful preview (without `vercel.json`'s headers).
 
-There are two pages. `/` answers the day's questions in order — the mix, the day's reading, the
-eight reservoirs on one scale, Mazar's forecast with its skill beside each horizon, inflow, the
-national balance, adequacy, feed freshness and the method notes — and `/embalses/mazar/` carries
-Mazar's full record, its analogue years, the 2024 crisis check and its two declared floors. The
-look ("Páramo": Instrument Serif, Geist and Geist Mono over a teal-and-terracotta palette, light
-and dark from the reader's system setting) follows the design canvas the redesign was drawn on.
+The pages:
+
+| Path | What it answers |
+|---|---|
+| `/` | the day's questions in order — the mix, what changed since yesterday, the day's reading, the eight reservoirs on one scale, Mazar's forecast with its skill beside each horizon, inflow, the national balance, adequacy, feed freshness and the method notes |
+| `/embalses/mazar/` | Mazar's full record, its analogue years, the 2024 crisis check and its two declared floors |
+| `/embalses/<site>/` | the other seven reservoirs from one template (`generateStaticParams` over `latest.json`): level, bands or their absence, slopes, the whole record and a year of inflow against its climatology |
+| `/dia/` and `/dia/<fecha>/` | what was published about each day, rebuilt from `forecast_runs`, `adequacy_runs` and `narrative_snapshots`, with the observed level beside each forecast whose date has passed |
+| `/datos/` | the public data: each document's fields and units (read from the JSON Schemas), update times (read from `daily.yml`), the bulk tables and the stability promise, with schema.org `Dataset` markup |
+| `/embed/<site>/` | a fixed 400 × 260 card per reservoir for an `<iframe>`, without the site's chrome |
+| `/feed.xml` | the daily reading as Atom, one entry per day the validator passed |
+
+Every page has Open Graph and Twitter metadata with a canonical URL; the preview image is drawn at
+build time from the day's headline and Mazar's band by `next/og`, with no network. `robots.txt`,
+`sitemap.xml`, `icon.svg` (the masthead's mark) and a Spanish 404 come from `src/app/`. The three
+typefaces ("Páramo": Instrument Serif, Geist and Geist Mono over a teal-and-terracotta palette,
+light and dark from the reader's system setting) are self-hosted from `public/fonts/`, the Latin
+subset of each with its SIL Open Font License beside it. The site's absolute URLs come from
+`HYDRO_LOOK_SITE_URL`, default `https://hydro-look.vercel.app`.
+
 Every headline on the page is a rule over the day's numbers in `src/lib/site/story.ts`, so a
-sentence cannot outlive the number it describes; charts that would be unreadable on a phone are
-drawn a second time at phone size and CSS shows one.
+sentence cannot outlive the number it describes. Each section of the home page is a component
+under `src/app/components/sections/`; every colour is a class in `globals.css`, not an inline
+style. Tables are real `<table>`s with header cells, and every chart carries its plotted values in
+a collapsed `<details>` table beneath it. The inflow, mix and cross-section drawings are one
+scalable SVG each whose labels CSS resizes for a phone; the forecast fan and the twelve-year
+record change shape on a phone and are still drawn twice. Printing the page gives the numbers on
+white with each link's address beside it.
+
+### The public API
+
+`public/api/*.json` are the stable public URLs a third party can fetch — with CORS open and a
+five-minute cache, set in `vercel.json` — and since schema version 1 each says what can be relied
+on (`src/lib/publish/contract.ts`):
+
+- **`schema_version`** is the format version. It changes only when a field is removed, renamed or
+  retyped; an added field does not change it. Each document has a JSON Schema under
+  `public/api/schema/`, and `tests/publish.test.ts` validates every committed document against its
+  schema, with a small in-repo validator that refuses keywords it does not enforce.
+- **`data_date`** has one meaning everywhere: the Ecuadorian day the readings describe. In the
+  model documents it equals `origin_date`. `as_of` (the day the job ran) stays in `latest.json` and
+  `status.json` as a deprecated alias until schema version 2, and each document lists its
+  deprecations in a `deprecated` block.
+- **Codes are English slugs with Spanish labels beside them**: feeds carry `id` and `label_es`,
+  band declarations `report_endpoint` / `dashboard_chart_title` with `declaration_es`, adequacy tiers
+  `tier_code` (`comfortable`, `watch`, `tight`, `deficit`) and `tier_label_es` beside the model's
+  own Spanish word. `adequacy.json`'s `current.narrative_tier_field` names the tier the daily
+  narrative is written about (the worst), and the page says so.
+- **`license`, `attribution` and absolute `see_also`** close every document.
+- **`previous` and `delta_1d`** in `latest.json` give each reservoir's level and inflow the day
+  before, and the national balance's, so "since yesterday" needs no CSV.
+- **Bulk**: `/api/bulk/<table>.csv.gz`, one concatenated file per curated table with an
+  `index.json`, built by `npm run export:bulk` before every build and not committed.
+  `release-bulk.yml` also attaches them, and a Parquet copy of each, to a rolling `bulk-latest`
+  release once a day.
+
+The scripts owned by the models write their documents through the same stamp (`publicJson` in
+`forecast.ts` and `adequacy.ts`, `withContract` in `narrative.ts` and `check.ts`), and
+`npm run publish:api -- --restamp` rewrites the stamp on whatever is already published.
 
 `npm run check` runs in CI on every push and again after every ingest. The split is deliberate:
 shape and range checks are a function of the files alone, so they hold for as long as the commit
@@ -229,7 +282,8 @@ src/lib/features/   series assembly, the fitted reservoir curve, the national ba
                     unusable days taken out, ONI read at its true lag
 src/lib/models/     the M0–M3 ladder, the rolling-origin backtest, the forecast, the adequacy
                     model, and the report each one writes
-src/lib/publish/    the current-state document the site's tiles read
+src/lib/publish/    the current-state document the site's tiles read, the public data contract
+                    every document is stamped with, its schema validator and the bulk export
 src/lib/chart/      scales, ticks and SVG path geometry; pure and unit-tested
 src/lib/site/       what the page reads at build time, and Spanish formatting
 src/app/            the Next.js App Router page and its server-rendered SVG charts
@@ -243,8 +297,10 @@ data/quarantine/    rows an ingest could not store, with the reason; empty unles
 data/reference/     plants, thresholds, rationing episodes, adequacy assumptions, basins,
                     mrids, TLS pins
 data/reports/       backtest.md and adequacy.md, regenerated with their models
-public/api/         latest.json, status.json, forecast.json and adequacy.json — the documents
-                    the site reads and the stable public URLs a third party can fetch
+public/api/         latest.json, status.json, forecast.json, adequacy.json and narrative.json —
+                    the documents the site reads and the stable public URLs a third party can
+                    fetch — and schema/, their JSON Schemas
+public/fonts/       the three self-hosted typefaces and their licences
 tests/fixtures/     the Phase 0 responses the parsers are tested against
 ```
 

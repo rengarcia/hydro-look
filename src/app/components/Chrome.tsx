@@ -1,16 +1,20 @@
 /**
- * The furniture every page shares: the mark, the masthead, the footer and the contour lines
- * drawn behind the top of the page.
+ * The furniture every page shares: the skip link, the mark, the masthead, the footer and the
+ * contour lines drawn behind the top of the page. `Frame` assembles them, and the site's layout
+ * wraps every page in it, so no page repeats the chrome by hand.
  *
  * The navigation collapses into a `<details>` element on a phone rather than a scripted drawer.
- * The site ships no client JavaScript, and `<details>` is a disclosure the browser already
- * knows how to open, close, focus and announce.
+ * The page needs no JavaScript to read — the only scripts it ships are Next's runtime and the
+ * analytics beacon, and neither draws anything — and `<details>` is a disclosure the browser
+ * already knows how to open, close, focus and announce, with or without them.
  */
 
 import type { ReactNode } from "react";
-import { shortDate } from "../../lib/site/format.ts";
+import { dateWithYear } from "../../lib/site/format.ts";
+import { dataDate } from "../../lib/site/data.ts";
+import { REPO_URL } from "../../lib/publish/contract.ts";
 
-export const REPO = "https://github.com/rengarcia/hydro-look";
+export const REPO = REPO_URL;
 
 /** The home page's sections, linked from every page's masthead. */
 export const NAV: NavLink[] = [
@@ -21,6 +25,9 @@ export const NAV: NavLink[] = [
   { href: "/#suficiencia", label: "Suficiencia" },
   { href: "/#datos", label: "Datos" },
 ];
+
+/** The id every page's `<main>` carries, which the skip link jumps to. */
+export const MAIN_ID = "contenido";
 
 export function Mark({ size = 28 }: { size?: number }) {
   return (
@@ -58,33 +65,22 @@ export interface NavLink {
  * The strip across the top. `asOf` is the date of the data, not of the build: the pill is the
  * first thing a reader sees, and what it has to answer is how old the numbers are.
  */
-export function Masthead({
-  asOf,
-  links,
-  crumbs,
-}: {
-  asOf: string | null;
-  links: NavLink[];
-  /** A breadcrumb trail instead of the section links, for a page below the home page. */
-  crumbs?: ReactNode;
-}) {
+export function Masthead({ asOf, links }: { asOf: string | null; links: NavLink[] }) {
   return (
     <header className="masthead">
       <div className="shell">
         <Brand />
-        {crumbs ?? (
-          <nav className="nav" aria-label="Secciones">
-            {links.map((link) => (
-              <a key={link.href} href={link.href}>
-                {link.label}
-              </a>
-            ))}
-          </nav>
-        )}
+        <nav className="nav" aria-label="Secciones">
+          {links.map((link) => (
+            <a key={link.href} href={link.href}>
+              {link.label}
+            </a>
+          ))}
+        </nav>
         {asOf ? (
           <span className="pill">
             <span className="dot tone-good" aria-hidden="true" />
-            Datos al {shortDate(asOf)} {asOf.slice(0, 4)}
+            Datos al {dateWithYear(asOf)}
           </span>
         ) : null}
         <details className="menu">
@@ -106,6 +102,20 @@ export function Masthead({
   );
 }
 
+/** Where a page below the home page sits, as a trail of links ending at the page itself. */
+export function Crumbs({ trail }: { trail: { href?: string; label: string }[] }) {
+  return (
+    <nav className="shell crumbs" aria-label="Ruta">
+      {trail.map((step, i) => (
+        <span key={step.label}>
+          {i > 0 ? <span aria-hidden="true">/ </span> : null}
+          {step.href ? <a href={step.href}>{step.label}</a> : <span aria-current="page">{step.label}</span>}
+        </span>
+      ))}
+    </nav>
+  );
+}
+
 export function Footer() {
   return (
     <footer className="site-footer">
@@ -118,12 +128,19 @@ export function Footer() {
             institución.
           </p>
         </div>
-        <p className="footer-fine">
-          Código bajo licencia MIT. Energía: CELEC EP y CENACE. Meteorología:{" "}
-          <a href="https://open-meteo.com/">Open-Meteo</a> (ERA5, CC BY 4.0). Índice ONI:{" "}
-          <a href="https://psl.noaa.gov/data/correlation/oni.data">NOAA PSL / CPC</a>.{" "}
-          <a href={REPO}>Código y datos en GitHub</a>.
-        </p>
+        <div className="footer-fine">
+          <p>
+            Código bajo licencia MIT. Energía: CELEC EP y CENACE. Meteorología:{" "}
+            <a href="https://open-meteo.com/">Open-Meteo</a> (ERA5, CC BY 4.0). Índice ONI:{" "}
+            <a href="https://psl.noaa.gov/data/correlation/oni.data">NOAA PSL / CPC</a>. Intercambios con Colombia: XM.{" "}
+            <a href={REPO}>Código y datos en GitHub</a>.
+          </p>
+          <p className="footer-links">
+            <a href="/datos/">Los datos y su contrato</a>
+            <a href="/dia/">Archivo diario</a>
+            <a href="/feed.xml">Suscribirse (Atom)</a>
+          </p>
+        </div>
       </div>
     </footer>
   );
@@ -134,8 +151,9 @@ export function Footer() {
  * technology, and generated from fixed sines rather than randomness so every build draws the
  * same page.
  */
-export function Contours({ height = 760 }: { height?: number }) {
+export function Contours() {
   const width = 1440;
+  const height = 760;
   const lines = 9;
   const paths: string[] = [];
   for (let i = 0; i < lines; i++) {
@@ -152,11 +170,31 @@ export function Contours({ height = 760 }: { height?: number }) {
     paths.push(points.join(" "));
   }
   return (
-    <svg className="contours" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" aria-hidden="true" style={{ height }}>
+    <svg className="contours" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" aria-hidden="true">
       {paths.map((d, i) => (
         <path key={i} d={d} fill="none" stroke="var(--contour)" strokeWidth={1.2} vectorEffect="non-scaling-stroke" />
       ))}
     </svg>
+  );
+}
+
+/**
+ * Every page's frame. The skip link comes first, before the masthead, so a keyboard reader's
+ * first tab offers to jump past the navigation straight to the page's `<main id="contenido">`.
+ */
+export function Frame({ children }: { children: ReactNode }) {
+  return (
+    <>
+      <a className="skip-link" href={`#${MAIN_ID}`}>
+        Saltar al contenido
+      </a>
+      <div className="site">
+        <Contours />
+        <Masthead asOf={dataDate()} links={NAV} />
+        {children}
+        <Footer />
+      </div>
+    </>
   );
 }
 
@@ -175,19 +213,24 @@ export function SectionIntro({
   index,
   eyebrow,
   title,
+  titleId,
   children,
   wide = false,
 }: {
   index: string;
   eyebrow: ReactNode;
   title: ReactNode;
+  /** The heading's id, for the section's `aria-labelledby`. */
+  titleId?: string;
   children?: ReactNode;
   wide?: boolean;
 }) {
   return (
     <div className={wide ? "section-intro wide" : "section-intro"}>
       <Kicker index={index}>{eyebrow}</Kicker>
-      <h2 className="section-title">{title}</h2>
+      <h2 id={titleId} className="section-title">
+        {title}
+      </h2>
       {children ? <p className="section-lede">{children}</p> : null}
     </div>
   );

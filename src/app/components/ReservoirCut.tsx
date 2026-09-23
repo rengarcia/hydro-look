@@ -7,9 +7,10 @@
  * wedge, not the reservoir's real bathymetry. That is why the label under the level names a
  * share of the *band* and never of stored water — the same distinction the gauges make.
  *
- * Two variants exist because the labels do not survive being scaled down to a phone: `compact`
- * moves the dam left to give the labels room and sets them at a size that stays legible when the
- * whole drawing is 350 px wide. The page renders both and CSS shows one.
+ * One drawing serves every screen. The labels are what does not survive being scaled down to a
+ * phone, so they alone come in two sets — full sentences at desk size and short forms set large
+ * — each placed for its own type size and shown by CSS at its breakpoint (`.cut .wide-label`,
+ * `.cut .compact-label`). The valley, the water and the dam are drawn once.
  */
 
 import { num } from "../../lib/site/format.ts";
@@ -17,7 +18,7 @@ import { num } from "../../lib/site/format.ts";
 export interface CutLevel {
   level_masl: number;
   label: string;
-  /** Short form for the compact variant. */
+  /** Short form for a phone. */
   short: string;
   /** This project's own marker rather than a declaration: drawn with a finer dash. */
   unverified?: boolean;
@@ -26,6 +27,30 @@ export interface CutLevel {
 const TOP = 76;
 const BOTTOM = 490;
 const VALLEY_TOP = 30;
+const HEIGHT = 550;
+const DAM = 336;
+/** Type sizes in drawing units: desk labels, phone labels. They must match `.cut` in globals.css. */
+const FONT = { wide: 12, compact: 22 };
+
+interface Rule {
+  y: number;
+  long: string;
+  short: string;
+  color: string;
+  dash?: string;
+  width: number;
+}
+
+/** Labels that would overprint are pushed down a line, in order, so two floors 2 m apart both read. */
+function stackLabels(rules: Rule[], fontSize: number): number[] {
+  const gap = fontSize + 2;
+  let last = -Infinity;
+  return rules.map((rule) => {
+    const labelY = Math.max(rule.y + fontSize / 3, last + gap);
+    last = labelY;
+    return labelY;
+  });
+}
 
 export function ReservoirCut({
   crest,
@@ -34,8 +59,6 @@ export function ReservoirCut({
   floors,
   forecast,
   label,
-  compact = false,
-  className,
 }: {
   crest: number;
   level: number;
@@ -43,11 +66,8 @@ export function ReservoirCut({
   floors: CutLevel[];
   forecast: { p10: number; p50: number; p90: number; days: number } | null;
   label: string;
-  compact?: boolean;
-  className?: string;
 }) {
-  const dam = compact ? 320 : 384;
-  const bankBottom = dam * 0.4667;
+  const bankBottom = DAM * 0.4667;
   const lowestFloor = floors.length > 0 ? Math.min(...floors.map((f) => f.level_masl)) : level;
   const low = Math.min(lowestFloor, level) - (crest - Math.min(lowestFloor, level)) * 0.15;
   const k = (BOTTOM - TOP) / (crest - low || 1);
@@ -56,16 +76,14 @@ export function ReservoirCut({
   const r = (v: number) => Math.round(v * 10) / 10;
 
   const surface = y(level);
-  const fontSize = compact ? 22 : 12;
-  const labelX = dam + 96;
+  const labelX = DAM + 96;
 
-  const rules: { y: number; text: string; color: string; dash?: string; width: number }[] = [
-    { y: TOP, text: compact ? `${num(crest, 0)} cresta` : `${num(crest, 0)} m · cresta de la banda`, color: "var(--ink-2)", width: 1 },
-  ];
+  const rules: Rule[] = [{ y: TOP, long: `${num(crest, 0)} m · cresta de la banda`, short: `${num(crest, 0)} cresta`, color: "var(--ink-2)", width: 1 }];
   if (forecast) {
     rules.push({
       y: y(forecast.p50),
-      text: compact ? `${num(forecast.p50, 0)} p50 ${forecast.days} d` : `${num(forecast.p50, 0)} m · p50 a ${forecast.days} días`,
+      long: `${num(forecast.p50, 0)} m · p50 a ${forecast.days} días`,
+      short: `${num(forecast.p50, 0)} p50 ${forecast.days} d`,
       color: "var(--water)",
       dash: "5 5",
       width: 1.4,
@@ -74,78 +92,56 @@ export function ReservoirCut({
   for (const floor of floors) {
     rules.push({
       y: y(floor.level_masl),
-      text: compact ? floor.short : floor.label,
+      long: floor.label,
+      short: floor.short,
       color: "var(--deficit)",
       dash: floor.unverified ? "2 4" : "6 4",
       width: 1.4,
     });
   }
   rules.sort((a, b) => a.y - b.y);
-
-  // Labels that would overprint are pushed down by one line height, in order, so two floors two
-  // metres apart are both readable instead of one hiding the other.
-  const gap = fontSize + 2;
-  let last = -Infinity;
-  const labelled = rules.map((rule) => {
-    const labelY = Math.max(rule.y + fontSize / 3, last + gap);
-    last = labelY;
-    return { ...rule, labelY };
-  });
+  const wideY = stackLabels(rules, FONT.wide);
+  const compactY = stackLabels(rules, FONT.compact);
 
   const wave: string[] = [];
-  for (let x = -40; x <= dam + 90; x += 5) {
+  for (let x = -40; x <= DAM + 90; x += 5) {
     wave.push(`${x === -40 ? "M" : "L"}${x} ${r(surface + 7 + 1.6 * Math.sin((x / 80) * Math.PI * 2))}`);
   }
-
-  const whiskerX = dam - 53;
-  const id = compact ? "cut-c" : "cut-w";
+  const whiskerX = DAM - 53;
 
   return (
-    <svg
-      className={className ? `cut ${className}` : "cut"}
-      viewBox={`0 0 640 ${compact ? 560 : 540}`}
-      role="img"
-      aria-label={label}
-    >
+    <svg className="cut" viewBox={`0 0 640 ${HEIGHT}`} role="img" aria-label={label}>
       <title>{label}</title>
       <defs>
-        <linearGradient id={`${id}-water`} x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id="cut-water" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="var(--water)" stopOpacity=".95" />
           <stop offset="1" stopColor="var(--water)" stopOpacity=".7" />
         </linearGradient>
-        <clipPath id={`${id}-clip`}>
-          <path d={`M${r(bank(surface))} ${r(surface)} L${dam} ${r(surface)} L${dam} ${BOTTOM} L${r(bankBottom)} ${BOTTOM} Z`} />
+        <clipPath id="cut-clip">
+          <path d={`M${r(bank(surface))} ${r(surface)} L${DAM} ${r(surface)} L${DAM} ${BOTTOM} L${r(bankBottom)} ${BOTTOM} Z`} />
         </clipPath>
       </defs>
 
-      <path d={`M0 ${VALLEY_TOP} L${r(bankBottom)} ${BOTTOM} L${dam} ${BOTTOM} L${dam} 540 L0 540 Z`} fill="var(--sunk)" />
-      <path
-        d={`M${r(bank(surface))} ${r(surface)} L${dam} ${r(surface)} L${dam} ${BOTTOM} L${r(bankBottom)} ${BOTTOM} Z`}
-        fill={`url(#${id}-water)`}
-      />
-      <g clipPath={`url(#${id}-clip)`}>
+      <path d={`M0 ${VALLEY_TOP} L${r(bankBottom)} ${BOTTOM} L${DAM} ${BOTTOM} L${DAM} ${HEIGHT} L0 ${HEIGHT} Z`} fill="var(--sunk)" />
+      <path d={`M${r(bank(surface))} ${r(surface)} L${DAM} ${r(surface)} L${DAM} ${BOTTOM} L${r(bankBottom)} ${BOTTOM} Z`} fill="url(#cut-water)" />
+      <g clipPath="url(#cut-clip)">
         <path className="wave" d={wave.join(" ")} fill="none" stroke="var(--water-3)" strokeWidth="2" opacity=".85" />
       </g>
 
-      {labelled.map((rule) => (
-        <g key={`${rule.text}-${rule.y}`}>
-          <line
-            x1={r(bank(rule.y))}
-            x2={dam}
-            y1={r(rule.y)}
-            y2={r(rule.y)}
-            stroke={rule.color}
-            strokeWidth={rule.width}
-            strokeDasharray={rule.dash}
-          />
-          <line x1={dam + 84} x2={dam + 90} y1={r(rule.y)} y2={r(rule.y)} stroke={rule.color} strokeWidth="1" />
-          <text x={labelX} y={r(rule.labelY)} fontFamily="var(--mono)" fontSize={fontSize} fill={rule.color}>
-            {rule.text}
+      {rules.map((rule, i) => (
+        <g key={`${rule.long}-${rule.y}`}>
+          <line x1={r(bank(rule.y))} x2={DAM} y1={r(rule.y)} y2={r(rule.y)} stroke={rule.color} strokeWidth={rule.width} strokeDasharray={rule.dash} />
+          <line x1={DAM + 84} x2={DAM + 90} y1={r(rule.y)} y2={r(rule.y)} stroke={rule.color} strokeWidth="1" />
+          <text className="cut-label wide-label" x={labelX} y={r(wideY[i]!)} fill={rule.color}>
+            {rule.long}
+          </text>
+          <text className="cut-label compact-label" x={labelX} y={r(compactY[i]!)} fill={rule.color}>
+            {rule.short}
           </text>
         </g>
       ))}
 
-      <path d={`M${dam} 49.7 L${dam + 26} 49.7 L${dam + 80} 540 L${dam} 540 Z`} fill="var(--surface)" stroke="var(--ink)" strokeWidth="1.5" />
+      <path d={`M${DAM} 49.7 L${DAM + 26} 49.7 L${DAM + 80} ${HEIGHT} L${DAM} ${HEIGHT} Z`} fill="var(--surface)" stroke="var(--ink)" strokeWidth="1.5" />
 
       {forecast ? (
         <g>
@@ -161,35 +157,23 @@ export function ReservoirCut({
             strokeWidth="1.4"
           />
           <circle cx={whiskerX} cy={r(y(forecast.p50))} r="5" fill="var(--water)" stroke="var(--surface)" strokeWidth="2" />
-          <text
-            x={whiskerX}
-            y={r(y(forecast.p10) + (compact ? 26 : 18))}
-            textAnchor="middle"
-            fontFamily="var(--mono)"
-            fontSize={compact ? 18 : 11}
-            fill="var(--ink-2)"
-          >
+          {/* Offsets in em, so each line sits one line below the whisker at either type size. */}
+          <text className="cut-note" x={whiskerX} y={r(y(forecast.p10))} dy="1.5em" textAnchor="middle" fill="var(--ink-2)">
             p10–p90
           </text>
-          <text
-            x={whiskerX}
-            y={r(y(forecast.p10) + (compact ? 50 : 32))}
-            textAnchor="middle"
-            fontFamily="var(--mono)"
-            fontSize={compact ? 18 : 11}
-            fill="var(--ink-2)"
-          >
+          <text className="cut-note" x={whiskerX} y={r(y(forecast.p10))} dy="2.8em" textAnchor="middle" fill="var(--ink-2)">
             {forecast.days} días
           </text>
         </g>
       ) : null}
 
-      <text x={r(bank(surface) + 18)} y={r(surface - 16)} fontFamily="var(--serif)" fontSize={compact ? 54 : 40} fill="var(--ink)">
+      <text className="cut-level" x={r(bank(surface) + 18)} y={r(surface - 16)} fill="var(--ink)">
         {num(level, 2)} m
       </text>
       {bandPct !== null ? (
-        <text x={r(bank(surface) + 20)} y={r(surface + 26)} fontFamily="var(--mono)" fontSize={compact ? 20 : 12} fill="var(--surface)">
-          {compact ? `HOY · ${num(bandPct, 1)} %` : `HOY · ${num(bandPct, 1)} % DE LA BANDA`}
+        <text className="cut-note" x={r(bank(surface) + 20)} y={r(surface + 26)} fill="var(--surface)">
+          <tspan className="compact-label">HOY · {num(bandPct, 1)} %</tspan>
+          <tspan className="wide-label">HOY · {num(bandPct, 1)} % DE LA BANDA</tspan>
         </text>
       ) : null}
     </svg>

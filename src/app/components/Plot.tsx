@@ -1,11 +1,12 @@
 /**
  * The frame every time-series chart on the site shares: margins, gridlines, axis labels.
  *
- * Charts are inline SVG rendered on the server. No client JavaScript ships, so the interaction
- * a reader gets is the browser's own: `<title>` inside a shape is a native tooltip, and every
- * chart sits beside the same numbers in words or a list. That is a deliberate trade — a
- * crosshair would be nicer, and it is not worth a hydration pass on a page whose numbers change
- * once a day.
+ * Charts are inline SVG rendered on the server, and nothing in them depends on a script: the
+ * only JavaScript the page ships is Next's runtime and the analytics beacon. The interaction a
+ * reader gets is the browser's own — `<title>` inside a shape is a native tooltip — and every
+ * chart has its numbers beside it in words and in a collapsed table. That is a deliberate
+ * trade: a crosshair would be nicer, and it is not worth a client component on a page whose
+ * numbers change once a day.
  *
  * The grid is recessive by construction: hairlines in `--line`, labels in `--muted` monospace,
  * and no frame around the plot. The data is the only thing drawn in a strong colour.
@@ -61,13 +62,21 @@ export function frameOf(options: {
 export interface XLabel {
   at: number;
   text: string;
+  /** `wide-label` or `compact-label` when the label is drawn at only one screen width. */
+  className?: string;
 }
 
 /**
  * Gridlines, the y labels and a handful of x labels, with the chart's own marks drawn on top.
  *
  * `title` and `desc` are the accessible description: a screen reader is given the chart's
- * subject and its range in words, because an SVG full of paths says nothing on its own.
+ * subject and its range in words, because an SVG full of paths says nothing on its own. The
+ * numbers themselves are in the `<details>` table each chart carries below it.
+ *
+ * A `scalable` chart is one drawing for every screen: its axis type is sized by CSS
+ * (`.chart-scalable .axis`), larger on a phone where the whole drawing is scaled down, and the
+ * x labels that only fit on a wide screen carry `wide-label`. A chart whose shape has to change
+ * on a phone — a 3:1 strip becomes a near-square — is drawn twice instead, by its component.
  */
 export function Plot({
   frame,
@@ -76,6 +85,7 @@ export function Plot({
   title,
   desc,
   fontSize = 11,
+  scalable = false,
   children,
 }: {
   frame: PlotFrame;
@@ -84,15 +94,16 @@ export function Plot({
   title: string;
   desc?: string;
   fontSize?: number;
+  scalable?: boolean;
   children: ReactNode;
 }) {
   const { width, height, margin } = frame;
   return (
-    <svg className="chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label={title}>
+    <svg className={scalable ? "chart chart-scalable" : "chart"} viewBox={`0 0 ${width} ${height}`} role="img" aria-label={title}>
       <title>{title}</title>
       {desc ? <desc>{desc}</desc> : null}
 
-      <g aria-hidden="true" fontFamily="var(--mono)" fontSize={fontSize} fill="var(--muted)">
+      <g className="axis" aria-hidden="true" fontFamily="var(--mono)" fontSize={scalable ? undefined : fontSize} fill="var(--muted)">
         {frame.yTicks.map((tick) => (
           <g key={tick}>
             <line
@@ -109,7 +120,7 @@ export function Plot({
           </g>
         ))}
         {xLabels.map((label) => (
-          <text key={`${label.at}-${label.text}`} x={round(frame.x(label.at))} y={height - 8} textAnchor="middle">
+          <text key={`${label.at}-${label.text}`} className={label.className} x={round(frame.x(label.at))} y={height - 8} textAnchor="middle">
             {label.text}
           </text>
         ))}
@@ -144,6 +155,21 @@ export function monthLabels(first: string, last: string, every: number, at: (iso
     }
   }
   return out;
+}
+
+/**
+ * Two densities of labels merged into one list for a scalable chart: a label in both is drawn
+ * at every width, one only in `wide` gets `wide-label` and one only in `compact` gets
+ * `compact-label`, which CSS shows at its breakpoint.
+ */
+export function responsiveLabels(wide: XLabel[], compact: XLabel[]): XLabel[] {
+  const key = (l: XLabel) => `${l.at}|${l.text}`;
+  const inCompact = new Set(compact.map(key));
+  const inWide = new Set(wide.map(key));
+  return [
+    ...wide.map((l) => (inCompact.has(key(l)) ? l : { ...l, className: "wide-label" })),
+    ...compact.filter((l) => !inWide.has(key(l))).map((l) => ({ ...l, className: "compact-label" })),
+  ].sort((a, b) => a.at - b.at);
 }
 
 /** A label at the middle of each calendar year between `first` and `last`. */

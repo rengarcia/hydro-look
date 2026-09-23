@@ -14,30 +14,40 @@
  * which is why it does not always equal the fill.
  *
  * On a phone each reservoir becomes a horizontal bar; both are rendered and CSS shows one, so the
- * page stays free of client JavaScript.
+ * switch needs no script.
  */
 
-import { num, pct, signed } from "../../lib/site/format.ts";
+import type { ReactNode } from "react";
+import { basinName, num, pct, signed } from "../../lib/site/format.ts";
 import { ARROW, DIRECTION_TONE, direction } from "../../lib/site/story.ts";
+import { reservoirHref } from "../../lib/site/data.ts";
 import type { ReservoirSnapshot } from "../../lib/publish/latest.ts";
 
-/** Reservoirs with a page of their own. */
-export const DETAIL_PAGES: Record<string, string> = { mazar: "/embalses/mazar/" };
+/**
+ * Reservoirs with a page of their own: every one the fleet shows. Mazar's is written by hand
+ * (`/embalses/mazar/`) because it carries the forecast; the other seven come from one template.
+ */
+export function detailPage(site: string): string {
+  return reservoirHref(site);
+}
 
 /** The fill level above which the percentage is printed inside the water rather than over it. */
 const INSIDE_ABOVE = 75;
 
-const BASINS: Record<string, string> = {
-  paute: "Paute",
-  jubones: "Jubones",
-  zamora: "Zamora",
-  pastaza: "Pastaza",
-  guayllabamba: "Guayllabamba",
-  coca: "Coca",
-};
+/** `p29`, with what it abbreviates said in text and not only in a tooltip. */
+export function PercentileAbbr({ percentile, empty = "—" }: { percentile: number | null; empty?: ReactNode }) {
+  if (percentile === null) return <>{empty}</>;
+  return (
+    <abbr title={`percentil ${percentile} del caudal de hoy frente a su historia`}>
+      p{percentile}
+      <span className="visually-hidden"> (percentil {percentile} del caudal frente a su historia)</span>
+    </abbr>
+  );
+}
 
-export function basinName(basin: string): string {
-  return BASINS[basin] ?? basin.charAt(0).toUpperCase() + basin.slice(1);
+/** Metres a day, abbreviated where the column is narrow. */
+export function MetresPerDay() {
+  return <abbr title="metros por día">m/d</abbr>;
 }
 
 interface Column {
@@ -100,7 +110,7 @@ function trendOf(column: Column) {
 
 function TankColumn({ column }: { column: Column }) {
   const { reservoir, fill } = column;
-  const href = DETAIL_PAGES[reservoir.site];
+  const href = detailPage(reservoir.site);
   const { slope, dir, tone } = trendOf(column);
   const inside = fill >= INSIDE_ABOVE;
   const body = (
@@ -141,10 +151,10 @@ function TankColumn({ column }: { column: Column }) {
             <span className={`arrow ${tone}`} aria-hidden="true">
               {ARROW[dir]}
             </span>{" "}
-            {dir === "flat" ? num(0, 2) : signed(slope, 2)} m/d
+            {dir === "flat" ? num(0, 2) : signed(slope, 2)} <MetresPerDay />
           </span>
-          <span className="mono" title="Percentil del caudal de hoy frente a su historia" style={{ color: "var(--muted)" }}>
-            {column.percentile !== null ? `p${column.percentile}` : "—"}
+          <span className="mono column-percentile">
+            <PercentileAbbr percentile={column.percentile} />
           </span>
         </div>
         <div className="column-scale">{column.declared ? "banda declarada" : "sin banda: rango registrado"}</div>
@@ -162,7 +172,7 @@ function TankColumn({ column }: { column: Column }) {
 
 function BarRow({ column }: { column: Column }) {
   const { reservoir, fill } = column;
-  const href = DETAIL_PAGES[reservoir.site];
+  const href = detailPage(reservoir.site);
   const { slope, dir, tone } = trendOf(column);
   const body = (
     <>
@@ -187,7 +197,7 @@ function BarRow({ column }: { column: Column }) {
         </span>
         <span>
           {dir === "flat" ? num(0, 2) : signed(slope, 2)} m/día · caudal{" "}
-          {column.percentile !== null ? `p${column.percentile}` : "sin base"}
+          <PercentileAbbr percentile={column.percentile} empty="sin base" />
         </span>
       </div>
     </>

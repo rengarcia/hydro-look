@@ -10,3 +10,5 @@ node_modules/
 out/
 *.tsbuildinfo
 .claude/worktrees/
+# Built by `npm run export:bulk` before every `next build`; see src/lib/publish/bulk.ts.
+public/api/bulk/

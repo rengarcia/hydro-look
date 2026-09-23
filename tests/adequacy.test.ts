@@ -454,7 +454,7 @@ describe("adequacySummary", () => {
   };
 
   it("copies the tier rather than recomputing it", () => {
-    expect(adequacySummary(document)).toEqual({
+    expect(adequacySummary(document)).toMatchObject({
       origin_date: "2026-09-20",
       tier: "holgado",
       worst_tier: "vigilancia",

@@ -54,6 +54,7 @@ import { DATA_QUARANTINE } from "../src/lib/store/curated.ts";
 import { writeJsonUnlessOnlyStamped } from "../src/lib/store/files.ts";
 import { DATA_CURATED, DATA_RAW, DATA_REFERENCE, DATA_ROOT } from "../src/lib/util/paths.ts";
 import { nowUtc, todayEc } from "../src/lib/util/dates.ts";
+import { withContract } from "../src/lib/publish/contract.ts";
 
 /**
  * How long each feed may go without a new row before it counts as stopped.
@@ -264,7 +265,7 @@ function main(): void {
     };
     // Left alone when only `generated_at` would change, so a run that found nothing new commits
     // nothing (see apply-and-push.sh).
-    console.log(writeJsonUnlessOnlyStamped(outPath, document) ? `wrote ${outPath}` : `${outPath} unchanged but for generated_at; left as it was`);
+    console.log(writeJsonUnlessOnlyStamped(outPath, withContract("status", document)) ? `wrote ${outPath}` : `${outPath} unchanged but for generated_at; left as it was`);
   }
 
   process.exitCode = failures.length > 0 ? 1 : 0;

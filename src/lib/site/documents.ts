@@ -10,6 +10,94 @@
 
 import type { NarrativePayload } from "../narrative/payload.ts";
 
+/**
+ * The fields the pages render, by document, as paths into the published JSON. The interfaces
+ * below say it to `tsc`; this says it to the schema test, which checks that every one of these
+ * is a field the published JSON Schema *requires*. A schema change that makes one optional — a
+ * promise to third parties loosened — would otherwise leave the site reading a field nobody
+ * guarantees any more.
+ */
+export const SITE_READS = {
+  latest: [
+    "data_date",
+    "reservoirs[].site",
+    "reservoirs[].label",
+    "reservoirs[].basin",
+    "reservoirs[].level.masl",
+    "reservoirs[].level.date",
+    "reservoirs[].level.first_reading",
+    "reservoirs[].level.observed_min_masl",
+    "reservoirs[].level.observed_max_masl",
+    "reservoirs[].level.previous",
+    "reservoirs[].level.delta_1d_m",
+    "reservoirs[].bands[].min_masl",
+    "reservoirs[].bands[].max_masl",
+    "reservoirs[].bands[].declaration",
+    "reservoirs[].bands[].declaration_es",
+    "reservoirs[].bands[].band_pct",
+    "reservoirs[].slopes_m_per_day.d7",
+    "reservoirs[].slopes_m_per_day.d30",
+    "reservoirs[].inflow.m3s",
+    "reservoirs[].inflow.date",
+    "reservoirs[].inflow.climatology",
+    "reservoirs[].inflow.delta_1d_m3s",
+    "national.date",
+    "national.supply_gwh",
+    "national.hydro_share_pct",
+    "national.thermal_share_pct",
+    "national.import_share_pct",
+    "national.total_generation_gwh",
+    "national.delta_1d",
+  ],
+  status: ["generated_at", "feeds[].id", "feeds[].label_es", "feeds[].latest", "feeds[].limit_days", "feeds[].state", "findings[].message", "tables"],
+  forecast: [
+    "origin_date",
+    "site",
+    "model.id",
+    "model.backtest_origins",
+    "current.level_masl",
+    "thresholds[].name",
+    "thresholds[].level_masl",
+    "thresholds[].status",
+    "forecast[].horizon_days",
+    "forecast[].target_date",
+    "forecast[].p10",
+    "forecast[].p50",
+    "forecast[].p90",
+    "days_to_threshold.horizon_days",
+    "days_to_threshold.thresholds[].level_masl",
+    "days_to_threshold.thresholds[].status",
+    "days_to_threshold.thresholds[].scenarios[].crossesOn",
+    "backtest.report",
+    "backtest.horizons[].skill_vs_persistence",
+    "backtest.horizons[].coverage_p10_p90",
+    "crisis_check.threshold_masl",
+    "crisis_check.false_alarms_p50",
+    "crisis_check.episodes[].crossed_on",
+  ],
+  adequacy: [
+    "origin_date",
+    "current.tier",
+    "current.worst_tier",
+    "current.worst_tier_horizon_days",
+    "current.narrative_tier_field",
+    "horizons[].horizon_days",
+    "horizons[].deficit_gwh_day",
+    "horizons[].margin_pct",
+    "horizons[].tier",
+    "assumptions.thermal_gwh_day",
+    "assumptions.import_gwh_day",
+    "assumptions.stressed_import_gwh_day",
+    "assumptions.editable_at",
+    "data.hydro_anomaly",
+    "tier_history.origins",
+    "tier_history.origins_flagged",
+    "crisis_check.episodes[].measured_suppression_gwh_day",
+    "crisis_check.episodes[].implied_deficit_gwh_day",
+  ],
+  narrative: ["generated_at", "model", "origin_date", "risk_tier", "outlook_es", "drivers", "confidence", "basis"],
+} as const;
+
 export interface ForecastHorizon {
   horizon_days: number;
   target_date: string;
@@ -161,7 +249,14 @@ export interface AdequacyDocument {
     };
     editable_at: string;
   };
-  current: { tier: RiskTier; worst_tier: RiskTier; worst_tier_horizon_days: number; worst_deficit_gwh_day: number };
+  current: {
+    tier: RiskTier;
+    worst_tier: RiskTier;
+    worst_tier_horizon_days: number;
+    worst_deficit_gwh_day: number;
+    /** Which of the two tiers the narrative is written about. Stamped by `publish/contract.ts`. */
+    narrative_tier_field?: "worst_tier" | "tier";
+  };
   horizons: AdequacyHorizon[];
   tier_history: {
     horizon_days: number;
@@ -177,6 +272,11 @@ export interface AdequacyDocument {
 }
 
 export interface StatusFeed {
+  /** The feed's stable code, `ords_levels`. */
+  id: string;
+  /** What the page calls it. */
+  label_es: string;
+  /** Deprecated: the English label the log uses. */
   feed: string;
   latest: string | null;
   limit_days: number;
@@ -185,6 +285,7 @@ export interface StatusFeed {
 
 export interface StatusDocument {
   generated_at: string;
+  data_date: string | null;
   as_of: string;
   ok: boolean;
   status: string;
@@ -208,6 +309,8 @@ export interface NarrativeDocument {
   prompt_version: string;
   origin_date: string;
   risk_tier: string | null;
+  /** The adequacy field the tier was copied from, `adequacy.current.worst_tier`. */
+  risk_tier_source?: string;
   outlook_es: string;
   drivers: string[];
   confidence: "low" | "medium" | "high";

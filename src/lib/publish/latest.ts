@@ -29,6 +29,7 @@ import { SITES, type SiteId } from "../registry.ts";
 import { bandForDayOfYear, binByDayOfYear, sampleForDate } from "../features/climatology.ts";
 import { dayOfYear } from "../util/stats.ts";
 import type { DailySeries, SeriesSet } from "../features/series.ts";
+import { declarationCode, tierCode, withContract, NARRATIVE_TIER_FIELD, TIER_CODES, type ContractFields } from "./contract.ts";
 
 export interface ThresholdRow {
   site: string;
@@ -43,7 +44,10 @@ export interface ThresholdRow {
 export interface BandDeclaration {
   min_masl: number;
   max_masl: number;
+  /** How CELEC declared it, as a code: `report_endpoint` or `dashboard_chart_title`. */
   declaration: string;
+  /** The same, in the page's words. */
+  declaration_es: string;
   source: string;
   observed_from: string;
   observed_to: string;
@@ -84,6 +88,10 @@ export interface ReservoirSnapshot {
      */
     observed_min_masl: number;
     observed_max_masl: number;
+    /** The reading of the day before `date`, when that exact day was read; never an older one. */
+    previous: { masl: number; date: IsoDate } | null;
+    /** `masl − previous.masl`, metres; null without a previous reading. */
+    delta_1d_m: number | null;
   } | null;
   /** Every band CELEC declares for this reservoir. They disagree, so all of them are kept. */
   bands: BandDeclaration[];
@@ -94,6 +102,8 @@ export interface ReservoirSnapshot {
     first_reading: IsoDate;
     days: number;
     climatology: Climatology | null;
+    previous: { m3s: number; date: IsoDate } | null;
+    delta_1d_m3s: number | null;
   } | null;
 }
 
@@ -112,6 +122,23 @@ export interface NationalSnapshot {
   thermal_share_pct: number | null;
   /** Share imported from Colombia and Peru, 0–100. */
   import_share_pct: number | null;
+  /** The closed day before `date`, when SMEC published it, and the change since. */
+  previous: NationalPrevious | null;
+  delta_1d: {
+    hydro_share_pct_points: number | null;
+    thermal_share_pct_points: number | null;
+    import_share_pct_points: number | null;
+    total_generation_gwh: number | null;
+  } | null;
+}
+
+export interface NationalPrevious {
+  date: IsoDate;
+  total_generation_gwh: number | null;
+  total_import_gwh: number | null;
+  hydro_share_pct: number | null;
+  thermal_share_pct: number | null;
+  import_share_pct: number | null;
 }
 
 /**
@@ -124,18 +151,28 @@ export interface NationalSnapshot {
  */
 export interface AdequacySummary {
   origin_date: IsoDate;
-  /** Tier at the shortest published horizon. */
+  /** Tier at the shortest published horizon: the model's Spanish word, kept for schema version 1. */
   tier: string;
+  /** The same tier as a stable English code: `comfortable`, `watch`, `tight` or `deficit`. */
+  tier_code: string;
+  tier_label_es: string;
   /** The worst tier across all horizons, and where it falls. */
   worst_tier: string;
+  worst_tier_code: string;
+  worst_tier_label_es: string;
   worst_tier_horizon_days: number;
+  /** Which of the two tiers the daily narrative is written about: always `worst_tier`. */
+  narrative_tier_field: string;
   /** GWh/day, censored at zero: a surplus is not a negative deficit. */
   worst_deficit_gwh_day: number;
   run_id: string;
 }
 
-export interface LatestDocument {
+export interface LatestDocument extends ContractFields {
   generated_at: string;
+  /** The newest day a reservoir level or a closed national balance describes. */
+  data_date: IsoDate | null;
+  /** Deprecated: the day the job ran, a day after every reading in the document. */
   as_of: IsoDate;
   disclaimer: string;
   reservoirs: ReservoirSnapshot[];
@@ -210,10 +247,12 @@ export function bandsFor(rows: readonly ThresholdRow[], site: string, level: num
     const min = Number(row.cota_min_masl);
     const max = Number(row.cota_max_masl);
     if (!Number.isFinite(min) || !Number.isFinite(max) || max <= min) continue;
+    const declared = declarationCode(row.declaration);
     out.push({
       min_masl: min,
       max_masl: max,
-      declaration: row.declaration,
+      declaration: declared.code,
+      declaration_es: declared.label_es,
       source: row.source,
       observed_from: row.observed_from,
       observed_to: row.observed_to,
@@ -235,6 +274,13 @@ function lastOf(series: DailySeries): { date: IsoDate; value: number } | null {
   let date: IsoDate | null = null;
   for (const key of series.keys()) date = key;
   return date === null ? null : { date, value: series.get(date)! };
+}
+
+/** The reading of the calendar day before `date`, or null when that day was not read. */
+export function previousOf(series: DailySeries, date: IsoDate): { date: IsoDate; value: number } | null {
+  const day = addDays(date, -1);
+  const value = series.get(day);
+  return value === undefined ? null : { date: day, value };
 }
 
 function firstOf(series: DailySeries): IsoDate | null {
@@ -262,6 +308,8 @@ export function reservoirSnapshot(series: SeriesSet, site: SiteId, thresholds: r
   const lastLevel = lastOf(levels);
   const lastInflow = lastOf(inflow);
   const meta = SITES[site];
+  const levelBefore = lastLevel && previousOf(levels, lastLevel.date);
+  const inflowBefore = lastInflow && previousOf(inflow, lastInflow.date);
 
   return {
     site,
@@ -274,6 +322,8 @@ export function reservoirSnapshot(series: SeriesSet, site: SiteId, thresholds: r
       days: levels.size,
       observed_min_masl: roundTo(rangeOf(levels)[0], 2),
       observed_max_masl: roundTo(rangeOf(levels)[1], 2),
+      previous: levelBefore && { masl: roundTo(levelBefore.value, 2), date: levelBefore.date },
+      delta_1d_m: levelBefore ? roundTo(lastLevel.value - levelBefore.value, 2) : null,
     },
     bands: bandsFor(thresholds, site, lastLevel?.value ?? null),
     slopes_m_per_day: lastLevel
@@ -289,6 +339,8 @@ export function reservoirSnapshot(series: SeriesSet, site: SiteId, thresholds: r
       first_reading: firstOf(inflow)!,
       days: inflow.size,
       climatology: climatologyFor(inflow, lastInflow.date, lastInflow.value),
+      previous: inflowBefore && { m3s: roundTo(inflowBefore.value, 2), date: inflowBefore.date },
+      delta_1d_m3s: inflowBefore ? roundTo(lastInflow.value - inflowBefore.value, 2) : null,
     },
   };
 }
@@ -328,8 +380,50 @@ export function balanceByDay(rows: readonly BalanceRow[]): Map<IsoDate, Map<stri
   return out;
 }
 
+/** The most recent day SMEC has closed, as a supply mix, with the day before it beside it. */
+export function nationalSnapshot(byDay: Map<IsoDate, Map<string, number>>): NationalSnapshot | null {
+  let latest: IsoDate | null = null;
+  for (const date of byDay.keys()) if (latest === null || date > latest) latest = date;
+  if (latest === null) return null;
+
+  const today = dayOf(byDay.get(latest)!);
+  // Only the calendar day before counts as "yesterday": after a gap in SMEC's record, the
+  // previous closed day could be a week back, and a delta across a week is not "since yesterday".
+  const before = byDay.get(addDays(latest, -1));
+  const yesterday = before ? dayOf(before) : null;
+  const diff = (a: number | null, b: number | null | undefined, places: number): number | null =>
+    a === null || b === null || b === undefined ? null : roundTo(a - b, places);
+
+  return {
+    date: latest,
+    supply_gwh: today.parts,
+    total_generation_gwh: today.totalGeneration,
+    total_import_gwh: today.totalImport,
+    total_export_gwh: today.totalExport,
+    distribution_demand_gwh: today.demand,
+    transport_losses_gwh: today.losses,
+    hydro_share_pct: today.hydro,
+    thermal_share_pct: today.thermal,
+    import_share_pct: today.imports,
+    previous: yesterday && {
+      date: addDays(latest, -1),
+      total_generation_gwh: yesterday.totalGeneration,
+      total_import_gwh: yesterday.totalImport,
+      hydro_share_pct: yesterday.hydro,
+      thermal_share_pct: yesterday.thermal,
+      import_share_pct: yesterday.imports,
+    },
+    delta_1d: yesterday && {
+      hydro_share_pct_points: diff(today.hydro, yesterday.hydro, 2),
+      thermal_share_pct_points: diff(today.thermal, yesterday.thermal, 2),
+      import_share_pct_points: diff(today.imports, yesterday.imports, 2),
+      total_generation_gwh: diff(today.totalGeneration, yesterday.totalGeneration, 3),
+    },
+  };
+}
+
 /**
- * The most recent day SMEC has closed, as a supply mix.
+ * One closed day as shares and totals.
  *
  * Shares are taken over generation *plus* imports rather than over generation alone, because
  * the question the tile answers is where the country's electricity came from, and an imported
@@ -337,12 +431,7 @@ export function balanceByDay(rows: readonly BalanceRow[]): Map<IsoDate, Map<stri
  * two denominators differ by several percent, so the choice is stated here rather than left to
  * be reverse-engineered from the numbers.
  */
-export function nationalSnapshot(byDay: Map<IsoDate, Map<string, number>>): NationalSnapshot | null {
-  let latest: IsoDate | null = null;
-  for (const date of byDay.keys()) if (latest === null || date > latest) latest = date;
-  if (latest === null) return null;
-
-  const day = byDay.get(latest)!;
+function dayOf(day: Map<string, number>) {
   const value = (concept: string): number | null => day.get(concept) ?? null;
 
   const imports = value("total_importacion") ?? 0;
@@ -368,16 +457,15 @@ export function nationalSnapshot(byDay: Map<IsoDate, Map<string, number>>): Nati
   }
 
   return {
-    date: latest,
-    supply_gwh: parts,
-    total_generation_gwh: roundOrNull(value("total_generacion"), 3),
-    total_import_gwh: roundOrNull(value("total_importacion"), 3),
-    total_export_gwh: roundOrNull(value("total_exportacion"), 3),
-    distribution_demand_gwh: roundOrNull(value("demanda_distribucion"), 3),
-    transport_losses_gwh: roundOrNull(value("total_perdidas_transporte"), 3),
-    hydro_share_pct: share(value("generacion_hidraulica")),
-    thermal_share_pct: hasThermal ? share(thermal) : null,
-    import_share_pct: share(value("total_importacion")),
+    parts,
+    totalGeneration: roundOrNull(value("total_generacion"), 3),
+    totalImport: roundOrNull(value("total_importacion"), 3),
+    totalExport: roundOrNull(value("total_exportacion"), 3),
+    demand: roundOrNull(value("demanda_distribucion"), 3),
+    losses: roundOrNull(value("total_perdidas_transporte"), 3),
+    hydro: share(value("generacion_hidraulica")),
+    thermal: hasThermal ? share(thermal) : null,
+    imports: share(value("total_importacion")),
   };
 }
 
@@ -406,8 +494,13 @@ export function adequacySummary(document: unknown): AdequacySummary | null {
   return {
     origin_date: typeof doc["origin_date"] === "string" ? doc["origin_date"] : "",
     tier,
+    tier_code: tierCode(tier),
+    tier_label_es: TIER_CODES[tier]?.label_es ?? tier,
     worst_tier: worst,
+    worst_tier_code: tierCode(worst),
+    worst_tier_label_es: TIER_CODES[worst]?.label_es ?? worst,
     worst_tier_horizon_days: horizon,
+    narrative_tier_field: NARRATIVE_TIER_FIELD,
     worst_deficit_gwh_day: roundTo(deficit, 3),
     run_id: typeof doc["run_id"] === "string" ? doc["run_id"] : "",
   };
@@ -424,18 +517,36 @@ export interface LatestInputs {
   adequacy?: unknown;
 }
 
+/**
+ * The day the document's readings describe: the newest reservoir level or closed balance day.
+ * Each reading still carries its own date — SMEC closes a day later than the ORDS reports — and
+ * this is the newest of them, which is what "data as of" means to someone reading the page.
+ */
+export function dataDateOf(reservoirs: readonly ReservoirSnapshot[], national: NationalSnapshot | null): IsoDate | null {
+  let newest: IsoDate | null = national?.date ?? null;
+  for (const reservoir of reservoirs) {
+    const date = reservoir.level?.date;
+    if (date && (newest === null || date > newest)) newest = date;
+  }
+  return newest;
+}
+
 export function buildLatest(inputs: LatestInputs): LatestDocument {
-  return {
+  const reservoirs = inputs.sites.map((site) => reservoirSnapshot(inputs.series, site, inputs.thresholds));
+  const national = nationalSnapshot(balanceByDay(inputs.balance));
+  return withContract("latest", {
     generated_at: inputs.generatedAt,
+    data_date: dataDateOf(reservoirs, national),
     as_of: inputs.asOf,
     disclaimer: DISCLAIMER_ES,
-    reservoirs: inputs.sites.map((site) => reservoirSnapshot(inputs.series, site, inputs.thresholds)),
-    national: nationalSnapshot(balanceByDay(inputs.balance)),
+    reservoirs,
+    national,
     adequacy: adequacySummary(inputs.adequacy),
     see_also: {
       forecast: "/api/forecast.json",
       status: "/api/status.json",
       adequacy: "/api/adequacy.json",
+      narrative: "/api/narrative.json",
     },
-  };
+  });
 }

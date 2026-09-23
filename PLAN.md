@@ -1024,8 +1024,9 @@ same loop that writes the status document — so a run that lands rows can never
 describing yesterday.
 
 The site is a Next.js static export (`output: "export"`), server-rendered at build time from
-`data/curated` and `public/api`, shipping **no client JavaScript**. Charts are inline SVG whose
-geometry comes from pure functions in `src/lib/chart` with their own tests, because a wrong
+`data/curated` and `public/api`, and it **needs no JavaScript to read**: every number, chart and
+table is in the HTML. The only scripts it ships are Next's runtime and the Vercel Analytics
+beacon. Charts are inline SVG whose geometry comes from pure functions in `src/lib/chart` with their own tests, because a wrong
 stacked band looks entirely plausible on screen. The bulk series the charts need are read
 straight from the CSVs rather than committed as a second copy: a 150 kB JSON rewritten daily
 would add ~55 MB a year to the history to say what `data/curated` already says.
