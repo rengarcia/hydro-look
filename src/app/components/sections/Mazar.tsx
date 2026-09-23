@@ -1,13 +1,15 @@
 /**
  * Section 02: where Mazar is going. The fan over six months of record, each horizon with the
  * model that published it and its skill against persistence, and the three named analogue years
- * read against the critical threshold.
+ * read against the critical threshold. Under them, how the forecasts already published did once their
+ * dates came (the `scorecard` block, when the document carries one).
  */
 
 import { SectionIntro } from "../Chrome.tsx";
 import { FanChart } from "../FanChart.tsx";
 import { Table } from "../DataTable.tsx";
-import { series, window as windowOf } from "../../../lib/site/data.ts";
+import { ScorecardPanel } from "../Scorecard.tsx";
+import { nextScoreDue, series, window as windowOf } from "../../../lib/site/data.ts";
 import type { ForecastDocument } from "../../../lib/site/documents.ts";
 import { dateWithYear, longDate, num, shortDate, signed } from "../../../lib/site/format.ts";
 import { SKILL_TIE, criticalThreshold, joinDays, modelShort, scenarioOf, skillTone, thresholdSource } from "../../../lib/site/story.ts";
@@ -220,6 +222,15 @@ export function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
           </div>
         ) : null}
       </div>
+      <ScorecardPanel
+        card={forecast.scorecard}
+        nextDue={forecast.scorecard ? nextScoreDue("forecast", forecast.scorecard.observed_through) : null}
+        subject="la cota de Mazar"
+        digits={2}
+        id="marcador-mazar"
+      >
+        Se compara la cota observada el día objetivo con la p50 y la banda p10–p90 que se publicaron.
+      </ScorecardPanel>
       <p className="fine">Pronóstico del {dateWithYear(forecast.origin_date)}; los de días anteriores quedan en el <a href="/dia/">archivo diario</a>.</p>
     </section>
   );

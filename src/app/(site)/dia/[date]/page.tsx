@@ -4,16 +4,19 @@
  * Rebuilt from `forecast_runs`/`forecast_values`, `adequacy_runs`/`adequacy_values` and
  * `narrative_snapshots` (see `lib/site/days.ts`), never from today's documents, so a citation of
  * a day stays checkable after the numbers on the home page move. Where a forecast's target date
- * has since been observed, the observed level sits beside it: the first, plain form of a
- * scorecard, one day at a time.
+ * has since been observed, the observed level sits beside it; under each run, what the published
+ * scorecard (`forecast.json`/`adequacy.json`) says of it — which horizons have reached their date,
+ * when the next one does, and the rows of this run it has scored.
  */
 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Crumbs, MAIN_ID, SectionIntro } from "../../../components/Chrome.tsx";
 import { Table } from "../../../components/DataTable.tsx";
-import { days, series } from "../../../../lib/site/data.ts";
+import { DayScore } from "../../../components/Scorecard.tsx";
+import { apiDocument, days, series } from "../../../../lib/site/data.ts";
 import type { DayRecord } from "../../../../lib/site/days.ts";
+import type { AdequacyDocument, ForecastDocument, ScorecardBlock } from "../../../../lib/site/documents.ts";
 import { dateWithYear, ecStamp, longDate, num, signed } from "../../../../lib/site/format.ts";
 import { modelShort, tierOf, weekday } from "../../../../lib/site/story.ts";
 import { CONFIDENCE_ES } from "../../../components/sections/Reading.tsx";
@@ -48,6 +51,8 @@ export default async function DayPage({ params }: { params: Promise<{ date: stri
   const newer = index > 0 ? all[index - 1]! : null;
   const older = index < all.length - 1 ? all[index + 1]! : null;
   const narrativeTier = tierOf(day.narrative?.risk_tier);
+  const levelCard = apiDocument<ForecastDocument>("forecast.json")?.scorecard ?? null;
+  const requirementCard = apiDocument<AdequacyDocument>("adequacy.json")?.scorecard ?? null;
 
   return (
     <main id={MAIN_ID} className="stack-lg">
@@ -99,8 +104,8 @@ export default async function DayPage({ params }: { params: Promise<{ date: stri
         )}
 
         <div className="split even">
-          {day.forecast ? <ForecastPanel day={day} /> : null}
-          {day.adequacy ? <AdequacyPanel day={day} /> : null}
+          {day.forecast ? <ForecastPanel day={day} card={levelCard} /> : null}
+          {day.adequacy ? <AdequacyPanel day={day} card={requirementCard} /> : null}
         </div>
 
         <nav className="day-nav" aria-label="Otros días">
@@ -113,7 +118,7 @@ export default async function DayPage({ params }: { params: Promise<{ date: stri
   );
 }
 
-function ForecastPanel({ day }: { day: DayRecord }) {
+function ForecastPanel({ day, card }: { day: DayRecord; card: ScorecardBlock | null }) {
   const forecast = day.forecast!;
   const observed = series().get(forecast.site || "mazar", "cota_masl");
   return (
@@ -154,11 +159,12 @@ function ForecastPanel({ day }: { day: DayRecord }) {
         })}
       />
       <p className="fine spaced">«Aún no» es un día que todavía no llega o que la fuente no publicó.</p>
+      <DayScore card={card} runId={forecast.run_id} horizons={forecast.horizons} digits={2} subject="la cota de Mazar" href="/#marcador-mazar" />
     </div>
   );
 }
 
-function AdequacyPanel({ day }: { day: DayRecord }) {
+function AdequacyPanel({ day, card }: { day: DayRecord; card: ScorecardBlock | null }) {
   const adequacy = day.adequacy!;
   return (
     <div className="panel tight">
@@ -186,6 +192,14 @@ function AdequacyPanel({ day }: { day: DayRecord }) {
             </span>,
           ];
         })}
+      />
+      <DayScore
+        card={card}
+        runId={adequacy.run_id}
+        horizons={adequacy.horizons}
+        digits={2}
+        subject="el requerimiento neto nacional, en GWh/día"
+        href="/#marcador-suficiencia"
       />
     </div>
   );

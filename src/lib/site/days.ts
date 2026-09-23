@@ -161,6 +161,34 @@ export function daysFrom(tables: DayTables): DayRecord[] {
     });
 }
 
+/**
+ * The first target date among published rows that the scorecard has not reached yet: the day the
+ * first pending row falls due. The scorecard block carries only how many rows are pending, and a
+ * page that says "nothing has been scored" should also say when something will be.
+ *
+ * Counted the way the scorecard counts: the last run generated for each origin and model version
+ * (a superseded run's rows are never scored), and a row is pending when its target date is after
+ * `observedThrough`. With no observation at all, every row is pending.
+ */
+export function firstPendingTarget(runs: readonly Row[], values: readonly Row[], observedThrough: IsoDate | null): IsoDate | null {
+  const kept = new Map<string, Row>();
+  for (const run of runs) {
+    const key = `${run["origin_date"]}|${run["model_version"]}|${run["site"] ?? ""}`;
+    const seen = kept.get(key);
+    if (!seen || (run["generated_at"] ?? "") > (seen["generated_at"] ?? "")) kept.set(key, run);
+  }
+  const ids = new Set([...kept.values()].map((r) => r["run_id"] ?? ""));
+  let first: IsoDate | null = null;
+  for (const value of values) {
+    if (!ids.has(value["run_id"] ?? "")) continue;
+    const target = value["target_date"] ?? "";
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(target)) continue;
+    if (observedThrough !== null && target <= observedThrough) continue;
+    if (first === null || target < first) first = target;
+  }
+  return first;
+}
+
 /** The worst tier among a day's horizons, by the order the adequacy model ranks them. */
 export function worstTierOf(horizons: readonly { tier: string }[]): string | null {
   const rank = ["holgado", "vigilancia", "ajustado", "deficit"];
