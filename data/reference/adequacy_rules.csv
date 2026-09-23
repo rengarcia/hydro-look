@@ -1,0 +1,6 @@
+parameter,value,unit,basis
+import_cutoff_gwh_day,1,GWh/day,"Imports below this over the regime window count as not arriving, if thermal is also high (see import_cutoff_thermal_share). Imports ran below 1 GWh/day before 68 of the 99 monthly origins since 2018, mostly in wet months, so the cutoff is not read from imports alone"
+import_cutoff_thermal_share,0.7,fraction of the thermal ceiling,"Thermal at or above this share of its demonstrated ceiling while imports are below the cutoff separates 'not available' from 'not needed'. The same 4 historical origins are picked out anywhere from 0.60 to 0.75, so the line is not a tuned one"
+import_regime_window_days,14,days,"Trailing window the import regime is read over, ending at the origin; at least half of it must be usable days"
+tight_gwh_day,5,GWh/day,"Cut between the ajustado and deficit tiers: about 5% of 2026 demand and roughly an hour of national consumption. The 2024 episode ran at a measured suppression of 20 to 25 GWh/day, four to five times this"
+ceiling_window_days,1095,days,"Trailing window the demonstrated thermal and import ceilings are taken over. The whole record would put thermal at 30.69 GWh/day on 2016-12-27, from a fleet since partly retired"

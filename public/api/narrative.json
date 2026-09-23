@@ -8,6 +8,12 @@
   "payload_hash": "40c07781513c71f022fdbece8a205888c989b3048a9cc3ee719a6966b062501b",
   "origin_date": "2026-09-21",
   "risk_tier": "ajustado",
+  "risk_tier_given": {
+    "tier": "ajustado",
+    "horizon_days": 60,
+    "source": "adequacy.json current.worst_tier: the worst tier across the published horizons",
+    "tier_at_7d": "vigilancia"
+  },
   "outlook_es": "Al 21 de septiembre de 2026, Mazar está en la cota 2.138,37 m y viene bajando. El pronóstico estadístico sitúa su nivel mediano en 2.130,95 m para el 5 de octubre de 2026, con un rango de 2.123,11 m a 2.134,25 m, aunque a ese plazo el modelo no supera a la simple persistencia. Solo en el escenario seco, con caudales como los de 2022, la cota cruzaría los 2.115 m, un marcador propio de este proyecto y no de CELEC, hacia el 5 de enero de 2027. El nivel de suficiencia nacional es ajustado: a 60 días el caso central queda corto en 0,8 GWh/día, mientras que a 7 y 30 días el margen es positivo pero estrecho y el nivel es vigilancia. El aporte hidroeléctrico reciente está algo por debajo de su climatología y el caudal de entrada a Mazar está bajo, en el percentil 29. La lluvia prevista para 16 días, medida en un solo punto provisional y no como promedio de la cuenca, queda en el percentil 72 frente a la climatología. El último ONI publicado, de julio de 2026, es 1,8, en fase de El Niño y en ascenso.",
   "drivers": [
     "La cota de Mazar desciende y su caudal de entrada está por debajo de lo habitual, en el percentil 29.",

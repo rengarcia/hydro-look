@@ -38,6 +38,16 @@
 import { isCalendarDate, type IsoDate } from "../util/dates.ts";
 import { roundTo } from "../util/numbers.ts";
 import type { NarrativePayload } from "./payload.ts";
+import { checkDriver, type StructuredDriver } from "./drivers.ts";
+
+/** The length the prompt asks for, and the schema and the validator enforce (§5.6). */
+export const OUTLOOK_WORDS = { min: 120, max: 220 } as const;
+export const DRIVER_COUNT = { min: 3, max: 5 } as const;
+
+/** Words as a reader counts them: runs of text containing a letter or a digit. */
+export function countWords(text: string): number {
+  return text.split(/\s+/u).filter((token) => /[\p{L}\d]/u.test(token)).length;
+}
 
 const MONTHS = [
   "enero", "febrero", "marzo", "abril", "mayo", "junio",
@@ -255,7 +265,12 @@ export function fieldNames(text: string): string[] {
 
 export interface NarrativeText {
   outlook_es: string;
-  drivers: string[];
+  /** Structured since prompt es-5; plain strings in snapshots written before it. */
+  drivers: (string | StructuredDriver)[];
+}
+
+export function driverText(driver: string | StructuredDriver): string {
+  return typeof driver === "string" ? driver : driver.text;
 }
 
 export interface ValidationResult {
@@ -274,9 +289,18 @@ export function validateNarrative(narrative: NarrativeText, payload: NarrativePa
   const problems: string[] = [];
   for (const problem of inventedFigures(narrative.outlook_es, allowed)) problems.push(`outlook_es: ${problem}`);
   for (const name of fieldNames(narrative.outlook_es)) problems.push(`outlook_es: field name "${name}"`);
+  const words = countWords(narrative.outlook_es);
+  if (words < OUTLOOK_WORDS.min || words > OUTLOOK_WORDS.max) {
+    problems.push(`outlook_es: ${words} words, outside ${OUTLOOK_WORDS.min}–${OUTLOOK_WORDS.max}`);
+  }
+  if (narrative.drivers.length < DRIVER_COUNT.min || narrative.drivers.length > DRIVER_COUNT.max) {
+    problems.push(`drivers: ${narrative.drivers.length}, outside ${DRIVER_COUNT.min}–${DRIVER_COUNT.max}`);
+  }
   narrative.drivers.forEach((driver, i) => {
-    for (const problem of inventedFigures(driver, allowed)) problems.push(`drivers[${i}]: ${problem}`);
-    for (const name of fieldNames(driver)) problems.push(`drivers[${i}]: field name "${name}"`);
+    const text = driverText(driver);
+    for (const problem of inventedFigures(text, allowed)) problems.push(`drivers[${i}]: ${problem}`);
+    for (const name of fieldNames(text)) problems.push(`drivers[${i}]: field name "${name}"`);
+    if (typeof driver !== "string") for (const problem of checkDriver(driver, payload)) problems.push(`drivers[${i}]: ${problem}`);
   });
   const tier = payload.adequacy?.risk_tier;
   if (tier && !fold(narrative.outlook_es).includes(fold(tier))) {

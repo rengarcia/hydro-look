@@ -31,7 +31,7 @@ import type { IsoDate } from "../util/dates.ts";
 import type { DailySeries } from "../features/series.ts";
 import { truncate } from "./backtest.ts";
 import {
-  BASE_FEATURES,
+  baseFeatures,
   boostedModel,
   createM4Cache,
   DEFAULT_M4,
@@ -43,10 +43,13 @@ import {
 import { m4Decisions, type M4Snapshot } from "./m4-scoring.ts";
 import type { FitCache } from "./water-balance.ts";
 import type { HorizonSwitch } from "./forecast.ts";
+import { PROVISIONAL_PRECIP_BASIN } from "../features/weather.ts";
 
 /** The design and horizon the M4 backtest earned, and the only ones published. */
 export const PUBLISHED_M4_ID = "M4-gbm-m3-residual";
 export const PUBLISHED_M4_HORIZON = 7;
+/** The one site the M4 backtest was run on; no other site publishes it. */
+export const PUBLISHED_M4_SITE = "mazar";
 
 export interface M4Evidence {
   snapshotGeneratedAt: string;
@@ -86,6 +89,7 @@ export function m4SwitchCheck(
   settings: M4Settings = DEFAULT_M4,
   modelId: string = PUBLISHED_M4_ID,
   horizon: number = PUBLISHED_M4_HORIZON,
+  precipBasin: string = PROVISIONAL_PRECIP_BASIN,
 ): M4SwitchCheck {
   if (snapshot === null) return { ok: false, reason: "no committed M4 backtest snapshot" };
   if (!sameOrigins(snapshot.origins, ladderOrigins)) {
@@ -100,8 +104,20 @@ export function m4SwitchCheck(
   if (JSON.stringify(snapshot.settings) !== JSON.stringify(settings)) {
     return { ok: false, reason: "the M4 snapshot was produced with settings other than the ones this code would fit" };
   }
+  const scoredOn = snapshot.precipBasin ?? PROVISIONAL_PRECIP_BASIN;
+  if (scoredOn !== precipBasin && JSON.stringify(snapshot.features?.base) === JSON.stringify(baseFeatures(scoredOn))) {
+    // The one feature change the daily workflow repairs by itself (§1.1): the precipitation
+    // basin moved once the verified centroid's ERA5 history became adequate. The wording keeps
+    // the phrase `model-and-push.sh` looks for, so the M4 backtest is rerun on the new basin.
+    return {
+      ok: false,
+      reason:
+        `the M4 snapshot (${snapshot.generatedAt}) read ERA5 at \`${scoredOn}\`; the forecast now reads \`${precipBasin}\`, ` +
+        `so its backtest no longer covers the ladder's inputs; rerun \`${snapshot.command}\`.`,
+    };
+  }
   if (
-    JSON.stringify(snapshot.features?.base) !== JSON.stringify(BASE_FEATURES) ||
+    JSON.stringify(snapshot.features?.base) !== JSON.stringify(baseFeatures(precipBasin)) ||
     JSON.stringify(snapshot.features?.m3) !== JSON.stringify(M3_FEATURES)
   ) {
     return { ok: false, reason: "the M4 snapshot was produced with a different feature set" };
@@ -223,6 +239,7 @@ export function m4HorizonSwitch(
   live: M4LiveForecast | null,
   fallback: string | null,
   shippedId: string,
+  precip: { basin: string; fallbackReason: string | null } | null = null,
 ): HorizonSwitch {
   const h = PUBLISHED_M4_HORIZON;
   const summary: Record<string, unknown> = {
@@ -239,6 +256,11 @@ export function m4HorizonSwitch(
     snapshot: evidence
       ? { path: "data/reports/m4-backtest.json", generated_at: evidence.snapshotGeneratedAt, origins: evidence.origins, command: evidence.snapshotCommand }
       : null,
+    // Which ERA5 point the precipitation features read (§1.1), and why not the verified centroid
+    // if not. Part of the summary so it is part of `features_hash`: the switch is a new run.
+    ...(precip
+      ? { precip_basin: precip.basin, precip_basin_fallback_reason: precip.fallbackReason }
+      : {}),
   };
   if (fallback !== null || !evidence || !live) return { overrides: [], summary };
 

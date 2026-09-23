@@ -1,6 +1,6 @@
 # Energy adequacy — what the model is, and what it was measured at
 
-Generated 2026-09-23T02:37:12Z from 3724 usable national-balance days, 2016-05-01 → 2026-09-21. Origin 2026-09-21.
+Generated 2026-09-23T05:52:24Z from 3724 usable national-balance days, 2016-05-01 → 2026-09-21. Origin 2026-09-21.
 
 This is section 7's target 3: expected deficit in GWh per day over the horizon, and the risk
 tiers read off it. It is the number the site's adequacy tile shows, and the `risk_tier` the
@@ -143,11 +143,11 @@ from strictly earlier origins, clamped to contain their centre. Coverage of that
 
 | Horizon | Origins with a band | Coverage |
 |---|---:|---:|
-| 7 d | 73 | 71% |
-| 14 d | 70 | 69% |
-| 30 d | 63 | 60% |
-| 60 d | 53 | 64% |
-| 90 d | 43 | 58% |
+| 7 d | 73 | 75% |
+| 14 d | 70 | 79% |
+| 30 d | 63 | 75% |
+| 60 d | 53 | 77% |
+| 90 d | 43 | 67% |
 
 Rungs that lost, scored on the same origins, the same window-mean target and the same
 exclusion of suppressed days as the shipped one:
@@ -188,19 +188,19 @@ Coverage of the published p10–p90:
 
 | Horizon | Origins with a band | Coverage |
 |---|---:|---:|
-| 7 d | 73 | 67% |
-| 14 d | 70 | 66% |
-| 30 d | 63 | 67% |
-| 60 d | 53 | 62% |
-| 90 d | 43 | 60% |
+| 7 d | 73 | 79% |
+| 14 d | 70 | 81% |
+| 30 d | 63 | 79% |
+| 60 d | 53 | 77% |
+| 90 d | 43 | 67% |
 
-Against a nominal 80%, and falling with the horizon. The band is therefore too narrow, by
-more than the level forecast's is — that one covers 72% to 80%. Two things are behind it and
-only the first is fixable: residuals at a long horizon are calibrated from few origins
-(43 at ninety days), and the residual distribution is
-not stationary, because the fleet that produced the errors of 2019 is not the fleet of 2026.
-Read the p10–p90 as roughly a two-thirds interval, not four-fifths, until there are more
-origins behind it.
+Against a nominal 80%. Version 1 took the 10th and 90th percentile of every earlier residual
+and covered 60–67%, falling with the horizon, because the residual distribution is not
+stationary — the fleet that produced the errors of 2019 is not the fleet of 2026. Since version
+2 those quantiles are stretched, per horizon, by the smallest factor at which the bands already
+issued at earlier origins would have covered 80%; at the live origin the stretch is ×1.60 at 7 d, ×1.50 at 14 d, ×1.65 at 30 d, ×1.45 at 60 d, ×1.40 at 90 d.
+The longest horizon is calibrated from the fewest origins (43 at ninety days) and
+is the one to read with care. Every method tried is compared under §5.5 below.
 
 ## The ceilings
 
@@ -225,7 +225,7 @@ interconnection is firm is invited to look at the stressed column before believi
 
 At this origin the interconnection is treated as **cut**: imports averaged 0.14 GWh/day over the last 14 usable days while thermal ran at 21.73, so the central case assumes 0.14 GWh/day of imports.
 
-The rule: a fortnight of imports below 1 GWh/day *while* thermal runs at 70% or more of its ceiling means the imports are not arriving rather than
+The rule: 14 days of imports below 1 GWh/day *while* thermal runs at 70% or more of its ceiling means the imports are not arriving rather than
 not wanted, and the central case then uses what is arriving, held for the horizon. Low imports
 alone would not do: they preceded 68 of the 99 monthly origins since 2018, mostly in wet months
 when Ecuador had no use for them. With the thermal condition the rule picks out four — 2024-05,
@@ -237,6 +237,20 @@ figures (XM) say that stop was not Colombian scarcity — storage at 79% and a s
 the scarcity threshold — so the cause is something this data cannot see: a line out, a contract,
 a dispatch decision. Holding the cut for ninety days is the honest default rather than a
 forecast: the 2019 stretch lasted 398 days and the 2024 one about seven weeks.
+
+### How much of the tier is the import assumption
+
+The central deficit under each import assumption a reader might hold, with the tier it gives at each horizon.
+Published in `adequacy.json` as `import_sensitivity`; the central case above is one of these rows.
+
+| Imports | GWh/day | 7 d | 14 d | 30 d | 60 d | 90 d | Worst tier |
+|---|---:|---|---|---|---|---|---|
+| demonstrated ceiling | 10.78 | -12.47 `holgado` | -12.23 `holgado` | -10.69 `vigilancia` | -9.84 `vigilancia` | -10.14 `holgado` | `vigilancia` (30 d) |
+| stressed (2024) | 0.12 | -1.81 `vigilancia` | -1.57 `vigilancia` | -0.03 `vigilancia` | +0.82 `ajustado` | +0.52 `ajustado` | `ajustado` (60 d) |
+| current regime (trailing) | 0.14 | -1.83 `vigilancia` | -1.59 `vigilancia` | -0.05 `vigilancia` | +0.80 `ajustado` | +0.50 `ajustado` | `ajustado` (60 d) |
+
+Deficit in GWh/day, positive meaning short. The spread between the rows is the part of the tier that rests on
+Colombia rather than on water.
 
 ## Crisis check
 
@@ -276,8 +290,8 @@ dispatch and starts being visible to consumers.
 
 | Tier at a 30-day horizon | Origins | Rationing began or ran within 30 days |
 |---|---:|---:|
-| `holgado` | 95 | 5 |
-| `vigilancia` | 1 | 1 |
+| `holgado` | 87 | 1 |
+| `vigilancia` | 9 | 5 |
 | `ajustado` | 0 | 0 |
 | `deficit` | 3 | 3 |
 
@@ -288,6 +302,64 @@ one that decides how much water there is.
 
 Read the table for what it is. Three episodes is not a sample you can fit a threshold to, and
 no threshold here was fitted to them.
+
+## Band calibration: which method is honest at every horizon (§5.5)
+
+Version 1 pooled every earlier origin's residual and covered 60–67% against a nominal 80%. Scored on the same origins, the variants below change only how residuals become a band; the medians, and so the MAE tables above, are untouched. A variant qualifies only if it is nearer 80% than version 1 at *every* horizon, for the requirement and for hydro. The adaptive stretch picks its factor at each origin from the bands already issued before it, so it is not tuned on the origins it is scored on; a fixed stretch read off this table would be.
+
+| Method | Component | 7 d | 14 d | 30 d | 60 d | 90 d | Nearer 80% everywhere | Worst distance from 80% |
+|---|---|---:|---:|---:|---:|---:|---|---:|
+| pooled p10–p90 (version 1) | requirement | 67% | 66% | 67% | 62% | 60% | no | 22 |
+| pooled p10–p90 (version 1) | hydro | 71% | 69% | 60% | 64% | 58% | no | 22 |
+| last 24 origins | requirement | 66% | 69% | 71% | 74% | 67% | no | 20 |
+| last 24 origins | hydro | 70% | 71% | 67% | 68% | 60% | no | 20 |
+| last 36 origins | requirement | 67% | 69% | 68% | 68% | 63% | no | 22 |
+| last 36 origins | hydro | 73% | 71% | 60% | 70% | 58% | no | 22 |
+| pooled p5–p95 | requirement | 82% | 80% | 81% | 79% | 72% | yes | 17 |
+| pooled p5–p95 | hydro | 86% | 81% | 76% | 75% | 63% | yes | 17 |
+| pooled, adaptive stretch **(shipped)** | requirement | 79% | 81% | 79% | 77% | 67% | yes | 13 |
+| pooled, adaptive stretch **(shipped)** | hydro | 75% | 79% | 75% | 77% | 67% | yes | 13 |
+| last 36 origins, adaptive stretch | requirement | 81% | 80% | 78% | 75% | 67% | yes | 13 |
+| last 36 origins, adaptive stretch | hydro | 77% | 83% | 78% | 79% | 67% | yes | 13 |
+
+Among the methods nearer 80% everywhere, the one shipped is the one whose worst horizon is nearest 80%, the simpler on a tie.
+
+**Shipped: pooled, adaptive stretch** — worst horizon 13 points from 80%. It is the published band from model version 2. The longest horizon rests on the fewest origins, and the stretch can only learn from bands already issued, so that is the horizon to read with care.
+
+Recorded negatives (not nearer 80% than version 1 at every horizon): last 24 origins; last 36 origins. Nearer 80% everywhere but not shipped: pooled p5–p95 (worst 17 points); last 36 origins, adaptive stretch (worst 13 points).
+
+## ONI as a covariate for the hydro term (§5.5)
+
+ONI had only been tried as an analogue filter, where it was worse. Here it is a covariate: a line from the ONI readable at the origin (two months stale) to the hydro error, fitted on earlier origins only and added to the forecast.
+
+| Horizon | Origins | Hydro MAE, shipped | With ONI |
+|---|---:|---:|---:|
+| 7 d | 73 | 4.00 | 4.22 |
+| 14 d | 70 | 4.10 | 4.32 |
+| 30 d | 63 | 5.01 | 4.93 |
+| 60 d | 52 | 6.02 | 6.45 |
+| 90 d | 42 | 6.53 | 7.14 |
+
+**Negative: not better at every horizon.** ENSO's grip on the national hydro anomaly, read two months stale, is too loose to beat the fitted anomaly and its decay; it stays out. The same covariate was offered to the export-availability model below, for Colombian storage.
+
+## An export-availability model from XM's side of the border (§5.5)
+
+Imports from Colombia as a least-squares function of `colombia_useful_storage_fraction`, `colombia_inflow_energy_over_historical_mean`, `log_spot_over_scarcity_price`, `ecuador_load_gwh_day` (trailing seven-day means at the origin), refitted at every origin on the days whose outcome was already observed, clamped to the demonstrated ceiling. It would replace both fixed ceilings and the cutoff heuristic only if it forecast the import that actually arrived better than the shipped rule over daily origins in *both* windows — 2024 Colombian cut (2024-09-01 → 2024-11-30) and 2026-09 stop (2026-09-01 → 2026-09-30) — at every horizon. Those are the windows in which Ecuador wanted every GWh it could get, so what arrived is what was offered.
+
+| Model | Window | Horizon | Origins | Rule MAE GWh/day | Model MAE |
+|---|---|---:|---:|---:|---:|
+| export model | 2024 Colombian cut | 7 d | 91 | 3.32 | 3.92 |
+| export model | 2024 Colombian cut | 14 d | 91 | 4.06 | 3.73 |
+| export model | 2024 Colombian cut | 30 d | 91 | 5.75 | 3.42 |
+| export model | 2026-09 stop | 7 d | 14 | 9.75 | 3.71 |
+| export model | 2026-09 stop | 14 d | 7 | 9.75 | 4.15 |
+| export model + ONI | 2024 Colombian cut | 7 d | 91 | 3.32 | 3.95 |
+| export model + ONI | 2024 Colombian cut | 14 d | 91 | 4.06 | 3.75 |
+| export model + ONI | 2024 Colombian cut | 30 d | 91 | 5.75 | 3.44 |
+| export model + ONI | 2026-09 stop | 7 d | 14 | 9.75 | 3.55 |
+| export model + ONI | 2026-09 stop | 14 d | 7 | 9.75 | 4.04 |
+
+**Negative.** The model (without ONI) is better in 2024 Colombian cut at 14 d, 2024 Colombian cut at 30 d, 2026-09 stop at 7 d, 2026-09 stop at 14 d and worse in 2024 Colombian cut at 7 d; with ONI, worse in 2024 Colombian cut at 7 d. Where it wins it is because the rule keeps assuming the demonstrated ceiling until a full regime window of near-zero imports has passed; where it loses, the rule's trailing read of what is arriving is the better nowcast. Neither wins everywhere, so the ceilings and the cutoff rule stay, and the sensitivity table is what a reader should use to weigh the import assumption.
 
 ## Known limits
 

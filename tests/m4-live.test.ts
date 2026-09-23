@@ -13,6 +13,7 @@ import type { ModelScore } from "../src/lib/models/backtest.ts";
 import { truncate } from "../src/lib/models/backtest.ts";
 import {
   BASE_FEATURES,
+  baseFeatures,
   boostedModel,
   createM4Cache,
   DEFAULT_M4,
@@ -103,6 +104,24 @@ describe("m4SwitchCheck", () => {
     const check = m4SwitchCheck(snapshot({ settings: other }), ORIGINS);
     expect(check.ok).toBe(false);
     expect(m4SwitchCheck(snapshot({ features: { base: ["level_m"], m3: [] } }), ORIGINS).ok).toBe(false);
+  });
+
+  it("refuses a snapshot scored on another precipitation basin, in words the workflow reruns on", () => {
+    // §1.1: once paute_mazar's ERA5 is adequate the forecast reads it, and a snapshot scored on the
+    // provisional point no longer describes the model; `model-and-push.sh` reruns the M4 backtest
+    // when the reason says the backtest "no longer covers the ladder".
+    const check = m4SwitchCheck(snapshot(), ORIGINS, DEFAULT_M4, PUBLISHED_M4_ID, PUBLISHED_M4_HORIZON, "paute_mazar");
+    expect(check.ok).toBe(false);
+    if (check.ok) return;
+    expect(check.reason).toMatch(/no longer covers the ladder/);
+    expect(check.reason).toContain("`paute`");
+    expect(check.reason).toContain("`paute_mazar`");
+    // A snapshot scored on the centroid earns the switch there, and only there.
+    const onCentroid = snapshot({ precipBasin: "paute_mazar", features: { base: baseFeatures("paute_mazar"), m3: [...M3_FEATURES] } });
+    expect(m4SwitchCheck(onCentroid, ORIGINS, DEFAULT_M4, PUBLISHED_M4_ID, PUBLISHED_M4_HORIZON, "paute_mazar").ok).toBe(true);
+    expect(m4SwitchCheck(onCentroid, ORIGINS).ok).toBe(false);
+    expect(baseFeatures("paute_mazar")).toContain("era5_precip_paute_mazar_7d_mm");
+    expect(baseFeatures()).toEqual([...BASE_FEATURES]);
   });
 
   it("falls back when the snapshot recorded no band for the model, or none at all", () => {

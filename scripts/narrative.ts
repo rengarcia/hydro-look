@@ -34,7 +34,7 @@ import {
   payloadHash,
   type NarrativePayload,
 } from "../src/lib/narrative/payload.ts";
-import { PROMPT_VERSION } from "../src/lib/narrative/prompt.ts";
+import { promptVersionFor } from "../src/lib/narrative/prompt.ts";
 import {
   generateNarrative,
   isNoOp,
@@ -105,7 +105,7 @@ function apply(stageDir: string, apiDir: string): void {
 function summarise(payload: NarrativePayload, hash: string): void {
   const mazar = payload.reservoirs.find((r) => r.site === "mazar");
   console.log(
-    `payload ${hash.slice(0, 12)} (prompt ${PROMPT_VERSION}, ~${estimateTokens(payload)} tokens): origin ${payload.origin_date}, ` +
+    `payload ${hash.slice(0, 12)} (prompt ${promptVersionFor(payload)}, ~${estimateTokens(payload)} tokens): origin ${payload.origin_date}, ` +
       `${payload.reservoirs.length} reservoirs` +
       (mazar ? `, Mazar ${mazar.level_masl} m` : "") +
       (payload.adequacy ? `, tier ${payload.adequacy.risk_tier}` : ", no adequacy") +
@@ -160,8 +160,8 @@ async function main(): Promise<void> {
   }
 
   const snapshots = readSnapshots();
-  if (isNoOp(snapshots, hash)) {
-    console.log(`unchanged since ${lastAnswered(snapshots)?.run_id ?? "the last snapshot"} (same payload and prompt ${PROMPT_VERSION}): no call made`);
+  if (isNoOp(snapshots, hash, promptVersionFor(payload))) {
+    console.log(`unchanged since ${lastAnswered(snapshots)?.run_id ?? "the last snapshot"} (same payload and prompt ${promptVersionFor(payload)}): no call made`);
     return;
   }
 

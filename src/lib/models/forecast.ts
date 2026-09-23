@@ -21,13 +21,12 @@ import { truncate, type Calibration, type ModelScore } from "./backtest.ts";
 import { quantile } from "../util/stats.ts";
 import { round6, roundOrNull, roundTo } from "../util/numbers.ts";
 import {
-  analogPaths,
   crossingDistribution,
   DEFAULT_WATER_BALANCE,
   firstCrossing,
   fitAt,
+  horizonEnsembles,
   inflowScenarios,
-  simulatePath,
   type FitCache,
   type WaterBalanceFit,
   type WaterBalanceOptions,
@@ -127,6 +126,8 @@ export interface ForecastInputs {
   options?: WaterBalanceOptions;
   /** Horizons published from another model; absent, every horizon is the run's own model. */
   horizonSwitch?: HorizonSwitch;
+  /** The run's fit cache, so the live origin's fit is the one the ladder already made. */
+  cache?: FitCache;
 }
 
 export interface ForecastOutput {
@@ -167,21 +168,15 @@ export function buildForecast(inputs: ForecastInputs): ForecastOutput | null {
     production,
     crestM,
   };
-  const fit = fitAt(context, options);
+  const fit = fitAt(context, options, inputs.cache);
   if (!fit) return null;
 
   const perHorizon = inputs.calibration.get(inputs.modelId) ?? new Map();
   const overrides = new Map((inputs.horizonSwitch?.overrides ?? []).map((o) => [o.horizonDays, o]));
 
   const horizons: HorizonOutput[] = [];
-  for (const horizonDays of inputs.horizonDays) {
-    const paths = analogPaths(inflow, origin, horizonDays);
-    if (paths.length < options.minAnalogYears) continue;
-    const ends = paths.map(
-      (path) =>
-        simulatePath(fit.curve, fit.rule, fit.startLevel, origin, path.inflowM3s, fit.stance, crestM, options).at(-1)!
-          .level,
-    );
+  for (const { horizonDays, ends, years } of horizonEnsembles(fit, inflow, origin, inputs.horizonDays, crestM, options)) {
+    if (ends.length < options.minAnalogYears) continue;
     const centre = quantile(ends, 0.5)!;
     const residuals = perHorizon.get(horizonDays);
 
@@ -217,7 +212,7 @@ export function buildForecast(inputs: ForecastInputs): ForecastOutput | null {
       ensembleP10: roundOrNull(quantile(ends, 0.1), LEVEL_DIGITS),
       ensembleP90: roundOrNull(quantile(ends, 0.9), LEVEL_DIGITS),
       ensembleN: ends.length,
-      analogYears: paths.map((p) => p.year),
+      analogYears: years,
       modelId: override?.modelId ?? inputs.modelId,
       bandSource: override?.bandSource ?? `${inputs.modelId} out-of-sample residuals at ${horizonDays} d, this run's ladder backtest`,
       detail: override
