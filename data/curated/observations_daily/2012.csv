@@ -1,6 +1,6 @@
 date,site,variable,value,source,mrid,fetched_at,raw_ref
 2012-01-01,mazar,caudal_m3s,70.418,ords:pointValues,30538,2026-09-22T13:54:40Z,celec_ords/2012/01/pointValuesMesH24.2012-01-01.ndjson#pointValuesMesH24:30538:2012-01-01
-2012-01-01,paute_cuenca,caudal_cuenca_m3s,126.847783,ords:csrCaudCuenAniosAvg,,2026-09-23T02:36:13Z,celec_ords/2027/01/csrCaudCuenAniosAvg.2027-01-01.ndjson#csrCaudCuenAniosAvg:2010-01-01:2027-01-01
+2012-01-01,paute_cuenca,caudal_cuenca_m3s,126.847783,ords:csrCaudCuenAniosAvg,,2026-09-23T14:59:55Z,celec_ords/2027/01/csrCaudCuenAniosAvg.2027-01-01.ndjson#csrCaudCuenAniosAvg:2010-01-01:2027-01-01
 2012-01-02,mazar,caudal_m3s,76.814,ords:pointValues,30538,2026-09-22T13:54:40Z,celec_ords/2012/01/pointValuesMesH24.2012-01-01.ndjson#pointValuesMesH24:30538:2012-01-01
 2012-01-03,mazar,caudal_m3s,112.014,ords:pointValues,30538,2026-09-22T13:54:40Z,celec_ords/2012/01/pointValuesMesH24.2012-01-01.ndjson#pointValuesMesH24:30538:2012-01-01
 2012-01-04,mazar,caudal_m3s,168.714,ords:pointValues,30538,2026-09-22T13:54:40Z,celec_ords/2012/01/pointValuesMesH24.2012-01-01.ndjson#pointValuesMesH24:30538:2012-01-01
