@@ -23,6 +23,7 @@ import {
   applyOverrides,
   backtestAdequacy,
   buildAdequacyDocument,
+  createAdequacyCache,
   crisisCheck,
   demonstratedCeilings,
   forecastAdequacy,
@@ -98,7 +99,11 @@ function main(): void {
     return;
   }
 
-  const backtest = backtestAdequacy(balance.days, episodes, ceilings);
+  // One cache for every pass below: the backtest, the crisis check's tier history and the live
+  // origin fit demand and hydro at the same origins from the same history.
+  const cache = createAdequacyCache();
+  const backtestOptions = { ...DEFAULT_ADEQUACY_BACKTEST, cache };
+  const backtest = backtestAdequacy(balance.days, episodes, ceilings, backtestOptions);
   console.log(`backtest: ${backtest.origins.length} origins ${backtest.origins[0]} → ${backtest.origins.at(-1)}`);
   for (const scores of backtest.scores) {
     console.log(
@@ -121,6 +126,7 @@ function main(): void {
     horizonDays: DEFAULT_ADEQUACY_BACKTEST.horizonDays,
     calibration: backtest.calibration,
     hydroCalibration: backtest.hydroCalibration,
+    cache,
   });
   if (!forecast) {
     console.error("the model could not be fitted on the committed data; nothing written");
@@ -133,7 +139,7 @@ function main(): void {
       (forecast.imports.trailingGwhDay === null ? "" : `, ${forecast.imports.trailingGwhDay.toFixed(2)} GWh/day over the last ${forecast.imports.days} usable days`) +
       `; central case assumes ${forecast.imports.centralGwhDay.toFixed(2)}`,
   );
-  const crisis = crisisCheck(balance.days, episodes, ceilings, backtest);
+  const crisis = crisisCheck(balance.days, episodes, ceilings, backtest, backtestOptions);
   for (const episode of crisis.episodes) {
     console.log(
       `crisis ${episode.start}→${episode.end}: suppression ${episode.measuredSuppressionGwhDay.toFixed(2)} ` +

@@ -14,7 +14,6 @@ import type {
   CrisisCheck,
   HorizonScore,
 } from "./adequacy.ts";
-import { IMPORT_CUTOFF_GWH_DAY, IMPORT_CUTOFF_THERMAL_SHARE, TIGHT_GWH_DAY } from "./adequacy.ts";
 import type { RejectedDay } from "../features/balance.ts";
 import type { IsoDate } from "../util/dates.ts";
 
@@ -53,6 +52,7 @@ function scoreTable(scores: ComponentScores): string {
 
 export function renderAdequacyReport(inputs: ReportInputs): string {
   const { forecast, backtest, crisis, ceilings } = inputs;
+  const rules = forecast.rules;
   const demand = backtest.scores.find((s) => s.component === "demand")!;
   const hydro = backtest.scores.find((s) => s.component === "hydro")!;
   const requirement = backtest.scores.find((s) => s.component === "requirement")!;
@@ -279,8 +279,8 @@ export function renderAdequacyReport(inputs: ReportInputs): string {
       `${forecast.imports.days} usable days while thermal ran at ${fixed(forecast.imports.trailingThermalGwhDay ?? Number.NaN)}, ` +
       `so the central case assumes ${fixed(forecast.imports.centralGwhDay)} GWh/day of imports.`,
     "",
-    `The rule: a fortnight of imports below ${IMPORT_CUTOFF_GWH_DAY} GWh/day *while* thermal runs at ` +
-      `${IMPORT_CUTOFF_THERMAL_SHARE * 100}% or more of its ceiling means the imports are not arriving rather than`,
+    `The rule: ${rules.importRegimeWindowDays} days of imports below ${rules.importCutoffGwhDay} GWh/day *while* thermal runs at ` +
+      `${Math.round(rules.importCutoffThermalShare * 100)}% or more of its ceiling means the imports are not arriving rather than`,
     "not wanted, and the central case then uses what is arriving, held for the horizon. Low imports",
     "alone would not do: they preceded 68 of the 99 monthly origins since 2018, mostly in wet months",
     "when Ecuador had no use for them. With the thermal condition the rule picks out four — 2024-05,",
@@ -324,10 +324,10 @@ export function renderAdequacyReport(inputs: ReportInputs): string {
     "|---|---|",
     "| `holgado` | the p90 case is still covered |",
     "| `vigilancia` | the p90 is short, the central case is not |",
-    `| \`ajustado\` | the central case is short by less than ${TIGHT_GWH_DAY} GWh/day |`,
-    `| \`deficit\` | the central case is short by ${TIGHT_GWH_DAY} GWh/day or more |`,
+    `| \`ajustado\` | the central case is short by less than ${rules.tightGwhDay} GWh/day |`,
+    `| \`deficit\` | the central case is short by ${rules.tightGwhDay} GWh/day or more |`,
     "",
-    `${TIGHT_GWH_DAY} GWh/day is about 5% of 2026 demand and roughly an hour of national`,
+    `${rules.tightGwhDay} GWh/day is about 5% of 2026 demand and roughly an hour of national`,
     "consumption. The 2024 episode ran at a measured suppression four to five times that, so the",
     "cut is not drawn where the crisis was; it is drawn where a shortfall stops being absorbable by",
     "dispatch and starts being visible to consumers.",
