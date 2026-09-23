@@ -1,6 +1,6 @@
 {
- "startedAt": "2026-09-23T04:17:50Z",
- "finishedAt": "2026-09-23T04:19:00Z",
+ "startedAt": "2026-09-23T04:21:25Z",
+ "finishedAt": "2026-09-23T04:22:42Z",
  "inamhi": "12 polygons, 2,408,810 bytes",
  "results": [
   {
@@ -21,7 +21,7 @@
     "Copernicus_DSM_COG_30_S03_00_W079_00_DEM \"75606582be76f58a68b981a9f9fbcf68\""
    ],
    "noDataShare": 0,
-   "seconds": 10,
+   "seconds": 11,
    "candidates": [
     {
      "role": "dam",
@@ -203,7 +203,7 @@
         "lon": -78.624828
        }
       ],
-      "source": "OSM way/311803060 \"Presa Mazar\" (42 nodes), api.openstreetmap.org 2026-09-23T04:17:52Z",
+      "source": "OSM way/311803060 \"Presa Mazar\" (42 nodes), api.openstreetmap.org 2026-09-23T04:21:28Z",
       "note": "resolved from OSM — 0.04 km from the recorded point"
      },
      "snapped": {
@@ -239,6 +239,15 @@
       },
       "meanElevM": 3113.6773910830207
      },
+     "confluences": [
+      {
+       "kmUpstream": 0.185,
+       "lat": -2.59375,
+       "lon": -78.62125,
+       "sideKm2": 166.5,
+       "mainKm2": 4250.9
+      }
+     ],
      "inamhi": [
       {
        "layer": "Mazar",
@@ -304,7 +313,7 @@
     "Copernicus_DSM_COG_30_N00_00_W078_00_DEM \"056444a1a5277738e5e4a703f51c11e5\""
    ],
    "noDataShare": 0,
-   "seconds": 10,
+   "seconds": 11,
    "candidates": [
     {
      "role": "dam",
@@ -330,7 +339,7 @@
         "lon": -77.6837495
        }
       ],
-      "source": "OSM way/310742588 \"Coca Codo Sinclair\" (4 nodes), api.openstreetmap.org 2026-09-23T04:18:03Z",
+      "source": "OSM way/310742588 \"Coca Codo Sinclair\" (4 nodes), api.openstreetmap.org 2026-09-23T04:21:39Z",
       "note": "resolved from OSM — 0.1 km from the recorded point"
      },
      "snapped": {
@@ -366,6 +375,15 @@
       },
       "meanElevM": 3002.937484763224
      },
+     "confluences": [
+      {
+       "kmUpstream": 1.55,
+       "lat": -0.20625,
+       "lon": -77.68542,
+       "sideKm2": 936.7,
+       "mainKm2": 2788.8
+      }
+     ],
      "inamhi": [
       {
        "layer": "Coca-Codo4326",
@@ -431,7 +449,7 @@
      "point": {
       "lat": -1.3997132,
       "lon": -78.3743984,
-      "source": "OSM node/8432673468 \"Central hidroeléctrica Agoyán\" (1 node), api.openstreetmap.org 2026-09-23T04:18:13Z",
+      "source": "OSM node/8432673468 \"Central hidroeléctrica Agoyán\" (1 node), api.openstreetmap.org 2026-09-23T04:21:50Z",
       "note": "resolved from OSM — 0.37 km from the recorded point"
      },
      "snapped": {
@@ -467,6 +485,15 @@
       },
       "meanElevM": 3467.251681221573
      },
+     "confluences": [
+      {
+       "kmUpstream": 2.569,
+       "lat": -1.39375,
+       "lon": -78.39042,
+       "sideKm2": 223.2,
+       "mainKm2": 8010.7
+      }
+     ],
      "inamhi": [
       {
        "layer": "Hidroagoyan",
@@ -554,7 +581,7 @@
     "Copernicus_DSM_COG_30_N00_00_W078_00_DEM \"056444a1a5277738e5e4a703f51c11e5\""
    ],
    "noDataShare": 0,
-   "seconds": 12,
+   "seconds": 13,
    "candidates": [
     {
      "role": "wikidata point",
@@ -598,6 +625,7 @@
       },
       "meanElevM": 2812.5240294656855
      },
+     "confluences": [],
      "inamhi": [
       {
        "layer": "manduriacudisolv",
@@ -707,6 +735,7 @@
       },
       "meanElevM": 200.14233274436975
      },
+     "confluences": [],
      "inamhi": [
       {
        "layer": "Marcel_Laniado_4326",
@@ -824,7 +853,7 @@
         "lon": -79.4812131
        }
       ],
-      "source": "OSM way/690695821 (17 nodes), api.openstreetmap.org 2026-09-23T04:18:47Z",
+      "source": "OSM way/690695821 (17 nodes), api.openstreetmap.org 2026-09-23T04:22:27Z",
       "note": "resolved from OSM"
      },
      "snapped": {
@@ -860,6 +889,15 @@
       },
       "meanElevM": 2602.231480066413
      },
+     "confluences": [
+      {
+       "kmUpstream": 0.578,
+       "lat": -3.31792,
+       "lon": -79.47875,
+       "sideKm2": 361,
+       "mainKm2": 2982.6
+      }
+     ],
      "inamhi": [
       {
        "layer": "Minas_San_fancisco",
@@ -935,7 +973,7 @@
     "Copernicus_DSM_COG_30_S04_00_W079_00_DEM \"161019aaa61926dea4bac1a90a9f692c\""
    ],
    "noDataShare": 0,
-   "seconds": 9,
+   "seconds": 10,
    "candidates": [
     {
      "role": "dam",
@@ -997,7 +1035,7 @@
         "lon": -79.0168139
        }
       ],
-      "source": "OSM way/726604479 \"Delsitanisagua hidroelectrica\" (12 nodes), api.openstreetmap.org 2026-09-23T04:18:52Z",
+      "source": "OSM way/726604479 \"Delsitanisagua hidroelectrica\" (12 nodes), api.openstreetmap.org 2026-09-23T04:22:32Z",
       "note": "resolved from OSM"
      },
      "snapped": {
@@ -1033,6 +1071,15 @@
       },
       "meanElevM": 2475.537266087941
      },
+     "confluences": [
+      {
+       "kmUpstream": 2.213,
+       "lat": -3.96375,
+       "lon": -79.01625,
+       "sideKm2": 42.3,
+       "mainKm2": 1085.6
+      }
+     ],
      "inamhi": [
       {
        "layer": "Delsinta",
@@ -1165,7 +1212,7 @@
         "lon": -78.9857233
        }
       ],
-      "source": "OSM way/690695824 \"Central Hidroeléctrica Delsitanisagua\" (24 nodes), api.openstreetmap.org 2026-09-23T04:18:52Z",
+      "source": "OSM way/690695824 \"Central Hidroeléctrica Delsitanisagua\" (24 nodes), api.openstreetmap.org 2026-09-23T04:22:32Z",
       "note": "resolved from OSM — 0.13 km from the recorded point"
      },
      "snapped": {
@@ -1201,6 +1248,7 @@
       },
       "meanElevM": 2479.796943310709
      },
+     "confluences": [],
      "inamhi": [
       {
        "layer": "Delsinta",
