@@ -335,6 +335,152 @@
         "codes"
       ]
     },
+    "band_method": {
+      "type": "object",
+      "description": "How the requirement's p10–p90 band is calibrated. Additive; absent before 2026-09-23.",
+      "properties": {
+        "method": {
+          "type": "string"
+        },
+        "quantiles": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "nominal_coverage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "stretch_by_horizon": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "horizon_days": {
+                "type": "integer"
+              },
+              "stretch": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "horizon_days",
+              "stretch"
+            ]
+          }
+        }
+      },
+      "required": [
+        "method",
+        "quantiles",
+        "nominal_coverage",
+        "stretch_by_horizon"
+      ]
+    },
+    "import_sensitivity": {
+      "type": "object",
+      "description": "The deficit and tier under each import assumption from Colombia (ENHANCEMENTS §5.5), so a reader sees how much the tier rests on it. The central case is one of these rows. Additive; absent before 2026-09-23.",
+      "properties": {
+        "note": {
+          "type": "string"
+        },
+        "central_case": {
+          "type": "string",
+          "enum": [
+            "demonstrated",
+            "stressed",
+            "current_regime"
+          ]
+        },
+        "cases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "case": {
+                "type": "string",
+                "enum": [
+                  "demonstrated",
+                  "stressed",
+                  "current_regime"
+                ]
+              },
+              "import_gwh_day": {
+                "type": "number"
+              },
+              "worst_tier": {
+                "type": "string",
+                "enum": [
+                  "holgado",
+                  "vigilancia",
+                  "ajustado",
+                  "deficit"
+                ]
+              },
+              "worst_tier_horizon_days": {
+                "type": "integer"
+              },
+              "horizons": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "horizon_days": {
+                      "type": "integer"
+                    },
+                    "deficit_gwh_day": {
+                      "type": "number"
+                    },
+                    "deficit_p90": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "description": "GWh/day: the deficit with the requirement at its p90."
+                    },
+                    "tier": {
+                      "type": "string",
+                      "enum": [
+                        "holgado",
+                        "vigilancia",
+                        "ajustado",
+                        "deficit"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "horizon_days",
+                    "deficit_gwh_day",
+                    "deficit_p90",
+                    "tier"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "case",
+              "import_gwh_day",
+              "worst_tier",
+              "worst_tier_horizon_days",
+              "horizons"
+            ]
+          }
+        }
+      },
+      "required": [
+        "note",
+        "central_case",
+        "cases"
+      ]
+    },
+    "scorecard": {
+      "$ref": "#/$defs/scorecard"
+    },
     "tier_history": {
       "type": "object",
       "properties": {
@@ -502,6 +648,234 @@
         "type": "string"
       },
       "description": "Fields kept for one more schema version, each with what replaces it."
+    },
+    "scorecard": {
+      "type": "object",
+      "description": "How the published adequacy runs (the net requirement, demand minus hydro, mean over the horizon window, GWh/day) did once their horizons passed (ENHANCEMENTS §5.1): every published run scored under the model and version that made it, the last run per origin and version only. Additive; absent in documents written before 2026-09-23.",
+      "properties": {
+        "generated_at": {
+          "type": "string",
+          "description": "When the scorecard was computed, UTC."
+        },
+        "observed_through": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "The last day with an observation to score against."
+        },
+        "target": {
+          "type": "string",
+          "description": "The quantity scored, in words."
+        },
+        "units": {
+          "type": "string",
+          "enum": [
+            "m",
+            "GWh/day"
+          ]
+        },
+        "runs_considered": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "runs_superseded": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Runs left out because a later run for the same origin and version replaced them."
+        },
+        "rows_scored": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rows_pending": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Published rows whose target date is after observed_through."
+        },
+        "rows_excluded": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Rows whose date passed with no usable observation."
+        },
+        "method": {
+          "type": "string"
+        },
+        "by_horizon": {
+          "type": "array",
+          "description": "One row per model, model version and horizon with at least one scored row.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "model_id": {
+                "type": "string"
+              },
+              "model_version": {
+                "type": "string"
+              },
+              "horizon_days": {
+                "type": "integer"
+              },
+              "n": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "mae": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "Mean absolute error of the p50, in units."
+              },
+              "bias": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "Mean of observed minus p50, in units."
+              },
+              "n_band": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Rows that carried a p10 and a p90."
+              },
+              "coverage_p10_p90": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "Share of banded rows observed inside p10–p90, 0–1."
+              },
+              "pinball_mean": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "Mean pinball loss over p10, p50 and p90."
+              },
+              "first_origin": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              "last_origin": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              }
+            },
+            "required": [
+              "model_id",
+              "model_version",
+              "horizon_days",
+              "n",
+              "mae",
+              "bias",
+              "n_band",
+              "coverage_p10_p90",
+              "pinball_mean",
+              "first_origin",
+              "last_origin"
+            ]
+          }
+        },
+        "recent": {
+          "type": "array",
+          "description": "The most recent scored rows, newest target date first.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "run_id": {
+                "type": "string"
+              },
+              "model_id": {
+                "type": "string"
+              },
+              "model_version": {
+                "type": "string"
+              },
+              "origin_date": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              "horizon_days": {
+                "type": "integer"
+              },
+              "target_date": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              "p10": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "p50": {
+                "type": "number"
+              },
+              "p90": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "observed": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "error": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "Observed minus p50."
+              },
+              "in_band": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "run_id",
+              "model_id",
+              "model_version",
+              "origin_date",
+              "horizon_days",
+              "target_date",
+              "p10",
+              "p50",
+              "p90",
+              "observed",
+              "error",
+              "in_band"
+            ]
+          }
+        }
+      },
+      "required": [
+        "generated_at",
+        "observed_through",
+        "target",
+        "units",
+        "runs_considered",
+        "runs_superseded",
+        "rows_scored",
+        "rows_pending",
+        "rows_excluded",
+        "method",
+        "by_horizon",
+        "recent"
+      ]
     }
   }
 }

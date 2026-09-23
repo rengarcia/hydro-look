@@ -433,6 +433,190 @@
         "episodes"
       ]
     },
+    "precipitation_basin": {
+      "type": "object",
+      "description": "Which basin's ERA5 precipitation the Mazar run read: the verified catchment centroid once its history is adequate, the provisional point until then. Additive; absent before 2026-09-23.",
+      "properties": {
+        "basin": {
+          "type": "string"
+        },
+        "verified_centroid": {
+          "type": "boolean",
+          "description": "True when basin is the verified centroid; false on the provisional fallback."
+        },
+        "era5_days": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "share_since_1990": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Share of days since 1990-01-01 present in the basin's ERA5 series."
+        },
+        "fallback_reason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Why the verified centroid was not used; null when it was."
+        }
+      },
+      "required": [
+        "basin",
+        "verified_centroid",
+        "era5_days",
+        "share_since_1990",
+        "fallback_reason"
+      ]
+    },
+    "inflow_forecasts": {
+      "type": "object",
+      "description": "Mean inflow forecasts for the plants whose level is not worth forecasting (ENHANCEMENTS §5.3). A horizon is published only where the analogue years beat persistence and climatology on the backtest; the others carry the reason. Additive; absent before 2026-09-23.",
+      "properties": {
+        "report": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        },
+        "plants": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "site": {
+                "type": "string"
+              },
+              "origin_date": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              "variable": {
+                "type": "string"
+              },
+              "target": {
+                "type": "string"
+              },
+              "precip_basin": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The basin whose rain conditions the analogue years; null when its ERA5 history is not adequate."
+              },
+              "rain_conditioned": {
+                "type": "boolean"
+              },
+              "horizons": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "horizon_days": {
+                      "type": "integer"
+                    },
+                    "published": {
+                      "type": "boolean"
+                    },
+                    "reason": {
+                      "type": "string"
+                    },
+                    "backtest": {
+                      "type": "object",
+                      "properties": {
+                        "n": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "mae_m3s": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        },
+                        "persistence_mae_m3s": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        },
+                        "climatology_mae_m3s": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        },
+                        "coverage_p10_p90": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "n",
+                        "mae_m3s",
+                        "persistence_mae_m3s",
+                        "climatology_mae_m3s",
+                        "coverage_p10_p90"
+                      ]
+                    },
+                    "target_date": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                      "description": "Present only on a published horizon."
+                    },
+                    "p10": {
+                      "type": "number",
+                      "description": "m³/s; present only on a published horizon."
+                    },
+                    "p50": {
+                      "type": "number",
+                      "description": "m³/s; present only on a published horizon."
+                    },
+                    "p90": {
+                      "type": "number",
+                      "description": "m³/s; present only on a published horizon."
+                    },
+                    "ensemble_years": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "rain_conditioned": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "horizon_days",
+                    "published",
+                    "reason",
+                    "backtest"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "site",
+              "origin_date",
+              "variable",
+              "target",
+              "precip_basin",
+              "rain_conditioned",
+              "horizons"
+            ]
+          }
+        }
+      },
+      "required": [
+        "report",
+        "note",
+        "plants"
+      ]
+    },
+    "scorecard": {
+      "$ref": "#/$defs/scorecard"
+    },
     "license": {
       "$ref": "#/$defs/license"
     },
@@ -523,6 +707,234 @@
         "type": "string"
       },
       "description": "Fields kept for one more schema version, each with what replaces it."
+    },
+    "scorecard": {
+      "type": "object",
+      "description": "How the published level forecasts (Mazar's level on the target day, m) did once their horizons passed (ENHANCEMENTS §5.1): every published run scored under the model and version that made it, the last run per origin and version only. Additive; absent in documents written before 2026-09-23.",
+      "properties": {
+        "generated_at": {
+          "type": "string",
+          "description": "When the scorecard was computed, UTC."
+        },
+        "observed_through": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "The last day with an observation to score against."
+        },
+        "target": {
+          "type": "string",
+          "description": "The quantity scored, in words."
+        },
+        "units": {
+          "type": "string",
+          "enum": [
+            "m",
+            "GWh/day"
+          ]
+        },
+        "runs_considered": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "runs_superseded": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Runs left out because a later run for the same origin and version replaced them."
+        },
+        "rows_scored": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rows_pending": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Published rows whose target date is after observed_through."
+        },
+        "rows_excluded": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Rows whose date passed with no usable observation."
+        },
+        "method": {
+          "type": "string"
+        },
+        "by_horizon": {
+          "type": "array",
+          "description": "One row per model, model version and horizon with at least one scored row.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "model_id": {
+                "type": "string"
+              },
+              "model_version": {
+                "type": "string"
+              },
+              "horizon_days": {
+                "type": "integer"
+              },
+              "n": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "mae": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "Mean absolute error of the p50, in units."
+              },
+              "bias": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "Mean of observed minus p50, in units."
+              },
+              "n_band": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Rows that carried a p10 and a p90."
+              },
+              "coverage_p10_p90": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "Share of banded rows observed inside p10–p90, 0–1."
+              },
+              "pinball_mean": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "Mean pinball loss over p10, p50 and p90."
+              },
+              "first_origin": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              "last_origin": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              }
+            },
+            "required": [
+              "model_id",
+              "model_version",
+              "horizon_days",
+              "n",
+              "mae",
+              "bias",
+              "n_band",
+              "coverage_p10_p90",
+              "pinball_mean",
+              "first_origin",
+              "last_origin"
+            ]
+          }
+        },
+        "recent": {
+          "type": "array",
+          "description": "The most recent scored rows, newest target date first.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "run_id": {
+                "type": "string"
+              },
+              "model_id": {
+                "type": "string"
+              },
+              "model_version": {
+                "type": "string"
+              },
+              "origin_date": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              "horizon_days": {
+                "type": "integer"
+              },
+              "target_date": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              "p10": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "p50": {
+                "type": "number"
+              },
+              "p90": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "observed": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "error": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "Observed minus p50."
+              },
+              "in_band": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "run_id",
+              "model_id",
+              "model_version",
+              "origin_date",
+              "horizon_days",
+              "target_date",
+              "p10",
+              "p50",
+              "p90",
+              "observed",
+              "error",
+              "in_band"
+            ]
+          }
+        }
+      },
+      "required": [
+        "generated_at",
+        "observed_through",
+        "target",
+        "units",
+        "runs_considered",
+        "runs_superseded",
+        "rows_scored",
+        "rows_pending",
+        "rows_excluded",
+        "method",
+        "by_horizon",
+        "recent"
+      ]
     }
   }
 }
