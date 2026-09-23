@@ -53,5 +53,19 @@
       "last_date": "2026-09-21",
       "files": 11
     }
+  },
+  "narrative": {
+    "calls": 6,
+    "by_status": {
+      "failed": 1,
+      "rejected": 3,
+      "ok": 2
+    },
+    "spend_usd": 0.0962,
+    "calls_without_cost": 2,
+    "by_month": {
+      "2026-09": 0.0962
+    },
+    "last_call_at": "2026-09-23T02:37:18Z"
   }
 }

@@ -1,0 +1,85 @@
+name: Feed freshness
+
+# A few hours after each daily slot (12:47 and 16:53 UTC, see daily.yml), check `main` for the two
+# failures that open no issue on their own: a feed that has quietly stopped (`check --freshness`,
+# the same limits the ingest gates on) and a scheduled slot that never fired at all. Both land in
+# one `stale-feed` issue, commented on while the condition lasts and closed by the first run that
+# finds everything current.
+on:
+  schedule:
+    - cron: "41 15 * * *"
+    - cron: "49 19 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  freshness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+      actions: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci --ignore-scripts
+
+      - name: Check freshness
+        id: check
+        shell: bash
+        run: |
+          set +e
+          npm run --silent check -- --freshness > "$RUNNER_TEMP/freshness.log" 2>&1
+          echo "status=$?" >> "$GITHUB_OUTPUT"
+          cat "$RUNNER_TEMP/freshness.log"
+          {
+            echo '### Freshness on main'
+            echo '```'
+            grep -E '^(FAIL|WARN)|checks:' "$RUNNER_TEMP/freshness.log"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: File or close the stale-feed issue
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+        env:
+          CHECK_STATUS: ${{ steps.check.outputs.status }}
+        with:
+          script: |
+            const fs = require('fs');
+            const issues = require('./.github/scripts/issues.cjs');
+            const slots = require('./.github/scripts/slots.cjs');
+            const gh = { github, context };
+
+            const log = fs.readFileSync(`${process.env.RUNNER_TEMP}/freshness.log`, 'utf8');
+            const stale = log.split('\n').filter((line) => line.startsWith('FAIL [freshness]'));
+            const failed = process.env.CHECK_STATUS !== '0';
+
+            // The latest daily slot that should have started by now, allowing two hours of delay.
+            const crons = slots.dailyCrons(fs.readFileSync('.github/workflows/daily.yml', 'utf8'));
+            const due = slots.lastDueSlot(crons, new Date(), 2 * 3600e3);
+            const missed = await slots.missed(gh, 'daily.yml', due);
+
+            const problems = [
+              ...stale.map((line) => `- ${line.replace('FAIL [freshness] ', '')}`),
+              ...(failed && stale.length === 0 ? ['- `npm run check -- --freshness` failed on something other than freshness; see the run log.'] : []),
+              ...(missed ? [`- The daily slot due at ${due.toISOString()} has no scheduled run: GitHub did not fire it.`] : []),
+            ];
+            await core.summary.addRaw(problems.length ? `\n${problems.join('\n')}\n` : '\nEvery feed is current and the last daily slot fired.\n').write();
+
+            if (problems.length > 0) {
+              await issues.report(gh, {
+                label: 'stale-feed',
+                title: 'A feed is stale or a daily run did not fire',
+                body: problems.join('\n'),
+              });
+            } else {
+              await issues.resolve(gh, { label: 'stale-feed', body: 'Every feed is current again and the last daily slot fired.' });
+            }

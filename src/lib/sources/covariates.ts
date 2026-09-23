@@ -7,7 +7,7 @@ import { parseOni, parseWeather } from "../parse/covariates.ts";
 import type { RawArchive } from "../store/archive.ts";
 import type { CuratedStore } from "../store/curated.ts";
 import { parseCsv } from "../store/csv.ts";
-import { addDays, eachDay, monthOf, todayEc, yearOf } from "../util/dates.ts";
+import { addDays, eachDay, todayEc, yearOf } from "../util/dates.ts";
 import { DATA_CURATED, DATA_REFERENCE } from "../util/paths.ts";
 import type { Options } from "../options.ts";
 import type { IngestBatch } from "./batch.ts";
@@ -45,7 +45,7 @@ export class Covariates {
           ...(kind === "era5" ? { models: "era5", start_date: from, end_date: to } : { forecast_days: "16" }),
         },
       });
-      const rawRef = this.archive.add("open_meteo", kind, kind === "era5" ? { year: yearOf(from), month: monthOf(from) } : null, {
+      const rawRef = this.archive.add("open_meteo", kind, kind === "era5" ? from : null, {
         key: kind === "era5" ? key : `${key}:${result.fetchedAt}`,
         url: result.url, method: result.method, status: result.status, fetched_at: result.fetchedAt, body: result.body,
       });

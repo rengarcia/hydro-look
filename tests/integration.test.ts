@@ -32,7 +32,7 @@ describe("ingest write path", () => {
     ];
 
     for (const response of responses) {
-      const rawRef = archive.add("celec_ords", response.endpoint, { year: 2026, month: "09" }, {
+      const rawRef = archive.add("celec_ords", response.endpoint, "2026-09-20", {
         key: `${response.endpoint}:2026-09-20`,
         url: `https://generacioncsr.celec.gob.ec:8443/ords/csr/sardomcsr/${response.endpoint}`,
         method: "GET",
@@ -48,7 +48,7 @@ describe("ingest write path", () => {
     }
 
     const smecReport = parseSmecInforme1(fixture("cenace_smec", "informe1_2026-09-20.html"), "2026-09-20");
-    const smecRef = archive.add("cenace_smec", "ResultadoInforme1", { year: 2026, month: "09" }, {
+    const smecRef = archive.add("cenace_smec", "ResultadoInforme1", "2026-09-20", {
       key: "informe1:2026-09-20",
       url: "https://smec.cenace.gob.ec/SMEC/ResultadoInforme1.do",
       method: "GET",
@@ -99,7 +99,7 @@ describe("ingest write path", () => {
 
     // Every archived response can be read back for reprocessing without the network.
     const reopened = new RawArchive(join(root, "raw"));
-    const archived = reopened.get(join(root, "raw", "celec_ords", "2026", "09", "repDiaNivQIng.ndjson.gz"), "repDiaNivQIng:2026-09-20");
+    const archived = reopened.read(nivQIng["raw_ref"]!);
     expect(JSON.parse(archived!.body).items).toHaveLength(4);
   });
 });

@@ -21,7 +21,7 @@ function stage(directory: string, observations: unknown[], raw: { endpoint: stri
   mkdirSync(directory, { recursive: true });
   const archive = new RawArchive(join(directory, "raw"));
   for (const response of raw) {
-    archive.add("celec_ords", response.endpoint, { year: 2026, month: "09" }, {
+    archive.add("celec_ords", response.endpoint, "2026-09-20", {
       key: `${response.endpoint}:2026-09-20`,
       url: `https://example/${response.endpoint}`,
       method: "GET",
@@ -111,10 +111,13 @@ describe("staged apply", () => {
     expect(merged.filter((r) => r["source"] === "ords:repDiaNivQIng")).toHaveLength(8);
     expect(merged.filter((r) => r["source"] === "ords:repDiaVolAlm")).toHaveLength(1);
 
-    // And both raw bundles survived, each under the month of its data.
+    // And both raw files survived, each under the day of its data. The rows were staged with
+    // the old bundle form of raw_ref, as a batch staged before the layout change would be, and
+    // apply pointed them at the day files that hold their responses.
     const archive = new RawArchive(join(dataRoot, "raw"));
-    const bundle = join(dataRoot, "raw", "celec_ords", "2026", "09", "repDiaNivQIng.ndjson.gz");
-    expect(archive.get(bundle, "repDiaNivQIng:2026-09-20")?.body).toBe(body);
+    const nivRow = merged.find((r) => r["source"] === "ords:repDiaNivQIng")!;
+    expect(nivRow["raw_ref"]).toBe("celec_ords/2026/09/repDiaNivQIng.2026-09-20.ndjson#repDiaNivQIng:2026-09-20");
+    expect(archive.read(nivRow["raw_ref"]!)?.body).toBe(body);
 
     // Re-applying the same batch changes nothing, which is what makes the push retry safe.
     const again = apply(dataRoot, batchA);

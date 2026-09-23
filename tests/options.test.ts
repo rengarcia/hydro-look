@@ -8,11 +8,12 @@ import { describe, expect, it } from "vitest";
 import { parseOptions, positiveNumber } from "../src/lib/options.ts";
 
 describe("parseOptions", () => {
-  it("defaults an empty --days to one day rather than to zero", () => {
+  it("defaults an empty --days to the three-day default rather than to zero", () => {
     // `--days ""` is what `DAYS: ${{ inputs.days }}` produces on a scheduled run. Number("")
     // is 0, which would run the 12-month reports and silently skip every per-day report.
-    expect(parseOptions(["daily", "--days", ""]).days).toBe(1);
-    expect(parseOptions(["daily"]).days).toBe(1);
+    expect(parseOptions(["daily", "--days", ""]).days).toBe(3);
+    expect(parseOptions(["daily"]).days).toBe(3);
+    expect(parseOptions(["daily", "--days", "1"]).days).toBe(1);
     expect(parseOptions(["daily", "--days", "3"]).days).toBe(3);
   });
 

@@ -22,7 +22,7 @@ BRANCH="${BRANCH:?BRANCH required}"
 LOG="${LOG:-/dev/null}"
 LABEL="Models"
 
-# shellcheck source=push-loop.sh
+# shellcheck source=SCRIPTDIR/push-loop.sh
 source "$(dirname "$0")/push-loop.sh"
 
 # A modelling failure must not be papered over: leave the previous documents committed and

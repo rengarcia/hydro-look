@@ -64,7 +64,7 @@ export class Xm {
       jsonBody: { MetricId: metricId, StartDate: from, EndDate: to, Entity: entity, Filter: [] },
       allowStatus: [400],
     });
-    const rawRef = this.archive.add("xm", `${metricId}_${entity}`, { year: yearOf(from), month: monthOf(from) }, {
+    const rawRef = this.archive.add("xm", `${metricId}_${entity}`, from, {
       key,
       url: result.url,
       method: result.method,

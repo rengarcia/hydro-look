@@ -20,6 +20,16 @@ export const BACKFILL_SOURCES = [
 
 export type BackfillSource = (typeof BACKFILL_SOURCES)[number];
 
+/**
+ * Three days, not one. The 12-month reports repair their own gaps, but the per-day reports
+ * (`repDiaNivQIng`, `repDiaPotQTurb`, `repDiaRegAyer`, `repDiaVolAlm`) are asked one date at a
+ * time, so a day missed by a failed or skipped run stayed missing until someone dispatched a
+ * backfill. Re-reading the last three days covers two missed runs in a row for about twenty
+ * extra requests, and an unchanged answer costs nothing downstream: the archive and the
+ * tables leave identical content untouched.
+ */
+export const DEFAULT_DAILY_DAYS = 3;
+
 export interface Options {
   command: string;
   dryRun: boolean;
@@ -34,6 +44,7 @@ export interface Options {
   from?: IsoDate;
   to?: IsoDate;
   date?: IsoDate;
+  /** How many recent days the daily run re-reads the per-day reports for (SMEC: two more). */
   days: number;
   source: BackfillSource;
   plants: EnergyPlantCode[];
@@ -41,6 +52,8 @@ export interface Options {
   out?: string;
   /** Directory a staged run wrote, to be merged into the store. */
   in?: string;
+  /** Markdown run summary (rows, requests, errors) written here, for `$GITHUB_STEP_SUMMARY`. */
+  summary?: string;
 }
 
 /**
@@ -74,6 +87,7 @@ export function parseOptions(argv: string[]): Options {
       plants: { type: "string" },
       out: { type: "string" },
       in: { type: "string" },
+      summary: { type: "string" },
     },
   });
 
@@ -101,10 +115,11 @@ export function parseOptions(argv: string[]): Options {
     from: optionalDate(values.from),
     to: optionalDate(values.to),
     date: optionalDate(values.date),
-    days: positiveNumber(values.days, 1),
+    days: positiveNumber(values.days, DEFAULT_DAILY_DAYS),
     source,
     plants,
     out: values.out?.trim() || undefined,
     in: values.in?.trim() || undefined,
+    summary: values.summary?.trim() || undefined,
   };
 }

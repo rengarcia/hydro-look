@@ -2,7 +2,8 @@
 /**
  * Quality gates over the committed data.
  *
- *   npm run check                       shape, ranges and reference integrity; writes nothing
+ *   npm run check                       shape, ranges, reference integrity, raw_ref resolution
+ *                                       and the quarantine; writes nothing
  *   npm run check -- --freshness        also fail when a feed has stopped arriving
  *   npm run check -- --out public/api/status.json   write the public status document
  *
@@ -15,8 +16,8 @@
  * Exit code is 1 if anything failed, so both CI and the ingest job can gate on it.
  */
 
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { join, relative } from "node:path";
 import {
   ENSO_MONTHLY,
   ADEQUACY_RUNS,
@@ -37,6 +38,8 @@ import {
   checkFreshness,
   checkNationalBalance,
   checkObservationRanges,
+  checkQuarantine,
+  checkRawRefs,
   checkReference,
   checkTableShape,
   widestBands,
@@ -45,8 +48,11 @@ import {
   type FreshnessRule,
   type Rows,
 } from "../src/lib/quality/checks.ts";
+import { RawArchive, isLegacyRef } from "../src/lib/store/archive.ts";
 import { parseCsv } from "../src/lib/store/csv.ts";
-import { DATA_CURATED, DATA_REFERENCE } from "../src/lib/util/paths.ts";
+import { DATA_QUARANTINE } from "../src/lib/store/curated.ts";
+import { writeJsonUnlessOnlyStamped } from "../src/lib/store/files.ts";
+import { DATA_CURATED, DATA_RAW, DATA_REFERENCE, DATA_ROOT } from "../src/lib/util/paths.ts";
 import { nowUtc, todayEc } from "../src/lib/util/dates.ts";
 
 /**
@@ -129,6 +135,15 @@ function latestWhere(rows: Rows, column: string, predicate: (row: Record<string,
   return latest;
 }
 
+/** Every file under data/quarantine/, relative to the data root. */
+function quarantineFiles(): string[] {
+  if (!existsSync(DATA_QUARANTINE)) return [];
+  return readdirSync(DATA_QUARANTINE, { recursive: true, withFileTypes: true })
+    .filter((entry) => entry.isFile())
+    .map((entry) => relative(DATA_ROOT, join(entry.parentPath, entry.name)))
+    .sort();
+}
+
 function main(): void {
   const argv = process.argv.slice(2);
   const wantFreshness = argv.includes("--freshness");
@@ -187,6 +202,16 @@ function main(): void {
     }),
   );
 
+  // Every row's raw response must exist: the README promises it next to the row.
+  const archive = new RawArchive(DATA_RAW);
+  findings.push(
+    ...checkRawRefs(
+      tables.filter(([spec]) => (spec.columns as readonly string[]).includes("raw_ref")).map(([spec, table]) => ({ name: spec.name, rows: table.rows })),
+      (ref) => (archive.has(ref) ? (isLegacyRef(ref) ? "legacy" : "current") : null),
+    ),
+  );
+  findings.push(...checkQuarantine(quarantineFiles()));
+
   const bySource = (source: string) => (row: Record<string, string>) => row["source"] === source;
   const rules: FreshnessRule[] = [
     ["ORDS levels and inflows (repDiaHid12m)", latestWhere(observations.rows, "date", bySource("ords:repDiaHid12m"))],
@@ -237,9 +262,9 @@ function main(): void {
       findings: findings.filter((f) => f.level !== "info").map((f) => ({ check: f.check, level: f.level, message: f.message })),
       counts: findings.reduce<Record<string, number>>((acc, f) => ({ ...acc, [f.level]: (acc[f.level] ?? 0) + 1 }), {}),
     };
-    mkdirSync(dirname(outPath), { recursive: true });
-    writeFileSync(outPath, `${JSON.stringify(document, null, 2)}\n`);
-    console.log(`wrote ${outPath}`);
+    // Left alone when only `generated_at` would change, so a run that found nothing new commits
+    // nothing (see apply-and-push.sh).
+    console.log(writeJsonUnlessOnlyStamped(outPath, document) ? `wrote ${outPath}` : `${outPath} unchanged but for generated_at; left as it was`);
   }
 
   process.exitCode = failures.length > 0 ? 1 : 0;
