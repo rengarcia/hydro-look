@@ -7,6 +7,12 @@
  *   npm run adequacy -- --api <path>      where adequacy.json goes
  *   npm run adequacy -- --report <path>   where the report goes
  *   npm run adequacy -- --ceilings        print the demonstrated ceilings and stop
+ *   npm run adequacy -- --no-experiments  skip §5.5's experiments (the report then omits them)
+ *
+ * Besides the central case, `adequacy.json` carries `import_sensitivity` — the deficit and tier
+ * under each import assumption — and `scorecard`, how every earlier published run's requirement
+ * did once its window had passed (§5.1). The report reruns §5.5's experiments each time: the
+ * band methods, ONI as a hydro covariate, and the export-availability model over XM's series.
  *
  * Like `forecast`, the backtest always runs, because the published band *is* the backtest: the
  * requirement's p10 and p90 are that model's own out-of-sample residual quantiles at that
@@ -24,6 +30,7 @@ import {
   backtestAdequacy,
   buildAdequacyDocument,
   createAdequacyCache,
+  referenceAdequacyRules,
   crisisCheck,
   demonstratedCeilings,
   forecastAdequacy,
@@ -32,9 +39,20 @@ import {
   type CeilingRow,
 } from "../src/lib/models/adequacy.ts";
 import { renderAdequacyReport } from "../src/lib/models/adequacy-report.ts";
+import {
+  bandExperiment,
+  bandSection,
+  importSection,
+  oniHydroExperiment,
+  oniSection,
+  type ReportSection,
+} from "../src/lib/models/adequacy-experiments.ts";
+import { DEFAULT_EXPORT_MODEL, importExperiment, importSensitivity, sensitivityBlock, xmSeries } from "../src/lib/models/imports.ts";
+import { scoreAdequacyRuns, scorecardBlock } from "../src/lib/models/scorecard.ts";
+import { readOni } from "../src/lib/features/enso.ts";
 import { readBalance, rationingEpisodes } from "../src/lib/features/balance.ts";
 import { CuratedStore } from "../src/lib/store/curated.ts";
-import { ADEQUACY_RUNS, ADEQUACY_VALUES, NATIONAL_BALANCE_DAILY } from "../src/lib/contracts/tables.ts";
+import { ADEQUACY_RUNS, ADEQUACY_VALUES, NATIONAL_BALANCE_DAILY, XM_SYSTEM_DAILY } from "../src/lib/contracts/tables.ts";
 import { parseCsv } from "../src/lib/store/csv.ts";
 import { DATA_CURATED, DATA_REFERENCE, repoPath } from "../src/lib/util/paths.ts";
 import { nowUtc } from "../src/lib/util/dates.ts";
@@ -61,6 +79,7 @@ function main(): void {
     options: {
       "dry-run": { type: "boolean", default: false },
       ceilings: { type: "boolean", default: false },
+      "no-experiments": { type: "boolean", default: false },
       api: { type: "string" },
       report: { type: "string" },
     },
@@ -157,15 +176,48 @@ function main(): void {
     );
   }
 
+  const sensitivity = importSensitivity(forecast);
+  for (const c of sensitivity) {
+    console.log(`  imports ${c.case.padEnd(15)} ${c.importGwhDay.toFixed(2)} GWh/day → worst tier ${c.worstTier} at ${c.worstTierHorizonDays} d`);
+  }
+
+  const experiments: ReportSection[] = [];
+  if (!values["no-experiments"]) {
+    const bands = bandExperiment(balance.days, episodes, ceilings, backtestOptions, backtest);
+    for (const b of bands) {
+      console.log(
+        `  band ${b.name.padEnd(36)} requirement ${b.requirement.map((h) => `${Math.round((h.coverage ?? 0) * 100)}%`).join(" ")}` +
+          `${b.honestEverywhere ? "  (nearer 80% everywhere)" : ""}`,
+      );
+    }
+    const oni = readOni();
+    const oniHydro = oniHydroExperiment(backtest.points.hydro, oni, DEFAULT_ADEQUACY_BACKTEST.horizonDays);
+    console.log(`  ONI on hydro: ${oniHydro.map((r) => `${r.horizonDays}d ${r.maeWithout.toFixed(2)}→${r.maeWith.toFixed(2)}`).join("  ")}`);
+    const xm = xmSeries(readTable(XM_SYSTEM_DAILY.name));
+    const rules = referenceAdequacyRules();
+    const plain = importExperiment(balance.days, xm, ceilings, rules, [7, 14, 30], DEFAULT_EXPORT_MODEL, oni);
+    const withOni = importExperiment(balance.days, xm, ceilings, rules, [7, 14, 30], { ...DEFAULT_EXPORT_MODEL, withOni: true }, oni);
+    for (const e of [plain, withOni]) {
+      console.log(
+        `  export model${e.withOni ? " + ONI" : ""}: ${e.better ? "better" : "not better"} — ` +
+          e.summary.map((s) => `${s.window} ${s.horizonDays}d ${s.ruleMae.toFixed(2)}→${s.modelMae.toFixed(2)}`).join(", "),
+      );
+    }
+    experiments.push(bandSection(bands), oniSection(oniHydro), importSection(plain, withOni));
+  }
+
+  const generatedAt = nowUtc();
   const document = buildAdequacyDocument({
     forecast,
     backtest,
     crisis,
     usableDays: balance.days.length,
     rejectedDays: balance.rejected.length,
+    generatedAt,
   });
+  document["import_sensitivity"] = sensitivityBlock(forecast, sensitivity);
   const report = renderAdequacyReport({
-    generatedAt: nowUtc(),
+    generatedAt,
     forecast,
     backtest,
     crisis,
@@ -173,6 +225,8 @@ function main(): void {
     usableDays: balance.days.length,
     rejected: balance.rejected,
     range: { first: balance.days[0]!.date, last: origin },
+    sensitivity,
+    experiments,
   });
 
   if (values["dry-run"]) {
@@ -222,6 +276,12 @@ function main(): void {
       margin_pct: roundTo(h.marginPct, 2),
       tier: h.tier,
     })),
+  );
+
+  // §5.1, read back from the tables this run has just written to, so today's rows count as pending.
+  document["scorecard"] = scorecardBlock(
+    scoreAdequacyRuns(readTable(ADEQUACY_RUNS.name), readTable(ADEQUACY_VALUES.name), balance.days, episodes),
+    generatedAt,
   );
 
   for (const [path, body] of [

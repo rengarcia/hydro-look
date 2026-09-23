@@ -406,7 +406,7 @@ describe("buildAdequacyDocument", () => {
     otherGwhDay: 2,
     basis: "test",
   };
-  const backtest = { origins: [], scores: [], calibration: new Map(), hydroCalibration: new Map() };
+  const backtest = { origins: [], scores: [], calibration: new Map(), hydroCalibration: new Map(), points: { demand: [], hydro: [], requirement: [] } };
   const crisis = { episodes: [], calls: [] };
 
   function documentWith(basis: string) {

@@ -62,7 +62,8 @@ import {
  * 2: the import-regime rule (the central case follows imports that have stopped), and every rule
  *    parameter read from `adequacy_rules.csv` and folded into `features_hash`. Version 1 published
  *    two runs for origin 2026-09-21 that disagreed (`holgado` against `vigilancia`/`ajustado`)
- *    because the rule changed and the version did not.
+ *    because the rule changed and the version did not. And the band's adaptive stretch
+ *    (`BandMethod`), which brought coverage from 60–67% to within a few points of 80%.
  */
 export const MODEL_VERSION = "2";
 
@@ -651,7 +652,7 @@ export const TIER_LABELS_ES: Record<RiskTier, string> = {
 };
 
 /** Residual quantiles of one component, per horizon — what turns a point into a band. */
-export type RequirementCalibration = Map<number, { q10: number; q50: number; q90: number; n: number }>;
+export type RequirementCalibration = Map<number, { q10: number; q50: number; q90: number; n: number; stretch?: number }>;
 
 export interface AdequacyInputs {
   days: readonly BalanceDay[];
@@ -816,6 +817,56 @@ export interface AdequacyBacktest {
   scores: ComponentScores[];
   calibration: RequirementCalibration;
   hydroCalibration: RequirementCalibration;
+  /** Every scored point, per component, for experiments that post-process the same predictions. */
+  points: Record<"demand" | "hydro" | "requirement", BacktestPoint[]>;
+}
+
+/**
+ * How residuals become a band. Until MODEL_VERSION 2 the method pooled every earlier origin and
+ * took the 10th and 90th percentile, and the band covered 60–67% against a nominal 80%. §5.5's
+ * experiments varied the pool (the last `windowOrigins` only, because the fleet that made
+ * 2019's errors is not 2026's) and the width (other quantiles; a stretch about the median chosen
+ * out of sample). A method ships only if it is honest — nearer the nominal 80% — at every
+ * horizon, for the requirement and for hydro; the adaptive stretch over the pooled residuals was
+ * the one that was, and is the default. Every variant is rescored each run in
+ * `data/reports/adequacy.md`.
+ */
+export interface BandMethod {
+  windowOrigins: number | null;
+  quantiles: readonly [number, number];
+  scale: number;
+  /**
+   * Choose the stretch at each origin, per horizon, as the smallest on a grid from 1 to 3 at
+   * which the bands *already issued* at earlier origins, stretched by it, would have covered
+   * `nominal` of their outcomes. Out of sample by construction: a fixed stretch picked by
+   * reading this backtest's coverage would be tuned on the very origins it is scored on.
+   */
+  adaptive?: boolean;
+  nominal?: number;
+}
+
+export const DEFAULT_BAND: BandMethod = { windowOrigins: null, quantiles: [0.1, 0.9], scale: 1, adaptive: true, nominal: 0.8 };
+
+/** The method version 1 published, kept so the report can show what the stretch changed. */
+export const POOLED_BAND: BandMethod = { windowOrigins: null, quantiles: [0.1, 0.9], scale: 1 };
+
+/** One earlier origin's outcome against the unstretched offsets its band was built from. */
+interface IssuedBand {
+  residual: number;
+  lo: number;
+  mid: number;
+  hi: number;
+}
+
+const STRETCH_GRID = Array.from({ length: 41 }, (_, i) => 1 + i * 0.05);
+
+function adaptiveStretch(issued: readonly IssuedBand[], nominal: number, minOrigins: number): number {
+  if (issued.length < minOrigins) return 1;
+  for (const s of STRETCH_GRID) {
+    const covered = issued.filter((b) => b.residual >= b.mid + s * (b.lo - b.mid) && b.residual <= b.mid + s * (b.hi - b.mid)).length;
+    if (covered / issued.length >= nominal) return s;
+  }
+  return STRETCH_GRID.at(-1)!;
 }
 
 export interface BacktestOptions {
@@ -830,6 +881,7 @@ export interface BacktestOptions {
   hydroOptions?: HydroOptions;
   rules?: AdequacyRules;
   cache?: AdequacyCache;
+  band?: BandMethod;
 }
 
 export const DEFAULT_ADEQUACY_BACKTEST: BacktestOptions = {
@@ -898,7 +950,7 @@ function trailingMean(
   return values.length === 0 ? null : values.reduce((a, b) => a + b, 0) / values.length;
 }
 
-interface Point {
+export interface BacktestPoint {
   origin: IsoDate;
   horizonDays: number;
   error: number;
@@ -919,18 +971,22 @@ export function backtestAdequacy(
 ): AdequacyBacktest {
   const byDate = new Map(days.map((d) => [d.date, d]));
   const origins = monthlyOrigins(days, options.firstOrigin);
-  const points: Record<"demand" | "hydro" | "requirement", Point[]> = { demand: [], hydro: [], requirement: [] };
+  const points: Record<"demand" | "hydro" | "requirement", BacktestPoint[]> = { demand: [], hydro: [], requirement: [] };
+  const band = options.band ?? DEFAULT_BAND;
   const used: IsoDate[] = [];
   // Residuals from strictly earlier origins only: an expanding window, never the whole record.
   const seen = new Map<number, number[]>(options.horizonDays.map((h) => [h, []]));
   const seenHydro = new Map<number, number[]>(options.horizonDays.map((h) => [h, []]));
+  // The bands those origins were issued, for an adaptive stretch; see `BandMethod`.
+  const issued = new Map<number, IssuedBand[]>(options.horizonDays.map((h) => [h, []]));
+  const issuedHydro = new Map<number, IssuedBand[]>(options.horizonDays.map((h) => [h, []]));
 
   for (const origin of origins) {
     const history = days.filter((d) => d.date <= origin);
     if (history.length < options.minHistoryDays) continue;
 
-    const calibration = calibrate(seen, options.minCalibrationOrigins);
-    const hydroCalibration = calibrate(seenHydro, options.minCalibrationOrigins);
+    const calibration = calibrate(seen, options.minCalibrationOrigins, band, issued);
+    const hydroCalibration = calibrate(seenHydro, options.minCalibrationOrigins, band, issuedHydro);
 
     const forecast = forecastAdequacy({
       days: history,
@@ -984,8 +1040,14 @@ export function backtestAdequacy(
       });
 
       // Only now, after this origin has been scored, does its residual join the calibration set.
-      seen.get(horizon.horizonDays)!.push(actual.requirement - horizon.requirementGwhDay);
-      seenHydro.get(horizon.horizonDays)!.push(actual.hydro - horizon.hydroGwhDay);
+      const residual = actual.requirement - horizon.requirementGwhDay;
+      const hydroResidual = actual.hydro - horizon.hydroGwhDay;
+      const raw = calibration.get(horizon.horizonDays)?.raw;
+      if (raw) issued.get(horizon.horizonDays)!.push({ residual, ...raw });
+      const rawHydro = hydroCalibration.get(horizon.horizonDays)?.raw;
+      if (rawHydro) issuedHydro.get(horizon.horizonDays)!.push({ residual: hydroResidual, ...rawHydro });
+      seen.get(horizon.horizonDays)!.push(residual);
+      seenHydro.get(horizon.horizonDays)!.push(hydroResidual);
     }
   }
 
@@ -1012,21 +1074,38 @@ export function backtestAdequacy(
   return {
     origins: used,
     scores: [score("demand"), score("hydro"), score("requirement")],
-    calibration: calibrate(seen, options.minCalibrationOrigins),
-    hydroCalibration: calibrate(seenHydro, options.minCalibrationOrigins),
+    calibration: calibrate(seen, options.minCalibrationOrigins, band, issued),
+    hydroCalibration: calibrate(seenHydro, options.minCalibrationOrigins, band, issuedHydro),
+    points,
   };
 }
 
-/** Residual quantiles per horizon, for the horizons with enough origins behind them. */
-function calibrate(seen: ReadonlyMap<number, number[]>, minOrigins: number): RequirementCalibration {
-  const calibration: RequirementCalibration = new Map();
-  for (const [horizon, residuals] of seen) {
-    if (residuals.length < minOrigins) continue;
+/**
+ * Residual quantiles per horizon, for the horizons with enough origins behind them. `q10` and
+ * `q90` are the band's lower and upper offsets under `band`, whatever quantiles it names; `raw`
+ * is the same before any stretch, which is what an adaptive stretch is later judged against.
+ */
+function calibrate(
+  seen: ReadonlyMap<number, number[]>,
+  minOrigins: number,
+  band: BandMethod = DEFAULT_BAND,
+  issued: ReadonlyMap<number, readonly IssuedBand[]> = new Map(),
+): Map<number, { q10: number; q50: number; q90: number; n: number; stretch: number; raw: { lo: number; mid: number; hi: number } }> {
+  const calibration = new Map<number, { q10: number; q50: number; q90: number; n: number; stretch: number; raw: { lo: number; mid: number; hi: number } }>();
+  for (const [horizon, all] of seen) {
+    if (all.length < minOrigins) continue;
+    const residuals = band.windowOrigins === null ? all : all.slice(-band.windowOrigins);
+    const q50 = quantile(residuals, 0.5)!;
+    const lo = quantile(residuals, band.quantiles[0])!;
+    const hi = quantile(residuals, band.quantiles[1])!;
+    const stretch = band.adaptive ? adaptiveStretch(issued.get(horizon) ?? [], band.nominal ?? 0.8, minOrigins) : band.scale;
     calibration.set(horizon, {
-      q10: quantile(residuals, 0.1)!,
-      q50: quantile(residuals, 0.5)!,
-      q90: quantile(residuals, 0.9)!,
+      q10: q50 + stretch * (lo - q50),
+      q50,
+      q90: q50 + stretch * (hi - q50),
       n: residuals.length,
+      stretch,
+      raw: { lo, mid: q50, hi },
     });
   }
   return calibration;
@@ -1152,6 +1231,7 @@ export interface DocumentInputs {
   /** The method settings the forecast was fitted with, when not the defaults; hashed. */
   demandOptions?: DemandOptions;
   hydroOptions?: HydroOptions;
+  band?: BandMethod;
   backtest: AdequacyBacktest;
   crisis: CrisisCheck;
   usableDays: number;
@@ -1198,6 +1278,7 @@ export function buildAdequacyDocument(inputs: DocumentInputs): AdequacyDocument 
     rules: forecast.rules,
     demandOptions: inputs.demandOptions ?? DEFAULT_DEMAND,
     hydroOptions: inputs.hydroOptions ?? DEFAULT_HYDRO,
+    band: inputs.band ?? DEFAULT_BAND,
   });
   const runId = `${forecast.origin}-adequacy-${MODEL_VERSION}-${featuresHash.slice(0, 8)}`;
   const worst = forecast.horizons.reduce((a, b) => (b.deficitGwhDay > a.deficitGwhDay ? b : a));
@@ -1298,6 +1379,14 @@ export function buildAdequacyDocument(inputs: DocumentInputs): AdequacyDocument 
         n: score("requirement", h.horizonDays)?.n ?? 0,
       },
     })),
+    band_method: {
+      method: (inputs.band ?? DEFAULT_BAND).adaptive
+        ? "residual quantiles from every earlier origin, stretched per horizon by the smallest factor at which the bands already issued would have covered the nominal share"
+        : "residual quantiles from earlier origins",
+      quantiles: [...(inputs.band ?? DEFAULT_BAND).quantiles],
+      nominal_coverage: (inputs.band ?? DEFAULT_BAND).nominal ?? 0.8,
+      stretch_by_horizon: [...backtest.calibration].map(([horizon, c]) => ({ horizon_days: horizon, stretch: roundOrNull(c.stretch ?? null, 2) })),
+    },
     tiers: {
       definition: {
         holgado: "el caso p90 sigue cubierto",
