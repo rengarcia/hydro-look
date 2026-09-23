@@ -33,8 +33,8 @@ import type { NarrativeSnapshotRow } from "../contracts/tables.ts";
  * The model, as a gateway slug. Switching provider or model is a change to this string and
  * nothing else — that is the gateway's point.
  *
- * Claude Opus 5.5, on paid gateway credits: the free tier refuses Anthropic models (run
- * 35808200400). Opus 5 wrote the first published narrative (run 35810691729). The free
+ * Claude Opus 5.5, on paid gateway credits: the free tier refused Opus 5 (run 35808200400).
+ * Opus 5 wrote the first published narrative (run 35810691729). The free
  * tier's `xiaomi/mimo-v2.6-flash` was tried on 2026-09-23 and was not good enough to publish —
  * three answers, all rejected, the last for misspelling a month ("octiembre"); the rows are in
  * `narrative_snapshots`.
