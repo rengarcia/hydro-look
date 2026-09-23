@@ -12,6 +12,44 @@ rows. The pack is 27 MiB after 155 commits over two days.
 
 ---
 
+## Implementation status (2026-09-23)
+
+Implemented on branch `claude/enhancements-file-impl-3aje18`. Tests 402 → 642, all green with
+typecheck, type-aware lint, Prettier, shellcheck, `npm run check` and the static build.
+
+| § | State | Notes |
+|---|---|---|
+| 1.1 ERA5 at centroids | **code done; dispatch outstanding** | `selectPrecipBasin` switches narrative (prompt `es-5+paute_mazar`) and M4 to `paute_mazar` once it has ERA5 from Jan 1990 with ≥ 95% of days and ≤ 30 days' lag; until then `paute`, with the reason published. The backfill itself needs `covariates.yml` dispatched with `from = 1990-01-01` and a raised `max_requests` |
+| 1.2 Phase 1's clock | done | Crons at 12:47 and 16:53 UTC (covariates 17:23); `freshness.yml` reports a slot that never fired |
+| 1.3 Narrative spend | done | `narrative` block in `status.json` |
+| 1.4 Documentation drift | done | README status table, PLAN Phase 7 |
+| 2.1 Raw archive | done | NDJSON day files; 17,441 files from 2,188 bundles, every `raw_ref` rewritten and checked. Per-run pack growth −4 to +13 KiB (was +60 to +116). Working tree 255 MB (was 24); old bundles stay in history |
+| 2.2 Staged batches | done | Uploaded before apply in all three workflows; `apply --in` in the README |
+| 2.3 Partial failure | done | Pin check per host inside each source; raw flushed first; quarantine; atomic writes; `--days 3` |
+| 2.4 Alerting | done | One issue per failure mode, auto-closed; `stale-feed`; row floors; step summaries; retries with jitter, `Retry-After` and a deadline. Narrative "latency" is the step's wall clock |
+| 2.5 Concurrency | done | Only the apply job holds `ingest` |
+| 2.6 No-op commits | done | |
+| 2.7 Security | done, one part partial | SHA pins, Dependabot, `--ignore-scripts`, no token in fetch jobs, `env` in `recon.yml`, `tls-expiry.yml`. The narrative call still runs in the apply job beside the push token |
+| 2.8 Idle workflows | done | `probe-ords.yml` weekly; dead push triggers removed |
+| 3 Data contract | done | `schema_version`, `data_date` (`as_of` kept as a deprecated alias for one version), codes + Spanish labels, licence, `previous`/deltas, `vercel.json`, bulk `.csv.gz` at build time and a nightly Parquet release, `/datos/`, the narrative's tier named. The site URL (`https://hydro-look.vercel.app`, `HYDRO_LOOK_SITE_URL`) needs confirming |
+| 4.1 JavaScript claim | done (corrected) | |
+| 4.2 Sharing | done | OG image via `next/og`, icon, robots, sitemap, Spanish 404, print, fonts self-hosted |
+| 4.3 Accessibility | done | Print leaves chart tables folded |
+| 4.4 More pages | done | `/embalses/[site]/`, `/dia/`, "desde ayer", `/embed/`, `/feed.xml` |
+| 4.5 Rendering weight | mostly done | `page.tsx` split, helpers deduplicated, inline styles 45 → 13 (all data-driven). The forecast fan and the 12-year record are still drawn twice: one SVG is illegible at phone width |
+| 5.1 Scorecard | done | Nothing scored yet: the first published horizon falls due 2026-09-27 |
+| 5.2 Versioning | done | Adequacy v2; rules in `adequacy_rules.csv` and in the hash; 2115 m in `thresholds.csv` as unverified |
+| 5.3 Other plants | done | Inflow ships at 7 d for Amaluza and Agoyán, 7 and 14 d for Minas San Francisco and Delsitanisagua; Coca Codo Sinclair, Manduriacu and the Amaluza level forecast are recorded negatives |
+| 5.4 Rain | negative so far | Perfect-foresight rain at `paute` is worse at every horizon; reruns at the centroid once its backfill lands |
+| 5.5 Imports | done | Sensitivity published; band recalibrated (coverage 67–81% against 60–67%); the XM export model and ONI are recorded negatives |
+| 5.6 Narrative | done | Structured drivers, 120–220 words and 3–5 drivers enforced, payload 9.6k → 6.8k chars, `npm run narrative:eval` |
+| 5.7 Cheaper runs | done | forecast 34.5 s → 18.6 s on the old workload; a shared ensemble across horizons was worse and is not used |
+| 5.8 Hourly energy | contract and parser | No table committed |
+| 6.1 Versions | done except TypeScript 7 | vitest 5, ESLint 10, zod 4, undici 8, Node 24 (`.nvmrc`). `typescript-eslint` does not yet accept TS 7 |
+| 6.2 Tests and checks | done | Client, TLS, sources, status, site, render and report tests; coverage floors; shellcheck; `recommendedTypeChecked`; Prettier |
+
+---
+
 ## 0. Ranked summary
 
 The twelve items that matter most, in the order to do them. Sections 1–7 carry the detail.
