@@ -10,7 +10,8 @@ import type { HttpClient } from "../http/client.ts";
 import type { RawArchive } from "../store/archive.ts";
 import { parseSmecInforme1 } from "../parse/smec.ts";
 import { parseInformacionOperativa } from "../parse/operativa.ts";
-import { monthOf, smecFecha, yearOf, type IsoDate } from "../util/dates.ts";
+import { rowFloor } from "../registry.ts";
+import { smecFecha, type IsoDate } from "../util/dates.ts";
 import type { IngestBatch } from "./batch.ts";
 
 export const SMEC_INFORME1 = "https://smec.cenace.gob.ec/SMEC/ResultadoInforme1.do";
@@ -24,7 +25,14 @@ export class CenaceSmec {
     private readonly archive: RawArchive,
   ) {}
 
-  /** Returns whether the day produced a usable, complete report. */
+  /**
+   * Returns whether the day produced a usable, complete report.
+   *
+   * A 404 is SMEC saying it has no report for the day, which is an answer (the earliest-date
+   * search depends on it) and only a note. A 500 used to be treated the same way, so a server
+   * error was neither retried nor reported; the client now retries it like any 5xx, and one
+   * that survives the retries is an error on the batch. Either way the body is archived.
+   */
   async day(batch: IngestBatch, date: IsoDate): Promise<{ complete: boolean; found: boolean }> {
     let result;
     try {
@@ -32,18 +40,14 @@ export class CenaceSmec {
         key: `informe1:${date}`,
         url: SMEC_INFORME1,
         params: { fecha: smecFecha(date) },
-        allowStatus: [404, 500],
+        allowStatus: [404],
       });
     } catch (error) {
       batch.errors.push(`smec ${date}: ${String(error)}`);
       return { complete: false, found: false };
     }
-    if (result.status !== 200) {
-      batch.notes.push(`smec ${date}: HTTP ${result.status}`);
-      return { complete: false, found: false };
-    }
 
-    const rawRef = this.archive.add(SMEC_SOURCE, "ResultadoInforme1", { year: yearOf(date), month: monthOf(date) }, {
+    const rawRef = this.archive.add(SMEC_SOURCE, "ResultadoInforme1", date, {
       key: result.key,
       url: result.url,
       method: result.method,
@@ -51,6 +55,14 @@ export class CenaceSmec {
       fetched_at: result.fetchedAt,
       body: result.body,
     });
+    if (result.status === 404) {
+      batch.notes.push(`smec ${date}: HTTP 404`);
+      return { complete: false, found: false };
+    }
+    if (result.status !== 200) {
+      batch.errors.push(`smec ${date}: HTTP ${result.status} after ${result.attempts} attempts (archived at ${rawRef})`);
+      return { complete: false, found: false };
+    }
 
     let report;
     try {
@@ -108,12 +120,10 @@ export class CenaceOperativa {
       batch.errors.push(`operativa: ${String(error)}`);
       return;
     }
-    if (result.status !== 200) {
-      batch.errors.push(`operativa: HTTP ${result.status}`);
-      return;
-    }
 
-    const rawRef = this.archive.add(OPERATIVA_SOURCE, "InformacionOperativa", null, {
+    // A file per run: the page is snapshotted twice a day, and one file per day would be
+    // rewritten by the second run.
+    const rawRef = this.archive.add(OPERATIVA_SOURCE, "InformacionOperativa", "run", {
       key: `InformacionOperativa:${result.fetchedAt}`,
       url: result.url,
       method: result.method,
@@ -121,6 +131,10 @@ export class CenaceOperativa {
       fetched_at: result.fetchedAt,
       body: result.body,
     });
+    if (result.status !== 200) {
+      batch.errors.push(`operativa: HTTP ${result.status} (archived at ${rawRef})`);
+      return;
+    }
 
     let snapshot;
     try {
@@ -128,6 +142,11 @@ export class CenaceOperativa {
     } catch (error) {
       batch.errors.push(`operativa: parse failed: ${String(error)} (archived at ${rawRef})`);
       return;
+    }
+
+    const floor = rowFloor("InformacionOperativa", null, result.fetchedAt.slice(0, 10));
+    if (floor && snapshot.metrics.length < floor.rows) {
+      batch.errors.push(`operativa: HTTP 200 but ${snapshot.metrics.length} metrics, expected at least ${floor.rows} (archived at ${rawRef})`);
     }
 
     batch.notes.push(...snapshot.notes);

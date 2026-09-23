@@ -97,8 +97,7 @@ describe("covariates", () => {
     const saved = parseCsv(readFileSync(join(root, "curated/weather_daily/2026.csv"), "utf8"));
     expect(new Set(saved.map((r) => r["issued_at"])).size).toBe(2);
     for (const row of batch.weather) {
-      const [path, key] = row.raw_ref.split("#");
-      expect(archive.get(join(root, "raw", path!), key!)?.fetched_at).toBe(row.fetched_at);
+      expect(new RawArchive(join(root, "raw")).read(row.raw_ref)?.fetched_at).toBe(row.fetched_at);
     }
     const savedOni = parseCsv(readFileSync(join(root, "curated/enso_monthly/2026.csv"), "utf8"));
     expect(savedOni).toHaveLength(7);

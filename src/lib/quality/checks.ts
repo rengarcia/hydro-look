@@ -342,6 +342,74 @@ export function checkFreshness(rules: FreshnessRule[], today: string): Finding[]
   });
 }
 
+/** How a `raw_ref` resolved: in the current day-file layout, only through a pre-2026-09 bundle ref, or not at all. */
+export type RefResolution = "current" | "legacy" | null;
+
+/**
+ * Every `raw_ref` in the curated tables names an archived response that exists.
+ *
+ * The README promises the raw response next to the row, and until this check nothing held the
+ * promise: a write that stopped between the tables and the archive, or a migration that missed
+ * a bundle, would leave rows pointing at nothing until someone tried to reprocess one. A ref
+ * that resolves only in the old bundle form is a `warn` — it still reads, but it means a batch
+ * staged before the layout change was applied without being rewritten.
+ *
+ * `resolve` is called once per distinct ref; XM rows carry two, space-separated.
+ */
+export function checkRawRefs(tables: { name: string; rows: Rows }[], resolve: (ref: string) => RefResolution): Finding[] {
+  const out: Finding[] = [];
+  const seen = new Map<string, RefResolution>();
+  for (const table of tables) {
+    const missing: string[] = [];
+    let legacy = 0;
+    let refs = 0;
+    for (const row of table.rows) {
+      const cell = row["raw_ref"] ?? "";
+      const parts = cell.split(/\s+/).filter(Boolean);
+      if (parts.length === 0) {
+        missing.push("(empty)");
+        continue;
+      }
+      for (const ref of parts) {
+        refs++;
+        let resolution = seen.get(ref);
+        if (resolution === undefined) {
+          resolution = resolve(ref);
+          seen.set(ref, resolution);
+        }
+        if (resolution === null) missing.push(ref);
+        else if (resolution === "legacy") legacy++;
+      }
+    }
+    const check = `raw_ref:${table.name}`;
+    if (missing.length > 0) {
+      out.push({ check, level: "fail", message: `${table.name}: ${missing.length} raw_refs resolve to no archived response; first: ${missing[0]}` });
+    }
+    if (legacy > 0) {
+      out.push({ check, level: "warn", message: `${table.name}: ${legacy} raw_refs still name a pre-2026-09 gzip bundle (scripts/migrate-raw.ts rewrites them)` });
+    }
+    out.push({ check, level: "info", message: `${table.name}: ${refs} raw_refs checked` });
+  }
+  return out;
+}
+
+/**
+ * Rows the ingest set aside instead of writing (see CuratedStore.upsert). The write carries on
+ * so one drifted endpoint cannot hold back every other; this is where it stops being quiet.
+ * The file says which rows and why; once the parser or the data is fixed and the batch
+ * re-applied, delete it.
+ */
+export function checkQuarantine(files: string[]): Finding[] {
+  if (files.length === 0) return [{ check: "quarantine", level: "info", message: "quarantine is empty" }];
+  return [
+    {
+      check: "quarantine",
+      level: "fail",
+      message: `${files.length} quarantine file(s) hold rows that failed their contract: ${files.slice(0, 5).join(", ")}${files.length > 5 ? ", …" : ""}`,
+    },
+  ];
+}
+
 export function worstLevel(findings: Finding[]): Level {
   if (findings.some((f) => f.level === "fail")) return "fail";
   if (findings.some((f) => f.level === "warn")) return "warn";
