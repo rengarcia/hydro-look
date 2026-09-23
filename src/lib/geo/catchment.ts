@@ -208,7 +208,12 @@ export function snapToChannel(g: DemGrid, acc: Float64Array, lat: number, lon: n
  * crest's centre reached below the dam, past a north-bank tributary, and added 385 km² that
  * INAMHI's polygon, drawn at the dam, does not have.
  */
-export function snapToLine(g: DemGrid, acc: Float64Array, line: readonly { lat: number; lon: number }[], toleranceKm: number): Snapped | null {
+export function snapToLine(
+  g: DemGrid,
+  acc: Float64Array,
+  line: readonly { lat: number; lon: number }[],
+  toleranceKm: number,
+): Snapped | null {
   if (line.length === 0) return null;
   const kmPerLat = (Math.PI * EARTH_KM) / 180;
   const midLat = line.reduce((s, p) => s + p.lat, 0) / line.length;
@@ -227,13 +232,24 @@ export function snapToLine(g: DemGrid, acc: Float64Array, line: readonly { lat: 
       if (!(acc[i]! > 0) || (best && acc[i]! <= best.accKm2)) continue;
       const p = { lat: cellLat(g, r), lon: cellLon(g, c) };
       if (kmToPolyline(p, line, kmPerLat, kmPerLon) > toleranceKm) continue;
-      best = { index: i, lat: p.lat, lon: p.lon, movedKm: Math.hypot((p.lat - centre.lat) * kmPerLat, (p.lon - centre.lon) * kmPerLon), accKm2: acc[i]! };
+      best = {
+        index: i,
+        lat: p.lat,
+        lon: p.lon,
+        movedKm: Math.hypot((p.lat - centre.lat) * kmPerLat, (p.lon - centre.lon) * kmPerLon),
+        accKm2: acc[i]!,
+      };
     }
   }
   return best;
 }
 
-function kmToPolyline(p: { lat: number; lon: number }, line: readonly { lat: number; lon: number }[], kmPerLat: number, kmPerLon: number): number {
+function kmToPolyline(
+  p: { lat: number; lon: number },
+  line: readonly { lat: number; lon: number }[],
+  kmPerLat: number,
+  kmPerLon: number,
+): number {
   const xy = (q: { lat: number; lon: number }) => ({ x: (q.lon - p.lon) * kmPerLon, y: (q.lat - p.lat) * kmPerLat });
   if (line.length === 1) {
     const a = xy(line[0]!);
@@ -272,7 +288,14 @@ export interface Confluence {
  * point, the two delineations differ on which side of the dam that junction is, and the distance
  * says how far the DEM is from agreeing with the other.
  */
-export function confluencesAbove(g: DemGrid, routing: Routing, acc: Float64Array, pour: number, maxKm: number, minKm2: number): Confluence[] {
+export function confluencesAbove(
+  g: DemGrid,
+  routing: Routing,
+  acc: Float64Array,
+  pour: number,
+  maxKm: number,
+  minKm2: number,
+): Confluence[] {
   const { width: w, height: h } = g;
   const kmPerDeg = (Math.PI * EARTH_KM) / 180;
   const out: Confluence[] = [];
@@ -293,7 +316,14 @@ export function confluencesAbove(g: DemGrid, routing: Routing, acc: Float64Array
     children.sort((a, b) => acc[b]! - acc[a]!);
     const main = children[0]!;
     for (const side of children.slice(1)) {
-      if (acc[side]! >= minKm2) out.push({ kmUpstream: Math.round(km * 1000) / 1000, lat: cellLat(g, r), lon: cellLon(g, c), sideKm2: acc[side]!, mainKm2: acc[main]! });
+      if (acc[side]! >= minKm2)
+        out.push({
+          kmUpstream: Math.round(km * 1000) / 1000,
+          lat: cellLat(g, r),
+          lon: cellLon(g, c),
+          sideKm2: acc[side]!,
+          mainKm2: acc[main]!,
+        });
     }
     const mr = Math.floor(main / w);
     const mc = main - mr * w;
@@ -381,7 +411,12 @@ export function catchmentStats(g: DemGrid, mask: Uint8Array): CatchmentStats {
     cells,
     centroid,
     representative,
-    bbox: { north: g.north - rMin * g.dLat, south: g.north - (rMax + 1) * g.dLat, west: g.west + cMin * g.dLon, east: g.west + (cMax + 1) * g.dLon },
+    bbox: {
+      north: g.north - rMin * g.dLat,
+      south: g.north - (rMax + 1) * g.dLat,
+      west: g.west + cMin * g.dLon,
+      east: g.west + (cMax + 1) * g.dLon,
+    },
     touches: { north: rMin <= 1, south: rMax >= h - 2, west: cMin <= 1, east: cMax >= w - 2 },
     meanElevM: sumElev / area,
   };
@@ -463,14 +498,25 @@ export function overlap(g: DemGrid, a: Uint8Array, b: Uint8Array): Overlap {
     }
   }
   const union = aKm2 + bKm2 - bothKm2;
-  return { aKm2, bKm2, bothKm2, iou: union > 0 ? bothKm2 / union : 0, aInB: aKm2 > 0 ? bothKm2 / aKm2 : 0, bInA: bKm2 > 0 ? bothKm2 / bKm2 : 0 };
+  return {
+    aKm2,
+    bKm2,
+    bothKm2,
+    iou: union > 0 ? bothKm2 / union : 0,
+    aInB: aKm2 > 0 ? bothKm2 / aKm2 : 0,
+    bInA: bKm2 > 0 ? bothKm2 / bKm2 : 0,
+  };
 }
 
 /** Area of a GeoJSON polygon geometry on the sphere, km², holes subtracted. */
 export function geometryAreaKm2(geometry: GeoJsonGeometry | null | undefined): number {
   if (!geometry) return 0;
   const polygons: Ring[][] =
-    geometry.type === "Polygon" ? [geometry.coordinates as Ring[]] : geometry.type === "MultiPolygon" ? (geometry.coordinates as Ring[][]) : [];
+    geometry.type === "Polygon"
+      ? [geometry.coordinates as Ring[]]
+      : geometry.type === "MultiPolygon"
+        ? (geometry.coordinates as Ring[][])
+        : [];
   let total = 0;
   for (const rings of polygons) {
     rings.forEach((ring, k) => {
@@ -494,7 +540,9 @@ export function ringAreaKm2(ring: Ring): number {
 }
 
 /** Bounding box of a geometry's rings, or null if it has none. */
-export function geometryBbox(geometry: GeoJsonGeometry | null | undefined): { south: number; west: number; north: number; east: number } | null {
+export function geometryBbox(
+  geometry: GeoJsonGeometry | null | undefined,
+): { south: number; west: number; north: number; east: number } | null {
   const rings = ringsOf(geometry);
   if (rings.length === 0) return null;
   let south = Infinity;

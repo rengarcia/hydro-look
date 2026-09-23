@@ -17,7 +17,6 @@ import { parseCsv } from "../store/csv.ts";
 import { DATA_CURATED } from "../util/paths.ts";
 import { OBSERVATIONS_DAILY } from "../contracts/tables.ts";
 import type { IsoDate } from "../util/dates.ts";
-import type { SiteId, VariableId } from "../registry.ts";
 
 /**
  * Most specific first. The two per-day reports publish one site-day each and are the closest
@@ -53,10 +52,10 @@ export type DailySeries = Map<IsoDate, number>;
 
 export interface SeriesSet {
   /** `site -> variable -> series`. */
-  get(site: SiteId | string, variable: VariableId | string): DailySeries;
+  get(site: string, variable: string): DailySeries;
   /** Which source each day was taken from, for the provenance line in the forecast document. */
-  sourcesFor(site: SiteId | string, variable: VariableId | string): Set<string>;
-  dates(site: SiteId | string, variable: VariableId | string): IsoDate[];
+  sourcesFor(site: string, variable: string): Set<string>;
+  dates(site: string, variable: string): IsoDate[];
 }
 
 interface Chosen {
@@ -73,7 +72,9 @@ export function readObservationRows(root: string = DATA_CURATED): Record<string,
   const directory = join(root, OBSERVATIONS_DAILY.name);
   if (!existsSync(directory)) return [];
   const rows: Record<string, string>[] = [];
-  for (const file of readdirSync(directory).filter((f) => f.endsWith(".csv")).sort()) {
+  for (const file of readdirSync(directory)
+    .filter((f) => f.endsWith(".csv"))
+    .sort()) {
     rows.push(...parseCsv(readFileSync(join(directory, file), "utf8")));
   }
   return rows;

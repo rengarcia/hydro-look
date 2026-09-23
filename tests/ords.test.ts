@@ -86,8 +86,8 @@ describe("the one-day reports", () => {
     ["ords_hist_repDiaNivQIng_15-10-2024.txt", "2024-10-14", "amaluza", 23.395722, 23],
     ["ords_rep_repDiaNivQIng.txt", "2026-09-19", "mazar", 75.263828, 75],
   ])("dates %s to %s, where the 12-month report puts the same inflow", (fixture, date, site, value, rounded) => {
-    const result = parseRepDiaNivQIng(ords(fixture as string));
-    const row = find(result.observations, date as string, site as string, "caudal_m3s");
+    const result = parseRepDiaNivQIng(ords(fixture));
+    const row = find(result.observations, date, site, "caudal_m3s");
     expect(row?.value).toBe(value);
     expect(Math.round(row!.value)).toBe(rounded);
   });
@@ -146,7 +146,10 @@ describe("per-plant hourly energy", () => {
 
   it("writes nothing for a partial day", () => {
     const partial = JSON.stringify({
-      items: [{ loctimestamp: "2024-10-15T06:00:00Z", valueedit: 100 }, { loctimestamp: "2024-10-15T07:00:00Z", valueedit: null }],
+      items: [
+        { loctimestamp: "2024-10-15T06:00:00Z", valueedit: 100 },
+        { loctimestamp: "2024-10-15T07:00:00Z", valueedit: null },
+      ],
     });
     const result = parseEnerDia(partial, "mazar", "maz", "2024-10-15");
     expect(result.observations).toEqual([]);
@@ -163,14 +166,22 @@ describe("the historian and live endpoints", () => {
 
   it("drops an inflow the report publishes as negative, and says so", () => {
     // Copied verbatim from the archived response of 2019-09-20
-    // (celec_ords/2019/09/repDiaHid12m.ndjson.gz#repDiaHid12m:2019-09-20), which is what the
+    // (celec_ords/2019/09/repDiaHid12m.2019-09-20.ndjson#repDiaHid12m:2019-09-20), which is what the
     // ORDS really sends on the two days before Minas San Francisco's level series begins.
     const body = JSON.stringify({
       items: [
         {
           loctimestamp: "2018-10-01T05:00:00Z",
-          nivelmsf: null, q_ingresadomsf: -4999995, limmsf: 793, min_msf: 750, qmax_msf: 600,
-          nivelmaz: 2144.64, q_ingresadomaz: 24, limmaz: 2153, min_maz: 2100, qmax_maz: 800,
+          nivelmsf: null,
+          q_ingresadomsf: -4999995,
+          limmsf: 793,
+          min_msf: 750,
+          qmax_msf: 600,
+          nivelmaz: 2144.64,
+          q_ingresadomaz: 24,
+          limmaz: 2153,
+          min_maz: 2100,
+          qmax_maz: 800,
         },
       ],
     });
@@ -200,7 +211,7 @@ describe("the historian and live endpoints", () => {
 
   it("drops an inflow in five figures, which no Ecuadorian intake sees", () => {
     // Verbatim from the historian response for 2013-11 that the 2005 walk reached
-    // (celec_ords/2013/11/pointValuesMesH24.ndjson.gz): 23,221.10 m3/s between neighbours of
+    // (celec_ords/2013/11/pointValuesMesH24.2013-11-01.ndjson): 23,221.10 m3/s between neighbours of
     // 34.31 and 0.00, against a maximum of 867 in the same series.
     const body = JSON.stringify({
       items: [

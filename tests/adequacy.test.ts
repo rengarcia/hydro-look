@@ -31,7 +31,12 @@ import {
   tierFor,
   weekdayOf,
   DEFAULT_HYDRO,
-  TIGHT_GWH_DAY,
+  referenceAdequacyRules,
+  parseAdequacyRules,
+  createAdequacyCache,
+  backtestAdequacy,
+  DEFAULT_ADEQUACY_BACKTEST,
+  MODEL_VERSION,
   type CeilingRow,
 } from "../src/lib/models/adequacy.ts";
 import { adequacySummary } from "../src/lib/publish/latest.ts";
@@ -97,10 +102,7 @@ describe("readBalance", () => {
     const high = csvDay("2026-01-03", { ...WHOLE_DAY, total_generacion: 183, total_importacion: 0, total_exportacion: 0 });
     const { days, rejected } = readBalance([...low, ...high]);
     expect(rejected).toHaveLength(0);
-    expect(days.map((d) => d.loadGwh / d.distributionDemandGwh)).toEqual([
-      USABLE_LOAD_RATIO.min,
-      183 / 92,
-    ]);
+    expect(days.map((d) => d.loadGwh / d.distributionDemandGwh)).toEqual([USABLE_LOAD_RATIO.min, 183 / 92]);
   });
 
   it("reports a day carrying too few concepts as incomplete rather than rejected", () => {
@@ -173,9 +175,7 @@ function syntheticDays(options: { days: number; from: string; growthPerYear: num
 describe("fitDemand", () => {
   const from = "2022-01-01";
   const days = syntheticDays({ days: 1500, from, growthPerYear: 0.08, episode: ["2025-06-01", "2025-09-30"] });
-  const episodes = rationingEpisodes([
-    { start: "2025-06-01", end: "2025-09-30", kind: "rationing", hydro_related: "yes" },
-  ]);
+  const episodes = rationingEpisodes([{ start: "2025-06-01", end: "2025-09-30", kind: "rationing", hydro_related: "yes" }]);
 
   it("recovers the growth rate it was given", () => {
     const fit = fitDemand(days, "2026-01-01", episodes)!;
@@ -218,9 +218,7 @@ describe("fitHydro", () => {
 
   it("carries a dry fortnight forward, and lets it decay", () => {
     const origin = "2025-12-01";
-    const dry = days.map((d) =>
-      d.date > addDays(origin, -14) && d.date <= origin ? { ...d, hydroGwh: d.hydroGwh * 0.6 } : d,
-    );
+    const dry = days.map((d) => (d.date > addDays(origin, -14) && d.date <= origin ? { ...d, hydroGwh: d.hydroGwh * 0.6 } : d));
     const demand = fitDemand(dry, origin, episodes)!;
     const fit = fitHydro(dry, origin, demand, DEFAULT_HYDRO)!;
     expect(fit.anomaly).toBeCloseTo(0.6, 1);
@@ -243,10 +241,7 @@ describe("fitHydro", () => {
     const shifted = { ...demand, predict: (d: string) => demand.predict(d) * 1.2 };
     const hydroShifted = fitHydro(days, origin, shifted)!;
     const target = addDays(origin, 30);
-    expect(hydroShifted.predict(target, shifted.predict(target))!).toBeCloseTo(
-      hydro.predict(target, demand.predict(target))!,
-      6,
-    );
+    expect(hydroShifted.predict(target, shifted.predict(target))!).toBeCloseTo(hydro.predict(target, demand.predict(target))!, 6);
   });
 });
 
@@ -280,7 +275,7 @@ describe("tierFor", () => {
     // A system whose p90 is short is not comfortable, whatever its median says.
     expect(tierFor(-5, 2)).toBe("vigilancia");
     expect(tierFor(1, 6)).toBe("ajustado");
-    expect(tierFor(TIGHT_GWH_DAY, 20)).toBe("deficit");
+    expect(tierFor(referenceAdequacyRules().tightGwhDay, 20)).toBe("deficit");
   });
 
   it("treats an uncalibrated band as no evidence of a shortfall rather than as a safe one", () => {
@@ -348,9 +343,7 @@ describe("forecastAdequacy", () => {
   });
 
   it("declines rather than guessing when there is too little history", () => {
-    expect(
-      forecastAdequacy({ days: days.slice(0, 30), episodes: [], ceilings, origin: "2020-01-30" }),
-    ).toBeNull();
+    expect(forecastAdequacy({ days: days.slice(0, 30), episodes: [], ceilings, origin: "2020-01-30" })).toBeNull();
   });
 });
 
@@ -384,7 +377,12 @@ describe("importRegime", () => {
     );
     const on = forecastAdequacy({ days, episodes: [], ceilings, origin: "2025-12-01", horizonDays: [7] })!;
     const off = forecastAdequacy({
-      days, episodes: [], ceilings, origin: "2025-12-01", horizonDays: [7], ignoreImportRegime: true,
+      days,
+      episodes: [],
+      ceilings,
+      origin: "2025-12-01",
+      horizonDays: [7],
+      ignoreImportRegime: true,
     })!;
     expect(on.imports.state).toBe("cutoff");
     expect(on.horizons[0]!.deficitGwhDay - off.horizons[0]!.deficitGwhDay).toBeCloseTo(10 - 0.1, 6);
@@ -401,7 +399,13 @@ describe("buildAdequacyDocument", () => {
     otherGwhDay: 2,
     basis: "test",
   };
-  const backtest = { origins: [], scores: [], calibration: new Map(), hydroCalibration: new Map() };
+  const backtest = {
+    origins: [],
+    scores: [],
+    calibration: new Map(),
+    hydroCalibration: new Map(),
+    points: { demand: [], hydro: [], requirement: [] },
+  };
   const crisis = { episodes: [], calls: [] };
 
   function documentWith(basis: string) {
@@ -440,6 +444,38 @@ describe("buildAdequacyDocument", () => {
     expect(other.run_id).not.toBe(documentWith("test").run_id);
   });
 
+  it("gives a different run id when any rule moves, so a rule change cannot be silent", () => {
+    // Version 1 published two runs for one origin that disagreed on the tier because the import
+    // rule changed and nothing in the run id did. Every rule is hashed now.
+    const base = referenceAdequacyRules();
+    const ids = new Set<string>([documentWith("test").run_id]);
+    for (const key of Object.keys(base) as (keyof typeof base)[]) {
+      const rules = { ...base, [key]: base[key] * 1.5 + 1 };
+      const forecast = forecastAdequacy({ days, episodes: [], ceilings, origin: "2025-12-01", rules })!;
+      const document = buildAdequacyDocument({
+        forecast,
+        backtest,
+        crisis,
+        usableDays: days.length,
+        rejectedDays: 0,
+        generatedAt: "2026-01-01T00:00:00Z",
+      });
+      ids.add(document.run_id);
+    }
+    expect(ids.size).toBe(Object.keys(base).length + 1);
+    expect(documentWith("test").run_id).toContain(`-adequacy-${MODEL_VERSION}-`);
+    expect(MODEL_VERSION).not.toBe("1");
+  });
+
+  it("publishes the rules it applied, and where to edit them", () => {
+    const rules = (documentWith("test").assumptions as { rules: Record<string, unknown> }).rules;
+    expect(rules).toMatchObject({
+      import_cutoff_gwh_day: referenceAdequacyRules().importCutoffGwhDay,
+      tight_gwh_day: referenceAdequacyRules().tightGwhDay,
+      editable_at: "data/reference/adequacy_rules.csv",
+    });
+  });
+
   it("censors the headline deficit at zero: a surplus is not a negative deficit", () => {
     const document = documentWith("test");
     expect((document.current as { worst_deficit_gwh_day: number }).worst_deficit_gwh_day).toBeGreaterThanOrEqual(0);
@@ -454,7 +490,7 @@ describe("adequacySummary", () => {
   };
 
   it("copies the tier rather than recomputing it", () => {
-    expect(adequacySummary(document)).toEqual({
+    expect(adequacySummary(document)).toMatchObject({
       origin_date: "2026-09-20",
       tier: "holgado",
       worst_tier: "vigilancia",
@@ -469,5 +505,67 @@ describe("adequacySummary", () => {
     expect(adequacySummary({})).toBeNull();
     expect(adequacySummary({ current: {} })).toBeNull();
     expect(adequacySummary({ ...document, current: { ...document.current, worst_tier_horizon_days: "60" } })).toBeNull();
+  });
+});
+
+describe("adequacy rules", () => {
+  const rows = [
+    { parameter: "import_cutoff_gwh_day", value: "1" },
+    { parameter: "import_cutoff_thermal_share", value: "0.7" },
+    { parameter: "import_regime_window_days", value: "14" },
+    { parameter: "tight_gwh_day", value: "5" },
+    { parameter: "ceiling_window_days", value: "1095" },
+  ];
+
+  it("reads every rule from the committed file, with the values the method was documented with", () => {
+    expect(referenceAdequacyRules()).toEqual(parseAdequacyRules(rows));
+  });
+
+  it("refuses a missing, repeated, unknown or non-numeric rule rather than falling back", () => {
+    expect(() => parseAdequacyRules(rows.slice(1))).toThrow(/import_cutoff_gwh_day" is missing/);
+    expect(() => parseAdequacyRules([...rows, rows[0]!])).toThrow(/appears twice/);
+    expect(() => parseAdequacyRules([...rows, { parameter: "cutoff", value: "2" }])).toThrow(/unknown parameter/);
+    expect(() => parseAdequacyRules([{ ...rows[0]!, value: "" }, ...rows.slice(1)])).toThrow(/not a number/);
+  });
+
+  it("moves the tier cut when the file moves it", () => {
+    expect(tierFor(4, 10, 5)).toBe("ajustado");
+    expect(tierFor(4, 10, 3)).toBe("deficit");
+  });
+
+  it("applies the regime rule's thresholds from the rules it is handed", () => {
+    const start = "2026-09-08";
+    const fortnight = Array.from({ length: 14 }, (_, i) => ({
+      date: addDays(start, i),
+      loadGwh: 100,
+      hydroGwh: 70,
+      thermalGwh: 20,
+      importGwh: 0.5,
+      exportGwh: 0,
+      otherGwh: 1,
+      generationGwh: 99.5,
+      distributionDemandGwh: 95,
+    }));
+    const ceilings = { thermalGwhDay: 25, importGwhDay: 10, stressedImportGwhDay: 0.1, otherGwhDay: 1, basis: "test" };
+    const base = referenceAdequacyRules();
+    expect(importRegime(fortnight, "2026-09-21", ceilings, base).state).toBe("cutoff");
+    // Thermal at 80% of its ceiling is not a cutoff under a 90% rule, nor is 0.5 GWh/day under a 0.4 one.
+    expect(importRegime(fortnight, "2026-09-21", ceilings, { ...base, importCutoffThermalShare: 0.9 }).state).toBe("normal");
+    expect(importRegime(fortnight, "2026-09-21", ceilings, { ...base, importCutoffGwhDay: 0.4 }).state).toBe("normal");
+  });
+});
+
+describe("the adequacy fit cache", () => {
+  it("changes nothing the backtest reports", () => {
+    const days = syntheticDays({ days: 2600, from: "2018-01-01", growthPerYear: 0.05 });
+    const ceilings = { thermalGwhDay: 30, importGwhDay: 10, stressedImportGwhDay: 0.1, otherGwhDay: 2, basis: "test" };
+    const options = { ...DEFAULT_ADEQUACY_BACKTEST, firstOrigin: "2021-01-01", horizonDays: [7, 30] };
+    const plain = backtestAdequacy(days, [], ceilings, options);
+    const cache = createAdequacyCache();
+    const cached = backtestAdequacy(days, [], ceilings, { ...options, cache });
+    const again = backtestAdequacy(days, [], ceilings, { ...options, cache });
+    expect(cached.scores).toEqual(plain.scores);
+    expect(again.scores).toEqual(plain.scores);
+    expect(cache.size).toBe(plain.origins.length);
   });
 });

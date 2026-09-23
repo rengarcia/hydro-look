@@ -15,16 +15,25 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
-          node-version: "22"
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
           cache: npm
-      - run: npm ci
+      - run: npm ci --ignore-scripts
+      # The write path's shell: apply-and-push.sh decides what gets committed on every ingest, so it
+      # is linted like code (shellcheck ships on the runner image). -x follows the sourced loop.
+      - run: shellcheck -x .github/scripts/*.sh
       - run: npm run typecheck
       - run: npm run lint
-      # Every parser runs against the recorded Phase 0 responses, so CI needs no network.
-      - run: npm test
+      # Formatting is Prettier's (.prettierrc.json; data, fixtures and Markdown are left alone).
+      - run: npm run format:check
+      # Every parser runs against the recorded Phase 0 responses, so CI needs no network. Run with
+      # coverage over all of src/lib, against floors in vitest.config.ts: a module nobody tests
+      # counts as a zero, so the list of untested modules cannot grow unnoticed.
+      - run: npm run test:coverage
       # Shape, ranges and reference integrity over the committed data. Deliberately without
       # --freshness: that one depends on the clock, so in CI it would turn every pull request
       # red once the data aged a few days, which only teaches people to ignore a red build.

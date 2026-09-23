@@ -210,10 +210,6 @@ export function coversDate(episodes: readonly RationingEpisode[], date: IsoDate)
  */
 export const RECOVERY_TAIL_DAYS = 14;
 
-export function suppressed(
-  episodes: readonly RationingEpisode[],
-  date: IsoDate,
-  tailDays = RECOVERY_TAIL_DAYS,
-): boolean {
+export function suppressed(episodes: readonly RationingEpisode[], date: IsoDate, tailDays = RECOVERY_TAIL_DAYS): boolean {
   return episodes.some((e) => date >= e.start && (e.end === "" || date <= addDays(e.end, tailDays)));
 }

@@ -20,6 +20,10 @@ import {
   type ThresholdRow,
 } from "../src/lib/publish/latest.ts";
 import type { DailySeries } from "../src/lib/features/series.ts";
+import { DOCUMENTS, SCHEMA_VERSION } from "../src/lib/publish/contract.ts";
+import { unsupportedKeywords, validate, type Schema } from "../src/lib/publish/schema.ts";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 function seriesOf(entries: [string, number][]): DailySeries {
   return new Map(entries.sort(([a], [b]) => (a < b ? -1 : 1)));
@@ -167,14 +171,50 @@ describe("nationalSnapshot", () => {
 
   it("orders the mix largest first and keeps imports in it", () => {
     const snapshot = nationalSnapshot(balanceByDay(rows))!;
-    expect(snapshot.supply_gwh.map((p) => p.concept)).toEqual([
-      "generacion_hidraulica",
-      "generacion_turbinas_gas",
-      "total_importacion",
-    ]);
+    expect(snapshot.supply_gwh.map((p) => p.concept)).toEqual(["generacion_hidraulica", "generacion_turbinas_gas", "total_importacion"]);
   });
 
   it("has no snapshot at all when the table is empty", () => {
     expect(nationalSnapshot(balanceByDay([]))).toBeNull();
+  });
+});
+
+/**
+ * The schemas under `public/api/schema/`, held against the documents as they are committed. This
+ * is the test that matters to a third party: a script that renames a field fails here rather
+ * than in someone else's dashboard a week later.
+ */
+describe("the JSON Schemas", () => {
+  const api = join(process.cwd(), "public", "api");
+  const schemaOf = (name: string) => JSON.parse(readFileSync(join(api, "schema", `${name}.schema.json`), "utf8")) as Schema;
+  const documentOf = (name: string) => JSON.parse(readFileSync(join(api, `${name}.json`), "utf8")) as Record<string, unknown>;
+
+  it.each(DOCUMENTS)("%s.schema.json uses only keywords the validator enforces", (name) => {
+    expect(unsupportedKeywords(schemaOf(name))).toEqual([]);
+  });
+
+  it.each(DOCUMENTS)("the committed %s.json validates against its schema", (name) => {
+    const document = documentOf(name);
+    expect(validate(document, schemaOf(name))).toEqual([]);
+    expect(document["schema_version"]).toBe(SCHEMA_VERSION);
+  });
+
+  it.each(DOCUMENTS)("%s.schema.json names itself where see_also says it lives", (name) => {
+    expect(schemaOf(name)["$id"]).toBe((documentOf(name)["see_also"] as Record<string, string>)["schema"]);
+  });
+
+  it("fails a document that drops a required field, retypes one, or leaves an enum", () => {
+    const schema = schemaOf("status");
+    const document = documentOf("status");
+    const missing = { ...document };
+    delete missing["data_date"];
+    expect(validate(missing, schema).map((e) => e.message)).toContain('missing required field "data_date"');
+    expect(validate({ ...document, ok: "yes" }, schema)[0]!.path).toBe("$.ok");
+    const feeds = (document["feeds"] as Record<string, unknown>[]).map((f, i) => (i === 0 ? { ...f, state: "late" } : f));
+    expect(validate({ ...document, feeds }, schema)[0]!.path).toBe("$.feeds[0].state");
+  });
+
+  it("refuses to pass a schema keyword it does not check", () => {
+    expect(unsupportedKeywords({ type: "object", properties: { a: { oneOf: [] } } })).toEqual(["$.properties.a.oneOf"]);
   });
 });

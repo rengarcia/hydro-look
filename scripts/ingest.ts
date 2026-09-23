@@ -2,14 +2,15 @@
 /**
  * hydro-look ingestion CLI.
  *
- *   npm run ingest -- daily                       the previous day from every source
+ *   npm run ingest -- daily                       the last three days from every source (--days)
  *   npm run ingest -- backfill --source ords-levels --from 2014-09-20
  *   npm run ingest -- latest                      live tiles only, no history written
  *   npm run ingest -- smec-earliest               binary search for SMEC's oldest report
  *
  * Global flags: --dry-run (parse and validate, write nothing), --rate-ms, --max-requests,
- * --to, --plants. Every command is resumable: a backfill skips days already in the store, so
- * a long history is filled by repeated dispatches of the same command.
+ * --to, --plants, --summary <file> (a Markdown run summary for the workflow's step summary).
+ * Every command is resumable: a backfill skips days already in the store, so a long history is
+ * filled by repeated dispatches of the same command.
  *
  * In CI the fetch and the write are separated, because two runs finishing at once would
  * otherwise collide in a rebase over generated CSV:
@@ -24,15 +25,17 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { HttpClient } from "../src/lib/http/client.ts";
-import { checkPin, closeAgents } from "../src/lib/http/tls.ts";
+import { closeAgents } from "../src/lib/http/tls.ts";
 import { CelecOrds } from "../src/lib/sources/celec-ords.ts";
 import { CenaceOperativa, CenaceSmec } from "../src/lib/sources/cenace.ts";
 import { Covariates, ingestCovariates } from "../src/lib/sources/covariates.ts";
 import { Xm, ingestXm } from "../src/lib/sources/xm.ts";
 import { emptyBatch, type IngestBatch } from "../src/lib/sources/batch.ts";
 import { CuratedStore, foldBands } from "../src/lib/store/curated.ts";
-import { RawArchive } from "../src/lib/store/archive.ts";
-import { summariseTable, writeStatus } from "../src/lib/store/status.ts";
+import { RawArchive, splitRawRef } from "../src/lib/store/archive.ts";
+import { writeFileAtomic } from "../src/lib/store/files.ts";
+import { summariseNarrativeSpend, summariseTable, writeStatus } from "../src/lib/store/status.ts";
+import { runSummary, type RequestCounts } from "../src/lib/store/summary.ts";
 import {
   NATIONAL_BALANCE_DAILY,
   OBSERVATIONS_DAILY,
@@ -74,18 +77,9 @@ function log(message: string): void {
   console.log(`[${new Date().toISOString().slice(11, 19)}] ${message}`);
 }
 
-/** Verify pinned certificates before the first request to each host. */
-async function verifyPins(hosts: [string, number][]): Promise<void> {
-  for (const [host, port] of hosts) {
-    const check = await checkPin(host, port);
-    if (!check) continue;
-    log(check.ok ? `TLS pin ok for ${host}:${port}` : `TLS pin CHANGED for ${host}:${port} (advisory): ${check.observed}`);
-  }
-}
-
 async function main(): Promise<void> {
   const options = parseOptions(process.argv.slice(2));
-  // With --out, the run writes nothing into data/: it stages its rows and raw bundles so that
+  // With --out, the run writes nothing into data/: it stages its rows and raw files so that
   // `apply` can merge them onto whatever the branch holds at that moment. Two runs finishing
   // at once then queue instead of colliding in a rebase over generated files.
   const archive = new RawArchive(options.out ? join(options.out, "raw") : undefined);
@@ -97,10 +91,22 @@ async function main(): Promise<void> {
     return;
   }
 
+  // Each pinned host's certificate is checked before its first request, inside the client, so
+  // a failed handshake or an enforced mismatch is that source's error and not the run's: SMEC
+  // being down no longer stops ORDS and operativa from being asked.
   const http = new HttpClient({
     minIntervalMs: options.rateMs,
     onAttempt: ({ key, attempt, status, error }) => {
       if (attempt > 1 || error) log(`  retry ${key} attempt ${attempt}${status ? ` -> ${status}` : ""}${error ? `: ${error}` : ""}`);
+    },
+    onPin: (check) => {
+      if (check.ok) log(`TLS pin ok for ${check.host}:${check.port}`);
+      else {
+        log(`TLS pin CHANGED for ${check.host}:${check.port} (advisory): ${check.observed}`);
+        batch.notes.push(
+          `TLS pin changed for ${check.host}:${check.port} (advisory): observed ${check.observed}, pinned ${check.expected}`,
+        );
+      }
     },
   });
   const ords = new CelecOrds(http, archive);
@@ -138,11 +144,6 @@ async function main(): Promise<void> {
     }
     case "daily": {
       const end = options.date ?? todayEc();
-      await verifyPins([
-        ["generacioncsr.celec.gob.ec", 8443],
-        ["smec.cenace.gob.ec", 443],
-        ["www.cenace.gob.ec", 443],
-      ]);
 
       // The 12m reports re-deliver a year and six months of history on every run, which
       // repairs any gap left by an earlier failure without a separate backfill.
@@ -174,8 +175,7 @@ async function main(): Promise<void> {
       // to confirm the caudal mrids really are `q_ingresado`.
       log("ORDS: historian month for the plants the reports do not cover");
       const runningMonth = monthOfDate(end);
-      const historianMonths =
-        Number(end.slice(8, 10)) <= 3 ? [runningMonth, previousMonth(runningMonth)] : [runningMonth];
+      const historianMonths = Number(end.slice(8, 10)) <= 3 ? [runningMonth, previousMonth(runningMonth)] : [runningMonth];
       for (const ym of historianMonths) {
         for (const series of HISTORIAN_SERIES) {
           await ords.pointValuesMesH24(batch, series.site, series.variable, series.mrid, ym);
@@ -202,23 +202,12 @@ async function main(): Promise<void> {
       const runs = (name: BackfillSource) => wanted === "all" || wanted === name;
       const years = Array.from({ length: yearOf(to) - yearOf(from) + 1 }, (_, i) => yearOf(from) + i);
       const present = indexBySourceAndDate(store, years);
-      const smecDates = new Set(
-        [...store.existingKeys(NATIONAL_BALANCE_DAILY, years)].map((key) => key.split("\u0000")[0]!),
-      );
-
-      await verifyPins(
-        runs("smec")
-          ? [
-              ["generacioncsr.celec.gob.ec", 8443],
-              ["smec.cenace.gob.ec", 443],
-            ]
-          : [["generacioncsr.celec.gob.ec", 8443]],
-      );
+      const smecDates = new Set([...store.existingKeys(NATIONAL_BALANCE_DAILY, years)].map((key) => key.split("\u0000")[0]!));
 
       if (runs("ords-levels")) {
         // One request per year returns 365 days ending the day before `fecha`.
         for (let year = yearOf(from); year <= yearOf(to) + 1; year++) {
-          const fecha = `${year}-09-20` as IsoDate;
+          const fecha = `${year}-09-20`;
           if (fecha > addDays(todayEc(), 1)) continue;
           if (!(await spend(() => ords.repDiaHid12m(batch, fecha)))) break;
           log(`ords-levels: ${fecha} (${batch.observations.length} observations so far)`);
@@ -271,8 +260,7 @@ async function main(): Promise<void> {
           // nothing left to ask for. The running month is never skipped — its days are still
           // arriving, and re-asking is how a day that was null yesterday gets filled.
           isDone: (ym, mrid) =>
-            monthEnd(ym) < today &&
-            eachDay(monthStart(ym), monthEnd(ym)).some((day) => present.has(`${day}|ords:pointValues|${mrid}`)),
+            monthEnd(ym) < today && eachDay(monthStart(ym), monthEnd(ym)).some((day) => present.has(`${day}|ords:pointValues|${mrid}`)),
           fetchMonth: async (series, ym) => {
             let added: number | null = null;
             await spend(async () => {
@@ -318,14 +306,12 @@ async function main(): Promise<void> {
     }
 
     case "smec-earliest": {
-      await verifyPins([["smec.cenace.gob.ec", 443]]);
       const earliest = await smec.earliestAvailable(batch, { good: options.from ?? "2016-05-01", bad: options.to ?? "2010-01-01" });
       log(`SMEC earliest complete report: ${earliest}`);
       break;
     }
 
     case "latest": {
-      await verifyPins([["generacioncsr.celec.gob.ec", 8443]]);
       const latest = await ords.latest();
       mkdirSync(DATA_LATEST, { recursive: true });
       if (!options.dryRun) {
@@ -340,25 +326,32 @@ async function main(): Promise<void> {
       throw new Error(`unknown command "${options.command}"; try daily, backfill, covariates, xm, apply, latest or smec-earliest`);
   }
 
-  if (options.out && !options.dryRun) stageBatch(archive, batch, options);
-  else writeBatch(store, archive, batch, options);
+  const requests: RequestCounts = { total: http.count, byHost: http.countByHost };
+  log(`${requests.total} requests sent, retries included`);
+  let quarantined = 0;
+  if (options.out && !options.dryRun) stageBatch(archive, batch, options, requests);
+  else quarantined = writeBatch(store, archive, batch, options, requests);
   await closeAgents();
-  process.exitCode = batch.errors.length > 0 ? 1 : 0;
+  process.exitCode = batch.errors.length > 0 || quarantined > 0 ? 1 : 0;
 }
 
 /**
  * Writes the run's result to a staging directory: the rows as JSON, the raw responses as the
- * same bundles they will become in data/raw/. Nothing under data/ is touched.
+ * same files they will become in data/raw/. Nothing under data/ is touched. The directory is
+ * uploaded as a workflow artifact before anything tries to apply it, so a batch that fails to
+ * land can be replayed by hand with `apply --in` (see the README).
  */
-function stageBatch(archive: RawArchive, batch: IngestBatch, options: Options): void {
+function stageBatch(archive: RawArchive, batch: IngestBatch, options: Options, requests: RequestCounts): void {
   const directory = options.out!;
   mkdirSync(directory, { recursive: true });
-  const bundles = archive.flush();
-  writeFileSync(
+  const files = archive.flush();
+  writeFileAtomic(
     join(directory, "batch.json"),
-    `${JSON.stringify({ generated_at: nowUtc(), command: options.command, source: options.source, ...batch }, null, 1)}\n`,
+    `${JSON.stringify({ generated_at: nowUtc(), run_id: runId(), command: options.command, source: options.source, requests, ...batch }, null, 1)}\n`,
   );
-  log(`staged ${batch.observations.length + batch.national.length + batch.operativa.length + batch.weather.length + batch.enso.length + batch.xmExchange.length + batch.xmSystem.length} rows and ${bundles.length} raw bundles in ${directory}`);
+  log(
+    `staged ${batch.observations.length + batch.national.length + batch.operativa.length + batch.weather.length + batch.enso.length + batch.xmExchange.length + batch.xmSystem.length} rows and ${files.length} raw files in ${directory}`,
+  );
   for (const note of dedupe(batch.notes).slice(0, 40)) log(`note: ${note}`);
   for (const error of batch.errors.slice(0, 40)) log(`ERROR ${error}`);
 }
@@ -374,14 +367,26 @@ function applyStaged(options: Options): void {
   const staged = JSON.parse(readFileSync(join(directory, "batch.json"), "utf8")) as IngestBatch & {
     command?: string;
     source?: BackfillSource;
+    run_id?: string;
+    requests?: RequestCounts;
   };
 
   const archive = new RawArchive();
   const merged = archive.mergeFrom(join(directory, "raw"));
+  // A batch staged before the raw layout changed carries bundle refs; its bundles were just
+  // refiled as day files, so point its rows at those.
+  canonicaliseRefs(archive, staged);
   const store = new CuratedStore(DATA_CURATED, options.dryRun);
-  writeBatch(store, archive, staged, { ...options, command: staged.command ?? options.command });
+  const quarantined = writeBatch(
+    store,
+    archive,
+    staged,
+    { ...options, command: staged.command ?? options.command, source: staged.source ?? options.source },
+    staged.requests,
+    staged.run_id,
+  );
   log(`applied ${merged} archived responses`);
-  process.exitCode = staged.errors.length > 0 ? 1 : 0;
+  process.exitCode = staged.errors.length > 0 || quarantined > 0 ? 1 : 0;
 }
 
 /**
@@ -411,38 +416,96 @@ function daysSinceLog(date: IsoDate): boolean {
   return true;
 }
 
-function writeBatch(store: CuratedStore, archive: RawArchive, batch: IngestBatch, options: Options): void {
-  const reports = [];
-  if (batch.observations.length > 0) reports.push(store.upsert(OBSERVATIONS_DAILY, batch.observations));
-  if (batch.national.length > 0) reports.push(store.upsert(NATIONAL_BALANCE_DAILY, batch.national));
-  if (batch.operativa.length > 0) reports.push(store.upsert(OPERATIVA_SNAPSHOTS, batch.operativa));
-  // A backfill already running on the previous revision stages neither new field.
-  if (batch.weather?.length) reports.push(store.upsert(WEATHER_DAILY, batch.weather));
-  if (batch.enso?.length) reports.push(store.upsert(ENSO_MONTHLY, batch.enso));
-  if (batch.xmExchange?.length) reports.push(store.upsert(XM_EXCHANGE_DAILY, batch.xmExchange));
-  if (batch.xmSystem?.length) reports.push(store.upsert(XM_SYSTEM_DAILY, batch.xmSystem));
-  if (batch.bands.length > 0) {
-    const existing = store.read(join(DATA_CURATED, "operating_bands.csv"));
-    reports.push(store.upsert(OPERATING_BANDS, foldBands(batch.bands, existing)));
-  }
+/** The id a run's quarantine file is named by: the workflow run where there is one. */
+function runId(): string {
+  const run = process.env["GITHUB_RUN_ID"];
+  if (run) return `${run}-${process.env["GITHUB_RUN_ATTEMPT"] ?? "1"}`;
+  return `local-${nowUtc().replaceAll(/[-:]/g, "")}`;
+}
 
+/** Rewrites every row's legacy bundle refs to the day files that now hold them. */
+function canonicaliseRefs(archive: RawArchive, batch: IngestBatch): void {
+  const tables = [
+    batch.observations,
+    batch.national,
+    batch.operativa,
+    batch.weather ?? [],
+    batch.enso ?? [],
+    batch.xmExchange ?? [],
+    batch.xmSystem ?? [],
+  ];
+  for (const rows of tables) {
+    for (const row of rows as { raw_ref: string }[]) {
+      if (!row.raw_ref?.includes(".ndjson.gz#")) continue;
+      row.raw_ref = splitRawRef(row.raw_ref)
+        .map((ref) => archive.resolvesTo(ref) ?? ref)
+        .join(" ");
+    }
+  }
+}
+
+/**
+ * Writes a batch into the store: the raw responses first, then the tables, so that a failure
+ * part-way can never leave rows whose `raw_ref` names a file that was not written. A row that
+ * fails its contract is quarantined (see CuratedStore.upsert) rather than stopping the write;
+ * `npm run check` fails while a quarantine file exists. Returns how many rows were quarantined.
+ */
+function writeBatch(
+  store: CuratedStore,
+  archive: RawArchive,
+  batch: IngestBatch,
+  options: Options,
+  requests?: RequestCounts,
+  run: string = runId(),
+): number {
   const archived = options.dryRun ? [] : archive.flush();
 
+  const quarantine = { quarantine: { run } };
+  const reports = [];
+  if (batch.observations.length > 0) reports.push(store.upsert(OBSERVATIONS_DAILY, batch.observations, quarantine));
+  if (batch.national.length > 0) reports.push(store.upsert(NATIONAL_BALANCE_DAILY, batch.national, quarantine));
+  if (batch.operativa.length > 0) reports.push(store.upsert(OPERATIVA_SNAPSHOTS, batch.operativa, quarantine));
+  // A backfill already running on the previous revision stages neither new field.
+  if (batch.weather?.length) reports.push(store.upsert(WEATHER_DAILY, batch.weather, quarantine));
+  if (batch.enso?.length) reports.push(store.upsert(ENSO_MONTHLY, batch.enso, quarantine));
+  if (batch.xmExchange?.length) reports.push(store.upsert(XM_EXCHANGE_DAILY, batch.xmExchange, quarantine));
+  if (batch.xmSystem?.length) reports.push(store.upsert(XM_SYSTEM_DAILY, batch.xmSystem, quarantine));
+  if (batch.bands.length > 0) {
+    const existing = store.read(join(DATA_CURATED, "operating_bands.csv"));
+    reports.push(store.upsert(OPERATING_BANDS, foldBands(batch.bands, existing), quarantine));
+  }
+
+  const quarantined = reports.reduce((n, r) => n + r.quarantined, 0);
   for (const report of reports) {
     log(`${report.table}: +${report.added} new, ~${report.updated} updated, ${report.unchanged} unchanged`);
+    if (report.quarantined > 0) log(`${report.table}: ${report.quarantined} rows QUARANTINED to ${report.quarantinePath}`);
   }
-  log(`archived ${archived.length} raw bundles`);
+  log(`archived ${archived.length} raw files`);
   for (const note of dedupe(batch.notes).slice(0, 40)) log(`note: ${note}`);
   for (const error of batch.errors.slice(0, 40)) log(`ERROR ${error}`);
   if (batch.notes.length > 40) log(`... and ${batch.notes.length - 40} more notes`);
+
+  const errors = [
+    ...batch.errors,
+    ...reports
+      .filter((r) => r.quarantined > 0)
+      .map((r) => `${r.table}: ${r.quarantined} rows failed the contract and were quarantined to ${r.quarantinePath}`),
+  ];
+  if (options.summary) {
+    writeFileAtomic(
+      options.summary,
+      runSummary({ command: options.command, source: options.source, reports, requests, errors, notes: dedupe(batch.notes) }),
+    );
+  }
 
   if (!options.dryRun) {
     writeStatus({
       generated_at: nowUtc(),
       command: options.command,
       source: options.source,
-      requests: reports.length === 0 ? 0 : undefined,
-      errors: batch.errors,
+      // Every attempt the hosts saw, retries included; absent for a batch staged before it was counted.
+      requests: requests?.total,
+      errors,
       notes: dedupe(batch.notes).slice(0, 100),
       tables: {
         observations_daily: summariseTable("observations_daily", "date"),
@@ -454,8 +517,11 @@ function writeBatch(store: CuratedStore, archive: RawArchive, batch: IngestBatch
         xm_exchange_daily: summariseTable("xm_exchange_daily", "date"),
         xm_system_daily: summariseTable("xm_system_daily", "date"),
       },
+      // The narrative's gateway spend to date, so the cost is visible without opening a CSV.
+      narrative: summariseNarrativeSpend(),
     });
   }
+  return quarantined;
 }
 
 function dedupe(values: string[]): string[] {

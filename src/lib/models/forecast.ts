@@ -21,13 +21,12 @@ import { truncate, type Calibration, type ModelScore } from "./backtest.ts";
 import { quantile } from "../util/stats.ts";
 import { round6, roundOrNull, roundTo } from "../util/numbers.ts";
 import {
-  analogPaths,
   crossingDistribution,
   DEFAULT_WATER_BALANCE,
   firstCrossing,
   fitAt,
+  horizonEnsembles,
   inflowScenarios,
-  simulatePath,
   type FitCache,
   type WaterBalanceFit,
   type WaterBalanceOptions,
@@ -127,6 +126,8 @@ export interface ForecastInputs {
   options?: WaterBalanceOptions;
   /** Horizons published from another model; absent, every horizon is the run's own model. */
   horizonSwitch?: HorizonSwitch;
+  /** The run's fit cache, so the live origin's fit is the one the ladder already made. */
+  cache?: FitCache;
 }
 
 export interface ForecastOutput {
@@ -167,21 +168,15 @@ export function buildForecast(inputs: ForecastInputs): ForecastOutput | null {
     production,
     crestM,
   };
-  const fit = fitAt(context, options);
+  const fit = fitAt(context, options, inputs.cache);
   if (!fit) return null;
 
-  const perHorizon = inputs.calibration.get(inputs.modelId) ?? new Map();
+  const perHorizon = inputs.calibration.get(inputs.modelId) ?? (new Map() as NonNullable<ReturnType<Calibration["get"]>>);
   const overrides = new Map((inputs.horizonSwitch?.overrides ?? []).map((o) => [o.horizonDays, o]));
 
   const horizons: HorizonOutput[] = [];
-  for (const horizonDays of inputs.horizonDays) {
-    const paths = analogPaths(inflow, origin, horizonDays);
-    if (paths.length < options.minAnalogYears) continue;
-    const ends = paths.map(
-      (path) =>
-        simulatePath(fit.curve, fit.rule, fit.startLevel, origin, path.inflowM3s, fit.stance, crestM, options).at(-1)!
-          .level,
-    );
+  for (const { horizonDays, ends, years } of horizonEnsembles(fit, inflow, origin, inputs.horizonDays, crestM, options)) {
+    if (ends.length < options.minAnalogYears) continue;
     const centre = quantile(ends, 0.5)!;
     const residuals = perHorizon.get(horizonDays);
 
@@ -217,7 +212,7 @@ export function buildForecast(inputs: ForecastInputs): ForecastOutput | null {
       ensembleP10: roundOrNull(quantile(ends, 0.1), LEVEL_DIGITS),
       ensembleP90: roundOrNull(quantile(ends, 0.9), LEVEL_DIGITS),
       ensembleN: ends.length,
-      analogYears: paths.map((p) => p.year),
+      analogYears: years,
       modelId: override?.modelId ?? inputs.modelId,
       bandSource: override?.bandSource ?? `${inputs.modelId} out-of-sample residuals at ${horizonDays} d, this run's ladder backtest`,
       detail: override
@@ -238,40 +233,35 @@ export function buildForecast(inputs: ForecastInputs): ForecastOutput | null {
 
   const scenarios = inflowScenarios(fit, inflow, origin, THRESHOLD_HORIZON_DAYS, crestM, options);
   const daysToThreshold = inputs.thresholds.map((threshold) => {
-    const spread = crossingDistribution(
-      fit,
-      inflow,
-      origin,
-      THRESHOLD_HORIZON_DAYS,
-      threshold.levelMasl,
-      crestM,
-      options,
-    );
+    const spread = crossingDistribution(fit, inflow, origin, THRESHOLD_HORIZON_DAYS, threshold.levelMasl, crestM, options);
     return {
-    threshold: threshold.name,
-    level_masl: threshold.levelMasl,
-    source: threshold.source,
-    status: threshold.status,
-    note: threshold.note,
-    across_all_analogue_years: spread === null ? null : {
-      analogue_years: spread.paths,
-      years_that_cross: spread.crossed,
-      p10_days: roundOrNull(spread.p10Days, 1),
-      p50_days: roundOrNull(spread.p50Days, 1),
-      p90_days: roundOrNull(spread.p90Days, 1),
-    },
-    scenarios: scenarios.map((run): ScenarioSummary => {
-      const crossing = firstCrossing(run.levels, threshold.levelMasl);
-      return {
-        scenario: run.name,
-        analogYear: run.analogYear,
-        inflowMeanM3s: roundTo(run.inflowMeanM3s, 2),
-        inflowTotalHm3: roundTo(run.inflowTotalHm3, 1),
-        crossesOn: crossing?.date ?? null,
-        days: crossing?.days ?? null,
-        minimumLevelMasl: roundTo(Math.min(...run.levels.map((step) => step.level)), LEVEL_DIGITS),
-      };
-    }),
+      threshold: threshold.name,
+      level_masl: threshold.levelMasl,
+      source: threshold.source,
+      status: threshold.status,
+      note: threshold.note,
+      across_all_analogue_years:
+        spread === null
+          ? null
+          : {
+              analogue_years: spread.paths,
+              years_that_cross: spread.crossed,
+              p10_days: roundOrNull(spread.p10Days, 1),
+              p50_days: roundOrNull(spread.p50Days, 1),
+              p90_days: roundOrNull(spread.p90Days, 1),
+            },
+      scenarios: scenarios.map((run): ScenarioSummary => {
+        const crossing = firstCrossing(run.levels, threshold.levelMasl);
+        return {
+          scenario: run.name,
+          analogYear: run.analogYear,
+          inflowMeanM3s: roundTo(run.inflowMeanM3s, 2),
+          inflowTotalHm3: roundTo(run.inflowTotalHm3, 1),
+          crossesOn: crossing?.date ?? null,
+          days: crossing?.days ?? null,
+          minimumLevelMasl: roundTo(Math.min(...run.levels.map((step) => step.level)), LEVEL_DIGITS),
+        };
+      }),
     };
   });
 
@@ -364,8 +354,7 @@ export function buildForecast(inputs: ForecastInputs): ForecastOutput | null {
       level_masl: roundTo(originLevel, LEVEL_DIGITS),
       observed_on: origin,
       sources: [...inputs.series.sourcesFor(inputs.site, inputs.variable)].sort(),
-      storage_above_lowest_threshold_hm3:
-        lowest === null ? null : roundTo(storageHm3(fit.curve, lowest.levelMasl, originLevel), 2),
+      storage_above_lowest_threshold_hm3: lowest === null ? null : roundTo(storageHm3(fit.curve, lowest.levelMasl, originLevel), 2),
       surface_area_km2: roundTo(areaAt(fit.curve, originLevel) / 1e6, 3),
       slope_7d_m_per_day: roundOrNull(slope(levels, origin, 7), 4),
       slope_14d_m_per_day: roundOrNull(slope(levels, origin, 14), 4),
@@ -500,15 +489,7 @@ export function crossingCallsByOrigin(
     };
     const fit = fitAt(context, options, cache);
     if (!fit) continue;
-    const spread = crossingDistribution(
-      fit,
-      context.inflow,
-      origin,
-      THRESHOLD_HORIZON_DAYS,
-      thresholdM,
-      crestM,
-      options,
-    );
+    const spread = crossingDistribution(fit, context.inflow, origin, THRESHOLD_HORIZON_DAYS, thresholdM, crestM, options);
     if (!spread) continue;
     const on = (days: number | null): IsoDate | null => (days === null ? null : addDays(origin, Math.round(days)));
     out.push({

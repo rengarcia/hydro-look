@@ -1,8 +1,12 @@
 name: Weather, ENSO and XM
 
+# Same shape as daily.yml: `fetch` stages both batches with no write token, uploads them before
+# anything applies them, `apply` is the one writer (in the `ingest` group), `report` files or
+# closes the `covariates-failure` issue.
 on:
   schedule:
-    - cron: "0 17 * * *"
+    # After both daily slots, and on an odd minute for the reason given in daily.yml.
+    - cron: "23 17 * * *"
   workflow_dispatch:
     inputs:
       from:
@@ -27,25 +31,22 @@ on:
 
 permissions: {}
 
-# Share the existing writer queue; a covariate run never cancels the active backfill.
-concurrency:
-  group: ingest
-  cancel-in-progress: false
-
 jobs:
-  covariates:
+  fetch:
     runs-on: ubuntu-latest
     # The XM history is ~1,400 requests at about 1.4 s each; a routine day is two dozen.
     timeout-minutes: 75
     permissions:
-      contents: write
+      contents: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
-          node-version: "22"
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
           cache: npm
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - name: Fetch weather and ENSO
         env:
           FROM: ${{ inputs.from }}
@@ -56,23 +57,9 @@ jobs:
           npm run ingest -- covariates \
             --from "$FROM" --to "$TO" --max-requests "$MAX_REQUESTS" \
             --out "$RUNNER_TEMP/batch" $DRY_RUN 2>&1 | tee "$RUNNER_TEMP/covariates.log"
-      - name: Apply and commit
-        if: always() && !inputs.dry_run
-        env:
-          BRANCH: ${{ github.ref_name }}
-          BATCH_DIR: ${{ runner.temp }}/batch
-        run: bash .github/scripts/apply-and-push.sh "Weather and ENSO (run ${{ github.run_id }})"
-      - name: Upload run log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: covariates-log-${{ github.run_id }}
-          path: ${{ runner.temp }}/covariates.log
-          retention-days: 30
 
-      # Colombia's side of the interconnection, run after the weather is committed so the two
-      # never share a batch: a failure on XM's host must not hold back ERA5, nor the reverse.
-      # The same `ingest` concurrency group already serialises this job against the daily run.
+      # Colombia's side of the interconnection, staged as its own batch so the two never share a
+      # write: a failure on XM's host must not hold back ERA5, nor the reverse.
       - name: Fetch XM (Colombia)
         if: always()
         env:
@@ -82,16 +69,117 @@ jobs:
         run: |
           npm run ingest -- xm --from "$FROM" --max-requests "$MAX_REQUESTS" \
             --out "$RUNNER_TEMP/batch-xm" $DRY_RUN 2>&1 | tee "$RUNNER_TEMP/xm.log"
-      - name: Apply and commit XM
+
+      # Two artifacts rather than one of two directories: an artifact is rooted at its paths'
+      # common parent, so one holding whichever batch happened to exist would change shape.
+      - name: Upload staged weather batch
         if: always() && !inputs.dry_run
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: covariates-batch-${{ github.run_id }}
+          path: ${{ runner.temp }}/batch
+          if-no-files-found: ignore
+          retention-days: 14
+          overwrite: true
+      - name: Upload staged XM batch
+        if: always() && !inputs.dry_run
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: xm-batch-${{ github.run_id }}
+          path: ${{ runner.temp }}/batch-xm
+          if-no-files-found: ignore
+          retention-days: 14
+          overwrite: true
+      - name: Upload fetch logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: covariates-log-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/covariates.log
+            ${{ runner.temp }}/xm.log
+          if-no-files-found: ignore
+          retention-days: 30
+          overwrite: true
+
+  apply:
+    needs: fetch
+    if: ${{ !cancelled() && !inputs.dry_run }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # The writer queue shared with daily.yml and backfill.yml; see daily.yml.
+    concurrency:
+      group: ingest
+      cancel-in-progress: false
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --ignore-scripts
+      # A fetch step that staged nothing uploaded nothing; apply-and-push.sh says so and exits 0.
+      - name: Download staged weather batch
+        continue-on-error: true
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: covariates-batch-${{ github.run_id }}
+          path: ${{ runner.temp }}/batch
+      - name: Download staged XM batch
+        continue-on-error: true
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: xm-batch-${{ github.run_id }}
+          path: ${{ runner.temp }}/batch-xm
+      - name: Apply and commit weather and ENSO
+        env:
+          BRANCH: ${{ github.ref_name }}
+          BATCH_DIR: ${{ runner.temp }}/batch
+          SUMMARY: ${{ runner.temp }}/summary-weather.md
+          RUN_ID: ${{ github.run_id }}
+        run: bash .github/scripts/apply-and-push.sh "Weather and ENSO (run $RUN_ID)"
+      - name: Apply and commit XM
+        if: ${{ !cancelled() }}
         env:
           BRANCH: ${{ github.ref_name }}
           BATCH_DIR: ${{ runner.temp }}/batch-xm
-        run: bash .github/scripts/apply-and-push.sh "XM Colombia (run ${{ github.run_id }})"
-      - name: Upload XM log
-        if: always()
-        uses: actions/upload-artifact@v4
+          SUMMARY: ${{ runner.temp }}/summary-xm.md
+          RUN_ID: ${{ github.run_id }}
+        run: bash .github/scripts/apply-and-push.sh "XM Colombia (run $RUN_ID)"
+
+  report:
+    needs: [fetch, apply]
+    if: ${{ always() && !inputs.dry_run }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
-          name: xm-log-${{ github.run_id }}
-          path: ${{ runner.temp }}/xm.log
-          retention-days: 30
+          persist-credentials: false
+          sparse-checkout: .github/scripts
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+        env:
+          FETCH: ${{ needs.fetch.result }}
+          APPLY: ${{ needs.apply.result }}
+          SCHEDULED: ${{ github.event_name == 'schedule' }}
+        with:
+          script: |
+            const issues = require('./.github/scripts/issues.cjs');
+            const { FETCH, APPLY, SCHEDULED } = process.env;
+            const gh = { github, context };
+            if (FETCH === 'failure' || APPLY === 'failure') {
+              if (SCHEDULED === 'true') {
+                await issues.report(gh, {
+                  label: 'covariates-failure',
+                  title: `Weather, ENSO and XM failed (${new Date().toISOString().slice(0, 10)})`,
+                  body: `Covariates run failed: fetch ${FETCH}, apply ${APPLY}. The staged batches are in the run's \`covariates-batch-*\` and \`xm-batch-*\` artifacts.`,
+                });
+              }
+            } else if (FETCH === 'success' && APPLY === 'success') {
+              await issues.resolve(gh, { label: 'covariates-failure' });
+            }

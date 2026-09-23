@@ -25,5 +25,16 @@ export interface IngestBatch {
 }
 
 export function emptyBatch(): IngestBatch {
-  return { observations: [], bands: [], national: [], operativa: [], weather: [], enso: [], xmExchange: [], xmSystem: [], notes: [], errors: [] };
+  return {
+    observations: [],
+    bands: [],
+    national: [],
+    operativa: [],
+    weather: [],
+    enso: [],
+    xmExchange: [],
+    xmSystem: [],
+    notes: [],
+    errors: [],
+  };
 }

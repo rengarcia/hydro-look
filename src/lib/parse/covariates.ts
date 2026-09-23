@@ -21,12 +21,13 @@ const weatherResponse = z.object({
 /** Missing upstream values remain null; a dry day is explicitly zero. */
 export function parseWeather(body: string, requireTemperature = true) {
   const { daily, daily_units: units } = weatherResponse.parse(JSON.parse(body));
-  if (daily.precipitation_sum.length !== daily.time.length ||
-      (daily.temperature_2m_mean && daily.temperature_2m_mean.length !== daily.time.length)) {
+  if (
+    daily.precipitation_sum.length !== daily.time.length ||
+    (daily.temperature_2m_mean && daily.temperature_2m_mean.length !== daily.time.length)
+  ) {
     throw new Error("weather: daily arrays have different lengths");
   }
-  if ((requireTemperature || daily.temperature_2m_mean) &&
-      (!daily.temperature_2m_mean || units.temperature_2m_mean !== "°C")) {
+  if ((requireTemperature || daily.temperature_2m_mean) && (!daily.temperature_2m_mean || units.temperature_2m_mean !== "°C")) {
     throw new Error("weather: missing temperature values or units");
   }
   return daily.time.map((date, i) => {
@@ -43,7 +44,10 @@ export function parseWeather(body: string, requireTemperature = true) {
 
 /** PSL labels the three-month ONI mean by its centre month (January = DJF). */
 export function parseOni(body: string): { month: string; oni: number }[] {
-  const lines = body.trim().split(/\r?\n/).map((line) => line.trim());
+  const lines = body
+    .trim()
+    .split(/\r?\n/)
+    .map((line) => line.trim());
   const header = /^(\d{4})\s+(\d{4})$/.exec(lines[0] ?? "");
   if (!header) throw new Error("ONI: expected first/last year header");
   const first = Number(header[1]);

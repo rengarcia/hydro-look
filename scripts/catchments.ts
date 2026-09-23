@@ -89,7 +89,12 @@ const BASINS: Basin[] = [
     site: "mazar",
     label: "Mazar (Paute)",
     candidates: [
-      { role: "dam", osm: "way/311803060", recorded: { lat: -2.5953091, lon: -78.6218378 }, evidence: "OSM 'Presa Mazar', waterway=dam, wikidata=Q1751861 — the same QID as Wikidata's point, 0.04 km and 0 m from it (§2.4)" },
+      {
+        role: "dam",
+        osm: "way/311803060",
+        recorded: { lat: -2.5953091, lon: -78.6218378 },
+        evidence: "OSM 'Presa Mazar', waterway=dam, wikidata=Q1751861 — the same QID as Wikidata's point, 0.04 km and 0 m from it (§2.4)",
+      },
     ],
   },
   {
@@ -97,7 +102,12 @@ const BASINS: Basin[] = [
     site: "coca_codo_sinclair",
     label: "Coca Codo Sinclair (Coca)",
     candidates: [
-      { role: "dam", osm: "way/310742588", recorded: { lat: -0.1979037, lon: -77.6849914 }, evidence: "OSM waterway=dam, wikidata=Q19277520, 0.11 km and 1 m from Wikidata's point (§2.4)" },
+      {
+        role: "dam",
+        osm: "way/310742588",
+        recorded: { lat: -0.1979037, lon: -77.6849914 },
+        evidence: "OSM waterway=dam, wikidata=Q19277520, 0.11 km and 1 m from Wikidata's point (§2.4)",
+      },
     ],
   },
   {
@@ -105,7 +115,12 @@ const BASINS: Basin[] = [
     site: "agoyan",
     label: "Agoyán (Pastaza)",
     candidates: [
-      { role: "dam", osm: "node/8432673468", recorded: { lat: -1.39852778, lon: -78.37755556 }, evidence: "OSM element with Agoyán's QID, 0.37 km and −9 m from Wikidata's point (§2.4)" },
+      {
+        role: "dam",
+        osm: "node/8432673468",
+        recorded: { lat: -1.39852778, lon: -78.37755556 },
+        evidence: "OSM element with Agoyán's QID, 0.37 km and −9 m from Wikidata's point (§2.4)",
+      },
     ],
   },
   {
@@ -113,7 +128,12 @@ const BASINS: Basin[] = [
     site: "manduriacu",
     label: "Manduriacu (Guayllabamba)",
     candidates: [
-      { role: "wikidata point", recorded: { lat: 0.21480556, lon: -78.91233333 }, evidence: "Wikidata Q65196233 only; OSM maps a plant, a dam and a reservoir under two spellings and §2.4's matcher picked different ones on different runs" },
+      {
+        role: "wikidata point",
+        recorded: { lat: 0.21480556, lon: -78.91233333 },
+        evidence:
+          "Wikidata Q65196233 only; OSM maps a plant, a dam and a reservoir under two spellings and §2.4's matcher picked different ones on different runs",
+      },
     ],
   },
   {
@@ -125,7 +145,8 @@ const BASINS: Basin[] = [
         role: "wikidata point",
         recorded: { lat: -0.927, lon: -79.75 },
         snapKm: 2,
-        evidence: "Wikidata Q19381026, a point rounded to three decimals; no OSM dam matched (§2.4). Snapped within 2 km, because the rounding alone is up to ~0.1 km and the point may sit on the reservoir rather than the dam",
+        evidence:
+          "Wikidata Q19381026, a point rounded to three decimals; no OSM dam matched (§2.4). Snapped within 2 km, because the rounding alone is up to ~0.1 km and the point may sit on the reservoir rather than the dam",
       },
     ],
   },
@@ -157,7 +178,12 @@ const BASINS: Basin[] = [
           "intake lead node/2489320895 and 480 m above the powerhouse, which an underground CELEC water pipeline (way/690695823) leaves; " +
           "found by probe run 35816537011",
       },
-      { role: "powerhouse", osm: "way/690695824", recorded: { lat: -4.04588889, lon: -78.98377778 }, evidence: "OSM 'Central Hidroeléctrica Delsitanisagua', wikidata=Q65196191, 0.1 km from Wikidata's point (§2.4)" },
+      {
+        role: "powerhouse",
+        osm: "way/690695824",
+        recorded: { lat: -4.04588889, lon: -78.98377778 },
+        evidence: "OSM 'Central Hidroeléctrica Delsitanisagua', wikidata=Q65196191, 0.1 km from Wikidata's point (§2.4)",
+      },
     ],
   },
 ];
@@ -199,7 +225,9 @@ async function resolveOsm(ref: string): Promise<Resolved | { error: string }> {
       const response = await get(url, 30_000);
       if (response.status === 410) return { error: `${ref} is deleted in OSM (410)` };
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const json = (await response.json()) as { elements: { type: string; id: number; lat?: number; lon?: number; nodes?: number[]; tags?: Record<string, string> }[] };
+      const json = (await response.json()) as {
+        elements: { type: string; id: number; lat?: number; lon?: number; nodes?: number[]; tags?: Record<string, string> }[];
+      };
       const nodes = json.elements.filter((e) => e.type === "node" && e.lat !== undefined && e.lon !== undefined);
       if (nodes.length === 0) return { error: `${ref}: no nodes in the answer` };
       const element = json.elements.find((e) => `${e.type}/${e.id}` === ref);
@@ -209,7 +237,12 @@ async function resolveOsm(ref: string): Promise<Resolved | { error: string }> {
       const lon = nodes.reduce((s, n) => s + n.lon!, 0) / nodes.length;
       const byId = new Map(nodes.map((n) => [n.id, { lat: n.lat!, lon: n.lon! }]));
       const line = type === "way" ? (element?.nodes ?? []).flatMap((id) => byId.get(id) ?? []) : undefined;
-      return { lat: round(lat, 7), lon: round(lon, 7), ...(line && line.length >= 2 ? { line } : {}), source: `OSM ${ref}${name} (${nodes.length} node${nodes.length === 1 ? "" : "s"}), api.openstreetmap.org ${nowUtc()}` };
+      return {
+        lat: round(lat, 7),
+        lon: round(lon, 7),
+        ...(line && line.length >= 2 ? { line } : {}),
+        source: `OSM ${ref}${name} (${nodes.length} node${nodes.length === 1 ? "" : "s"}), api.openstreetmap.org ${nowUtc()}`,
+      };
     } catch (error) {
       if (attempt === 3) return { error: `${ref}: ${String(error)}` };
       await sleep(2000 * attempt);
@@ -226,7 +259,8 @@ async function resolveCandidate(c: Candidate): Promise<(Resolved & { note: strin
       const drift = c.recorded ? ` — ${kmApart(r, c.recorded)} km from the recorded point` : "";
       return { ...r, note: `resolved from OSM${drift}` };
     }
-    if (c.recorded) return { ...c.recorded, source: "point recorded in PLAN.md §2.4", note: `OSM did not answer (${r.error}); recorded point used` };
+    if (c.recorded)
+      return { ...c.recorded, source: "point recorded in PLAN.md §2.4", note: `OSM did not answer (${r.error}); recorded point used` };
     return null;
   }
   return c.recorded ? { ...c.recorded, source: "point recorded in PLAN.md §2.4", note: "no OSM element to resolve" } : null;
@@ -287,9 +321,19 @@ async function loadTile(south: number, west: number): Promise<Tile> {
       if (Math.abs(originLon - west) > 0.01 || Math.abs(originLat - (south + 1)) > 0.01) {
         throw new Error(`tile ${name} is georeferenced at ${originLon}, ${originLat}, not at its name's corner ${west}, ${south + 1}`);
       }
-      tile = { name, data, width, height, west: originLon, north: originLat, dLon: Math.abs(resLon), dLat: Math.abs(resLat), etag: response.headers.get("etag") ?? "" };
+      tile = {
+        name,
+        data,
+        width,
+        height,
+        west: originLon,
+        north: originLat,
+        dLon: Math.abs(resLon),
+        dLat: Math.abs(resLat),
+        etag: response.headers.get("etag") ?? "",
+      };
     } catch (error) {
-      if (attempt === 3) throw new Error(`DEM tile ${name}: ${String(error)}`);
+      if (attempt === 3) throw new Error(`DEM tile ${name}: ${String(error)}`, { cause: error });
       await sleep(3000 * attempt);
     }
   }
@@ -312,7 +356,8 @@ async function mosaic(win: Window): Promise<{ grid: DemGrid; tiles: string[]; no
   if (land.length === 0) throw new Error("no DEM tile over this window");
   const dLon = land[0]!.dLon;
   const dLat = land[0]!.dLat;
-  if (land.some((t) => Math.abs(t.dLon - dLon) > 1e-12 || Math.abs(t.dLat - dLat) > 1e-12)) throw new Error("tiles of different resolution in one window");
+  if (land.some((t) => Math.abs(t.dLon - dLon) > 1e-12 || Math.abs(t.dLat - dLat) > 1e-12))
+    throw new Error("tiles of different resolution in one window");
   const width = Math.round((win.east - win.west) / dLon);
   const height = Math.round((win.north - win.south) / dLat);
   const elev = new Float32Array(width * height).fill(NaN);
@@ -329,7 +374,11 @@ async function mosaic(win: Window): Promise<{ grid: DemGrid; tiles: string[]; no
   }
   let missing = 0;
   for (let i = 0; i < elev.length; i++) if (Number.isNaN(elev[i]!)) missing++;
-  return { grid: { width, height, west: win.west, north: win.north, dLon, dLat, elev }, tiles: used.map((t) => `${t.name} ${t.etag}`), noDataShare: missing / elev.length };
+  return {
+    grid: { width, height, west: win.west, north: win.north, dLon, dLat, elev },
+    tiles: used.map((t) => `${t.name} ${t.etag}`),
+    noDataShare: missing / elev.length,
+  };
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -350,12 +399,16 @@ async function fetchInamhi(): Promise<{ polygons: InamhiPolygon[]; note: string;
     const response = await get(INAMHI_WFS, 180_000);
     const body = await response.text();
     if (!response.ok) return { polygons: [], note: `HTTP ${response.status}: ${body.slice(0, 160)}`, raw: null };
-    const json = JSON.parse(body) as { features?: { id?: string; properties?: Record<string, unknown>; geometry?: GeoJsonGeometry | null }[] };
+    const json = JSON.parse(body) as {
+      features?: { id?: string; properties?: Record<string, unknown>; geometry?: GeoJsonGeometry | null }[];
+    };
     const polygons = (json.features ?? []).flatMap((f, k): InamhiPolygon[] => {
       const bbox = geometryBbox(f.geometry);
       if (!f.geometry || !bbox) return [];
       const layer = String(f.properties?.["layer"] ?? f.properties?.["nombre_5"] ?? f.id ?? `feature ${k}`);
-      return [{ id: String(f.id ?? k), layer, properties: f.properties ?? {}, geometry: f.geometry, areaKm2: geometryAreaKm2(f.geometry), bbox }];
+      return [
+        { id: String(f.id ?? k), layer, properties: f.properties ?? {}, geometry: f.geometry, areaKm2: geometryAreaKm2(f.geometry), bbox },
+      ];
     });
     return { polygons, note: `${polygons.length} polygons, ${body.length.toLocaleString("en-US")} bytes`, raw: body };
   } catch (error) {
@@ -394,13 +447,25 @@ interface BasinResult {
 }
 
 const intersects = (a: Window, b: Window) => a.west < b.east && b.west < a.east && a.south < b.north && b.south < a.north;
-const within = (inner: Window, outer: Window) => inner.west >= outer.west && inner.east <= outer.east && inner.south >= outer.south && inner.north <= outer.north;
+const within = (inner: Window, outer: Window) =>
+  inner.west >= outer.west && inner.east <= outer.east && inner.south >= outer.south && inner.north <= outer.north;
 
 async function delineate(basin: Basin, inamhi: InamhiPolygon[]): Promise<BasinResult> {
   const t0 = Date.now();
   const points = await Promise.all(basin.candidates.map(resolveCandidate));
   const located = points.filter((p): p is NonNullable<typeof p> => p !== null);
-  const result: BasinResult = { basin: basin.basin, site: basin.site, label: basin.label, window: { south: 0, west: 0, north: 0, east: 0 }, grids: 0, tiles: [], noDataShare: 0, seconds: 0, candidates: [], error: "" };
+  const result: BasinResult = {
+    basin: basin.basin,
+    site: basin.site,
+    label: basin.label,
+    window: { south: 0, west: 0, north: 0, east: 0 },
+    grids: 0,
+    tiles: [],
+    noDataShare: 0,
+    seconds: 0,
+    candidates: [],
+    error: "",
+  };
   if (located.length === 0) {
     result.error = "no candidate point could be located";
     return result;
@@ -421,19 +486,37 @@ async function delineate(basin: Basin, inamhi: InamhiPolygon[]): Promise<BasinRe
     const grow = { north: false, south: false, west: false, east: false };
     for (const [k, c] of basin.candidates.entries()) {
       const point = points[k] ?? null;
-      const out: CandidateResult = { role: c.role, evidence: c.evidence, point, snapped: null, stats: null, confluences: [], inamhi: [], outline: null, error: "" };
+      const out: CandidateResult = {
+        role: c.role,
+        evidence: c.evidence,
+        point,
+        snapped: null,
+        stats: null,
+        confluences: [],
+        inamhi: [],
+        outline: null,
+        error: "",
+      };
       candidates.push(out);
       if (!point) {
         out.error = "not located";
         continue;
       }
       const onCrest = c.role !== "powerhouse" && point.line;
-      const snapped = onCrest ? snapToLine(grid, acc, point.line!, CREST_KM) : snapToChannel(grid, acc, point.lat, point.lon, c.snapKm ?? 0.5);
+      const snapped = onCrest
+        ? snapToLine(grid, acc, point.line!, CREST_KM)
+        : snapToChannel(grid, acc, point.lat, point.lon, c.snapKm ?? 0.5);
       if (!snapped) {
         out.error = onCrest ? "no channel under the crest" : "no channel within the snap radius";
         continue;
       }
-      out.snapped = { lat: round(snapped.lat, 6), lon: round(snapped.lon, 6), movedKm: round(snapped.movedKm, 3), accKm2: round(snapped.accKm2, 1), by: onCrest ? `crest, ${CREST_KM} km` : `radius, ${c.snapKm ?? 0.5} km` };
+      out.snapped = {
+        lat: round(snapped.lat, 6),
+        lon: round(snapped.lon, 6),
+        movedKm: round(snapped.movedKm, 3),
+        accKm2: round(snapped.accKm2, 1),
+        by: onCrest ? `crest, ${CREST_KM} km` : `radius, ${c.snapKm ?? 0.5} km`,
+      };
       const mask = catchmentMask(grid, routing, snapped.index);
       out.stats = catchmentStats(grid, mask);
       for (const side of ["north", "south", "west", "east"] as const) if (out.stats.touches[side]) grow[side] = true;
@@ -449,7 +532,16 @@ async function delineate(basin: Basin, inamhi: InamhiPolygon[]): Promise<BasinRe
       for (const p of inamhi) {
         if (!intersects(p.bbox, out.stats.bbox)) continue;
         if (!within(p.bbox, win)) {
-          out.inamhi.push({ layer: p.layer, id: p.id, aKm2: out.stats.areaKm2, bKm2: p.areaKm2, bothKm2: NaN, iou: NaN, aInB: NaN, bInA: NaN });
+          out.inamhi.push({
+            layer: p.layer,
+            id: p.id,
+            aKm2: out.stats.areaKm2,
+            bKm2: p.areaKm2,
+            bothKm2: NaN,
+            iou: NaN,
+            aInB: NaN,
+            bInA: NaN,
+          });
           continue;
         }
         const o = overlap(grid, mask, rasterize(grid, p.geometry));
@@ -461,7 +553,9 @@ async function delineate(basin: Basin, inamhi: InamhiPolygon[]): Promise<BasinRe
     result.tiles = used;
     result.noDataShare = noDataShare;
     result.candidates = candidates;
-    const needs = Object.entries(grow).filter(([, v]) => v).map(([k]) => k);
+    const needs = Object.entries(grow)
+      .filter(([, v]) => v)
+      .map(([k]) => k);
     if (needs.length === 0) break;
     if (grow.north) win.north++;
     if (grow.south) win.south--;
@@ -526,7 +620,9 @@ function report(startedAt: string, inamhiNote: string, inamhi: InamhiPolygon[], 
   for (const r of results) {
     for (const c of r.candidates) {
       for (const o of c.inamhi) {
-        lines.push(`| ${r.basin} | ${c.role} | ${cell(o.layer)} | ${f1(o.bKm2)} | ${Number.isNaN(o.bothKm2) ? "outside the mosaic" : f1(o.bothKm2)} | ${pct(o.iou)} | ${pct(o.aInB)} | ${pct(o.bInA)} |`);
+        lines.push(
+          `| ${r.basin} | ${c.role} | ${cell(o.layer)} | ${f1(o.bKm2)} | ${Number.isNaN(o.bothKm2) ? "outside the mosaic" : f1(o.bothKm2)} | ${pct(o.iou)} | ${pct(o.aInB)} | ${pct(o.bInA)} |`,
+        );
       }
     }
   }
@@ -543,7 +639,9 @@ function report(startedAt: string, inamhiNote: string, inamhi: InamhiPolygon[], 
     ...results.flatMap((r) =>
       r.candidates.flatMap((c) =>
         c.confluences.length
-          ? c.confluences.map((k) => `| ${r.basin} | ${c.role} | ${k.kmUpstream} | ${k.lat}, ${k.lon} | ${f1(k.sideKm2)} | ${f1(k.mainKm2)} |`)
+          ? c.confluences.map(
+              (k) => `| ${r.basin} | ${c.role} | ${k.kmUpstream} | ${k.lat}, ${k.lon} | ${f1(k.sideKm2)} | ${f1(k.mainKm2)} |`,
+            )
           : [`| ${r.basin} | ${c.role} | — | none within 3 km | — | — |`],
       ),
     ),
@@ -561,7 +659,13 @@ function report(startedAt: string, inamhiNote: string, inamhi: InamhiPolygon[], 
     ...inamhi.map(
       (p) =>
         `| ${p.id} | ${cell(p.layer)} | ${f1(p.areaKm2)} | ${round(p.bbox.west, 3)} | ${round(p.bbox.south, 3)} | ${round(p.bbox.east, 3)} | ${round(p.bbox.north, 3)} | ` +
-        `${cell(Object.entries(p.properties).filter(([k]) => k !== "path").map(([k, v]) => `${k}=${String(v)}`).join(", ").slice(0, 160))} |`,
+        `${cell(
+          Object.entries(p.properties)
+            .filter(([k]) => k !== "path")
+            .map(([k, v]) => `${k}=${String(v)}`)
+            .join(", ")
+            .slice(0, 160),
+        )} |`,
     ),
     "",
     "## Runs",
@@ -583,7 +687,8 @@ async function main(): Promise<void> {
   const only = process.argv.indexOf("--basins");
   const chosen = only >= 0 ? new Set((process.argv[only + 1] ?? "").split(",").filter(Boolean)) : null;
   const basins = BASINS.filter((b) => !chosen || chosen.has(b.basin));
-  if (chosen && basins.length !== chosen.size) throw new Error(`unknown basin in --basins; known: ${BASINS.map((b) => b.basin).join(", ")}`);
+  if (chosen && basins.length !== chosen.size)
+    throw new Error(`unknown basin in --basins; known: ${BASINS.map((b) => b.basin).join(", ")}`);
 
   const inamhi = await fetchInamhi();
   console.log(`INAMHI hidroelectricasshape: ${inamhi.note}`);
@@ -599,10 +704,23 @@ async function main(): Promise<void> {
     try {
       results.push(await delineate(basin, inamhi.polygons));
     } catch (error) {
-      results.push({ basin: basin.basin, site: basin.site, label: basin.label, window: { south: 0, west: 0, north: 0, east: 0 }, grids: 0, tiles: [], noDataShare: 0, seconds: 0, candidates: [], error: String(error) });
+      results.push({
+        basin: basin.basin,
+        site: basin.site,
+        label: basin.label,
+        window: { south: 0, west: 0, north: 0, east: 0 },
+        grids: 0,
+        tiles: [],
+        noDataShare: 0,
+        seconds: 0,
+        candidates: [],
+        error: String(error),
+      });
     }
     const last = results.at(-1)!;
-    console.log(`${basin.basin}: ${last.error || last.candidates.map((c) => `${c.role} ${c.stats ? `${f1(c.stats.areaKm2)} km²` : c.error}`).join("; ")}`);
+    console.log(
+      `${basin.basin}: ${last.error || last.candidates.map((c) => `${c.role} ${c.stats ? `${f1(c.stats.areaKm2)} km²` : c.error}`).join("; ")}`,
+    );
   }
 
   const features = results.flatMap((r) =>

@@ -1,6 +1,6 @@
 # Backtest — mazar level forecast
 
-Generated 2026-09-23T02:37:05Z from the committed tables; no network. Origins are the first of each month, each one refitting every model on the data before it. 105 origins scored per horizon, 93 of them with a calibrated band (the first twelve are the calibration's warm-up).
+Generated 2026-09-23T05:51:50Z from the committed tables; no network. Origins are the first of each month, each one refitting every model on the data before it. 105 origins scored per horizon, 93 of them with a calibrated band (the first twelve are the calibration's warm-up).
 
 Level history: 4385 days, 2014-09-20 → 2026-09-21.
 
@@ -237,7 +237,46 @@ No. Scored over the 60 origins where both variants could forecast — the matche
 | M3-water-balance | 2.389 | 3.469 | 6.446 | 7.832 | 8.065 |
 | M3-water-balance-enso | 2.562 | 3.916 | 7.406 | 8.107 | 8.656 |
 
-The phase used is the one a forecaster could actually have read at each origin: ONI is a three-month mean centred on its label, so the newest value available on any day is about two months old, and the backtest never looks through that lag. The conditioner worth having is basin precipitation, and it waits on ERA5 history at the verified catchment centroids now in `basins.csv`.
+The phase used is the one a forecaster could actually have read at each origin: ONI is a three-month mean centred on its label, so the newest value available on any day is about two months old, and the backtest never looks through that lag. Basin precipitation is the other conditioner, and its upper bound is the next section.
+
+## Does knowing the next 16 days of rain help? (§5.4, perfect foresight)
+
+The upper bound first. At each origin the analogue pool is narrowed to the half of the years whose ERA5 rain over the 16 days after the same calendar day was nearest the rain that *actually fell* after the origin, at `paute` (the provisional point; paute_mazar: no ERA5 rows). No forecaster has that; it is the most a rain forecast could ever be worth to this model. Same origins as the ladder:
+
+| model | h=7 | h=14 | h=30 | h=60 | h=90 |
+|---|---|---|---|---|---|
+| M0-persistence | 2.291 (0.0%) | 3.573 (0.0%) | 5.857 (0.0%) | 9.653 (0.0%) | 11.199 (0.0%) |
+| M3-water-balance | 2.292 (-0.1%) | 3.616 (-1.2%) | 5.851 (0.1%) | 7.221 (25.2%) | 7.472 (33.3%) |
+| M3-water-balance-rain-pf | 2.386 (-4.1%) | 3.860 (-8.0%) | 6.412 (-9.5%) | 7.774 (19.5%) | 7.787 (30.5%) |
+
+MAE in metres, skill against persistence in brackets. Coverage of the calibrated p10–p90 band:
+
+| model | h=7 | h=14 | h=30 | h=60 | h=90 |
+|---|---|---|---|---|---|
+| M3-water-balance | 74.2% | 77.4% | 80.4% | 70.5% | 72.1% |
+| M3-water-balance-rain-pf | 72.0% | 80.6% | 75.0% | 72.7% | 75.6% |
+
+**Negative: even perfect foresight of the rain does not improve the 14-day level** (3.860 m against 3.616 m; worse at 7, 14, 30, 60, 90 d). Narrowing a pool of about fifteen years to the half with the nearest rain costs more in ensemble size than one point's rain buys in information, so the experiment stops here and the 16-day forecast stays unwired. It reruns every day, so the answer on the verified centroid will appear here the first run after its ERA5 backfill.
+
+Scheduling note for when it does help: `covariates.yml` collects the forecast at 17:00 UTC, after both daily runs, so a model would read yesterday's vintage. The forecast fetch would have to move ahead of the 12:15 run, or into it.
+
+## Should every horizon share one ensemble? (§5.7)
+
+Each analogue year is simulated once and read at every horizon it reaches, which is what the shipped model does and changed no published number. Sharing members outright means reading every horizon off only the years whose inflow record reaches ninety days, so a 7-day fan and a 90-day fan are the same years. Same origins:
+
+| model | h=7 | h=14 | h=30 | h=60 | h=90 |
+|---|---|---|---|---|---|
+| M3-water-balance | 2.292 | 3.616 | 5.851 | 7.253 | 7.305 |
+| M3-water-balance-shared-members | 2.309 | 3.614 | 5.943 | 7.235 | 7.305 |
+
+MAE in metres. Coverage of the calibrated band:
+
+| model | h=7 | h=14 | h=30 | h=60 | h=90 |
+|---|---|---|---|---|---|
+| M3-water-balance | 74.2% | 77.4% | 80.4% | 73.6% | 72.2% |
+| M3-water-balance-shared-members | 75.3% | 77.4% | 79.3% | 73.6% | 72.2% |
+
+**Negative: not better at 7, 30, 90 d**, and the ladder's rule asks for every horizon. The shipped model keeps every year a horizon can use; dropping the years whose record stops short of ninety days takes members from the short horizons, and whatever it gains elsewhere is not enough to pay for that everywhere.
 
 ## The crisis check
 

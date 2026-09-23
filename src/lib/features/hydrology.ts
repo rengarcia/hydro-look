@@ -65,6 +65,23 @@ import type { DailySeries } from "./series.ts";
 
 const SECONDS_PER_DAY = 86_400;
 
+/**
+ * `addDays(date, 1)`, memoised. The balance, the implied releases and the analogue paths all
+ * step through the record a day at a time, once per origin and per variant, and `addDays` is a
+ * `Date` parse and format each time: it was a third of a forecast run's CPU before this. The
+ * memo holds one entry per distinct day ever asked about, which is bounded by the record.
+ */
+const NEXT_DAY = new Map<IsoDate, IsoDate>();
+
+export function nextDay(date: IsoDate): IsoDate {
+  let next = NEXT_DAY.get(date);
+  if (next === undefined) {
+    next = addDays(date, 1);
+    NEXT_DAY.set(date, next);
+  }
+  return next;
+}
+
 export interface Hypsometry {
   /** `A(level) = areaCoefficient * (level - datumM)^areaExponent`, in m2. */
   areaCoefficient: number;
@@ -112,17 +129,11 @@ export interface BalanceDay {
  * Consecutive local days carrying everything the balance needs. A gap in any series drops the
  * day rather than interpolating it: an invented level would be fitted as though it were read.
  */
-export function balanceDays(
-  levels: DailySeries,
-  inflow: DailySeries,
-  production: DailySeries,
-  before?: IsoDate,
-): BalanceDay[] {
+export function balanceDays(levels: DailySeries, inflow: DailySeries, production: DailySeries, before?: IsoDate): BalanceDay[] {
   const out: BalanceDay[] = [];
   for (const [date, level] of levels) {
     if (before !== undefined && date >= before) continue;
-    const next = addDays(date, 1);
-    const nextLevel = levels.get(next);
+    const nextLevel = levels.get(nextDay(date));
     const inflowM3s = inflow.get(date);
     const producedMwh = production.get(date);
     if (nextLevel === undefined || inflowM3s === undefined || producedMwh === undefined) continue;
@@ -139,16 +150,9 @@ const DATUM_OFFSETS_M = [10, 30, 50, 70];
  * Least squares for `a` and `k` at a fixed shape, weighted so the residual is in metres.
  * Returns null when the pair is not identifiable, which a degenerate grid corner can be.
  */
-function solveAt(
-  days: BalanceDay[],
-  exponent: number,
-  datum: number,
-  iterations = 8,
-): { coefficient: number; perMw: number } | null {
+function solveAt(days: BalanceDay[], exponent: number, datum: number, iterations = 8): { coefficient: number; perMw: number } | null {
   const power = exponent + 1;
-  const storageDelta = days.map(
-    (d) => (Math.pow(d.nextLevel - datum, power) - Math.pow(d.level - datum, power)) / power,
-  );
+  const storageDelta = days.map((d) => (Math.pow(d.nextLevel - datum, power) - Math.pow(d.level - datum, power)) / power);
   const inflowVolume = days.map((d) => d.inflowM3s * SECONDS_PER_DAY);
   const powerVolume = days.map((d) => d.powerMw * SECONDS_PER_DAY);
   let weights = days.map(() => 1);
@@ -216,9 +220,7 @@ export function fitHypsometry(days: BalanceDay[], options: HypsometryOptions): H
       };
       let squared = 0;
       for (const day of usable) {
-        const volume =
-          volumeAt(candidate, day.level) +
-          SECONDS_PER_DAY * (day.inflowM3s - candidate.turbineM3sPerMw * day.powerMw);
+        const volume = volumeAt(candidate, day.level) + SECONDS_PER_DAY * (day.inflowM3s - candidate.turbineM3sPerMw * day.powerMw);
         squared += Math.pow(levelAt(candidate, volume) - day.nextLevel, 2);
       }
       candidate.rmseDeltaLevelM = Math.sqrt(squared / usable.length);
@@ -246,16 +248,11 @@ export interface ImpliedRelease {
  * about 0.27 m a day, which compounds to eight metres over a 30-day forecast. Whatever that
  * water is, it leaves, and a series that measures it beats a model that omits it.
  */
-export function impliedReleases(
-  curve: Hypsometry,
-  levels: DailySeries,
-  inflow: DailySeries,
-  before?: IsoDate,
-): ImpliedRelease[] {
+export function impliedReleases(curve: Hypsometry, levels: DailySeries, inflow: DailySeries, before?: IsoDate): ImpliedRelease[] {
   const out: ImpliedRelease[] = [];
   for (const [date, level] of levels) {
     if (before !== undefined && date >= before) continue;
-    const nextLevel = levels.get(addDays(date, 1));
+    const nextLevel = levels.get(nextDay(date));
     const inflowM3s = inflow.get(date);
     if (nextLevel === undefined || inflowM3s === undefined) continue;
     const stored = volumeAt(curve, nextLevel) - volumeAt(curve, level);
@@ -275,11 +272,7 @@ export function impliedReleases(
  * no such fixed point. A share rather than a count, because the bounds that suit Mazar's four
  * thousand days do not suit a reservoir with three hundred.
  */
-export function trimReleases(
-  readings: ImpliedRelease[],
-  dropLowFraction = 0.01,
-  dropHighFraction = 0.01,
-): ImpliedRelease[] {
+export function trimReleases(readings: ImpliedRelease[], dropLowFraction = 0.01, dropHighFraction = 0.01): ImpliedRelease[] {
   if (readings.length < 20) return readings;
   const dropLow = Math.floor(readings.length * dropLowFraction);
   const dropHigh = Math.floor(readings.length * dropHighFraction);

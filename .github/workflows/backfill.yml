@@ -4,13 +4,20 @@ name: Backfill
 # history is filled by dispatching the same inputs repeatedly until the run reports no new rows.
 #
 # Two budgets bound a run. The request budget bounds how much is asked for; the time budget
-# (--max-minutes, set below to well under the job timeout) guarantees the run stops fetching in
-# time to archive, apply and push what it has. That matters because a staged run writes nothing
-# until fetching ends, so a job killed by the timeout would lose hours of collected responses.
+# (--max-minutes, set below to well under the job timeout) guarantees the fetch stops in time to
+# stage and upload what it has. A staged run writes nothing until fetching ends, so a job killed
+# by the timeout would lose hours of collected responses; and the staged batch is uploaded as an
+# artifact before the apply job runs, so not even a failed push can lose it (README, "Replaying
+# a batch").
 #
 # Throughput is not one request per second: the client waits --rate-ms *after* each response,
 # so a request costs its own latency plus the gap, about 1.4 s against these hosts. Budget
 # roughly 1,500 requests per wall-clock hour, not 3,600.
+#
+# Only the apply job is in the `ingest` concurrency group, so the hours of fetching no longer hold
+# it: a daily run scheduled mid-backfill fetches alongside and waits only for the few minutes an
+# apply takes. GitHub still keeps at most one *pending* job per group, but a group held for
+# minutes rather than hours makes a third writer arriving in that window unlikely.
 on:
   workflow_dispatch:
     inputs:
@@ -40,7 +47,7 @@ on:
         required: false
         default: "10000"
       max_minutes:
-        description: "Wall-clock budget for fetching, leaving the rest of the job to apply and push"
+        description: "Wall-clock budget for fetching, leaving the rest of the job to stage and upload"
         required: false
         default: "270"
       plants:
@@ -55,29 +62,21 @@ on:
 
 permissions: {}
 
-# One ingest at a time, and a queued run waits rather than replacing the one fetching. Note what
-# GitHub does with the *second* queued run, though: only one run per group may be pending, so
-# dispatching a backfill while another is already waiting cancels the waiting one. That is a
-# footgun aimed straight at daily.yml, which shares this group and whose three consecutive green
-# scheduled runs are Phase 1's last acceptance criterion. Do not dispatch a backfill in the
-# minutes around 12:15 or 16:30 UTC, and check the queue is empty before dispatching a second.
-concurrency:
-  group: ingest
-  cancel-in-progress: false
-
 jobs:
-  backfill:
+  fetch:
     runs-on: ubuntu-latest
-    timeout-minutes: 340
+    timeout-minutes: 300
     permissions:
-      contents: write
+      contents: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
-          node-version: "22"
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
           cache: npm
-      - run: npm ci
+      - run: npm ci --ignore-scripts
 
       - name: Backfill
         env:
@@ -99,19 +98,90 @@ jobs:
             --out "$RUNNER_TEMP/batch" \
             $DRY_RUN 2>&1 | tee "$RUNNER_TEMP/backfill.log"
 
-      - name: Apply and commit
+      - name: Upload staged batch
         if: always() && !inputs.dry_run
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: backfill-batch-${{ github.run_id }}
+          path: ${{ runner.temp }}/batch
+          if-no-files-found: ignore
+          retention-days: 30
+          overwrite: true
+
+      - name: Upload run log
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: backfill-log-${{ github.run_id }}
+          path: ${{ runner.temp }}/backfill.log
+          retention-days: 30
+          overwrite: true
+
+  apply:
+    needs: fetch
+    if: ${{ !cancelled() && !inputs.dry_run }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    concurrency:
+      group: ingest
+      cancel-in-progress: false
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Download staged batch
+        continue-on-error: true
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: backfill-batch-${{ github.run_id }}
+          path: ${{ runner.temp }}/batch
+      - name: Apply and commit
         env:
           SOURCE: ${{ inputs.source }}
           FROM: ${{ inputs.from }}
           BRANCH: ${{ github.ref_name }}
           BATCH_DIR: ${{ runner.temp }}/batch
-        run: bash .github/scripts/apply-and-push.sh "Backfill $SOURCE from $FROM (run ${{ github.run_id }})"
+          SUMMARY: ${{ runner.temp }}/summary.md
+          RUN_ID: ${{ github.run_id }}
+        run: bash .github/scripts/apply-and-push.sh "Backfill $SOURCE from $FROM (run $RUN_ID)"
 
-      - name: Upload run log
-        if: always()
-        uses: actions/upload-artifact@v4
+  # A backfill runs for hours with nobody watching, so every failure files an issue, whoever
+  # dispatched it; the next green backfill closes it.
+  report:
+    needs: [fetch, apply]
+    if: ${{ always() && !inputs.dry_run }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
-          name: backfill-log-${{ github.run_id }}
-          path: ${{ runner.temp }}/backfill.log
-          retention-days: 30
+          persist-credentials: false
+          sparse-checkout: .github/scripts
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+        env:
+          FETCH: ${{ needs.fetch.result }}
+          APPLY: ${{ needs.apply.result }}
+          SOURCE: ${{ inputs.source }}
+          FROM: ${{ inputs.from }}
+        with:
+          script: |
+            const issues = require('./.github/scripts/issues.cjs');
+            const { FETCH, APPLY, SOURCE, FROM } = process.env;
+            const gh = { github, context };
+            if (FETCH === 'failure' || APPLY === 'failure') {
+              await issues.report(gh, {
+                label: 'backfill-failure',
+                title: `Backfill ${SOURCE} from ${FROM} failed`,
+                body: `Backfill ${SOURCE} from ${FROM} failed: fetch ${FETCH}, apply ${APPLY}. The staged batch is in the run's \`backfill-batch-*\` artifact; replay it with \`npm run ingest -- apply --in <dir>\` (README, "Replaying a batch").`,
+              });
+            } else if (FETCH === 'success' && APPLY === 'success') {
+              await issues.resolve(gh, { label: 'backfill-failure' });
+            }

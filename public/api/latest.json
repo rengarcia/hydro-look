@@ -1,6 +1,8 @@
 {
-  "generated_at": "2026-09-23T02:37:14Z",
-  "as_of": "2026-09-22",
+  "schema_version": 1,
+  "generated_at": "2026-09-23T05:56:24Z",
+  "data_date": "2026-09-21",
+  "as_of": "2026-09-23",
   "disclaimer": "No es una fuente oficial. Cada número es una copia de lo que publicaron CELEC o CENACE, con la respuesta que lo produjo archivada junto a él.",
   "reservoirs": [
     {
@@ -13,13 +15,19 @@
         "first_reading": "2014-09-20",
         "days": 4385,
         "observed_min_masl": 2106.66,
-        "observed_max_masl": 2155.83
+        "observed_max_masl": 2155.83,
+        "previous": {
+          "masl": 2139.14,
+          "date": "2026-09-20"
+        },
+        "delta_1d_m": -0.77
       },
       "bands": [
         {
           "min_masl": 2100,
           "max_masl": 2153,
-          "declaration": "report endpoint",
+          "declaration": "report_endpoint",
+          "declaration_es": "servicio de reportes",
           "source": "ords:repDiaHid12m",
           "observed_from": "2014-09-20",
           "observed_to": "2026-09-20",
@@ -29,7 +37,8 @@
         {
           "min_masl": 2098,
           "max_masl": 2153,
-          "declaration": "dashboard chart title",
+          "declaration": "dashboard_chart_title",
+          "declaration_es": "título del gráfico del tablero",
           "source": "celec dashboard bundle",
           "observed_from": "2026-09-21",
           "observed_to": "2026-09-21",
@@ -39,7 +48,8 @@
         {
           "min_masl": 2100,
           "max_masl": 2153,
-          "declaration": "report endpoint",
+          "declaration": "report_endpoint",
+          "declaration_es": "servicio de reportes",
           "source": "ords:repDiaVolAlm",
           "observed_from": "2026-09-21",
           "observed_to": "2026-09-21",
@@ -64,7 +74,12 @@
           "years": 17,
           "n": 248,
           "percentile_today": 29
-        }
+        },
+        "previous": {
+          "m3s": 37.62,
+          "date": "2026-09-20"
+        },
+        "delta_1d_m3s": -5.48
       }
     },
     {
@@ -77,13 +92,19 @@
         "first_reading": "2014-09-20",
         "days": 4385,
         "observed_min_masl": 1971.65,
-        "observed_max_masl": 1991.69
+        "observed_max_masl": 1991.69,
+        "previous": {
+          "masl": 1985.38,
+          "date": "2026-09-20"
+        },
+        "delta_1d_m": -0.32
       },
       "bands": [
         {
           "min_masl": 1960,
           "max_masl": 1991,
-          "declaration": "report endpoint",
+          "declaration": "report_endpoint",
+          "declaration_es": "servicio de reportes",
           "source": "ords:repDiaHid12m",
           "observed_from": "2014-09-20",
           "observed_to": "2026-09-20",
@@ -93,7 +114,8 @@
         {
           "min_masl": 1970,
           "max_masl": 1991,
-          "declaration": "report endpoint",
+          "declaration": "report_endpoint",
+          "declaration_es": "servicio de reportes",
           "source": "ords:repDiaVolAlm",
           "observed_from": "2026-09-21",
           "observed_to": "2026-09-21",
@@ -103,7 +125,8 @@
         {
           "min_masl": 1975,
           "max_masl": 1991,
-          "declaration": "dashboard chart title",
+          "declaration": "dashboard_chart_title",
+          "declaration_es": "título del gráfico del tablero",
           "source": "celec dashboard bundle",
           "observed_from": "2026-09-21",
           "observed_to": "2026-09-21",
@@ -128,7 +151,12 @@
           "years": 13,
           "n": 182,
           "percentile_today": 79.1
-        }
+        },
+        "previous": {
+          "m3s": 142.6,
+          "date": "2026-09-20"
+        },
+        "delta_1d_m3s": -2.34
       }
     },
     {
@@ -141,13 +169,19 @@
         "first_reading": "2026-05-31",
         "days": 114,
         "observed_min_masl": 1313.51,
-        "observed_max_masl": 1317.12
+        "observed_max_masl": 1317.12,
+        "previous": {
+          "masl": 1314.82,
+          "date": "2026-09-20"
+        },
+        "delta_1d_m": 0.82
       },
       "bands": [
         {
           "min_masl": 1312,
           "max_masl": 1318,
-          "declaration": "dashboard chart title",
+          "declaration": "dashboard_chart_title",
+          "declaration_es": "título del gráfico del tablero",
           "source": "celec dashboard bundle",
           "observed_from": "2026-09-21",
           "observed_to": "2026-09-21",
@@ -165,7 +199,12 @@
         "date": "2026-09-21",
         "first_reading": "2026-05-31",
         "days": 114,
-        "climatology": null
+        "climatology": null,
+        "previous": {
+          "m3s": 103.23,
+          "date": "2026-09-20"
+        },
+        "delta_1d_m3s": 44.61
       }
     },
     {
@@ -178,13 +217,19 @@
         "first_reading": "2018-10-11",
         "days": 2903,
         "observed_min_masl": 755,
-        "observed_max_masl": 792.86
+        "observed_max_masl": 792.86,
+        "previous": {
+          "masl": 788.74,
+          "date": "2026-09-20"
+        },
+        "delta_1d_m": -1.1
       },
       "bands": [
         {
           "min_masl": 750,
           "max_masl": 793,
-          "declaration": "report endpoint",
+          "declaration": "report_endpoint",
+          "declaration_es": "servicio de reportes",
           "source": "ords:repDiaHid12m",
           "observed_from": "2018-10-01",
           "observed_to": "2026-09-20",
@@ -194,7 +239,8 @@
         {
           "min_masl": 783.33,
           "max_masl": 792.86,
-          "declaration": "dashboard chart title",
+          "declaration": "dashboard_chart_title",
+          "declaration_es": "título del gráfico del tablero",
           "source": "celec dashboard bundle",
           "observed_from": "2026-09-21",
           "observed_to": "2026-09-21",
@@ -204,7 +250,8 @@
         {
           "min_masl": 783.33,
           "max_masl": 792.86,
-          "declaration": "report endpoint",
+          "declaration": "report_endpoint",
+          "declaration_es": "servicio de reportes",
           "source": "ords:repDiaVolAlm",
           "observed_from": "2026-09-21",
           "observed_to": "2026-09-21",
@@ -229,7 +276,12 @@
           "years": 8,
           "n": 113,
           "percentile_today": 22.1
-        }
+        },
+        "previous": {
+          "m3s": 14.49,
+          "date": "2026-09-20"
+        },
+        "delta_1d_m3s": -4.71
       }
     },
     {
@@ -242,13 +294,19 @@
         "first_reading": "2018-12-31",
         "days": 2822,
         "observed_min_masl": 1469.08,
-        "observed_max_masl": 1492.51
+        "observed_max_masl": 1492.51,
+        "previous": {
+          "masl": 1490.88,
+          "date": "2026-09-20"
+        },
+        "delta_1d_m": -0.16
       },
       "bands": [
         {
           "min_masl": 1469,
           "max_masl": 1491,
-          "declaration": "report endpoint",
+          "declaration": "report_endpoint",
+          "declaration_es": "servicio de reportes",
           "source": "ords:repDiaHid12m",
           "observed_from": "2018-08-31",
           "observed_to": "2026-09-20",
@@ -273,7 +331,12 @@
           "years": 9,
           "n": 128,
           "percentile_today": 61.7
-        }
+        },
+        "previous": {
+          "m3s": 36,
+          "date": "2026-09-20"
+        },
+        "delta_1d_m3s": -2
       }
     },
     {
@@ -286,7 +349,12 @@
         "first_reading": "2016-07-05",
         "days": 3726,
         "observed_min_masl": 1637,
-        "observed_max_masl": 1651
+        "observed_max_masl": 1651,
+        "previous": {
+          "masl": 1645.77,
+          "date": "2026-09-20"
+        },
+        "delta_1d_m": 0.13
       },
       "bands": [],
       "slopes_m_per_day": {
@@ -306,7 +374,12 @@
           "years": 11,
           "n": 158,
           "percentile_today": 41.8
-        }
+        },
+        "previous": {
+          "m3s": 80,
+          "date": "2026-09-20"
+        },
+        "delta_1d_m3s": 0
       }
     },
     {
@@ -319,7 +392,12 @@
         "first_reading": "2017-08-01",
         "days": 3339,
         "observed_min_masl": 460,
-        "observed_max_masl": 493.1
+        "observed_max_masl": 493.1,
+        "previous": {
+          "masl": 492.2,
+          "date": "2026-09-20"
+        },
+        "delta_1d_m": -0.1
       },
       "bands": [],
       "slopes_m_per_day": {
@@ -339,7 +417,12 @@
           "years": 10,
           "n": 141,
           "percentile_today": 31.9
-        }
+        },
+        "previous": {
+          "m3s": 67.3,
+          "date": "2026-09-20"
+        },
+        "delta_1d_m3s": 0.4
       }
     },
     {
@@ -352,7 +435,12 @@
         "first_reading": "2016-06-26",
         "days": 3734,
         "observed_min_masl": 1198,
-        "observed_max_masl": 1230.5
+        "observed_max_masl": 1230.5,
+        "previous": {
+          "masl": 1220.5,
+          "date": "2026-09-20"
+        },
+        "delta_1d_m": -1.5
       },
       "bands": [],
       "slopes_m_per_day": {
@@ -372,7 +460,12 @@
           "years": 11,
           "n": 158,
           "percentile_today": 44.3
-        }
+        },
+        "previous": {
+          "m3s": 220,
+          "date": "2026-09-20"
+        },
+        "delta_1d_m3s": -15
       }
     }
   ],
@@ -422,19 +515,92 @@
     "transport_losses_gwh": -0.607,
     "hydro_share_pct": 78.81,
     "thermal_share_pct": 19.57,
-    "import_share_pct": 0.13
+    "import_share_pct": 0.13,
+    "previous": {
+      "date": "2026-09-20",
+      "total_generation_gwh": 100.054,
+      "total_import_gwh": 0.168,
+      "hydro_share_pct": 76.64,
+      "thermal_share_pct": 21.39,
+      "import_share_pct": 0.17
+    },
+    "delta_1d": {
+      "hydro_share_pct_points": 2.17,
+      "thermal_share_pct_points": -1.82,
+      "import_share_pct_points": -0.04,
+      "total_generation_gwh": 8.907
+    }
   },
   "adequacy": {
     "origin_date": "2026-09-21",
     "tier": "vigilancia",
+    "tier_code": "watch",
+    "tier_label_es": "Vigilancia",
     "worst_tier": "ajustado",
+    "worst_tier_code": "tight",
+    "worst_tier_label_es": "Ajustado",
     "worst_tier_horizon_days": 60,
+    "narrative_tier_field": "worst_tier",
     "worst_deficit_gwh_day": 0.797,
-    "run_id": "2026-09-21-adequacy-1-06a49241"
+    "run_id": "2026-09-21-adequacy-2-3722ef6f"
   },
+  "deprecated": {
+    "as_of": "data_date; as_of is the day the job ran, not the day the readings describe. Removed in schema_version 2."
+  },
+  "license": {
+    "code": "MIT",
+    "code_url": "https://github.com/rengarcia/hydro-look/blob/main/LICENSE",
+    "data": "Copies of public data. Each upstream source keeps its own terms, listed in `attribution`; credit them, and this project, when you republish.",
+    "data_es": "Copias de datos públicos. Cada fuente conserva sus propios términos, listados en `attribution`; cítelas, y a este proyecto, al republicar."
+  },
+  "attribution": [
+    {
+      "id": "celec",
+      "name": "CELEC EP",
+      "provides": "reservoir levels, inflows, declared bands and per-plant energy",
+      "url": "https://www.celec.gob.ec/",
+      "terms": "public web services of a state company; no licence is stated",
+      "terms_es": "servicios web públicos de una empresa del Estado; no declaran licencia"
+    },
+    {
+      "id": "cenace",
+      "name": "CENACE",
+      "provides": "the national energy balance and live operating data",
+      "url": "https://www.cenace.gob.ec/",
+      "terms": "public web services of the system operator; no licence is stated",
+      "terms_es": "servicios web públicos del operador del sistema; no declaran licencia"
+    },
+    {
+      "id": "xm",
+      "name": "XM S.A. E.S.P.",
+      "provides": "Colombian storage and cross-border exchanges",
+      "url": "https://www.xm.com.co/",
+      "terms": "public data portal of the Colombian market operator",
+      "terms_es": "portal de datos públicos del operador del mercado colombiano"
+    },
+    {
+      "id": "open_meteo",
+      "name": "Open-Meteo (ERA5 and forecast models)",
+      "provides": "precipitation and temperature at the basin centroids",
+      "url": "https://open-meteo.com/",
+      "terms": "CC BY 4.0 (https://open-meteo.com/en/terms); the free API is for non-commercial use",
+      "terms_es": "CC BY 4.0 (https://open-meteo.com/en/terms); la API gratuita es para uso no comercial"
+    },
+    {
+      "id": "noaa",
+      "name": "NOAA PSL / CPC",
+      "provides": "the Oceanic Niño Index",
+      "url": "https://psl.noaa.gov/data/correlation/oni.data",
+      "terms": "US government work, public domain",
+      "terms_es": "obra del Gobierno de EE. UU., dominio público"
+    }
+  ],
   "see_also": {
-    "forecast": "/api/forecast.json",
-    "status": "/api/status.json",
-    "adequacy": "/api/adequacy.json"
+    "forecast": "https://hydro-look.vercel.app/api/forecast.json",
+    "status": "https://hydro-look.vercel.app/api/status.json",
+    "adequacy": "https://hydro-look.vercel.app/api/adequacy.json",
+    "narrative": "https://hydro-look.vercel.app/api/narrative.json",
+    "schema": "https://hydro-look.vercel.app/api/schema/latest.schema.json",
+    "documentation": "https://hydro-look.vercel.app/datos/"
   }
 }

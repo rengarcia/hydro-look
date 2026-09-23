@@ -10,3 +10,4 @@ minas_san_francisco,783.33,792.86,,dashboard chart title,celec dashboard bundle,
 minas_san_francisco,750,793,600,report endpoint,ords:repDiaHid12m,2018-10-01,2026-09-20,data/curated/operating_bands.csv
 minas_san_francisco,783.33,792.86,,report endpoint,ords:repDiaVolAlm,2026-09-21,2026-09-21,data/curated/operating_bands.csv
 sopladora,1312,1318,,dashboard chart title,celec dashboard bundle,2026-09-21,2026-09-21,data/reference/mrids.csv
+mazar,2115,,,project marker (unverified),PLAN.md section 7,,,"No upstream source publishes this level; it is this project's own critical marker, forecast against because the plan asks for it"

@@ -45,11 +45,7 @@ describe("xm parsers", () => {
     // March 2017 carries CUATRICENTENARIO 1, which does publish hours both ways. The first
     // backfill checked it anyway and threw away twenty months of Ecuador rows with it.
     const notes: string[] = [];
-    const rows = combineExchange(
-      parseXmHourly(xm("ExpoEner_Enlace_2017-03")),
-      parseXmHourly(xm("ImpoEner_Enlace_2017-03")),
-      notes,
-    );
+    const rows = combineExchange(parseXmHourly(xm("ExpoEner_Enlace_2017-03")), parseXmHourly(xm("ImpoEner_Enlace_2017-03")), notes);
     expect(rows.filter((r) => r.link === "ECUADOR 230")).toHaveLength(31);
     expect(rows.every((r) => r.link === "ECUADOR 230" || r.link === "ECUADOR 138")).toBe(true);
     expect(notes.some((n) => n.includes("CUATRICENTENARIO 1"))).toBe(true);
@@ -63,8 +59,7 @@ describe("xm parsers", () => {
   });
 
   it("refuses an hour published both ways, a repeated entity and a non-number", () => {
-    const hours = (values: (string | "")[]) =>
-      Object.fromEntries(values.map((v, i) => [`Hour${String(i + 1).padStart(2, "0")}`, v]));
+    const hours = (values: string[]) => Object.fromEntries(values.map((v, i) => [`Hour${String(i + 1).padStart(2, "0")}`, v]));
     const answer = (code: string, values: string[], repeat = 1) =>
       JSON.stringify({
         Items: Array.from({ length: repeat }, () => ({
@@ -73,8 +68,9 @@ describe("xm parsers", () => {
         })),
       });
     const one = ["5", ...Array(23).fill("")];
-    expect(() => combineExchange(parseXmHourly(answer("ECUADOR 230", one)), parseXmHourly(answer("ECUADOR 230", one))))
-      .toThrow(/both directions/);
+    expect(() => combineExchange(parseXmHourly(answer("ECUADOR 230", one)), parseXmHourly(answer("ECUADOR 230", one)))).toThrow(
+      /both directions/,
+    );
     expect(() => parseXmHourly(answer("ECUADOR 230", one, 2))).toThrow(/twice/);
     expect(() => parseXmHourly(answer("ECUADOR 230", ["n/a", ...Array(23).fill("")]))).toThrow(/not a number/);
   });
@@ -189,8 +185,14 @@ describe("xm ingest", () => {
   it("records a 400 as an error for that window instead of writing anything", async () => {
     const archive = new RawArchive(mkdtempSync(join(tmpdir(), "hydro-xm-400-")));
     const fetch = vi.fn(async (spec: RequestSpec): Promise<FetchResult> => ({
-      key: spec.key, url: spec.url, method: "POST", status: 400,
-      body: "Id de Métrica no encontrada.", fetchedAt, durationMs: 0, attempts: 1,
+      key: spec.key,
+      url: spec.url,
+      method: "POST",
+      status: 400,
+      body: "Id de Métrica no encontrada.",
+      fetchedAt,
+      durationMs: 0,
+      attempts: 1,
     }));
     const batch = emptyBatch();
     await new Xm({ fetch }, archive).exchange(batch, "2024-10-01", "2024-10-31");

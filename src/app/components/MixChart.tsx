@@ -8,16 +8,20 @@
  *
  * Water is teal and every fuel is a terracotta, so the chart reads as water against fuel before
  * any single band is picked out. The terracottas are close to one another by design, which is
- * why the chart always ships beside a list naming every band with its number: colour is never
+ * why the chart always ships beside a table naming every band with its number: colour is never
  * the only thing carrying identity here.
  *
  * Days SMEC never published are holes: the stack is drawn in runs of consecutive days, so a
  * missing day is a gap in the area rather than a straight line drawn through it.
+ *
+ * This was the heaviest drawing on the page and it used to be drawn twice, once per screen
+ * width. It is now one scalable drawing whose axis type CSS enlarges on a phone.
  */
 
 import { bandPath, stack, stackMax, type Point } from "../../lib/chart/scale.ts";
-import { Plot, frameOf, monthLabels } from "./Plot.tsx";
-import { num } from "../../lib/site/format.ts";
+import { Plot, frameOf, monthLabels, responsiveLabels } from "./Plot.tsx";
+import { ChartData, sampleBack } from "./DataTable.tsx";
+import { conceptLabel, dateWithYear, num } from "../../lib/site/format.ts";
 import { daysBetween } from "../../lib/util/dates.ts";
 import type { MixDay } from "../../lib/site/data.ts";
 
@@ -32,28 +36,16 @@ export const MIX_SERIES: { concept: string; token: string }[] = [
   { concept: "total_importacion", token: "var(--import)" },
 ];
 
-export function mixToken(concept: string): string {
-  return MIX_SERIES.find((s) => s.concept === concept)?.token ?? "var(--muted)";
+/** The CSS class that paints a concept's swatch: `mix-generacion_hidraulica`. */
+export function mixClass(concept: string): string {
+  return MIX_SERIES.some((s) => s.concept === concept) ? `mix-${concept}` : "mix-other";
 }
 
-export function MixChart({
-  days,
-  label,
-  width = 540,
-  height = 250,
-  compact = false,
-}: {
-  days: MixDay[];
-  label: string;
-  width?: number;
-  height?: number;
-  /** The phone drawing: a narrower box, so the same type renders larger. */
-  compact?: boolean;
-}) {
-  if (compact) {
-    width = 360;
-    height = 260;
-  }
+const WIDTH = 480;
+const HEIGHT = 260;
+const MARGIN = { top: 12, right: 10, bottom: 36, left: 50 };
+
+export function MixChart({ days, label }: { days: MixDay[]; label: string }) {
   if (days.length < 2) return null;
 
   const first = days[0]!.date;
@@ -63,11 +55,14 @@ export function MixChart({
   const at = (date: string) => daysBetween(first, date);
 
   const keys = MIX_SERIES.map((s) => s.concept);
-  const bands = stack(days.map((d) => d.values), keys);
+  const bands = stack(
+    days.map((d) => d.values),
+    keys,
+  );
   const frame = frameOf({
-    width,
-    height,
-    margin: compact ? { top: 12, right: 8, bottom: 34, left: 44 } : { top: 12, right: 10, bottom: 30, left: 40 },
+    width: WIDTH,
+    height: HEIGHT,
+    margin: MARGIN,
     xDomain: [0, span],
     yDomain: [0, stackMax(bands) * 1.05],
     yTickCount: 2,
@@ -85,44 +80,54 @@ export function MixChart({
   }
   runs.push([start, days.length - 1]);
 
+  const shown = MIX_SERIES.filter((s) => days.some((d) => d.values[s.concept] !== undefined));
+
   return (
-    <Plot
-      frame={frame}
-      xLabels={monthLabels(first, last, compact ? 3 : 2, at)}
-      fontSize={compact ? 14 : 10.5}
-      yFormat={(v) => num(v, 0)}
-      title={label}
-      desc={`Generación diaria por tipo e importación, en GWh, entre el ${first} y el ${last}.`}
-    >
-      {MIX_SERIES.map((series, slot) => {
-        const band = bands[slot]!;
-        return (
-          <g key={series.concept}>
-            {runs.map(([from, to]) => {
-              if (to <= from) return null;
-              const upper: Point[] = [];
-              const lower: Point[] = [];
-              for (let i = from; i <= to; i++) {
-                const x = frame.x(at(days[i]!.date));
-                const [y0, y1] = band.extents[i]!;
-                upper.push({ x, y: frame.y(y1) });
-                lower.push({ x, y: frame.y(y0) });
-              }
-              return (
-                <path
-                  key={`${from}-${to}`}
-                  d={bandPath(upper, lower)}
-                  fill={series.token}
-                  /* A hairline in the surface colour is the spacer between stacked fills, drawn
-                     on the band itself so it costs no extra element per day. */
-                  stroke="var(--surface)"
-                  strokeWidth={0.6}
-                />
-              );
-            })}
-          </g>
-        );
-      })}
-    </Plot>
+    <>
+      <Plot
+        frame={frame}
+        scalable
+        xLabels={responsiveLabels(monthLabels(first, last, 2, at), monthLabels(first, last, 3, at))}
+        yFormat={(v) => num(v, 0)}
+        title={label}
+        desc={`Generación diaria por tipo e importación, en GWh, entre el ${first} y el ${last}.`}
+      >
+        {MIX_SERIES.map((series, slot) => {
+          const band = bands[slot]!;
+          return (
+            <g key={series.concept}>
+              {runs.map(([from, to]) => {
+                if (to <= from) return null;
+                const upper: Point[] = [];
+                const lower: Point[] = [];
+                for (let i = from; i <= to; i++) {
+                  const x = frame.x(at(days[i]!.date));
+                  const [y0, y1] = band.extents[i]!;
+                  upper.push({ x, y: frame.y(y1) });
+                  lower.push({ x, y: frame.y(y0) });
+                }
+                return (
+                  <path
+                    key={`${from}-${to}`}
+                    d={bandPath(upper, lower)}
+                    fill={series.token}
+                    /* A hairline in the surface colour is the spacer between stacked fills, drawn
+                       on the band itself so it costs no extra element per day. */
+                    stroke="var(--surface)"
+                    strokeWidth={0.6}
+                  />
+                );
+              })}
+            </g>
+          );
+        })}
+      </Plot>
+      <ChartData
+        caption="Generación diaria por tipo e importación, GWh, un día por semana"
+        columns={[{ label: "Día" }, ...shown.map((s) => ({ label: conceptLabel(s.concept), numeric: true }))]}
+        rows={sampleBack(days, 7).map((d) => [dateWithYear(d.date), ...shown.map((s) => num(d.values[s.concept], 2))])}
+        note="Cada séptimo día contado desde el más reciente. El balance diario completo está en /api/bulk/national_balance_daily.csv.gz."
+      />
+    </>
   );
 }

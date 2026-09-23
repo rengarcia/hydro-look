@@ -5,6 +5,7 @@
  *   npm run backtest:m4                    run it and write data/reports/m4-backtest.json
  *   npm run backtest:m4 -- --dry-run       run it and print; write nothing
  *   npm run backtest:m4 -- --last-origin 2019-06-01   a short run, for trying things (never written)
+ *   npm run backtest:m4 -- --site <id>     another reservoir (default mazar; never written over Mazar's snapshot)
  *
  * Then `npm run forecast` renders the snapshot into `data/reports/backtest.md`.
  *
@@ -19,6 +20,11 @@
  * `M4-gbm-m3-residual`'s median at seven days: the band comes from the residual quantiles
  * recorded here, and the switch falls back to M3 as soon as the ladder has an origin this
  * snapshot lacks — so rerun this at least monthly, after each new origin's week has passed.
+ *
+ * The precipitation features read whichever ERA5 point `selectPrecipBasin` chooses today — the
+ * verified catchment centroid once its climatology is adequate, the provisional point until then
+ * — and the snapshot records which (`precipBasin`), so the daily forecast can refuse a snapshot
+ * scored on another basin rather than publish a model nobody backtested on this one.
  */
 
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -26,19 +32,18 @@ import { dirname } from "node:path";
 import { parseArgs } from "node:util";
 import { loadSeries } from "../src/lib/features/series.ts";
 import { readOni } from "../src/lib/features/enso.ts";
-import { readEra5Precip } from "../src/lib/features/weather.ts";
+import {
+  MAZAR_PRECIP_BASIN,
+  PLANT_PRECIP_BASIN,
+  PROVISIONAL_PRECIP_BASIN,
+  readEra5ByBasin,
+  selectPrecipBasin,
+} from "../src/lib/features/weather.ts";
 import { persistence } from "../src/lib/models/baselines.ts";
 import { createFitCache, DEFAULT_WATER_BALANCE, waterBalanceModel } from "../src/lib/models/water-balance.ts";
 import { crisisEpisodes, crisisLeadTime, DEFAULT_BACKTEST, runBacktest } from "../src/lib/models/backtest.ts";
 import { falseAlarms, type OriginCrossing } from "../src/lib/models/forecast.ts";
-import {
-  BASE_FEATURES,
-  boostedModel,
-  createM4Cache,
-  DEFAULT_M4,
-  M3_FEATURES,
-  M4_VARIANTS,
-} from "../src/lib/models/boosted.ts";
+import { baseFeatures, boostedModel, createM4Cache, DEFAULT_M4, M3_FEATURES, M4_VARIANTS } from "../src/lib/models/boosted.ts";
 import {
   gridCrossings,
   M4_SNAPSHOT_PATH,
@@ -48,12 +53,12 @@ import {
   type GridCrisisEpisode,
   type M4Snapshot,
 } from "../src/lib/models/m4-scoring.ts";
+import { PUBLISHED_M4_SITE } from "../src/lib/models/m4-live.ts";
+import { criticalMarker, thresholdsFor } from "../src/lib/models/thresholds.ts";
+import { isSiteId } from "../src/lib/registry.ts";
 import { nowUtc } from "../src/lib/util/dates.ts";
 
-const SITE = "mazar";
 const VARIABLE = "cota_masl";
-/** PLAN.md section 7's critical level; see scripts/forecast.ts for why it is labelled unverified. */
-const PLAN_CRITICAL_LEVEL = 2115;
 
 function main(): void {
   const { values } = parseArgs({
@@ -62,18 +67,31 @@ function main(): void {
       "dry-run": { type: "boolean", default: false },
       "last-origin": { type: "string" },
       out: { type: "string" },
+      site: { type: "string" },
     },
   });
+  const SITE = values.site?.trim() || PUBLISHED_M4_SITE;
+  if (!isSiteId(SITE)) {
+    console.error(`unknown site "${SITE}"`);
+    process.exitCode = 1;
+    return;
+  }
   const started = performance.now();
   const lastOrigin = values["last-origin"]?.trim() || DEFAULT_BACKTEST.lastOrigin;
-  const write = !(values["dry-run"] ?? false) && values["last-origin"] === undefined;
+  // Mazar's snapshot is what the daily forecast stands on; another site's run is written only
+  // where it is explicitly asked to go.
+  const write =
+    !(values["dry-run"] ?? false) && values["last-origin"] === undefined && (SITE === PUBLISHED_M4_SITE || values.out !== undefined);
   const outPath = values.out?.trim() || M4_SNAPSHOT_PATH;
+  // The plan's critical marker (`thresholds.csv`, unverified), or the site's highest declared floor.
+  const PLAN_CRITICAL_LEVEL = (criticalMarker(SITE) ?? thresholdsFor(SITE)[0])?.levelMasl ?? Number.NaN;
 
   const series = loadSeries();
   const levels = series.get(SITE, VARIABLE);
   const inflow = series.get(SITE, "caudal_m3s");
   const production = series.get(SITE, "produccion_mwh");
-  const covariates = { oni: readOni(), precip: readEra5Precip() };
+  const precip = selectPrecipBasin(readEra5ByBasin(), PLANT_PRECIP_BASIN[SITE] ?? MAZAR_PRECIP_BASIN, PROVISIONAL_PRECIP_BASIN);
+  const covariates = { oni: readOni(), precip: precip.series, precipBasin: precip.basin };
   if (levels.size === 0) {
     console.error(`no ${VARIABLE} for ${SITE}`);
     process.exitCode = 1;
@@ -87,7 +105,8 @@ function main(): void {
   const options = { ...DEFAULT_BACKTEST, lastOrigin, crestM };
 
   console.log(
-    `${SITE}: ${levels.size} level days; ERA5 precipitation at the provisional Paute point: ${covariates.precip.size} days`,
+    `${SITE}: ${levels.size} level days; ERA5 precipitation at \`${precip.basin}\`: ${covariates.precip.size} days` +
+      (precip.fallbackReason ? ` (${precip.fallbackReason})` : ""),
   );
   const run = runBacktest({ levels, inflow, production }, [persistence, shipped, ...variants], options);
   const runtimeSeconds = (performance.now() - started) / 1000;
@@ -98,7 +117,10 @@ function main(): void {
     console.log(
       `  ${score.modelId.padEnd(22)}` +
         score.horizons
-          .map((h) => `${h.horizonDays}d ${h.maeM.toFixed(2)}m ${h.skillVsPersistence === null ? "" : `(${(h.skillVsPersistence * 100).toFixed(1)}%)`}`)
+          .map(
+            (h) =>
+              `${h.horizonDays}d ${h.maeM.toFixed(2)}m ${h.skillVsPersistence === null ? "" : `(${(h.skillVsPersistence * 100).toFixed(1)}%)`}`,
+          )
           .join("  "),
     );
   }
@@ -139,7 +161,11 @@ function main(): void {
       const runUp = p50
         .filter((c) => c.origin < episode.crossedOn)
         .slice(-6)
-        .map((c) => ({ origin: c.origin, p50: c.predictedCrossing, p10: p10.find((d) => d.origin === c.origin)?.predictedCrossing ?? null }));
+        .map((c) => ({
+          origin: c.origin,
+          p50: c.predictedCrossing,
+          p10: p10.find((d) => d.origin === c.origin)?.predictedCrossing ?? null,
+        }));
       return {
         modelId: id,
         p50CalledFrom: at50.calledFrom,
@@ -177,7 +203,8 @@ function main(): void {
     origins: run.origins,
     horizonDays: [...H],
     settings: DEFAULT_M4,
-    features: { base: [...BASE_FEATURES], m3: [...M3_FEATURES] },
+    features: { base: baseFeatures(precip.basin), m3: [...M3_FEATURES] },
+    precipBasin: precip.basin,
     referenceId: shipped.id,
     scores: run.scores,
     native: [shipped.id, ...variants.map((v) => v.id)].map((id) => ({ modelId: id, horizons: nativeBandScores(run.predictions, id, H) })),

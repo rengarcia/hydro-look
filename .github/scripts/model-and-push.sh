@@ -22,7 +22,7 @@ BRANCH="${BRANCH:?BRANCH required}"
 LOG="${LOG:-/dev/null}"
 LABEL="Models"
 
-# shellcheck source=push-loop.sh
+# shellcheck source=SCRIPTDIR/push-loop.sh
 source "$(dirname "$0")/push-loop.sh"
 
 # A modelling failure must not be papered over: leave the previous documents committed and
@@ -54,6 +54,7 @@ regenerate_models() {
     echo "Adequacy failed; the previously committed adequacy document is left in place."
     return 1
   fi
+  npm run score 2>&1 | tee -a "$LOG" || echo "Scorecard failed; the scorecard blocks the models just wrote are left in place."
 
   # Only now can latest.json carry today's risk tier; see the note at the top.
   if ! npm run publish:api 2>&1 | tee -a "$LOG"; then

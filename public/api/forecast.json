@@ -1,6 +1,8 @@
 {
-  "generated_at": "2026-09-23T02:37:02Z",
-  "run_id": "2026-09-21-mazar-2-3eaa4e38",
+  "schema_version": 1,
+  "generated_at": "2026-09-23T05:52:07Z",
+  "data_date": "2026-09-21",
+  "run_id": "2026-09-21-mazar-2-cc730831",
   "origin_date": "2026-09-21",
   "site": "mazar",
   "variable": "cota_masl",
@@ -10,7 +12,7 @@
     "id": "M3-water-balance",
     "label": "Water balance with a fitted release rule and analogue inflow years",
     "version": "2",
-    "features_hash": "3eaa4e3838164077",
+    "features_hash": "cc73083172d63952",
     "backtest_origins": 105,
     "horizon_models": [
       {
@@ -48,7 +50,9 @@
       "generated_at": "2026-09-22T19:56:51Z",
       "origins": 105,
       "command": "npm run backtest:m4"
-    }
+    },
+    "precip_basin": "paute",
+    "precip_basin_fallback_reason": "paute_mazar: no ERA5 rows"
   },
   "current": {
     "level_masl": 2138.37,
@@ -582,5 +586,328 @@
         "p10_lead_time_days": 7
       }
     ]
+  },
+  "precipitation_basin": {
+    "basin": "paute",
+    "verified_centroid": false,
+    "era5_days": 13407,
+    "share_since_1990": 1,
+    "fallback_reason": "paute_mazar: no ERA5 rows"
+  },
+  "inflow_forecasts": {
+    "report": "data/reports/inflow.md",
+    "note": "Caudal medio de entrada en los próximos días, por central, donde el pronóstico por años análogos supera a la persistencia y a la climatología en el backtest; en las demás se indica por qué no se publica.",
+    "plants": [
+      {
+        "site": "amaluza",
+        "origin_date": "2026-09-21",
+        "variable": "caudal_m3s",
+        "target": "mean inflow over the horizon, m3/s",
+        "precip_basin": null,
+        "rain_conditioned": false,
+        "horizons": [
+          {
+            "horizon_days": 7,
+            "published": true,
+            "reason": "analogue MAE 42.8 m3/s beats persistence 51.2 and climatology 47.9",
+            "backtest": {
+              "n": 455,
+              "mae_m3s": 42.83,
+              "persistence_mae_m3s": 51.19,
+              "climatology_mae_m3s": 47.94,
+              "coverage_p10_p90": 0.8442
+            },
+            "target_date": "2026-09-28",
+            "p10": 74.1,
+            "p50": 140.9,
+            "p90": 200,
+            "ensemble_years": 11,
+            "rain_conditioned": false
+          },
+          {
+            "horizon_days": 14,
+            "published": false,
+            "reason": "analogue MAE 42.8 m3/s does not beat climatology (42.4)",
+            "backtest": {
+              "n": 454,
+              "mae_m3s": 42.77,
+              "persistence_mae_m3s": 52.73,
+              "climatology_mae_m3s": 42.42,
+              "coverage_p10_p90": 0.8281
+            }
+          }
+        ]
+      },
+      {
+        "site": "coca_codo_sinclair",
+        "origin_date": "2026-09-21",
+        "variable": "caudal_m3s",
+        "target": "mean inflow over the horizon, m3/s",
+        "precip_basin": null,
+        "rain_conditioned": false,
+        "horizons": [
+          {
+            "horizon_days": 7,
+            "published": false,
+            "reason": "analogue MAE 99.3 m3/s does not beat climatology (95.6)",
+            "backtest": {
+              "n": 343,
+              "mae_m3s": 99.26,
+              "persistence_mae_m3s": 119.49,
+              "climatology_mae_m3s": 95.65,
+              "coverage_p10_p90": 0.8218
+            }
+          },
+          {
+            "horizon_days": 14,
+            "published": false,
+            "reason": "analogue MAE 95.3 m3/s does not beat climatology (82.2)",
+            "backtest": {
+              "n": 329,
+              "mae_m3s": 95.33,
+              "persistence_mae_m3s": 121.57,
+              "climatology_mae_m3s": 82.15,
+              "coverage_p10_p90": 0.7855
+            }
+          }
+        ]
+      },
+      {
+        "site": "agoyan",
+        "origin_date": "2026-09-21",
+        "variable": "caudal_m3s",
+        "target": "mean inflow over the horizon, m3/s",
+        "precip_basin": null,
+        "rain_conditioned": false,
+        "horizons": [
+          {
+            "horizon_days": 7,
+            "published": true,
+            "reason": "analogue MAE 40.5 m3/s beats persistence 41.9 and climatology 40.9",
+            "backtest": {
+              "n": 356,
+              "mae_m3s": 40.53,
+              "persistence_mae_m3s": 41.91,
+              "climatology_mae_m3s": 40.9,
+              "coverage_p10_p90": 0.814
+            },
+            "target_date": "2026-09-28",
+            "p10": 20.2,
+            "p50": 89,
+            "p90": 150.8,
+            "ensemble_years": 10,
+            "rain_conditioned": false
+          },
+          {
+            "horizon_days": 14,
+            "published": false,
+            "reason": "analogue MAE 40.0 m3/s does not beat climatology (37.9)",
+            "backtest": {
+              "n": 346,
+              "mae_m3s": 39.96,
+              "persistence_mae_m3s": 43.68,
+              "climatology_mae_m3s": 37.87,
+              "coverage_p10_p90": 0.8114
+            }
+          }
+        ]
+      },
+      {
+        "site": "manduriacu",
+        "origin_date": "2026-09-21",
+        "variable": "caudal_m3s",
+        "target": "mean inflow over the horizon, m3/s",
+        "precip_basin": null,
+        "rain_conditioned": false,
+        "horizons": [
+          {
+            "horizon_days": 7,
+            "published": false,
+            "reason": "analogue MAE 49.3 m3/s does not beat persistence (44.0)",
+            "backtest": {
+              "n": 260,
+              "mae_m3s": 49.25,
+              "persistence_mae_m3s": 43.97,
+              "climatology_mae_m3s": 57.04,
+              "coverage_p10_p90": 0.8347
+            }
+          },
+          {
+            "horizon_days": 14,
+            "published": false,
+            "reason": "analogue MAE 49.9 m3/s does not beat persistence (48.8)",
+            "backtest": {
+              "n": 239,
+              "mae_m3s": 49.92,
+              "persistence_mae_m3s": 48.81,
+              "climatology_mae_m3s": 52.91,
+              "coverage_p10_p90": 0.8106
+            }
+          }
+        ]
+      },
+      {
+        "site": "minas_san_francisco",
+        "origin_date": "2026-09-21",
+        "variable": "caudal_m3s",
+        "target": "mean inflow over the horizon, m3/s",
+        "precip_basin": null,
+        "rain_conditioned": false,
+        "horizons": [
+          {
+            "horizon_days": 7,
+            "published": true,
+            "reason": "analogue MAE 25.1 m3/s beats persistence 28.7 and climatology 30.2",
+            "backtest": {
+              "n": 256,
+              "mae_m3s": 25.12,
+              "persistence_mae_m3s": 28.71,
+              "climatology_mae_m3s": 30.24,
+              "coverage_p10_p90": 0.7992
+            },
+            "target_date": "2026-09-28",
+            "p10": 0,
+            "p50": 22,
+            "p90": 63.8,
+            "ensemble_years": 7,
+            "rain_conditioned": false
+          },
+          {
+            "horizon_days": 14,
+            "published": true,
+            "reason": "analogue MAE 24.2 m3/s beats persistence 31.6 and climatology 28.3",
+            "backtest": {
+              "n": 255,
+              "mae_m3s": 24.23,
+              "persistence_mae_m3s": 31.56,
+              "climatology_mae_m3s": 28.33,
+              "coverage_p10_p90": 0.786
+            },
+            "target_date": "2026-10-05",
+            "p10": 0,
+            "p50": 24.9,
+            "p90": 66.7,
+            "ensemble_years": 7,
+            "rain_conditioned": false
+          }
+        ]
+      },
+      {
+        "site": "delsitanisagua",
+        "origin_date": "2026-09-21",
+        "variable": "caudal_m3s",
+        "target": "mean inflow over the horizon, m3/s",
+        "precip_basin": null,
+        "rain_conditioned": false,
+        "horizons": [
+          {
+            "horizon_days": 7,
+            "published": true,
+            "reason": "analogue MAE 14.9 m3/s beats persistence 17.1 and climatology 16.2",
+            "backtest": {
+              "n": 262,
+              "mae_m3s": 14.9,
+              "persistence_mae_m3s": 17.05,
+              "climatology_mae_m3s": 16.2,
+              "coverage_p10_p90": 0.732
+            },
+            "target_date": "2026-09-28",
+            "p10": 22.7,
+            "p50": 41.3,
+            "p90": 61.1,
+            "ensemble_years": 8,
+            "rain_conditioned": false
+          },
+          {
+            "horizon_days": 14,
+            "published": true,
+            "reason": "analogue MAE 13.5 m3/s beats persistence 16.4 and climatology 14.4",
+            "backtest": {
+              "n": 261,
+              "mae_m3s": 13.52,
+              "persistence_mae_m3s": 16.38,
+              "climatology_mae_m3s": 14.44,
+              "coverage_p10_p90": 0.7711
+            },
+            "target_date": "2026-10-05",
+            "p10": 23.1,
+            "p50": 41.5,
+            "p90": 58.9,
+            "ensemble_years": 8,
+            "rain_conditioned": false
+          }
+        ]
+      }
+    ]
+  },
+  "scorecard": {
+    "generated_at": "2026-09-23T05:56:15Z",
+    "observed_through": "2026-09-21",
+    "target": "level on the target day, m",
+    "units": "m",
+    "runs_considered": 2,
+    "runs_superseded": 1,
+    "rows_scored": 0,
+    "rows_pending": 10,
+    "rows_excluded": 0,
+    "method": "Every published run whose horizon has passed, scored under the model and version that made it; the last run generated for each origin and version only. Pending rows have not reached their target date yet; excluded rows have no observation on the target day.",
+    "by_horizon": [],
+    "recent": []
+  },
+  "license": {
+    "code": "MIT",
+    "code_url": "https://github.com/rengarcia/hydro-look/blob/main/LICENSE",
+    "data": "Copies of public data. Each upstream source keeps its own terms, listed in `attribution`; credit them, and this project, when you republish.",
+    "data_es": "Copias de datos públicos. Cada fuente conserva sus propios términos, listados en `attribution`; cítelas, y a este proyecto, al republicar."
+  },
+  "attribution": [
+    {
+      "id": "celec",
+      "name": "CELEC EP",
+      "provides": "reservoir levels, inflows, declared bands and per-plant energy",
+      "url": "https://www.celec.gob.ec/",
+      "terms": "public web services of a state company; no licence is stated",
+      "terms_es": "servicios web públicos de una empresa del Estado; no declaran licencia"
+    },
+    {
+      "id": "cenace",
+      "name": "CENACE",
+      "provides": "the national energy balance and live operating data",
+      "url": "https://www.cenace.gob.ec/",
+      "terms": "public web services of the system operator; no licence is stated",
+      "terms_es": "servicios web públicos del operador del sistema; no declaran licencia"
+    },
+    {
+      "id": "xm",
+      "name": "XM S.A. E.S.P.",
+      "provides": "Colombian storage and cross-border exchanges",
+      "url": "https://www.xm.com.co/",
+      "terms": "public data portal of the Colombian market operator",
+      "terms_es": "portal de datos públicos del operador del mercado colombiano"
+    },
+    {
+      "id": "open_meteo",
+      "name": "Open-Meteo (ERA5 and forecast models)",
+      "provides": "precipitation and temperature at the basin centroids",
+      "url": "https://open-meteo.com/",
+      "terms": "CC BY 4.0 (https://open-meteo.com/en/terms); the free API is for non-commercial use",
+      "terms_es": "CC BY 4.0 (https://open-meteo.com/en/terms); la API gratuita es para uso no comercial"
+    },
+    {
+      "id": "noaa",
+      "name": "NOAA PSL / CPC",
+      "provides": "the Oceanic Niño Index",
+      "url": "https://psl.noaa.gov/data/correlation/oni.data",
+      "terms": "US government work, public domain",
+      "terms_es": "obra del Gobierno de EE. UU., dominio público"
+    }
+  ],
+  "see_also": {
+    "latest": "https://hydro-look.vercel.app/api/latest.json",
+    "status": "https://hydro-look.vercel.app/api/status.json",
+    "adequacy": "https://hydro-look.vercel.app/api/adequacy.json",
+    "narrative": "https://hydro-look.vercel.app/api/narrative.json",
+    "schema": "https://hydro-look.vercel.app/api/schema/forecast.schema.json",
+    "documentation": "https://hydro-look.vercel.app/datos/"
   }
 }

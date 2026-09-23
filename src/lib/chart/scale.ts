@@ -1,7 +1,7 @@
 /**
  * The geometry behind the site's charts: scales, ticks and SVG path strings.
  *
- * The site renders every chart as inline SVG on the server and ships no client JavaScript, so
+ * The site renders every chart as inline SVG on the server and no chart depends on a script, so
  * these run once at build time and their output is what a reader receives. That is the reason
  * they live here rather than inside the components: a path string is arithmetic, arithmetic can
  * be wrong in ways that look plausible on screen, and a unit test catches an off-by-one in a
@@ -89,7 +89,10 @@ export function linePath(points: readonly Point[]): string {
 export function bandPath(upper: readonly Point[], lower: readonly Point[]): string {
   if (upper.length < 2 || lower.length !== upper.length) return "";
   const forward = upper.map((p, i) => `${i === 0 ? "M" : "L"}${fmt(p.x)} ${fmt(p.y)}`).join(" ");
-  const back = [...lower].reverse().map((p) => `L${fmt(p.x)} ${fmt(p.y)}`).join(" ");
+  const back = [...lower]
+    .reverse()
+    .map((p) => `L${fmt(p.x)} ${fmt(p.y)}`)
+    .join(" ");
   return `${forward} ${back} Z`;
 }
 

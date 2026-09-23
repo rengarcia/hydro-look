@@ -187,9 +187,7 @@ export function runBacktest(inputs: Inputs, models: readonly Model[], options: B
   for (const horizon of options.horizonDays) {
     let shared: Set<IsoDate> | undefined;
     for (const model of models) {
-      const here = new Set<IsoDate>(
-        (raw.get(model.id) ?? []).filter((p) => p.horizonDays === horizon).map((p) => p.origin),
-      );
+      const here = new Set<IsoDate>((raw.get(model.id) ?? []).filter((p) => p.horizonDays === horizon).map((p) => p.origin));
       if (shared === undefined) shared = here;
       else shared = new Set<IsoDate>([...shared].filter((origin) => here.has(origin)));
     }
@@ -240,11 +238,7 @@ export function runBacktest(inputs: Inputs, models: readonly Model[], options: B
 
 const PERSISTENCE_ID = "M0-persistence";
 
-export function scoreAll(
-  predictions: readonly Prediction[],
-  models: readonly Model[],
-  horizonDays: readonly number[],
-): ModelScore[] {
+export function scoreAll(predictions: readonly Prediction[], models: readonly Model[], horizonDays: readonly number[]): ModelScore[] {
   const baseline = new Map<number, number>();
   for (const horizon of horizonDays) {
     const errors = predictions
@@ -286,14 +280,11 @@ export function scoreAll(
                   ]),
                 ),
           coverageP10P90:
-            banded.length === 0
-              ? null
-              : banded.filter((p) => p.actual >= p.p10! && p.actual <= p.p90!).length / banded.length,
+            banded.length === 0 ? null : banded.filter((p) => p.actual >= p.p10! && p.actual <= p.p90!).length / banded.length,
           ensembleCoverage:
             withEnsemble.length === 0
               ? null
-              : withEnsemble.filter((p) => p.actual >= p.ensembleP10! && p.actual <= p.ensembleP90!).length /
-                withEnsemble.length,
+              : withEnsemble.filter((p) => p.actual >= p.ensembleP10! && p.actual <= p.ensembleP90!).length / withEnsemble.length,
           meanBandWidthM: banded.length === 0 ? null : mean(banded.map((p) => p.p90! - p.p10!)),
         },
       ];
@@ -352,9 +343,7 @@ export function crisisLeadTime(
   calls: { origin: IsoDate; predictedCrossing: IsoDate | null }[],
   graceDays: number = CRISIS_GRACE_DAYS,
 ): CrisisCall {
-  const before = calls
-    .filter((call) => call.origin < episode.crossedOn)
-    .sort((a, b) => (a.origin < b.origin ? -1 : 1));
+  const before = calls.filter((call) => call.origin < episode.crossedOn).sort((a, b) => (a.origin < b.origin ? -1 : 1));
 
   let calledFrom: IsoDate | null = null;
   for (let i = before.length - 1; i >= 0; i--) {
@@ -367,9 +356,7 @@ export function crisisLeadTime(
   const leadTimeDays =
     calledFrom === null
       ? null
-      : Math.round(
-          (Date.parse(`${episode.crossedOn}T00:00:00Z`) - Date.parse(`${calledFrom}T00:00:00Z`)) / 86_400_000,
-        );
+      : Math.round((Date.parse(`${episode.crossedOn}T00:00:00Z`) - Date.parse(`${calledFrom}T00:00:00Z`)) / 86_400_000);
 
   return { episode, calledFrom, leadTimeDays, origins: before };
 }

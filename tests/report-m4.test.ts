@@ -69,7 +69,14 @@ function inputs(m4: M4Snapshot | null): ReportInputs {
         days: 100,
         fitCeilingM: 2150,
       },
-      rule: { points: [{ level: 2110, releaseM3s: 10 }, { level: 2150, releaseM3s: 60 }], zeroAtM: 2060, days: 100 },
+      rule: {
+        points: [
+          { level: 2110, releaseM3s: 10 },
+          { level: 2150, releaseM3s: 60 },
+        ],
+        zeroAtM: 2060,
+        days: 100,
+      },
       stance: 0,
       startLevel: 2130,
     },
@@ -112,7 +119,9 @@ describe("the M4 section of the backtest report", () => {
       ...inputs(snapshot(ORIGINS.slice(0, 2))),
       published: { published: false, modelId: "M4-gbm-m3-residual", horizonDays: 7, reason: "the snapshot is stale." },
     });
-    expect(fellBack).toContain("**7 days would publish M4-gbm-m3-residual, but this run falls back to M3-water-balance:** the snapshot is stale.");
+    expect(fellBack).toContain(
+      "**7 days would publish M4-gbm-m3-residual, but this run falls back to M3-water-balance:** the snapshot is stale.",
+    );
     expect(fellBack).not.toContain("7 days publishes M4");
   });
 });

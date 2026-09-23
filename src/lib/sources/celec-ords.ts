@@ -25,18 +25,8 @@ import {
   parseRepDiaVolAlm,
 } from "../parse/ords.ts";
 import type { ParseResult } from "../parse/types.ts";
-import { ENERGY_MODULES, type EnergyPlantCode } from "../registry.ts";
-import {
-  addDays,
-  monthOf,
-  monthStart,
-  nextMonth,
-  ordsFecha,
-  ordsMidnightZ,
-  yearOf,
-  type IsoDate,
-  type YearMonth,
-} from "../util/dates.ts";
+import { ENERGY_MODULES, rowFloor, type EnergyPlantCode } from "../registry.ts";
+import { addDays, monthStart, nextMonth, ordsFecha, ordsMidnightZ, todayEc, type IsoDate, type YearMonth } from "../util/dates.ts";
 import type { IngestBatch } from "./batch.ts";
 
 export const ORDS_BASE = "https://generacioncsr.celec.gob.ec:8443/ords/csr";
@@ -47,12 +37,16 @@ export class CelecOrds {
   constructor(
     private readonly http: HttpClient,
     private readonly archive: RawArchive,
+    /** Today in Ecuador; injectable so the row floors can be tested against a fixed day. */
+    private readonly today: () => IsoDate = todayEc,
   ) {}
 
   /**
    * Fetch, archive verbatim, parse, and stamp every row with where it came from. A non-200 is
-   * recorded as an error on the batch and writes nothing: one failing endpoint must not stop
-   * the rest of the run, and must not silently produce an empty table either.
+   * archived too (under a key of its own, so it never replaces a good answer), recorded as an
+   * error on the batch, and writes nothing: one failing endpoint must not stop the rest of the
+   * run, and must not silently produce an empty table either — which is also why a 200 that
+   * parses to fewer rows than the endpoint's floor in `MIN_ROWS` is an error, not a quiet day.
    */
   private async collect(
     batch: IngestBatch,
@@ -80,13 +74,8 @@ export class CelecOrds {
       batch.errors.push(`${opts.key}: ${String(error)}`);
       return;
     }
-    if (result.status !== 200) {
-      batch.errors.push(`${opts.key}: HTTP ${result.status}`);
-      return;
-    }
 
-    const period = opts.dataDate ? { year: yearOf(opts.dataDate), month: monthOf(opts.dataDate) } : null;
-    const rawRef = this.archive.add(SOURCE, opts.endpoint, period, {
+    const rawRef = this.archive.add(SOURCE, opts.endpoint, opts.dataDate, {
       key: result.key,
       url: result.url,
       method: result.method,
@@ -94,6 +83,10 @@ export class CelecOrds {
       fetched_at: result.fetchedAt,
       body: result.body,
     });
+    if (result.status !== 200) {
+      batch.errors.push(`${opts.key}: HTTP ${result.status} (archived at ${rawRef})`);
+      return;
+    }
 
     let parsed: ParseResult;
     try {
@@ -102,6 +95,13 @@ export class CelecOrds {
       // The response is archived, so a parser fix can reprocess it without re-fetching.
       batch.errors.push(`${opts.key}: parse failed: ${String(error)} (archived at ${rawRef})`);
       return;
+    }
+
+    const floor = rowFloor(opts.endpoint, opts.dataDate, this.today());
+    if (floor && parsed.observations.length < floor.rows) {
+      batch.errors.push(
+        `${opts.key}: HTTP 200 but ${parsed.observations.length} rows, expected at least ${floor.rows} (archived at ${rawRef})`,
+      );
     }
 
     for (const observation of parsed.observations) {
@@ -256,7 +256,11 @@ export class CelecOrds {
   }
 
   /** Live endpoints: a snapshot for the "now" tile, never a series. */
-  async latest(): Promise<{ units: ReturnType<typeof parseEstUnidades>; live: ReturnType<typeof parseProdLineaLast2h>; fetchedAt: string }> {
+  async latest(): Promise<{
+    units: ReturnType<typeof parseEstUnidades>;
+    live: ReturnType<typeof parseProdLineaLast2h>;
+    fetchedAt: string;
+  }> {
     const [unitsResponse, liveResponse] = [
       await this.http.fetch({ key: "csrEstUnidades", url: `${ORDS_MODULE_CSR}/csrEstUnidades` }),
       await this.http.fetch({ key: "csrProdLineaLast2h", url: `${ORDS_MODULE_CSR}/csrProdLineaLast2h` }),

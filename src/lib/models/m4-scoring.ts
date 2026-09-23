@@ -89,19 +89,10 @@ export interface NativeBandScore {
 }
 
 /** Coverage and pinball of a model's own p10/p50/p90, before the harness's residual widening. */
-export function nativeBandScores(
-  predictions: readonly Prediction[],
-  modelId: string,
-  horizons: readonly number[],
-): NativeBandScore[] {
+export function nativeBandScores(predictions: readonly Prediction[], modelId: string, horizons: readonly number[]): NativeBandScore[] {
   return horizons.map((horizonDays) => {
     const list = predictions.filter(
-      (p) =>
-        p.modelId === modelId &&
-        p.horizonDays === horizonDays &&
-        p.p10 !== null &&
-        p.ensembleP10 !== null &&
-        p.ensembleP90 !== null,
+      (p) => p.modelId === modelId && p.horizonDays === horizonDays && p.p10 !== null && p.ensembleP10 !== null && p.ensembleP90 !== null,
     );
     if (list.length === 0) return { horizonDays, n: 0, coverage: null, pinballMeanM: null };
     const inside = list.filter((p) => p.actual >= p.ensembleP10! && p.actual <= p.ensembleP90!).length;
@@ -204,6 +195,11 @@ export interface M4Snapshot {
   horizonDays: number[];
   settings: M4Settings;
   features: { base: string[]; m3: string[] };
+  /**
+   * The `basins.csv` row the precipitation features were read from. Absent from snapshots written
+   * before 2026-09-23, all of which read the provisional `paute` point.
+   */
+  precipBasin?: string;
   referenceId: string;
   scores: ModelScore[];
   native: { modelId: string; horizons: NativeBandScore[] }[];
@@ -257,9 +253,7 @@ export function m4Decisions(snapshot: M4Snapshot): M4Decision[] {
     for (const h of score.horizons) {
       const ref = reference?.horizons.find((r) => r.horizonDays === h.horizonDays);
       if (!ref) continue;
-      const paired = snapshot.paired
-        .find((p) => p.modelId === score.modelId)
-        ?.horizons.find((p) => p.horizonDays === h.horizonDays);
+      const paired = snapshot.paired.find((p) => p.modelId === score.modelId)?.horizons.find((p) => p.horizonDays === h.horizonDays);
       const beats = h.maeM < ref.maeM;
       const coverageNoWorse = gap(h.coverageP10P90) <= gap(ref.coverageP10P90);
       out.push({

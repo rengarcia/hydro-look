@@ -165,9 +165,7 @@ describe("buildForecast", () => {
     expect(entry.scenarios.map((s) => s.scenario)).toEqual(["dry", "median", "wet"]);
     // Each scenario names the real year it came from, which is the point of an analogue method.
     expect(entry.scenarios.every((s) => s.analogYear >= 2014)).toBe(true);
-    expect(entry.across_all_analogue_years!.years_that_cross).toBeLessThanOrEqual(
-      entry.across_all_analogue_years!.analogue_years,
-    );
+    expect(entry.across_all_analogue_years!.years_that_cross).toBeLessThanOrEqual(entry.across_all_analogue_years!.analogue_years);
   });
 
   it("publishes the fitted reservoir so the forecast can be argued with", () => {
@@ -230,7 +228,10 @@ describe("the seven-day switch in the published forecast", () => {
       })),
     },
   ];
-  type Entry = { horizon_days: number; p10: number; p50: number; p90: number; model: string; band_source: string } & Record<string, unknown>;
+  type Entry = { horizon_days: number; p10: number; p50: number; p90: number; model: string; band_source: string } & Record<
+    string,
+    unknown
+  >;
   type Doc = {
     forecast: Entry[];
     backtest: { horizons: { horizon_days: number; model: string; mae_m: number; skill_vs_persistence: number }[] };

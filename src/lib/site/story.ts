@@ -12,6 +12,7 @@
  */
 
 import type { RiskTier } from "./documents.ts";
+import { longDate, num } from "./format.ts";
 
 export type Tone = "good" | "watch" | "tight" | "deficit";
 
@@ -42,6 +43,42 @@ export const ARROW: Record<Direction, string> = { up: "↑", down: "↓", flat: 
 
 /** Rising water is the reservoir's colour; falling water is the warning colour. */
 export const DIRECTION_TONE: Record<Direction, string> = { up: "water", down: "tight", flat: "muted" };
+
+/**
+ * The page's headline: how much of the country's electricity came from water on the latest
+ * closed day, in whole kWh out of a hundred. `emphasis` is the part set in the water colour;
+ * `text` is the sentence as a screen reader and a share preview read it.
+ */
+export function heroHeadline(hydroSharePct: number | null | undefined): {
+  share: number | null;
+  before: string;
+  emphasis: string;
+  after: string;
+  text: string;
+} {
+  if (hydroSharePct === null || hydroSharePct === undefined || !Number.isFinite(hydroSharePct)) {
+    const text = "El sistema hidroeléctrico del Ecuador, día a día.";
+    return { share: null, before: text, emphasis: "", after: "", text };
+  }
+  const share = Math.round(hydroSharePct);
+  const before = "El agua encendió ";
+  const emphasis = `${share} de cada 100`;
+  const after = " kWh del país.";
+  return { share, before, emphasis, after, text: `${before}${emphasis}${after}` };
+}
+
+/**
+ * A change since yesterday in words: `+0,4 m`, `sin cambio`. `digits` is the precision the
+ * number is published at; a change that rounds to zero at it is said as no change, because a
+ * reader told "−0,00 m" has been told nothing and asked to notice the minus sign.
+ */
+export function changeWord(delta: number | null | undefined, digits: number, unit: string): string | null {
+  if (delta === null || delta === undefined || !Number.isFinite(delta)) return null;
+  const rounded = Number(delta.toFixed(digits));
+  if (rounded === 0) return "sin cambio";
+  const text = Math.abs(rounded).toLocaleString("es-EC", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  return `${rounded > 0 ? "+" : "−"}${text}${unit ? ` ${unit}` : ""}`;
+}
 
 /**
  * The inflow headline, from today's percentile against the same days of every year on record.
@@ -98,8 +135,27 @@ export function marginClause(tier: RiskTier, horizonDays: number, lastHorizonDay
 }
 
 const WORDS = [
-  "cero", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve", "diez",
-  "once", "doce", "trece", "catorce", "quince", "dieciséis", "diecisiete", "dieciocho", "diecinueve", "veinte",
+  "cero",
+  "uno",
+  "dos",
+  "tres",
+  "cuatro",
+  "cinco",
+  "seis",
+  "siete",
+  "ocho",
+  "nueve",
+  "diez",
+  "once",
+  "doce",
+  "trece",
+  "catorce",
+  "quince",
+  "dieciséis",
+  "diecisiete",
+  "dieciocho",
+  "diecinueve",
+  "veinte",
 ];
 
 /** Small counts in words, as Spanish prose writes them; anything larger stays a numeral. */
@@ -119,12 +175,22 @@ const WEEKDAYS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes
 /** `2026-09-21` -> `lunes`. Computed in UTC from the date's parts, so no clock or zone enters. */
 export function weekday(iso: string): string {
   const [y, m, d] = iso.slice(0, 10).split("-").map(Number);
-  return WEEKDAYS[new Date(Date.UTC(y!, m! - 1, d!)).getUTCDay()]!;
+  return WEEKDAYS[new Date(Date.UTC(y!, m! - 1, d)).getUTCDay()]!;
 }
 
 const MONTHS = [
-  "enero", "febrero", "marzo", "abril", "mayo", "junio",
-  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+  "enero",
+  "febrero",
+  "marzo",
+  "abril",
+  "mayo",
+  "junio",
+  "julio",
+  "agosto",
+  "septiembre",
+  "octubre",
+  "noviembre",
+  "diciembre",
 ];
 
 /** `2026-07` or `2026-07-01` -> `julio`. */
@@ -168,4 +234,219 @@ export function joinDays(days: readonly number[]): string {
 /** The short name of a model id: `M4-gbm-m3-residual` -> `M4`. */
 export function modelShort(id: string): string {
   return id.split("-")[0] ?? id;
+}
+
+/**
+ * The first sentence of a paragraph, and the rest. A sentence ends at a full stop followed by a
+ * space and a capital; `2.138,37` has no space after its point, so a number never ends one. A
+ * paragraph shorter than a long sentence is not split at all.
+ */
+export function splitLead(text: string): [string, string] {
+  const match = /[.!?]\s+(?=[A-ZÁÉÍÓÚÑ¿¡])/.exec(text);
+  if (match === null || text.length < 220) return [text, ""];
+  const cut = match.index + 1;
+  return [text.slice(0, cut), text.slice(cut).trim()];
+}
+
+/**
+ * Which of the adequacy document's two tiers the narrative was written about, in words. The
+ * document names it (`current.narrative_tier_field`, since schema version 1); an older one is
+ * read as the worst tier, which is what the payload builder has always handed the text.
+ */
+export function narrativeTierNote(
+  narrative: { origin_date: string },
+  adequacy: {
+    origin_date: string;
+    current: { worst_tier_horizon_days: number; narrative_tier_field?: string };
+    horizons: { horizon_days: number }[];
+  } | null,
+): string | null {
+  if (adequacy === null || adequacy.origin_date !== narrative.origin_date) return null;
+  if ((adequacy.current.narrative_tier_field ?? "worst_tier") === "worst_tier") {
+    return `el peor de los horizontes, a ${adequacy.current.worst_tier_horizon_days} días`;
+  }
+  return `a ${adequacy.horizons[0]?.horizon_days ?? 7} días`;
+}
+
+/**
+ * The three named analogue years, in the page's words and colours. `tone` is a `tone-*` class:
+ * the dry year is drawn in the warning colour and the wet one in the reservoir's own.
+ */
+export const SCENARIOS: Record<string, { name: string; tone: string }> = {
+  dry: { name: "Seco", tone: "tight" },
+  median: { name: "Mediano", tone: "water-2" },
+  wet: { name: "Húmedo", tone: "water" },
+};
+
+export function scenarioOf(scenario: string): { name: string; tone: string } {
+  return SCENARIOS[scenario] ?? { name: scenario, tone: "muted" };
+}
+
+/**
+ * The threshold the scenarios are read against: this project's own unverified marker when the
+ * forecast carries one — it is the one that is crossed first and the one PLAN.md §7 asks about —
+ * and otherwise the first declared floor.
+ */
+export function criticalThreshold<T extends { status: string }>(thresholds: readonly T[]): T | undefined {
+  return thresholds.find((t) => t.status === "unverified") ?? thresholds[0];
+}
+
+/**
+ * A declared floor's label as the charts print it. `where` names the declaration that set it —
+ * the dashboard's chart title or the report endpoints — because the two disagree and the page
+ * never picks between them.
+ */
+export function thresholdSource(name: string): "tablero" | "reportes" {
+  return /dashboard/.test(name) ? "tablero" : "reportes";
+}
+
+/* ---------------------------------------------------------------- scorecard */
+
+/** `1` -> `fila`, `2` -> `filas`: the noun beside a count. */
+function plural(n: number, one: string, many: string): string {
+  return n === 1 ? one : many;
+}
+
+/** Parts joined as sentences, each capitalised and closed with a full stop. */
+function sentences(...parts: string[]): string {
+  return parts
+    .filter(Boolean)
+    .map((p) => `${p.charAt(0).toUpperCase()}${p.slice(1)}.`)
+    .join(" ");
+}
+
+/**
+ * What the `scorecard` block says, in two sentences: a headline and its detail.
+ *
+ * The honest case the block exists for is also its first one: every published row still waiting
+ * for its date. A table of zero rows would say nothing, and "sin datos" would say the wrong
+ * thing; the sentence says that nothing has reached its date yet and when the first one will.
+ * `nextDue` is that date, read from the published rows themselves (`firstPendingTarget` in
+ * `days.ts`); the block carries only the count.
+ */
+export function scorecardSummary(
+  card: { rows_scored: number; rows_pending: number; rows_excluded: number; runs_considered: number; observed_through: string | null },
+  nextDue: string | null,
+): { headline: string; detail: string } {
+  const excluded =
+    card.rows_excluded > 0
+      ? `${card.rows_excluded} ${plural(card.rows_excluded, "fila no puede puntuarse", "filas no pueden puntuarse")}: su fecha pasó sin observación`
+      : "";
+
+  if (card.rows_scored === 0) {
+    if (card.runs_considered === 0) return { headline: "Todavía no hay pronósticos publicados que puntuar.", detail: "" };
+    if (card.rows_pending > 0) {
+      const waiting =
+        `${card.rows_pending} ${plural(card.rows_pending, "fila", "filas")} de ${card.runs_considered} ` +
+        `${plural(card.runs_considered, "corrida publicada", "corridas publicadas")} ${plural(card.rows_pending, "sigue pendiente", "siguen pendientes")}`;
+      return {
+        headline: `Aún ningún pronóstico publicado ha llegado a su fecha${nextDue ? `; el primero vence el ${longDate(nextDue)}` : ""}.`,
+        detail: sentences(waiting, excluded, "hasta entonces, la única medida del modelo es su backtest"),
+      };
+    }
+    return { headline: "Ningún pronóstico publicado ha podido puntuarse todavía.", detail: sentences(excluded) };
+  }
+  const pending =
+    card.rows_pending > 0
+      ? `${card.rows_pending} ${plural(card.rows_pending, "fila más espera", "filas más esperan")} su fecha` +
+        (nextDue ? `; la próxima vence el ${longDate(nextDue)}` : "")
+      : "";
+  return {
+    headline:
+      `${card.rows_scored} ${plural(card.rows_scored, "fila publicada puntuada", "filas publicadas puntuadas")}` +
+      (card.observed_through ? ` con lo observado hasta el ${longDate(card.observed_through)}.` : "."),
+    detail: sentences(pending, excluded),
+  };
+}
+
+/**
+ * One day's run against the scorecard: how many of its horizons have passed their date, and when
+ * the next one falls due. `observedThrough` is the scorecard's own last observed day, so this
+ * says exactly what the scorecard could have scored.
+ */
+export function dayScoreNote(
+  horizons: readonly { horizon_days: number; target_date: string }[],
+  observedThrough: string | null,
+): string | null {
+  if (horizons.length === 0) return null;
+  const waiting = horizons
+    .filter((h) => observedThrough === null || h.target_date > observedThrough)
+    .sort((a, b) => (a.target_date < b.target_date ? -1 : a.target_date > b.target_date ? 1 : 0));
+  const next = waiting[0];
+  if (next === undefined) return `Todos sus horizontes ya pasaron su fecha (observado hasta el ${longDate(observedThrough)}).`;
+  if (waiting.length === horizons.length) {
+    return `Ninguno de sus horizontes ha llegado a su fecha; el primero, a ${next.horizon_days} días, vence el ${longDate(next.target_date)}.`;
+  }
+  const done = horizons.length - waiting.length;
+  return (
+    `${countWord(done, true)} de sus ${horizons.length} horizontes ya ${plural(done, "pasó", "pasaron")} su fecha; ` +
+    `el siguiente, a ${next.horizon_days} días, vence el ${longDate(next.target_date)}.`
+  );
+}
+
+/* ------------------------------------------------------------------- inflow */
+
+/**
+ * Why an inflow horizon is or is not published, in the page's words and from the backtest's own
+ * numbers — the document's `reason` is written in English, for the report. A horizon ships only
+ * when the analogue years beat both persistence and climatology; one that does not is named by
+ * what it lost to.
+ */
+export function inflowVerdict(h: {
+  published: boolean;
+  reason: string;
+  backtest: { n: number; mae_m3s: number | null; persistence_mae_m3s: number | null; climatology_mae_m3s: number | null };
+}): string {
+  const b = h.backtest;
+  const mae = b.mae_m3s;
+  const vs = (name: string, value: number) => `${name} (${num(value, 1)} m³/s)`;
+  if (h.published) {
+    const beaten = [
+      b.persistence_mae_m3s !== null ? vs("la persistencia", b.persistence_mae_m3s) : null,
+      b.climatology_mae_m3s !== null ? vs("la climatología", b.climatology_mae_m3s) : null,
+    ].filter((x): x is string => x !== null);
+    return beaten.length > 0 ? `Se publica: le gana a ${beaten.join(" y a ")}.` : "Se publica.";
+  }
+  if (mae === null || b.n === 0) return "No se publica: no hay backtest suficiente.";
+  const lost = [
+    b.persistence_mae_m3s !== null && b.persistence_mae_m3s <= mae ? vs("la persistencia", b.persistence_mae_m3s) : null,
+    b.climatology_mae_m3s !== null && b.climatology_mae_m3s <= mae ? vs("la climatología", b.climatology_mae_m3s) : null,
+  ].filter((x): x is string => x !== null);
+  if (lost.length === 2) return `No se publica: no le gana ni a ${lost[0]} ni a ${lost[1]}.`;
+  if (lost.length === 1) return `No se publica: no le gana a ${lost[0]}.`;
+  return `No se publica (${h.reason}).`;
+}
+
+/* ------------------------------------------------------------------ imports */
+
+export const IMPORT_CASES: Record<string, { label: string; gloss: string }> = {
+  demonstrated: { label: "Máximo demostrado", gloss: "lo más que ha llegado desde Colombia en tres años" },
+  stressed: { label: "Estrés de 2024", gloss: "lo que llegó en la sequía compartida de 2024" },
+  current_regime: { label: "Régimen actual", gloss: "lo que está llegando en la ventana reciente" },
+};
+
+export function importCaseLabel(name: string): string {
+  return IMPORT_CASES[name]?.label ?? name;
+}
+
+/**
+ * How much the tier rests on the import assumption, in one sentence: the best and the worst of
+ * the cases' worst tiers, or that they agree.
+ */
+export function importDependence(sensitivity: {
+  cases: readonly { case: string; import_gwh_day: number; worst_tier: string; worst_tier_horizon_days: number }[];
+}): string | null {
+  const cases = sensitivity.cases.filter((c): c is typeof c & { worst_tier: RiskTier } => c.worst_tier in RANK);
+  if (cases.length === 0) return null;
+  const best = cases.reduce((a, b) => (RANK[b.worst_tier] < RANK[a.worst_tier] ? b : a));
+  const worst = cases.reduce((a, b) => (RANK[b.worst_tier] > RANK[a.worst_tier] ? b : a));
+  const describe = (c: (typeof cases)[number]) => `${importCaseLabel(c.case).toLowerCase()} (${num(c.import_gwh_day, 2)} GWh/día)`;
+  const word = (tier: RiskTier) => TIERS[tier].label.toLowerCase();
+  if (RANK[best.worst_tier] === RANK[worst.worst_tier]) {
+    return `Con ${cases.length === 1 ? "este supuesto" : `cualquiera de los ${countWord(cases.length)} supuestos`} el peor nivel es ${word(best.worst_tier)}: el nivel no depende de la importación.`;
+  }
+  return (
+    `Con el ${describe(best)} el peor nivel sería ${word(best.worst_tier)}; con el ${describe(worst)}, ${word(worst.worst_tier)} ` +
+    `a ${worst.worst_tier_horizon_days} días. El nivel descansa en el supuesto de importación.`
+  );
 }

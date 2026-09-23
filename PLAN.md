@@ -1,6 +1,6 @@
 # hydro-look — Plan v2
 
-**Status:** Phases 0, 2, 3, 5, 6 and 6c are done. Phase 1 is code-complete and waits only on its clock — three consecutive days with a green *scheduled* daily run; 2026-09-22 is the first, so it can close 2026-09-24 at the earliest. Phase 4's reference tables, gates and ERA5 history are done; its catchments were delineated from a DEM and checked against INAMHI on 2026-09-23, so `basins.csv` now holds a verified centroid for each of the seven, and backfilling ERA5 at them is the one step left. Phase 6b is live: the AI Gateway is configured and the first `ok` narrative was written 2026-09-23 (run 35810691729), so its seven-day acceptance count has started. The site is deployed on Vercel, and Colombia's side of the interconnection is ingested from XM (Phase 7). **Updated:** 2026-09-23. Supersedes the initial plan and the
+**Status:** Phases 0, 2, 3, 5, 6 and 6c are done. Phase 1 is code-complete and waits only on its clock — three consecutive days with a green *scheduled* daily run; 2026-09-22 is the first, so it can close 2026-09-24 at the earliest. Phase 4's reference tables, gates and ERA5 history are done; its catchments were delineated from a DEM and checked against INAMHI on 2026-09-23, so `basins.csv` now holds a verified centroid for each of the seven, and backfilling ERA5 at them is the one step left. Phase 6b is live: the AI Gateway is configured and the first `ok` narrative was written 2026-09-23 (run 35810691729), so its seven-day acceptance count has started. The site is deployed on Vercel, and Colombia's side of the interconnection is ingested from XM (Phase 7). The `ENHANCEMENTS.md` list was implemented on 2026-09-23 (Phase 7); what remains of it is the ERA5 dispatches. **Updated:** 2026-09-23. Supersedes the initial plan and the
 follow-up research note ("CELEC dashboard covers 7 plants", "CENACE header has usable numbers").
 
 This version was built after reading the two community scrapers that already run daily against
@@ -345,7 +345,7 @@ instead of a multi-megabyte blob. The site reads those files at build time; no d
 
 ## 5. Architecture
 
-- **Language/tooling (decided 2026-09-22, see §9):** TypeScript on Node 22, one package for both
+- **Language/tooling (decided 2026-09-22, see §9):** TypeScript on Node 24 (moved from 22 on 2026-09-23; `.nvmrc`), one package for both
   the ingestion scripts and the site. `tsx` to run the CLI, `vitest` for fixture tests, `tsc
   --noEmit` plus `eslint` in CI. Libraries: `undici` (per-host TLS agents), `cheerio` for the CENACE
   HTML, `zod` for table contracts. The frontend is Next.js (App Router) on Vercel, reading the
@@ -1024,8 +1024,9 @@ same loop that writes the status document — so a run that lands rows can never
 describing yesterday.
 
 The site is a Next.js static export (`output: "export"`), server-rendered at build time from
-`data/curated` and `public/api`, shipping **no client JavaScript**. Charts are inline SVG whose
-geometry comes from pure functions in `src/lib/chart` with their own tests, because a wrong
+`data/curated` and `public/api`, and it **needs no JavaScript to read**: every number, chart and
+table is in the HTML. The only scripts it ships are Next's runtime and the Vercel Analytics
+beacon. Charts are inline SVG whose geometry comes from pure functions in `src/lib/chart` with their own tests, because a wrong
 stacked band looks entirely plausible on screen. The bulk series the charts need are read
 straight from the CSVs rather than committed as a second copy: a 150 kB JSON rewritten daily
 would add ~55 MB a year to the history to say what `data/curated` already says.
@@ -1249,6 +1250,42 @@ else.
 the public data contract, the site and the models, with the measurement each item rests on
 (pack growth per run, shipped JavaScript, unused tables, unscored forecasts). It is the working
 list for this phase; the paragraph below is the older one and is kept for the record.
+
+**`ENHANCEMENTS.md` implemented, 2026-09-23.** Everything on the list that can be done from the
+repository is done; its head now carries a per-item status. In brief:
+
+- **Store and pipeline.** The raw archive is plain NDJSON, one file per source-endpoint-day
+  (`<source>/<YYYY>/<MM>/<endpoint>.<date>.ndjson`), written once; 2,188 gzip bundles became
+  17,441 files, every `raw_ref` was rewritten and resolves, and `npm run check` fails one that
+  does not. Pack growth per daily run, replayed on the real 2026-09-23 commits: −4 to +13 KiB
+  against +60 to +116 KiB before. The cost is a working tree of 255 MB rather than 24. A batch is
+  uploaded as an artifact before anything applies it; a failed pin, a timeout or a bad row now
+  costs its own source or its own rows (quarantined under `data/quarantine/`), not the run; only
+  the apply job holds the `ingest` group and the push token; a run that found nothing commits
+  nothing. Crons moved to odd minutes (12:47, 16:53, 17:23 UTC), and `freshness.yml` reports a
+  slot that never fired.
+- **Public contract.** Every `public/api` document carries `schema_version`, `data_date`,
+  licence, attribution and absolute `see_also`, and is validated against a JSON Schema in
+  `public/api/schema/`; feed ids and tiers have English codes beside the Spanish labels; CORS is
+  open on `/api/`. `/datos/` documents it.
+- **Site.** Pages for all eight reservoirs, daily permalinks under `/dia/`, embeddable cards, an
+  Atom feed, share images, real tables and a data table under every chart. The "no client
+  JavaScript" claim was corrected rather than made true.
+- **Models.** A live scorecard (`npm run score`) that reads published runs back; adequacy
+  version 2 with its rules in `adequacy_rules.csv` and in the hash; the import sensitivity
+  published; a calibrated band (coverage 67–81% against 60–67% before); inflow forecasts for
+  Amaluza, Agoyán, Minas San Francisco and Delsitanisagua where they beat persistence and
+  climatology. Recorded negatives: ERA5 rain with perfect foresight at the provisional point,
+  ONI as a hydro covariate, the XM export-availability model (better on the 2026-09 stop, worse
+  on 2024 at 7 days), a shared ensemble across horizons, and a level forecast for Amaluza.
+- **Tooling.** Node 24, vitest 5, ESLint 10 with type-aware rules, zod 4, undici 8, coverage
+  floors, Prettier and shellcheck in CI, Dependabot and SHA-pinned actions.
+
+What the repository cannot do for itself: the ERA5 backfill at the seven centroids needs
+`covariates.yml` dispatched with `from = 1990-01-01` until it reports no new basin-days; the
+narrative and M4 switch to `paute_mazar` on their own once its coverage passes the test in
+`features/weather.ts`, and §5.4's rain experiment reruns at the centroid on the next forecast
+run. TypeScript 7 waits on `typescript-eslint`, which does not yet accept it.
 
 Still listed: ML v2 if it beats v1 in backtests; ARCONEL BNEE monthly loader; CENACE Datos Abiertos per-plant
 validation; Colombia export availability via XM's open API — which Phase 6c has now made the

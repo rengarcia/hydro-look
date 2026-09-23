@@ -25,6 +25,17 @@
  *   earlier year (read from the resolved level series), and the 16-day precipitation forecast
  *   against its ERA5 climatology. Each is a pure function below with its own test.
  *
+ * **Trimmed in version 2 (§5.6).** Version 1 spent about 5.7k of a call's 6.4k input tokens on
+ * the payload, two thirds of it on the seven reservoirs the text mentions in passing if at all.
+ * Mazar keeps its full block; every other reservoir keeps its level, its slopes, its inflow
+ * against climatology and the nearest floor, which is everything the prompt lets the text say
+ * about it. Bands, the declarations behind them and the 30-day analogue summaries of the other
+ * reservoirs are gone.
+ *
+ * **Precipitation follows §1.1.** The outlook reads the verified Mazar centroid once its ERA5
+ * climatology is adequate (`selectPrecipBasin`), the provisional point until then, and the note
+ * handed to the model says which.
+ *
  * The payload is hashed over its canonical JSON, and the hash plus the prompt version is what
  * makes a rerun on unchanged data free: `scripts/narrative.ts` compares both against the last
  * snapshot before it calls anything. Nothing that changes without the data changing — a
@@ -39,12 +50,16 @@ import { addDays, daysBetween, isCalendarDate, type IsoDate } from "../util/date
 import { quantile } from "../util/stats.ts";
 import { roundOrNull, roundTo } from "../util/numbers.ts";
 import { availableAt, phaseOf, readOni, type OniSeries } from "../features/enso.ts";
+import { MAZAR_PRECIP_BASIN, PROVISIONAL_PRECIP_BASIN, selectPrecipBasin } from "../features/weather.ts";
 import { loadSeries, type DailySeries, type SeriesSet } from "../features/series.ts";
 import { percentileOf, type LatestDocument, type ReservoirSnapshot } from "../publish/latest.ts";
 import type { AdequacyDocument, ForecastDocument, StatusDocument } from "../site/documents.ts";
 
-/** Bumped when the payload's shape changes, which also changes every hash computed from it. */
-export const PAYLOAD_VERSION = 1;
+/**
+ * Bumped when the payload's shape changes, which also changes every hash computed from it.
+ * 2: other reservoirs trimmed to what the text may say about them; precipitation basin by §1.1.
+ */
+export const PAYLOAD_VERSION = 2;
 
 /** The horizons the narrative talks about. §7 publishes 60 and 90 as well; the panel does not. */
 export const NARRATIVE_HORIZONS = [7, 14, 30] as const;
@@ -98,11 +113,12 @@ export interface AnalogSummary {
 export interface PayloadReservoir {
   site: string;
   label: string;
-  basin: string;
+  /** The forecast reservoir only, from here to `analog_30d`, except `floors` (nearest one for the rest). */
+  basin?: string;
   level_masl: number;
   observed_on: IsoDate;
-  record_from: IsoDate;
-  bands: PayloadBand[];
+  record_from?: IsoDate;
+  bands?: PayloadBand[];
   slopes_m_per_day: { d7: number | null; d14: number | null; d30: number | null };
   floors: PayloadFloorCrossing[];
   /**
@@ -111,12 +127,12 @@ export interface PayloadReservoir {
    */
   inflow: {
     m3s: number;
-    climatology_p50_m3s: number | null;
+    climatology_p50_m3s?: number | null;
     percentile_today: number | null;
-    climatology_years: number | null;
+    climatology_years?: number | null;
   } | null;
   /** The same calendar window in earlier years, summarised. */
-  analog_30d: AnalogSummary;
+  analog_30d?: AnalogSummary;
   /** Year by year, for the forecast reservoir only: the one the fan chart and the text are about. */
   analog_years?: AnalogYear[];
 }
@@ -438,7 +454,10 @@ export function precipitationOutlook(
     climatology_p50_mm: roundOrNull(quantile(totals, 0.5), 1),
     climatology_p90_mm: roundOrNull(quantile(totals, 0.9), 1),
     percentile_vs_climatology: roundOrNull(percentileOf(totals, total), 0),
-    note: "Un solo punto provisional, no un promedio de la cuenca; pronóstico Open-Meteo frente a climatología ERA5.",
+    note:
+      basinRow?.coordinate_status === "verified"
+        ? "Un solo punto, el centroide verificado de la cuenca, no un promedio de la cuenca; pronóstico Open-Meteo frente a climatología ERA5."
+        : "Un solo punto provisional, no un promedio de la cuenca; pronóstico Open-Meteo frente a climatología ERA5.",
   };
 }
 
@@ -542,8 +561,21 @@ function reservoirBlock(reservoir: ReservoirSnapshot, inputs: PayloadInputs, for
   const level = reservoir.level;
   if (level === null) return null;
   const isForecastSite = reservoir.site === forecastSite;
-  const years = analogYears(inputs.series.get(reservoir.site, "cota_masl"), level.date);
   const inflow = reservoir.inflow;
+  if (!isForecastSite) {
+    // Everything the prompt lets the text say about a reservoir it does not forecast.
+    const nearest = floorsFor(reservoir)[0];
+    return {
+      site: reservoir.site,
+      label: reservoir.label,
+      level_masl: level.masl,
+      observed_on: level.date,
+      slopes_m_per_day: reservoir.slopes_m_per_day,
+      floors: nearest ? [nearest] : [],
+      inflow: inflow && { m3s: inflow.m3s, percentile_today: inflow.climatology?.percentile_today ?? null },
+    };
+  }
+  const years = analogYears(inputs.series.get(reservoir.site, "cota_masl"), level.date);
   const out: PayloadReservoir = {
     site: reservoir.site,
     label: reservoir.label,
@@ -562,7 +594,7 @@ function reservoirBlock(reservoir: ReservoirSnapshot, inputs: PayloadInputs, for
     },
     analog_30d: summariseAnalogs(years),
   };
-  if (isForecastSite) out.analog_years = years;
+  out.analog_years = years;
   return out;
 }
 
@@ -578,10 +610,22 @@ export function buildPayload(inputs: PayloadInputs): NarrativePayload {
   // "today" and the fan chart's are the same day; otherwise the newest level reading.
   const origin =
     inputs.forecast?.origin_date ??
-    reservoirs.map((r) => r.observed_on).sort().at(-1) ??
+    reservoirs
+      .map((r) => r.observed_on)
+      .sort()
+      .at(-1) ??
     inputs.latest.as_of;
 
-  const paute = inputs.basins.find((b) => b.basin === "paute");
+  // §1.1: the verified Mazar centroid once its ERA5 climatology is adequate, else the provisional point.
+  const era5 = new Map<string, Map<IsoDate, number>>();
+  for (const row of inputs.weather) {
+    if (row.kind !== "era5" || row.precip_mm === "") continue;
+    const mm = Number(row.precip_mm);
+    if (!Number.isFinite(mm)) continue;
+    (era5.get(row.basin) ?? era5.set(row.basin, new Map()).get(row.basin)!).set(row.date, mm);
+  }
+  const precipBasin = selectPrecipBasin(era5, MAZAR_PRECIP_BASIN, PROVISIONAL_PRECIP_BASIN).basin;
+  const basinRow = inputs.basins.find((b) => b.basin === precipBasin);
 
   return {
     payload_version: PAYLOAD_VERSION,
@@ -589,7 +633,7 @@ export function buildPayload(inputs: PayloadInputs): NarrativePayload {
     reservoirs,
     mazar_forecast: inputs.forecast ? forecastBlock(inputs.forecast) : null,
     adequacy: inputs.adequacy ? adequacyBlock(inputs.adequacy) : null,
-    precipitation_16d: precipitationOutlook(inputs.weather, "paute", paute),
+    precipitation_16d: precipitationOutlook(inputs.weather, precipBasin, basinRow),
     enso: ensoAt(inputs.oni, origin),
     stale_feeds: (inputs.status?.feeds ?? [])
       .filter((f) => f.state !== "current")
@@ -608,7 +652,7 @@ export function canonicalJson(value: unknown): string {
   return JSON.stringify(value, (_key, item: unknown) => {
     if (item === null || typeof item !== "object" || Array.isArray(item)) return item;
     const sorted: Record<string, unknown> = {};
-    for (const key of Object.keys(item as Record<string, unknown>).sort()) sorted[key] = (item as Record<string, unknown>)[key];
+    for (const key of Object.keys(item).sort()) sorted[key] = (item as Record<string, unknown>)[key];
     return sorted;
   });
 }
@@ -632,7 +676,9 @@ export function estimateTokens(payload: NarrativePayload): number {
 function readTableDir(directory: string): Record<string, string>[] {
   if (!existsSync(directory)) return [];
   const rows: Record<string, string>[] = [];
-  for (const file of readdirSync(directory).filter((f) => f.endsWith(".csv")).sort()) {
+  for (const file of readdirSync(directory)
+    .filter((f) => f.endsWith(".csv"))
+    .sort()) {
     rows.push(...parseCsv(readFileSync(join(directory, file), "utf8")));
   }
   return rows;

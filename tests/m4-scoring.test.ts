@@ -17,7 +17,14 @@ import {
 } from "../src/lib/models/m4-scoring.ts";
 import { addDays } from "../src/lib/util/dates.ts";
 
-function prediction(modelId: string, origin: string, horizonDays: number, p50: number, actual: number, extra: Partial<Prediction> = {}): Prediction {
+function prediction(
+  modelId: string,
+  origin: string,
+  horizonDays: number,
+  p50: number,
+  actual: number,
+  extra: Partial<Prediction> = {},
+): Prediction {
   return {
     modelId,
     origin,

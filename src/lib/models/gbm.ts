@@ -248,8 +248,7 @@ function growTree(
             if (leftCount < options.minLeaf) continue;
             if (rightCount < options.minLeaf) break;
             const rightSum = total - leftSum;
-            const gain =
-              (leftSum * leftSum) / (leftCount + lambda) + (rightSum * rightSum) / (rightCount + lambda) - parentScore;
+            const gain = (leftSum * leftSum) / (leftCount + lambda) + (rightSum * rightSum) / (rightCount + lambda) - parentScore;
             if (gain > 1e-12 && (best === null || gain > best.gain)) best = { feature: f, bin: b, gain };
           }
         }

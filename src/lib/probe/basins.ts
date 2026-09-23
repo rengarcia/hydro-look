@@ -164,9 +164,15 @@ export function geometryContains(geometry: GeoJsonGeometry | null | undefined, l
     return verdicts.includes(false) ? false : null;
   }
   const polygons: Ring[][] =
-    geometry.type === "Polygon" ? [geometry.coordinates as Ring[]] : geometry.type === "MultiPolygon" ? (geometry.coordinates as Ring[][]) : [];
+    geometry.type === "Polygon"
+      ? [geometry.coordinates as Ring[]]
+      : geometry.type === "MultiPolygon"
+        ? (geometry.coordinates as Ring[][])
+        : [];
   if (polygons.length === 0) return null;
-  const degrees = polygons.every((rings) => rings.every((ring) => ring.every((c) => Math.abs(Number(c[0])) <= 180 && Math.abs(Number(c[1])) <= 90)));
+  const degrees = polygons.every((rings) =>
+    rings.every((ring) => ring.every((c) => Math.abs(Number(c[0])) <= 180 && Math.abs(Number(c[1])) <= 90)),
+  );
   if (!degrees) return null;
   return polygons.some((rings) => inPolygon(rings, lon, lat));
 }
@@ -184,12 +190,27 @@ export type StructureKind = "dam" | "weir" | "intake" | "reservoir" | "plant" | 
  * Most catchment-relevant first. A catchment is defined where the river is taken, so a dam, weir
  * or intake outranks the reservoir it creates, which outranks the machines downstream.
  */
-export const KIND_ORDER: readonly StructureKind[] = ["dam", "weir", "intake", "reservoir", "water_works", "plant", "generator", "conduit", "other"];
+export const KIND_ORDER: readonly StructureKind[] = [
+  "dam",
+  "weir",
+  "intake",
+  "reservoir",
+  "water_works",
+  "plant",
+  "generator",
+  "conduit",
+  "other",
+];
 
 export function structureKind(tags: Tags): StructureKind {
   if (tags["waterway"] === "dam" || tags["man_made"] === "dam") return "dam";
   if (tags["waterway"] === "weir" || tags["man_made"] === "weir") return "weir";
-  if (tags["man_made"] === "intake" || tags["water_works"] === "intake" || /\b(intake|captacion|toma|bocatoma)\b/.test(fold(tags["name"] ?? ""))) return "intake";
+  if (
+    tags["man_made"] === "intake" ||
+    tags["water_works"] === "intake" ||
+    /\b(intake|captacion|toma|bocatoma)\b/.test(fold(tags["name"] ?? ""))
+  )
+    return "intake";
   if (tags["water"] === "reservoir" || tags["landuse"] === "reservoir" || tags["natural"] === "reservoir") return "reservoir";
   if (tags["man_made"] === "water_works") return "water_works";
   if (tags["power"] === "plant") return "plant";
@@ -222,7 +243,14 @@ const NAME_KEYS = ["name", "name:es", "name:en", "alt_name", "official_name", "o
 export function tieEvidence(tags: Tags, scheme: SchemeIdentity): string[] {
   const reasons: string[] = [];
   for (const key of ["wikidata", "operator:wikidata", "subject:wikidata", "owner:wikidata"]) {
-    if (tags[key] && tags[key].split(";").map((s) => s.trim()).includes(scheme.qid)) reasons.push(`${key}=${scheme.qid}`);
+    if (
+      tags[key] &&
+      tags[key]
+        .split(";")
+        .map((s) => s.trim())
+        .includes(scheme.qid)
+    )
+      reasons.push(`${key}=${scheme.qid}`);
   }
   for (const key of NAME_KEYS) {
     const value = tags[key];
@@ -267,7 +295,13 @@ export interface RankedCandidate extends Candidate {
  * the channel and a weir node mapped on the bank are both "on the river", and ranking them by
  * metres would be ranking mapping style.
  */
-export function rankCandidates(candidates: readonly Candidate[], anchor: LatLon, scheme: SchemeIdentity, river: readonly (readonly LatLon[])[] = [], onRiverKm = 0.5): RankedCandidate[] {
+export function rankCandidates(
+  candidates: readonly Candidate[],
+  anchor: LatLon,
+  scheme: SchemeIdentity,
+  river: readonly (readonly LatLon[])[] = [],
+  onRiverKm = 0.5,
+): RankedCandidate[] {
   const ranked = candidates.map((c) => {
     const ties = tieEvidence(c.tags, scheme);
     const kmToRiver = river.length ? Math.min(...river.map((line) => kmToLine(c, line))) : null;
@@ -318,12 +352,20 @@ export interface ChainResult {
  * A path is the tie §2.4 asks for: water taken at this dam and delivered to these machines. No
  * path is not a denial — tunnels are often unmapped — and the report says which end is bare.
  */
-export function traceChain(ways: readonly WayGeom[], start: LatLon & { nodeId?: number }, target: readonly LatLon[], tolKm = 0.1): ChainResult {
-  const touchesStart = (w: WayGeom) => (start.nodeId !== undefined && w.nodes.includes(start.nodeId)) || kmToLine(start, w.geometry) <= tolKm;
+export function traceChain(
+  ways: readonly WayGeom[],
+  start: LatLon & { nodeId?: number },
+  target: readonly LatLon[],
+  tolKm = 0.1,
+): ChainResult {
+  const touchesStart = (w: WayGeom) =>
+    (start.nodeId !== undefined && w.nodes.includes(start.nodeId)) || kmToLine(start, w.geometry) <= tolKm;
   const touchesTarget = (w: WayGeom) => kmBetweenLines(w.geometry, target) <= tolKm;
   const ends = (w: WayGeom) => [w.geometry[0], w.geometry[w.geometry.length - 1]].filter((p): p is LatLon => p !== undefined);
   const linked = (a: WayGeom, b: WayGeom) =>
-    a.nodes.some((n) => b.nodes.includes(n)) || ends(a).some((p) => kmToLine(p, b.geometry) <= tolKm) || ends(b).some((p) => kmToLine(p, a.geometry) <= tolKm);
+    a.nodes.some((n) => b.nodes.includes(n)) ||
+    ends(a).some((p) => kmToLine(p, b.geometry) <= tolKm) ||
+    ends(b).some((p) => kmToLine(p, a.geometry) <= tolKm);
 
   const fromStart = ways.filter(touchesStart).map((w) => w.id);
   const toTarget = ways.filter(touchesTarget).map((w) => w.id);
@@ -394,7 +436,9 @@ function firstText(fragment: string, tag: string): string {
 }
 
 function allText(fragment: string, tag: string): string[] {
-  return [...fragment.matchAll(new RegExp(`<(?:[\\w-]+:)?${tag}\\b[^>]*>([\\s\\S]*?)</(?:[\\w-]+:)?${tag}>`, "gi"))].map((m) => decodeXml(m[1]!));
+  return [...fragment.matchAll(new RegExp(`<(?:[\\w-]+:)?${tag}\\b[^>]*>([\\s\\S]*?)</(?:[\\w-]+:)?${tag}>`, "gi"))].map((m) =>
+    decodeXml(m[1]!),
+  );
 }
 
 /**
@@ -418,7 +462,7 @@ export function parseCapabilities(xml: string): Capabilities {
   const open = new RegExp(`<(?:[\\w-]+:)?${tag}\\b[^>]*>`, "gi");
   const boundary = new RegExp(`<(?:[\\w-]+:)?${tag}\\b[^>]*>|</(?:[\\w-]+:)?${tag}>`, "i");
   for (const m of xml.matchAll(open)) {
-    const rest = xml.slice(m.index! + m[0].length);
+    const rest = xml.slice(m.index + m[0].length);
     const stop = boundary.exec(rest);
     const own = stop ? rest.slice(0, stop.index) : rest;
     const name = firstText(own, "Name");
@@ -428,7 +472,11 @@ export function parseCapabilities(xml: string): Capabilities {
     const keywords = allText(own, "Keyword");
     layers.push({ name, title, abstract, keywords, matched: matchesLayerPattern(name, title, abstract, ...keywords) });
   }
-  const error = exception ? decodeXml(exception[2] ?? "").slice(0, 200) || exception[1]! : service === "unknown" ? "not a WMS or WFS capabilities document" : "";
+  const error = exception
+    ? decodeXml(exception[2] ?? "").slice(0, 200) || exception[1]!
+    : service === "unknown"
+      ? "not a WMS or WFS capabilities document"
+      : "";
   return { service, error, layers };
 }
 
@@ -481,8 +529,8 @@ export interface HarvestedService {
 export function harvestServiceUrls(html: string, pageUrl: string): HarvestedService[] {
   const out = new Map<string, HarvestedService>();
   const found: { raw: string; index: number }[] = [
-    ...[...html.matchAll(/href\s*=\s*["']([^"']+)["']/gi)].map((m) => ({ raw: m[1]!, index: m.index! })),
-    ...[...html.matchAll(/https?:\/\/[^\s"'<>()]+/gi)].map((m) => ({ raw: m[0], index: m.index! })),
+    ...[...html.matchAll(/href\s*=\s*["']([^"']+)["']/gi)].map((m) => ({ raw: m[1]!, index: m.index })),
+    ...[...html.matchAll(/https?:\/\/[^\s"'<>()]+/gi)].map((m) => ({ raw: m[0], index: m.index })),
   ];
   for (const { raw, index } of found) {
     let url: URL;
@@ -510,7 +558,10 @@ export function harvestServiceUrls(html: string, pageUrl: string): HarvestedServ
   return [...out.values()];
 }
 
-const stripTags = (s: string): string => decodeXml(s.replace(/<[^>]*>/g, " ")).replace(/\s+/g, " ").trim();
+const stripTags = (s: string): string =>
+  decodeXml(s.replace(/<[^>]*>/g, " "))
+    .replace(/\s+/g, " ")
+    .trim();
 
 /**
  * The text that describes a link on a directory page: the nearest heading above it (these pages
@@ -523,7 +574,7 @@ function contextAt(html: string, index: number, length: number): string {
   const headings = [...before.matchAll(/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]>/gi)];
   const heading = headings.length ? stripTags(headings[headings.length - 1]![1]!) : "";
   const starts = [...before.matchAll(/<(tr|li|p|div|h[1-6]|section|article|dt|dd)\b[^>]*>/gi)];
-  const blockStart = starts.length ? starts[starts.length - 1]!.index! : Math.max(0, before.length - 300);
+  const blockStart = starts.length ? starts[starts.length - 1]!.index : Math.max(0, before.length - 300);
   const after = html.slice(index + length, index + length + 2000);
   const end = /<\/(tr|li|p|div|h[1-6]|section|article|dt|dd)>/i.exec(after);
   const block = stripTags(before.slice(blockStart) + html.slice(index, index + length) + after.slice(0, end ? end.index : 300));
@@ -533,7 +584,8 @@ function contextAt(html: string, index: number, length: number): string {
 /** Words that say a directory entry belongs to the water or environment agencies, or is about basins. */
 const RELEVANT_CONTEXT = /agua|senagua|ambiente|maate|\bmae\b|inamhi|hidro|hídric|hidric|cuenca|pfafstetter|drenaje|arca\b|regulacionagua/i;
 
-export const relevantService = (s: HarvestedService): boolean => RELEVANT_CONTEXT.test(s.context) || RELEVANT_CONTEXT.test(s.url) || matchesLayerPattern(s.context, s.url);
+export const relevantService = (s: HarvestedService): boolean =>
+  RELEVANT_CONTEXT.test(s.context) || RELEVANT_CONTEXT.test(s.url) || matchesLayerPattern(s.context, s.url);
 
 // ---------------------------------------------------------------------------------------------
 // ArcGIS Online, restricted to the agencies
@@ -545,7 +597,8 @@ export const relevantService = (s: HarvestedService): boolean => RELEVANT_CONTEX
  * signed MAE. Matched against the owner, the tags, the credits and the snippet — never the title
  * alone, which is how a student's figure got mistaken for a national dataset last time.
  */
-export const AGENCY_PATTERN = /senagua|secretar[ií]a\s+del\s+agua|maate|ministerio\s+del\s+ambiente|ambiente[\s_-]*agua|\bmae\b|mae[\s_-]?ec|inamhi|\bigm\b|instituto\s+geogr[aá]fico\s+militar/i;
+export const AGENCY_PATTERN =
+  /senagua|secretar[ií]a\s+del\s+agua|maate|ministerio\s+del\s+ambiente|ambiente[\s_-]*agua|\bmae\b|mae[\s_-]?ec|inamhi|\bigm\b|instituto\s+geogr[aá]fico\s+militar/i;
 
 export interface ArcgisItem {
   id?: string;
@@ -571,7 +624,9 @@ export function judgeArcgisItem(item: ArcgisItem): ArcgisVerdict {
     ["credits", item.accessInformation ?? ""],
     ["snippet", item.snippet ?? ""],
   ];
-  const agency = fields.filter(([, v]) => AGENCY_PATTERN.test(v) || AGENCY_PATTERN.test(fold(v))).map(([k, v]) => `${k}: ${v.slice(0, 60)}`);
+  const agency = fields
+    .filter(([, v]) => AGENCY_PATTERN.test(v) || AGENCY_PATTERN.test(fold(v)))
+    .map(([k, v]) => `${k}: ${v.slice(0, 60)}`);
   return { agency, hydro: matchesLayerPattern(item.title, item.snippet ?? "", ...(item.tags ?? [])) };
 }
 
@@ -614,7 +669,18 @@ export function layerPriority(name: string, title = ""): number {
 // ---------------------------------------------------------------------------------------------
 
 /** In the order the probe runs them: the open items first, the settled re-checks after. */
-export const PHASES = ["wikidata", "jubones", "delsitanisagua", "official", "hydrosheds", "mirrors", "arcgis", "robots", "overpass", "contains"] as const;
+export const PHASES = [
+  "wikidata",
+  "jubones",
+  "delsitanisagua",
+  "official",
+  "hydrosheds",
+  "mirrors",
+  "arcgis",
+  "robots",
+  "overpass",
+  "contains",
+] as const;
 export type Phase = (typeof PHASES)[number];
 
 /**

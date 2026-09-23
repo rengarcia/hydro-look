@@ -6,16 +6,10 @@
  * the method rather than the people reading the number.
  */
 
-import type {
-  AdequacyBacktest,
-  AdequacyForecast,
-  Ceilings,
-  ComponentScores,
-  CrisisCheck,
-  HorizonScore,
-} from "./adequacy.ts";
-import { IMPORT_CUTOFF_GWH_DAY, IMPORT_CUTOFF_THERMAL_SHARE, TIGHT_GWH_DAY } from "./adequacy.ts";
+import type { AdequacyBacktest, AdequacyForecast, Ceilings, ComponentScores, CrisisCheck, HorizonScore } from "./adequacy.ts";
 import type { RejectedDay } from "../features/balance.ts";
+import type { SensitivityCase } from "./imports.ts";
+import type { ReportSection } from "./adequacy-experiments.ts";
 import type { IsoDate } from "../util/dates.ts";
 
 export interface ReportInputs {
@@ -27,6 +21,10 @@ export interface ReportInputs {
   usableDays: number;
   rejected: readonly RejectedDay[];
   range: { first: IsoDate; last: IsoDate };
+  /** The deficit and tier under each import assumption (§5.5); omitted, the section is too. */
+  sensitivity?: readonly SensitivityCase[];
+  /** §5.5's experiments, rendered before the known limits. */
+  experiments?: readonly ReportSection[];
 }
 
 function fixed(value: number | null | undefined, digits = 2): string {
@@ -38,9 +36,7 @@ function pct(value: number | null | undefined, digits = 1): string {
 }
 
 function scoreTable(scores: ComponentScores): string {
-  const header =
-    "| Horizon | n | MAE GWh/day | Bias | Persistence MAE | Skill vs persistence |\n" +
-    "|---|---:|---:|---:|---:|---:|\n";
+  const header = "| Horizon | n | MAE GWh/day | Bias | Persistence MAE | Skill vs persistence |\n" + "|---|---:|---:|---:|---:|---:|\n";
   const rows = scores.horizons
     .map(
       (h: HorizonScore) =>
@@ -51,8 +47,39 @@ function scoreTable(scores: ComponentScores): string {
   return header + rows;
 }
 
+/** §5.5's first step: how much of the tier is the import assumption. */
+function sensitivityLines(cases: readonly SensitivityCase[]): string[] {
+  if (cases.length === 0) return [];
+  const horizons = cases[0]!.horizons.map((h) => h.horizonDays);
+  const label: Record<SensitivityCase["case"], string> = {
+    demonstrated: "demonstrated ceiling",
+    stressed: "stressed (2024)",
+    current_regime: "current regime (trailing)",
+  };
+  return [
+    "### How much of the tier is the import assumption",
+    "",
+    "The central deficit under each import assumption a reader might hold, with the tier it gives at each horizon.",
+    "Published in `adequacy.json` as `import_sensitivity`; the central case above is one of these rows.",
+    "",
+    `| Imports | GWh/day | ${horizons.map((h) => `${h} d`).join(" | ")} | Worst tier |`,
+    `|---|---:|${horizons.map(() => "---").join("|")}|---|`,
+    ...cases.map(
+      (c) =>
+        `| ${label[c.case]} | ${fixed(c.importGwhDay)} | ` +
+        c.horizons.map((h) => `${h.deficitGwhDay >= 0 ? "+" : ""}${fixed(h.deficitGwhDay)} \`${h.tier}\``).join(" | ") +
+        ` | \`${c.worstTier}\` (${c.worstTierHorizonDays} d) |`,
+    ),
+    "",
+    "Deficit in GWh/day, positive meaning short. The spread between the rows is the part of the tier that rests on",
+    "Colombia rather than on water.",
+    "",
+  ];
+}
+
 export function renderAdequacyReport(inputs: ReportInputs): string {
   const { forecast, backtest, crisis, ceilings } = inputs;
+  const rules = forecast.rules;
   const demand = backtest.scores.find((s) => s.component === "demand")!;
   const hydro = backtest.scores.find((s) => s.component === "hydro")!;
   const requirement = backtest.scores.find((s) => s.component === "requirement")!;
@@ -176,7 +203,7 @@ export function renderAdequacyReport(inputs: ReportInputs): string {
     "mean a trailing 28-day mean is a very strong predictor of load — load is that persistent at",
     "the monthly scale — and the fitted model ties it or loses by a few per cent. What the",
     "baseline cannot do is answer the question at all during an episode: a trailing mean of",
-    "measured load *is* the suppressed load, so used as \"unsuppressed demand\" it would have",
+    'measured load *is* the suppressed load, so used as "unsuppressed demand" it would have',
     "reported that Ecuador wanted 55 GWh/day in late October 2024 and that there was therefore no",
     "shortfall, at the precise moment there were fourteen hours a day of cuts. The crisis check",
     "below is where this rung earns its place; the MAE table is here to show it costs nothing",
@@ -241,17 +268,17 @@ export function renderAdequacyReport(inputs: ReportInputs): string {
     "",
     "| Horizon | Origins with a band | Coverage |",
     "|---|---:|---:|",
-    requirement.horizons
-      .map((h) => `| ${h.horizonDays} d | ${h.nBand} | ${pct(h.coverageP10P90, 0)} |`)
-      .join("\n"),
+    requirement.horizons.map((h) => `| ${h.horizonDays} d | ${h.nBand} | ${pct(h.coverageP10P90, 0)} |`).join("\n"),
     "",
-    "Against a nominal 80%, and falling with the horizon. The band is therefore too narrow, by",
-    "more than the level forecast's is — that one covers 72% to 80%. Two things are behind it and",
-    "only the first is fixable: residuals at a long horizon are calibrated from few origins",
-    `(${requirement.horizons.at(-1)?.nBand ?? 0} at ninety days), and the residual distribution is`,
-    "not stationary, because the fleet that produced the errors of 2019 is not the fleet of 2026.",
-    "Read the p10–p90 as roughly a two-thirds interval, not four-fifths, until there are more",
-    "origins behind it.",
+    "Against a nominal 80%. Version 1 took the 10th and 90th percentile of every earlier residual",
+    "and covered 60–67%, falling with the horizon, because the residual distribution is not",
+    "stationary — the fleet that produced the errors of 2019 is not the fleet of 2026. Since version",
+    "2 those quantiles are stretched, per horizon, by the smallest factor at which the bands already",
+    "issued at earlier origins would have covered 80%; at the live origin the stretch is " +
+      [...backtest.calibration].map(([h, c]) => `×${fixed(c.stretch ?? 1)} at ${h} d`).join(", ") +
+      ".",
+    `The longest horizon is calibrated from the fewest origins (${requirement.horizons.at(-1)?.nBand ?? 0} at ninety days) and`,
+    "is the one to read with care. Every method tried is compared under §5.5 below.",
     "",
     "## The ceilings",
     "",
@@ -279,8 +306,8 @@ export function renderAdequacyReport(inputs: ReportInputs): string {
       `${forecast.imports.days} usable days while thermal ran at ${fixed(forecast.imports.trailingThermalGwhDay ?? Number.NaN)}, ` +
       `so the central case assumes ${fixed(forecast.imports.centralGwhDay)} GWh/day of imports.`,
     "",
-    `The rule: a fortnight of imports below ${IMPORT_CUTOFF_GWH_DAY} GWh/day *while* thermal runs at ` +
-      `${IMPORT_CUTOFF_THERMAL_SHARE * 100}% or more of its ceiling means the imports are not arriving rather than`,
+    `The rule: ${rules.importRegimeWindowDays} days of imports below ${rules.importCutoffGwhDay} GWh/day *while* thermal runs at ` +
+      `${Math.round(rules.importCutoffThermalShare * 100)}% or more of its ceiling means the imports are not arriving rather than`,
     "not wanted, and the central case then uses what is arriving, held for the horizon. Low imports",
     "alone would not do: they preceded 68 of the 99 monthly origins since 2018, mostly in wet months",
     "when Ecuador had no use for them. With the thermal condition the rule picks out four — 2024-05,",
@@ -293,6 +320,7 @@ export function renderAdequacyReport(inputs: ReportInputs): string {
     "a dispatch decision. Holding the cut for ninety days is the honest default rather than a",
     "forecast: the 2019 stretch lasted 398 days and the 2024 one about seven weeks.",
     "",
+    ...sensitivityLines(inputs.sensitivity ?? []),
     "## Crisis check",
     "",
     "A deficit is a counterfactual: it is the energy that would have been short had nobody",
@@ -324,10 +352,10 @@ export function renderAdequacyReport(inputs: ReportInputs): string {
     "|---|---|",
     "| `holgado` | the p90 case is still covered |",
     "| `vigilancia` | the p90 is short, the central case is not |",
-    `| \`ajustado\` | the central case is short by less than ${TIGHT_GWH_DAY} GWh/day |`,
-    `| \`deficit\` | the central case is short by ${TIGHT_GWH_DAY} GWh/day or more |`,
+    `| \`ajustado\` | the central case is short by less than ${rules.tightGwhDay} GWh/day |`,
+    `| \`deficit\` | the central case is short by ${rules.tightGwhDay} GWh/day or more |`,
     "",
-    `${TIGHT_GWH_DAY} GWh/day is about 5% of 2026 demand and roughly an hour of national`,
+    `${rules.tightGwhDay} GWh/day is about 5% of 2026 demand and roughly an hour of national`,
     "consumption. The 2024 episode ran at a measured suppression four to five times that, so the",
     "cut is not drawn where the crisis was; it is drawn where a shortfall stops being absorbable by",
     "dispatch and starts being visible to consumers.",
@@ -362,6 +390,7 @@ export function renderAdequacyReport(inputs: ReportInputs): string {
     "Read the table for what it is. Three episodes is not a sample you can fit a threshold to, and",
     "no threshold here was fitted to them.",
     "",
+    ...(inputs.experiments ?? []).flatMap((section) => [`## ${section.heading}`, "", ...section.body.flatMap((p) => [p, ""])]),
     "## Known limits",
     "",
     "1. **Hydro beyond a month is barely better than persistence.** Stated above, and the reason",

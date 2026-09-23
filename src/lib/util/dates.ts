@@ -163,6 +163,17 @@ export function monthOf(date: IsoDate): string {
   return assertIsoDate(date).slice(5, 7);
 }
 
+/**
+ * A UTC instant as Ecuador's wall clock: `2026-09-22T12:40:05Z` -> `{ date: 2026-09-22, time:
+ * 07:40 }`. Null for a string that is not an instant, so a caller can print it as it came.
+ */
+export function ecWallClock(timestamp: string): { date: IsoDate; time: string } | null {
+  const instant = new Date(timestamp);
+  if (Number.isNaN(instant.getTime())) return null;
+  const wall = toEcWallClock(instant).toISOString();
+  return { date: wall.slice(0, 10), time: wall.slice(11, 16) };
+}
+
 /** ISO timestamp with seconds, for `fetched_at` columns. */
 export function nowUtc(now: Date = new Date()): string {
   return `${now.toISOString().slice(0, 19)}Z`;

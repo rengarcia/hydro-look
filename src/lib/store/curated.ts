@@ -6,11 +6,15 @@
  * year's file keeps each commit to the rows that actually changed.
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
-import { DATA_CURATED } from "../util/paths.ts";
+import { existsSync, readFileSync } from "node:fs";
+import { join, resolve } from "node:path";
+import { DATA_CURATED, DATA_ROOT } from "../util/paths.ts";
 import { parseCsv, toCsv } from "./csv.ts";
+import { writeFileAtomic } from "./files.ts";
 import { validateRows, type TableSpec } from "../contracts/tables.ts";
+
+/** Rows an ingest could not store, kept for a person to read; `npm run check` fails while any exist. */
+export const DATA_QUARANTINE = resolve(DATA_ROOT, "quarantine");
 
 export interface UpsertReport {
   table: string;
@@ -18,6 +22,21 @@ export interface UpsertReport {
   added: number;
   updated: number;
   unchanged: number;
+  /** Added and updated rows by their `source` column, for tables that carry one. */
+  bySource: Record<string, { added: number; updated: number }>;
+  /** Rows set aside instead of written, and the file they went to. */
+  quarantined: number;
+  quarantinePath?: string;
+}
+
+export interface UpsertOptions {
+  /**
+   * Set aside rows that fail the contract instead of refusing the whole table. Without it, one
+   * bad row throws before any file is touched — right for the models, whose rows are all or
+   * nothing. The ingest sets it: one drifted row from one endpoint must not keep a thousand
+   * good rows from other endpoints out of the store, and must not stop the run halfway either.
+   */
+  quarantine?: { root?: string; run: string };
 }
 
 function keyOf<T>(spec: TableSpec<T>, row: Record<string, unknown>): string {
@@ -52,16 +71,57 @@ export class CuratedStore {
     return existsSync(path) ? parseCsv(readFileSync(path, "utf8")) : [];
   }
 
-  /** Every row is contract-checked before any file is touched. */
-  upsert<T>(spec: TableSpec<T>, rows: unknown[]): UpsertReport {
-    const validated = validateRows(spec, rows);
+  /**
+   * Every row is contract-checked before any file is touched. A row that fails either throws
+   * (the default) or, with `quarantine`, is written with its reason to
+   * `data/quarantine/<table>/<run>.csv` and left out of the table.
+   */
+  upsert<T>(spec: TableSpec<T>, rows: unknown[], options: UpsertOptions = {}): UpsertReport {
+    const report: UpsertReport = { table: spec.name, files: [], added: 0, updated: 0, unchanged: 0, bySource: {}, quarantined: 0 };
     const byFile = new Map<string, T[]>();
-    for (const row of validated) {
-      const path = this.fileFor(spec, row as Record<string, unknown>);
-      (byFile.get(path) ?? byFile.set(path, []).get(path)!).push(row);
+    const rejected: { row: unknown; reason: string }[] = [];
+
+    if (options.quarantine) {
+      for (const row of rows) {
+        const result = spec.schema.safeParse(row);
+        if (!result.success) {
+          rejected.push({ row, reason: result.error.issues.map((i) => `${i.path.join(".")} ${i.message}`).join("; ") });
+          continue;
+        }
+        try {
+          const path = this.fileFor(spec, result.data as Record<string, unknown>);
+          (byFile.get(path) ?? byFile.set(path, []).get(path)!).push(result.data);
+        } catch (error) {
+          rejected.push({ row, reason: String(error) });
+        }
+      }
+    } else {
+      for (const row of validateRows(spec, rows)) {
+        const path = this.fileFor(spec, row as Record<string, unknown>);
+        (byFile.get(path) ?? byFile.set(path, []).get(path)!).push(row);
+      }
     }
 
-    const report: UpsertReport = { table: spec.name, files: [], added: 0, updated: 0, unchanged: 0 };
+    if (rejected.length > 0) {
+      const root = options.quarantine!.root ?? DATA_QUARANTINE;
+      const path = join(root, spec.name, `${options.quarantine!.run}.csv`);
+      const cell = (value: unknown) =>
+        value === null || value === undefined ? "" : typeof value === "object" ? JSON.stringify(value) : String(value);
+      const lines = rejected.map(({ row, reason }) => {
+        const record = (row ?? {}) as Record<string, unknown>;
+        return { ...Object.fromEntries(spec.columns.map((c) => [c, cell(record[c])])), reason };
+      });
+      if (!this.dryRun) writeFileAtomic(path, toCsv([...spec.columns, "reason"], lines));
+      report.quarantined = rejected.length;
+      report.quarantinePath = path;
+    }
+
+    const source = (spec.columns as readonly string[]).includes("source") ? "source" : null;
+    const count = (row: Record<string, string>, field: "added" | "updated") => {
+      if (!source) return;
+      const bucket = (report.bySource[row[source] ?? ""] ??= { added: 0, updated: 0 });
+      bucket[field]++;
+    };
 
     for (const [path, incoming] of [...byFile].sort(([a], [b]) => (a < b ? -1 : 1))) {
       const existing = this.read(path);
@@ -74,9 +134,13 @@ export class CuratedStore {
         const rendered = renderRow(spec, row);
         const key = keyOf(spec, rendered);
         const previous = index.get(key);
-        if (!previous) added++;
-        else if (spec.columns.some((c) => (previous[c] ?? "") !== rendered[c])) updated++;
-        else unchanged++;
+        if (!previous) {
+          added++;
+          count(rendered, "added");
+        } else if (spec.columns.some((c) => (previous[c] ?? "") !== rendered[c])) {
+          updated++;
+          count(rendered, "updated");
+        } else unchanged++;
         index.set(key, rendered);
       }
 
@@ -90,8 +154,7 @@ export class CuratedStore {
       });
 
       if (!this.dryRun && (added > 0 || updated > 0 || !existsSync(path))) {
-        mkdirSync(join(path, ".."), { recursive: true });
-        writeFileSync(path, toCsv(spec.columns, merged));
+        writeFileAtomic(path, toCsv(spec.columns, merged));
       }
       report.files.push({ path, added, updated, unchanged, total: merged.length });
       report.added += added;
@@ -104,9 +167,7 @@ export class CuratedStore {
   /** Keys already present, so a resumable backfill can skip work it has already done. */
   existingKeys<T>(spec: TableSpec<T>, years: number[]): Set<string> {
     const keys = new Set<string>();
-    const paths = spec.partitionBy
-      ? years.map((y) => join(this.root, spec.name, `${y}.csv`))
-      : [join(this.root, `${spec.name}.csv`)];
+    const paths = spec.partitionBy ? years.map((y) => join(this.root, spec.name, `${y}.csv`)) : [join(this.root, `${spec.name}.csv`)];
     for (const path of paths) {
       for (const row of this.read(path)) keys.add(keyOf(spec, row));
     }
@@ -122,15 +183,43 @@ export function foldBands(
   readings: { date: string; site: string; cota_min: number | null; cota_max: number | null; qmax_m3s: number | null; source: string }[],
   existing: Record<string, string>[] = [],
 ): Record<string, unknown>[] {
-  const folded = new Map<string, { site: string; cota_min: number | null; cota_max: number | null; qmax_m3s: number | null; source: string; first_date: string; last_date: string }>();
+  const folded = new Map<
+    string,
+    {
+      site: string;
+      cota_min: number | null;
+      cota_max: number | null;
+      qmax_m3s: number | null;
+      source: string;
+      first_date: string;
+      last_date: string;
+    }
+  >();
 
-  const add = (r: { date?: string; first_date?: string; last_date?: string; site: string; cota_min: number | null; cota_max: number | null; qmax_m3s: number | null; source: string }) => {
+  const add = (r: {
+    date?: string;
+    first_date?: string;
+    last_date?: string;
+    site: string;
+    cota_min: number | null;
+    cota_max: number | null;
+    qmax_m3s: number | null;
+    source: string;
+  }) => {
     const first = r.first_date ?? r.date!;
     const last = r.last_date ?? r.date!;
     const key = [r.site, r.source, r.cota_min, r.cota_max, r.qmax_m3s].join("|");
     const current = folded.get(key);
     if (!current) {
-      folded.set(key, { site: r.site, cota_min: r.cota_min, cota_max: r.cota_max, qmax_m3s: r.qmax_m3s, source: r.source, first_date: first, last_date: last });
+      folded.set(key, {
+        site: r.site,
+        cota_min: r.cota_min,
+        cota_max: r.cota_max,
+        qmax_m3s: r.qmax_m3s,
+        source: r.source,
+        first_date: first,
+        last_date: last,
+      });
       return;
     }
     if (first < current.first_date) current.first_date = first;

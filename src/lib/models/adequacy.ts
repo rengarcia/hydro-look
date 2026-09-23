@@ -44,17 +44,93 @@
  */
 
 import { createHash } from "node:crypto";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { parseCsv } from "../store/csv.ts";
+import { DATA_REFERENCE } from "../util/paths.ts";
 import { addDays, daysBetween, nowUtc, type IsoDate } from "../util/dates.ts";
 import { dayOfYear, quantile } from "../util/stats.ts";
 import { roundOrNull, roundTo } from "../util/numbers.ts";
-import {
-  suppressed,
-  type BalanceDay,
-  type RationingEpisode,
-} from "../features/balance.ts";
+import { suppressed, type BalanceDay, type RationingEpisode } from "../features/balance.ts";
 
-/** Bumped when the method changes in a way that makes old rows incomparable to new ones. */
-export const MODEL_VERSION = "1";
+/**
+ * Bumped when the method changes in a way that makes old rows incomparable to new ones.
+ * 2: the import-regime rule (the central case follows imports that have stopped), and every rule
+ *    parameter read from `adequacy_rules.csv` and folded into `features_hash`. Version 1 published
+ *    two runs for origin 2026-09-21 that disagreed (`holgado` against `vigilancia`/`ajustado`)
+ *    because the rule changed and the version did not. And the band's adaptive stretch
+ *    (`BandMethod`), which brought coverage from 60–67% to within a few points of 80%.
+ */
+export const MODEL_VERSION = "2";
+
+/* ------------------------------------------------------------------ rules */
+
+/**
+ * The thresholds the method applies, as opposed to the quantities it fits. They live in
+ * `data/reference/adequacy_rules.csv`, not in code, for the same reason the ceilings live in
+ * `adequacy_assumptions.csv`: a reader who wants to argue with a tier should find every number
+ * it rests on in one editable place, and a change to any of them must change `features_hash`
+ * (it does: the whole object is hashed), so that no rule can move a published result silently.
+ */
+export interface AdequacyRules {
+  /** Imports below this, GWh/day, over the regime window are a candidate cutoff. */
+  importCutoffGwhDay: number;
+  /** …and thermal at or above this share of its ceiling makes it one. */
+  importCutoffThermalShare: number;
+  /** Trailing days the import regime is read over. */
+  importRegimeWindowDays: number;
+  /** The `ajustado` / `deficit` cut, GWh/day. */
+  tightGwhDay: number;
+  /** Trailing days the demonstrated ceilings are taken over. */
+  ceilingWindowDays: number;
+}
+
+const RULE_COLUMNS: Record<string, keyof AdequacyRules> = {
+  import_cutoff_gwh_day: "importCutoffGwhDay",
+  import_cutoff_thermal_share: "importCutoffThermalShare",
+  import_regime_window_days: "importRegimeWindowDays",
+  tight_gwh_day: "tightGwhDay",
+  ceiling_window_days: "ceilingWindowDays",
+};
+
+export const ADEQUACY_RULES_FILE = "adequacy_rules.csv";
+
+/**
+ * Every rule, from the file's rows. Strict: a missing, repeated, unknown or non-numeric
+ * parameter throws, because a rule that silently fell back to some other value would be the
+ * silent change this file exists to prevent.
+ */
+export function parseAdequacyRules(rows: readonly Record<string, string>[]): AdequacyRules {
+  const out: Partial<AdequacyRules> = {};
+  for (const row of rows) {
+    const name = row["parameter"] ?? "";
+    const key = RULE_COLUMNS[name];
+    if (key === undefined) throw new Error(`${ADEQUACY_RULES_FILE}: unknown parameter "${name}"`);
+    if (out[key] !== undefined) throw new Error(`${ADEQUACY_RULES_FILE}: "${name}" appears twice`);
+    const raw = row["value"] ?? "";
+    const value = Number(raw);
+    if (raw.trim() === "" || !Number.isFinite(value)) {
+      throw new Error(`${ADEQUACY_RULES_FILE}: "${name}" is not a number: ${JSON.stringify(raw)}`);
+    }
+    out[key] = value;
+  }
+  for (const [name, key] of Object.entries(RULE_COLUMNS)) {
+    if (out[key] === undefined) throw new Error(`${ADEQUACY_RULES_FILE}: "${name}" is missing`);
+  }
+  return out as AdequacyRules;
+}
+
+let referenceRules: AdequacyRules | null = null;
+
+/** The committed rules, read once per process. Every default below is this, never a literal. */
+export function referenceAdequacyRules(): AdequacyRules {
+  if (referenceRules === null) {
+    const path = join(DATA_REFERENCE, ADEQUACY_RULES_FILE);
+    if (!existsSync(path)) throw new Error(`${path} is missing: the adequacy rules have no other home`);
+    referenceRules = parseAdequacyRules(parseCsv(readFileSync(path, "utf8")));
+  }
+  return referenceRules;
+}
 
 export const HORIZON_DAYS = [7, 14, 30, 60, 90] as const;
 
@@ -182,12 +258,7 @@ export function fitDemand(
   }
 
   const shape = (date: IsoDate): number =>
-    Math.exp(
-      intercept +
-        slope * (epochDay(date) - t0) +
-        (weekday.get(weekdayOf(date)) ?? 0) +
-        (season.get(dayOfYear(date)) ?? 0),
-    );
+    Math.exp(intercept + slope * (epochDay(date) - t0) + (weekday.get(weekdayOf(date)) ?? 0) + (season.get(dayOfYear(date)) ?? 0));
 
   // The anchor walks back day by day taking only unsuppressed days, so a rationing episode
   // sitting on the origin is stepped over rather than averaged into the current level.
@@ -203,9 +274,7 @@ export function fitDemand(
   }
   const meanFitted = fitted.length > 0 ? fitted.reduce((a, b) => a + b, 0) / fitted.length : 0;
   const anchor =
-    observed.length >= options.minAnchorDays && meanFitted > 0
-      ? observed.reduce((a, b) => a + b, 0) / observed.length / meanFitted
-      : 1;
+    observed.length >= options.minAnchorDays && meanFitted > 0 ? observed.reduce((a, b) => a + b, 0) / observed.length / meanFitted : 1;
 
   return {
     intercept,
@@ -329,9 +398,7 @@ export function fitHydro(
       if (norm === undefined) return null;
       const ahead = Math.max(0, daysBetween(origin, date));
       const decayed =
-        options.anomalyHalfLifeDays === Infinity
-          ? anomaly
-          : 1 + (anomaly - 1) * Math.pow(2, -ahead / options.anomalyHalfLifeDays);
+        options.anomalyHalfLifeDays === Infinity ? anomaly : 1 + (anomaly - 1) * Math.pow(2, -ahead / options.anomalyHalfLifeDays);
       return norm * decayed * demandGwh;
     },
   };
@@ -374,11 +441,14 @@ export interface CeilingRow {
  * years would put thermal at 30.69, on 2016-12-27, from a fleet that has since been retired in
  * part, which is why the window is bounded rather than the record.
  */
-export function demonstratedCeilings(days: readonly BalanceDay[], asOf: IsoDate, windowDays = 1095): Ceilings {
+export function demonstratedCeilings(
+  days: readonly BalanceDay[],
+  asOf: IsoDate,
+  windowDays: number = referenceAdequacyRules().ceilingWindowDays,
+): Ceilings {
   const from = addDays(asOf, -windowDays);
   const window = days.filter((d) => d.date >= from && d.date <= asOf);
-  const max = (pick: (day: BalanceDay) => number): number =>
-    window.reduce((best, day) => Math.max(best, pick(day)), 0);
+  const max = (pick: (day: BalanceDay) => number): number => window.reduce((best, day) => Math.max(best, pick(day)), 0);
   const median = (pick: (day: BalanceDay) => number): number => quantile(window.map(pick), 0.5) ?? 0;
 
   return {
@@ -411,10 +481,9 @@ export function demonstratedCeilings(days: readonly BalanceDay[], asOf: IsoDate,
  * In a cutoff the central case uses what is actually arriving and holds it for the horizon; the
  * stressed case is left as it was. Read at each origin from that origin's own history, so the
  * backtest and the tier history see the rule exactly as the live run does.
+ *
+ * The 1 GWh/day, the 70% and the fortnight are `adequacy_rules.csv`'s, not this file's.
  */
-export const IMPORT_CUTOFF_GWH_DAY = 1;
-export const IMPORT_CUTOFF_THERMAL_SHARE = 0.7;
-export const IMPORT_REGIME_WINDOW_DAYS = 14;
 
 export interface ImportRegime {
   state: "normal" | "cutoff";
@@ -427,11 +496,16 @@ export interface ImportRegime {
   centralGwhDay: number;
 }
 
-export function importRegime(days: readonly BalanceDay[], origin: IsoDate, ceilings: Ceilings): ImportRegime {
-  const from = addDays(origin, -(IMPORT_REGIME_WINDOW_DAYS - 1));
+export function importRegime(
+  days: readonly BalanceDay[],
+  origin: IsoDate,
+  ceilings: Ceilings,
+  rules: AdequacyRules = referenceAdequacyRules(),
+): ImportRegime {
+  const from = addDays(origin, -(rules.importRegimeWindowDays - 1));
   const window = days.filter((d) => d.date >= from && d.date <= origin);
   // Half the window at least, so a fortnight of rejected pages cannot declare a cutoff from two days.
-  if (window.length < IMPORT_REGIME_WINDOW_DAYS / 2) {
+  if (window.length < rules.importRegimeWindowDays / 2) {
     return {
       state: "normal",
       trailingGwhDay: null,
@@ -442,7 +516,7 @@ export function importRegime(days: readonly BalanceDay[], origin: IsoDate, ceili
   }
   const trailing = window.reduce((a, d) => a + d.importGwh, 0) / window.length;
   const thermal = window.reduce((a, d) => a + d.thermalGwh, 0) / window.length;
-  const cutoff = trailing < IMPORT_CUTOFF_GWH_DAY && thermal >= IMPORT_CUTOFF_THERMAL_SHARE * ceilings.thermalGwhDay;
+  const cutoff = trailing < rules.importCutoffGwhDay && thermal >= rules.importCutoffThermalShare * ceilings.thermalGwhDay;
   return {
     state: cutoff ? "cutoff" : "normal",
     trailingGwhDay: trailing,
@@ -488,9 +562,7 @@ export function applyOverrides(base: Ceilings, rows: readonly CeilingRow[]): Cei
   if (overridden.size === 0) return out;
 
   const remaining = CEILING_QUANTITIES.filter((q) => !overridden.has(q));
-  out.basis =
-    [...overridden.values()].join("; ") +
-    (remaining.length > 0 ? `; ${remaining.join(", ")} from the ${base.basis}` : "");
+  out.basis = [...overridden.values()].join("; ") + (remaining.length > 0 ? `; ${remaining.join(", ")} from the ${base.basis}` : "");
   return out;
 }
 
@@ -538,17 +610,19 @@ export interface AdequacyHorizon {
  * `ajustado`  — the central case is short by less than `TIGHT_GWH_DAY`.
  * `deficit`   — the central case is short by `TIGHT_GWH_DAY` or more.
  *
- * `TIGHT_GWH_DAY` is 5 GWh/day, which is about 5% of 2026 demand and roughly an hour of
- * national consumption. The 2024 episode ran at a measured suppression of 20 to 25 GWh/day,
- * four to five times this, so the cut is not drawn where the crisis was — it is drawn where
- * a shortfall stops being absorbable by dispatch and starts being visible to consumers.
+ * `tight_gwh_day` in `adequacy_rules.csv` is 5 GWh/day, which is about 5% of 2026 demand and
+ * roughly an hour of national consumption. The 2024 episode ran at a measured suppression of 20
+ * to 25 GWh/day, four to five times this, so the cut is not drawn where the crisis was — it is
+ * drawn where a shortfall stops being absorbable by dispatch and starts being visible to consumers.
  */
 export type RiskTier = "holgado" | "vigilancia" | "ajustado" | "deficit";
 
-export const TIGHT_GWH_DAY = 5;
-
-export function tierFor(deficitP50: number, deficitP90: number | null): RiskTier {
-  if (deficitP50 >= TIGHT_GWH_DAY) return "deficit";
+export function tierFor(
+  deficitP50: number,
+  deficitP90: number | null,
+  tightGwhDay: number = referenceAdequacyRules().tightGwhDay,
+): RiskTier {
+  if (deficitP50 >= tightGwhDay) return "deficit";
   if (deficitP50 > 0) return "ajustado";
   if (deficitP90 !== null && deficitP90 > 0) return "vigilancia";
   return "holgado";
@@ -562,7 +636,7 @@ export const TIER_LABELS_ES: Record<RiskTier, string> = {
 };
 
 /** Residual quantiles of one component, per horizon — what turns a point into a band. */
-export type RequirementCalibration = Map<number, { q10: number; q50: number; q90: number; n: number }>;
+export type RequirementCalibration = Map<number, { q10: number; q50: number; q90: number; n: number; stretch?: number }>;
 
 export interface AdequacyInputs {
   days: readonly BalanceDay[];
@@ -577,6 +651,23 @@ export interface AdequacyInputs {
   hydroOptions?: HydroOptions;
   /** Hold the central case at the demonstrated ceiling whatever imports are doing (for comparison). */
   ignoreImportRegime?: boolean;
+  /** Defaults to `adequacy_rules.csv`. */
+  rules?: AdequacyRules;
+  /** Per-run memo of the demand and hydro fits; see `createAdequacyCache`. */
+  cache?: AdequacyCache;
+}
+
+/**
+ * Per-run memo of the two fits at an origin. The backtest, the crisis check's tier history and
+ * the experiments in the report all refit demand and hydro at the same monthly origins from the
+ * same history, and those two fits are most of the command's runtime. The key is everything the
+ * fits read, so a cache handed a different history or different options misses rather than
+ * serving the wrong fit; it still belongs to one run, never to the module.
+ */
+export type AdequacyCache = Map<string, { demand: DemandFit; hydro: HydroFit } | null>;
+
+export function createAdequacyCache(): AdequacyCache {
+  return new Map();
 }
 
 export interface AdequacyForecast {
@@ -586,6 +677,7 @@ export interface AdequacyForecast {
   horizons: AdequacyHorizon[];
   ceilings: Ceilings;
   imports: ImportRegime;
+  rules: AdequacyRules;
 }
 
 /** Mean of a fitted quantity over the `h` days after the origin, which is what a horizon is here. */
@@ -601,11 +693,11 @@ function meanOverWindow(origin: IsoDate, horizonDays: number, of: (date: IsoDate
 
 export function forecastAdequacy(inputs: AdequacyInputs): AdequacyForecast | null {
   const horizonDays = inputs.horizonDays ?? HORIZON_DAYS;
+  const rules = inputs.rules ?? referenceAdequacyRules();
   const history = inputs.days.filter((d) => d.date <= inputs.origin);
-  const demand = fitDemand(history, inputs.origin, inputs.episodes, inputs.demandOptions);
-  if (!demand) return null;
-  const hydro = fitHydro(history, inputs.origin, demand, inputs.hydroOptions);
-  if (!hydro) return null;
+  const fits = fitsAt(history, inputs);
+  if (!fits) return null;
+  const { demand, hydro } = fits;
 
   const supplyFloor = inputs.ceilings.thermalGwhDay + inputs.ceilings.otherGwhDay;
   const regime = inputs.ignoreImportRegime
@@ -616,7 +708,7 @@ export function forecastAdequacy(inputs: AdequacyInputs): AdequacyForecast | nul
         days: 0,
         centralGwhDay: inputs.ceilings.importGwhDay,
       }
-    : importRegime(history, inputs.origin, inputs.ceilings);
+    : importRegime(history, inputs.origin, inputs.ceilings, rules);
   const horizons: AdequacyHorizon[] = [];
 
   for (const days of horizonDays) {
@@ -655,13 +747,34 @@ export function forecastAdequacy(inputs: AdequacyInputs): AdequacyForecast | nul
       deficitP90,
       stressedDeficitGwhDay: requirement - (supplyFloor + inputs.ceilings.stressedImportGwhDay),
       marginPct: ((hydroGwh + supply - demandGwh) / demandGwh) * 100,
-      tier: tierFor(deficit, deficitP90),
+      tier: tierFor(deficit, deficitP90, rules.tightGwhDay),
     });
   }
 
   return horizons.length === 0
     ? null
-    : { origin: inputs.origin, demand, hydro, horizons, ceilings: inputs.ceilings, imports: regime };
+    : { origin: inputs.origin, demand, hydro, horizons, ceilings: inputs.ceilings, imports: regime, rules };
+}
+
+function fitsAt(history: readonly BalanceDay[], inputs: AdequacyInputs): { demand: DemandFit; hydro: HydroFit } | null {
+  const key = inputs.cache
+    ? [
+        inputs.origin,
+        history.length,
+        history[0]?.date ?? "",
+        history.at(-1)?.date ?? "",
+        JSON.stringify(inputs.episodes),
+        JSON.stringify(inputs.demandOptions ?? null),
+        JSON.stringify(inputs.hydroOptions ?? null),
+      ].join("|")
+    : "";
+  const hit = inputs.cache?.get(key);
+  if (hit !== undefined) return hit;
+  const demand = fitDemand(history, inputs.origin, inputs.episodes, inputs.demandOptions);
+  const hydro = demand ? fitHydro(history, inputs.origin, demand, inputs.hydroOptions) : null;
+  const out = demand && hydro ? { demand, hydro } : null;
+  inputs.cache?.set(key, out);
+  return out;
 }
 
 /* --------------------------------------------------------------- backtest */
@@ -688,6 +801,56 @@ export interface AdequacyBacktest {
   scores: ComponentScores[];
   calibration: RequirementCalibration;
   hydroCalibration: RequirementCalibration;
+  /** Every scored point, per component, for experiments that post-process the same predictions. */
+  points: Record<"demand" | "hydro" | "requirement", BacktestPoint[]>;
+}
+
+/**
+ * How residuals become a band. Until MODEL_VERSION 2 the method pooled every earlier origin and
+ * took the 10th and 90th percentile, and the band covered 60–67% against a nominal 80%. §5.5's
+ * experiments varied the pool (the last `windowOrigins` only, because the fleet that made
+ * 2019's errors is not 2026's) and the width (other quantiles; a stretch about the median chosen
+ * out of sample). A method ships only if it is honest — nearer the nominal 80% — at every
+ * horizon, for the requirement and for hydro; the adaptive stretch over the pooled residuals was
+ * the one that was, and is the default. Every variant is rescored each run in
+ * `data/reports/adequacy.md`.
+ */
+export interface BandMethod {
+  windowOrigins: number | null;
+  quantiles: readonly [number, number];
+  scale: number;
+  /**
+   * Choose the stretch at each origin, per horizon, as the smallest on a grid from 1 to 3 at
+   * which the bands *already issued* at earlier origins, stretched by it, would have covered
+   * `nominal` of their outcomes. Out of sample by construction: a fixed stretch picked by
+   * reading this backtest's coverage would be tuned on the very origins it is scored on.
+   */
+  adaptive?: boolean;
+  nominal?: number;
+}
+
+export const DEFAULT_BAND: BandMethod = { windowOrigins: null, quantiles: [0.1, 0.9], scale: 1, adaptive: true, nominal: 0.8 };
+
+/** The method version 1 published, kept so the report can show what the stretch changed. */
+export const POOLED_BAND: BandMethod = { windowOrigins: null, quantiles: [0.1, 0.9], scale: 1 };
+
+/** One earlier origin's outcome against the unstretched offsets its band was built from. */
+interface IssuedBand {
+  residual: number;
+  lo: number;
+  mid: number;
+  hi: number;
+}
+
+const STRETCH_GRID = Array.from({ length: 41 }, (_, i) => 1 + i * 0.05);
+
+function adaptiveStretch(issued: readonly IssuedBand[], nominal: number, minOrigins: number): number {
+  if (issued.length < minOrigins) return 1;
+  for (const s of STRETCH_GRID) {
+    const covered = issued.filter((b) => b.residual >= b.mid + s * (b.lo - b.mid) && b.residual <= b.mid + s * (b.hi - b.mid)).length;
+    if (covered / issued.length >= nominal) return s;
+  }
+  return STRETCH_GRID.at(-1)!;
 }
 
 export interface BacktestOptions {
@@ -700,6 +863,9 @@ export interface BacktestOptions {
   /** Threaded through to every origin, so a variant can be scored on the same origins. */
   demandOptions?: DemandOptions;
   hydroOptions?: HydroOptions;
+  rules?: AdequacyRules;
+  cache?: AdequacyCache;
+  band?: BandMethod;
 }
 
 export const DEFAULT_ADEQUACY_BACKTEST: BacktestOptions = {
@@ -754,12 +920,7 @@ function realisedOver(
 }
 
 /** Trailing 28-day mean, the baseline every component is scored against. */
-function trailingMean(
-  byDate: Map<IsoDate, BalanceDay>,
-  origin: IsoDate,
-  pick: (day: BalanceDay) => number,
-  days = 28,
-): number | null {
+function trailingMean(byDate: Map<IsoDate, BalanceDay>, origin: IsoDate, pick: (day: BalanceDay) => number, days = 28): number | null {
   const values: number[] = [];
   for (let back = 0; back < days; back++) {
     const found = byDate.get(addDays(origin, -back));
@@ -768,7 +929,7 @@ function trailingMean(
   return values.length === 0 ? null : values.reduce((a, b) => a + b, 0) / values.length;
 }
 
-interface Point {
+export interface BacktestPoint {
   origin: IsoDate;
   horizonDays: number;
   error: number;
@@ -789,18 +950,22 @@ export function backtestAdequacy(
 ): AdequacyBacktest {
   const byDate = new Map(days.map((d) => [d.date, d]));
   const origins = monthlyOrigins(days, options.firstOrigin);
-  const points: Record<"demand" | "hydro" | "requirement", Point[]> = { demand: [], hydro: [], requirement: [] };
+  const points: Record<"demand" | "hydro" | "requirement", BacktestPoint[]> = { demand: [], hydro: [], requirement: [] };
+  const band = options.band ?? DEFAULT_BAND;
   const used: IsoDate[] = [];
   // Residuals from strictly earlier origins only: an expanding window, never the whole record.
   const seen = new Map<number, number[]>(options.horizonDays.map((h) => [h, []]));
   const seenHydro = new Map<number, number[]>(options.horizonDays.map((h) => [h, []]));
+  // The bands those origins were issued, for an adaptive stretch; see `BandMethod`.
+  const issued = new Map<number, IssuedBand[]>(options.horizonDays.map((h) => [h, []]));
+  const issuedHydro = new Map<number, IssuedBand[]>(options.horizonDays.map((h) => [h, []]));
 
   for (const origin of origins) {
     const history = days.filter((d) => d.date <= origin);
     if (history.length < options.minHistoryDays) continue;
 
-    const calibration = calibrate(seen, options.minCalibrationOrigins);
-    const hydroCalibration = calibrate(seenHydro, options.minCalibrationOrigins);
+    const calibration = calibrate(seen, options.minCalibrationOrigins, band, issued);
+    const hydroCalibration = calibrate(seenHydro, options.minCalibrationOrigins, band, issuedHydro);
 
     const forecast = forecastAdequacy({
       days: history,
@@ -812,6 +977,8 @@ export function backtestAdequacy(
       hydroCalibration,
       demandOptions: options.demandOptions,
       hydroOptions: options.hydroOptions,
+      rules: options.rules,
+      cache: options.cache,
     });
     if (!forecast) continue;
     used.push(origin);
@@ -852,8 +1019,14 @@ export function backtestAdequacy(
       });
 
       // Only now, after this origin has been scored, does its residual join the calibration set.
-      seen.get(horizon.horizonDays)!.push(actual.requirement - horizon.requirementGwhDay);
-      seenHydro.get(horizon.horizonDays)!.push(actual.hydro - horizon.hydroGwhDay);
+      const residual = actual.requirement - horizon.requirementGwhDay;
+      const hydroResidual = actual.hydro - horizon.hydroGwhDay;
+      const raw = calibration.get(horizon.horizonDays)?.raw;
+      if (raw) issued.get(horizon.horizonDays)!.push({ residual, ...raw });
+      const rawHydro = hydroCalibration.get(horizon.horizonDays)?.raw;
+      if (rawHydro) issuedHydro.get(horizon.horizonDays)!.push({ residual: hydroResidual, ...rawHydro });
+      seen.get(horizon.horizonDays)!.push(residual);
+      seenHydro.get(horizon.horizonDays)!.push(hydroResidual);
     }
   }
 
@@ -880,21 +1053,41 @@ export function backtestAdequacy(
   return {
     origins: used,
     scores: [score("demand"), score("hydro"), score("requirement")],
-    calibration: calibrate(seen, options.minCalibrationOrigins),
-    hydroCalibration: calibrate(seenHydro, options.minCalibrationOrigins),
+    calibration: calibrate(seen, options.minCalibrationOrigins, band, issued),
+    hydroCalibration: calibrate(seenHydro, options.minCalibrationOrigins, band, issuedHydro),
+    points,
   };
 }
 
-/** Residual quantiles per horizon, for the horizons with enough origins behind them. */
-function calibrate(seen: ReadonlyMap<number, number[]>, minOrigins: number): RequirementCalibration {
-  const calibration: RequirementCalibration = new Map();
-  for (const [horizon, residuals] of seen) {
-    if (residuals.length < minOrigins) continue;
+/**
+ * Residual quantiles per horizon, for the horizons with enough origins behind them. `q10` and
+ * `q90` are the band's lower and upper offsets under `band`, whatever quantiles it names; `raw`
+ * is the same before any stretch, which is what an adaptive stretch is later judged against.
+ */
+function calibrate(
+  seen: ReadonlyMap<number, number[]>,
+  minOrigins: number,
+  band: BandMethod = DEFAULT_BAND,
+  issued: ReadonlyMap<number, readonly IssuedBand[]> = new Map(),
+): Map<number, { q10: number; q50: number; q90: number; n: number; stretch: number; raw: { lo: number; mid: number; hi: number } }> {
+  const calibration = new Map<
+    number,
+    { q10: number; q50: number; q90: number; n: number; stretch: number; raw: { lo: number; mid: number; hi: number } }
+  >();
+  for (const [horizon, all] of seen) {
+    if (all.length < minOrigins) continue;
+    const residuals = band.windowOrigins === null ? all : all.slice(-band.windowOrigins);
+    const q50 = quantile(residuals, 0.5)!;
+    const lo = quantile(residuals, band.quantiles[0])!;
+    const hi = quantile(residuals, band.quantiles[1])!;
+    const stretch = band.adaptive ? adaptiveStretch(issued.get(horizon) ?? [], band.nominal ?? 0.8, minOrigins) : band.scale;
     calibration.set(horizon, {
-      q10: quantile(residuals, 0.1)!,
-      q50: quantile(residuals, 0.5)!,
-      q90: quantile(residuals, 0.9)!,
+      q10: q50 + stretch * (lo - q50),
+      q50,
+      q90: q50 + stretch * (hi - q50),
       n: residuals.length,
+      stretch,
+      raw: { lo, mid: q50, hi },
     });
   }
   return calibration;
@@ -949,13 +1142,16 @@ export function crisisCheck(
   for (const episode of episodes) {
     const end = episode.end === "" ? days.at(-1)!.date : episode.end;
     // Fitted at the origin before the episode, so the trend is not bent by the episode itself.
-    const fit = fitDemand(days.filter((d) => d.date < episode.start), addDays(episode.start, -1), episodes);
+    const fit = fitDemand(
+      days.filter((d) => d.date < episode.start),
+      addDays(episode.start, -1),
+      episodes,
+    );
     if (!fit) continue;
     const inside = days.filter((d) => d.date >= episode.start && d.date <= end);
     if (inside.length === 0) continue;
 
-    const mean = (pick: (day: BalanceDay) => number): number =>
-      inside.reduce((a, d) => a + pick(d), 0) / inside.length;
+    const mean = (pick: (day: BalanceDay) => number): number => inside.reduce((a, d) => a + pick(d), 0) / inside.length;
     const modelled = inside.reduce((a, d) => a + fit.predict(d.date), 0) / inside.length;
     const hydro = mean((d) => d.hydroGwh);
     const imports = mean((d) => d.importGwh);
@@ -988,6 +1184,8 @@ export function crisisCheck(
       hydroCalibration: backtest.hydroCalibration,
       demandOptions: options.demandOptions,
       hydroOptions: options.hydroOptions,
+      rules: options.rules,
+      cache: options.cache,
     });
     if (!forecast) continue;
     for (const horizon of forecast.horizons) {
@@ -1015,6 +1213,10 @@ export function crisisCheck(
 
 export interface DocumentInputs {
   forecast: AdequacyForecast;
+  /** The method settings the forecast was fitted with, when not the defaults; hashed. */
+  demandOptions?: DemandOptions;
+  hydroOptions?: HydroOptions;
+  band?: BandMethod;
   backtest: AdequacyBacktest;
   crisis: CrisisCheck;
   usableDays: number;
@@ -1056,6 +1258,12 @@ export function buildAdequacyDocument(inputs: DocumentInputs): AdequacyDocument 
     stressedImports: forecast.ceilings.stressedImportGwhDay,
     other: forecast.ceilings.otherGwhDay,
     horizons: forecast.horizons.map((h) => h.horizonDays),
+    // Every rule and every method setting, so that none of them can change a published result
+    // without changing the run id (MODEL_VERSION 2; see `AdequacyRules`).
+    rules: forecast.rules,
+    demandOptions: inputs.demandOptions ?? DEFAULT_DEMAND,
+    hydroOptions: inputs.hydroOptions ?? DEFAULT_HYDRO,
+    band: inputs.band ?? DEFAULT_BAND,
   });
   const runId = `${forecast.origin}-adequacy-${MODEL_VERSION}-${featuresHash.slice(0, 8)}`;
   const worst = forecast.horizons.reduce((a, b) => (b.deficitGwhDay > a.deficitGwhDay ? b : a));
@@ -1101,18 +1309,26 @@ export function buildAdequacyDocument(inputs: DocumentInputs): AdequacyDocument 
         central_import_gwh_day: roundTo(forecast.imports.centralGwhDay, 3),
         trailing_gwh_day: roundOrNull(forecast.imports.trailingGwhDay, 3),
         trailing_thermal_gwh_day: roundOrNull(forecast.imports.trailingThermalGwhDay, 3),
-        window_days: IMPORT_REGIME_WINDOW_DAYS,
-        cutoff_below_gwh_day: IMPORT_CUTOFF_GWH_DAY,
-        cutoff_thermal_share: IMPORT_CUTOFF_THERMAL_SHARE,
+        window_days: forecast.rules.importRegimeWindowDays,
+        cutoff_below_gwh_day: forecast.rules.importCutoffGwhDay,
+        cutoff_thermal_share: forecast.rules.importCutoffThermalShare,
         note:
           forecast.imports.state === "cutoff"
             ? `Las importaciones desde Colombia promediaron ${roundTo(forecast.imports.trailingGwhDay ?? 0, 2)} GWh/día ` +
-              `en los últimos ${IMPORT_REGIME_WINDOW_DAYS} días mientras la térmica generaba ` +
+              `en los últimos ${forecast.rules.importRegimeWindowDays} días mientras la térmica generaba ` +
               `${roundTo(forecast.imports.trailingThermalGwhDay ?? 0, 1)} GWh/día: no llegan aunque se necesitan. ` +
               "El caso central usa lo que está llegando, no el máximo demostrado, y lo mantiene durante el horizonte."
             : "La interconexión se trata como disponible: el caso central usa el máximo demostrado.",
       },
       editable_at: "data/reference/adequacy_assumptions.csv",
+      rules: {
+        import_cutoff_gwh_day: forecast.rules.importCutoffGwhDay,
+        import_cutoff_thermal_share: forecast.rules.importCutoffThermalShare,
+        import_regime_window_days: forecast.rules.importRegimeWindowDays,
+        tight_gwh_day: forecast.rules.tightGwhDay,
+        ceiling_window_days: forecast.rules.ceilingWindowDays,
+        editable_at: `data/reference/${ADEQUACY_RULES_FILE}`,
+      },
     },
     current: {
       tier: forecast.horizons[0]!.tier,
@@ -1148,14 +1364,25 @@ export function buildAdequacyDocument(inputs: DocumentInputs): AdequacyDocument 
         n: score("requirement", h.horizonDays)?.n ?? 0,
       },
     })),
+    band_method: {
+      method: (inputs.band ?? DEFAULT_BAND).adaptive
+        ? "residual quantiles from every earlier origin, stretched per horizon by the smallest factor at which the bands already issued would have covered the nominal share"
+        : "residual quantiles from earlier origins",
+      quantiles: [...(inputs.band ?? DEFAULT_BAND).quantiles],
+      nominal_coverage: (inputs.band ?? DEFAULT_BAND).nominal ?? 0.8,
+      stretch_by_horizon: [...backtest.calibration].map(([horizon, c]) => ({
+        horizon_days: horizon,
+        stretch: roundOrNull(c.stretch ?? null, 2),
+      })),
+    },
     tiers: {
       definition: {
         holgado: "el caso p90 sigue cubierto",
         vigilancia: "el p90 queda corto, el caso central no",
-        ajustado: `el caso central queda corto en menos de ${TIGHT_GWH_DAY} GWh/día`,
-        deficit: `el caso central queda corto en ${TIGHT_GWH_DAY} GWh/día o más`,
+        ajustado: `el caso central queda corto en menos de ${forecast.rules.tightGwhDay} GWh/día`,
+        deficit: `el caso central queda corto en ${forecast.rules.tightGwhDay} GWh/día o más`,
       },
-      tight_gwh_day: TIGHT_GWH_DAY,
+      tight_gwh_day: forecast.rules.tightGwhDay,
     },
     tier_history: (() => {
       // What the tiers said at a 30-day horizon across every backtest origin, and what followed.
@@ -1173,9 +1400,7 @@ export function buildAdequacyDocument(inputs: DocumentInputs): AdequacyDocument 
         flagged_and_followed: hits.length,
         share_of_flagged_that_preceded_cuts: flagged.length > 0 ? roundTo(hits.length / flagged.length, 4) : null,
         share_of_cuts_that_were_flagged: followed.length > 0 ? roundTo(hits.length / followed.length, 4) : null,
-        note:
-          "Tres episodios no son una muestra con la que ajustar un umbral, y ningún umbral de aquí " +
-          "se ajustó a ellos.",
+        note: "Tres episodios no son una muestra con la que ajustar un umbral, y ningún umbral de aquí " + "se ajustó a ellos.",
       };
     })(),
     crisis_check: {

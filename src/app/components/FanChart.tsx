@@ -23,7 +23,8 @@
 
 import { bandPath, linePath, type Point } from "../../lib/chart/scale.ts";
 import { Plot, frameOf, monthLabels, round } from "./Plot.tsx";
-import { num, shortDate } from "../../lib/site/format.ts";
+import { ChartData, sampleBack } from "./DataTable.tsx";
+import { dateWithYear, num, shortDate } from "../../lib/site/format.ts";
 import { daysBetween } from "../../lib/util/dates.ts";
 import type { SeriesPoint } from "../../lib/site/data.ts";
 
@@ -48,7 +49,7 @@ export interface FanThreshold {
   unverified: boolean;
 }
 
-export function FanChart({
+function FanDrawing({
   history,
   origin,
   originLevel,
@@ -179,18 +180,75 @@ export function FanChart({
       />
       <circle cx={originX} cy={y(originLevel)} r={5} fill="var(--ink)" stroke="var(--surface)" strokeWidth={2} />
       {compact ? null : (
-      <text
-        x={WIDTH - MARGIN.right - 4}
-        y={round(Math.max(y(end.p90) - font, top + 2.8 * font))}
-        textAnchor="end"
-        fontFamily="var(--mono)"
-        fontSize={font + 1}
-        fill="var(--water)"
-      >
-        p50 {num(end.p50, 2)} m · {shortDate(end.target_date)}
-      </text>
+        <text
+          x={WIDTH - MARGIN.right - 4}
+          y={round(Math.max(y(end.p90) - font, top + 2.8 * font))}
+          textAnchor="end"
+          fontFamily="var(--mono)"
+          fontSize={font + 1}
+          fill="var(--water)"
+        >
+          p50 {num(end.p50, 2)} m · {shortDate(end.target_date)}
+        </text>
       )}
     </Plot>
+  );
+}
+
+export interface FanChartProps {
+  history: SeriesPoint[];
+  origin: string;
+  originLevel: number;
+  horizons: FanHorizon[];
+  thresholds: FanThreshold[];
+  label: string;
+  /** The model most horizons come from; a horizon from any other is marked. */
+  primaryModel?: string;
+}
+
+/**
+ * The chart at both widths, and its numbers.
+ *
+ * This one is still drawn twice. On a desk it is a 3:1 strip across the page, which is what six
+ * months of history and three of forecast need; scaled down to a phone the same strip would be
+ * a hundred pixels tall. The phone drawing is a near-square with larger type instead, and CSS
+ * shows one. The table under both carries the history a week at a time and every horizon.
+ */
+export function FanChart(props: FanChartProps) {
+  const { history, horizons, primaryModel } = props;
+  if (history.length < 2 || horizons.length === 0) return null;
+  return (
+    <>
+      <div className="only-wide">
+        <FanDrawing {...props} />
+      </div>
+      <div className="only-compact">
+        <FanDrawing {...props} compact />
+      </div>
+      <ChartData
+        caption="Cota de Mazar, m s. n. m.: la observada, una lectura por semana, y el pronóstico p10, p50 y p90 en cada horizonte"
+        columns={[
+          { label: "Día" },
+          { label: "Observada", numeric: true },
+          { label: "p10", numeric: true },
+          { label: "p50", numeric: true },
+          { label: "p90", numeric: true },
+          { label: "Modelo" },
+        ]}
+        rows={[
+          ...sampleBack(history, 7).map((p) => [dateWithYear(p.date), num(p.value, 2), "", "", "", ""]),
+          ...horizons.map((h) => [
+            dateWithYear(h.target_date),
+            "",
+            num(h.p10, 2),
+            num(h.p50, 2),
+            num(h.p90, 2),
+            h.model ?? primaryModel ?? "",
+          ]),
+        ]}
+        note="La cota diaria completa está en /api/bulk/observations_daily.csv.gz; el pronóstico, en /api/forecast.json."
+      />
+    </>
   );
 }
 

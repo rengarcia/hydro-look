@@ -222,7 +222,7 @@ function ceiling(label: string, mrid: number | null, values: Map<IsoDate, number
 function main(): void {
   const all = observations();
   const pick = (site: SiteId, variable: string, source: string, mrid: number | "" = ""): Map<IsoDate, number> =>
-    all.get(`${site}|${variable}|${source}|${mrid}`) ?? new Map();
+    all.get(`${site}|${variable}|${source}|${mrid}`) ?? new Map<IsoDate, number>();
 
   const mazarCaudalMrid = HISTORIAN_SERIES.find((s) => s.site === "mazar" && s.variable === "caudal_m3s")?.mrid;
   if (!mazarCaudalMrid) throw new Error("the registry no longer carries a Mazar caudal mrid");
@@ -276,8 +276,7 @@ function main(): void {
 
   const winner = ranked[0];
   const runnerUp = ranked[1];
-  const howClose = (r: Comparison) =>
-    r.mean_abs_diff === 0 ? "identically" : `to within ${r.mean_abs_diff} m³/s on average`;
+  const howClose = (r: Comparison) => (r.mean_abs_diff === 0 ? "identically" : `to within ${r.mean_abs_diff} m³/s on average`);
   let verdict: string;
   let settled = false;
   if (!winner) {
@@ -337,7 +336,13 @@ function main(): void {
     const values = pick(candidate.site, candidate.variable, candidate.source);
     if (values.size === 0) continue;
     const { days, r } = correlate(values, produccion(candidate.site));
-    generation.push({ site: candidate.site, series: `mazar/${candidate.variable} (${candidate.meaning})`, mrid: null, days, correlation: r });
+    generation.push({
+      site: candidate.site,
+      series: `mazar/${candidate.variable} (${candidate.meaning})`,
+      mrid: null,
+      days,
+      correlation: r,
+    });
   }
 
   const dates = [...historian.values.keys()].sort();
@@ -410,9 +415,7 @@ function main(): void {
     "",
     "| series | mrid | days | p50 | p99 | max | days on ceiling |",
     "|---|---|---|---|---|---|---|",
-    ...profiles.map(
-      (p) => `| ${p.series} | ${p.mrid ?? "—"} | ${p.days} | ${p.p50} | ${p.p99} | ${p.max} | ${p.on_ceiling_pct}% |`,
-    ),
+    ...profiles.map((p) => `| ${p.series} | ${p.mrid ?? "—"} | ${p.days} | ${p.p50} | ${p.p99} | ${p.max} | ${p.on_ceiling_pct}% |`),
     "",
     "## Does the series track the plant's own generation?",
     "",

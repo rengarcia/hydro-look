@@ -104,9 +104,7 @@ export async function walkHistorian(opts: HistorianWalkOptions): Promise<Histori
           `${monthLabel(controlMonth)}, a month repDiaHid12m covers in full, so the historian is blank at this ` +
           `hour; the other series were skipped rather than record a false "no data" for plants with no second source`,
       );
-      result.logs.push(
-        `ords-historian: control blank for ${monthLabel(controlMonth)} — skipped, dispatch again at another hour`,
-      );
+      result.logs.push(`ords-historian: control blank for ${monthLabel(controlMonth)} — skipped, dispatch again at another hour`);
       return result;
     }
     result.logs.push(`ords-historian: control ${label(gate)} answered for ${monthLabel(controlMonth)} (${added} days)`);

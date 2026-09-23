@@ -5,6 +5,9 @@
  *   npm run publish:api                       write public/api/latest.json
  *   npm run publish:api -- --dry-run          build it and print a summary; touch no file
  *   npm run publish:api -- --out path.json    write somewhere else
+ *   npm run publish:api -- --restamp          also restamp the other four documents with the
+ *                                             current contract block (schema_version, licence,
+ *                                             see_also), leaving their numbers untouched
  *
  * It is a pure function of the committed tables, like `check` and `forecast`: no network, no
  * clock beyond the timestamp it stamps on itself. That is what lets the daily job regenerate it
@@ -24,6 +27,7 @@ import { parseCsv } from "../src/lib/store/csv.ts";
 import { SITES, type SiteId } from "../src/lib/registry.ts";
 import { DATA_CURATED, DATA_REFERENCE, repoPath } from "../src/lib/util/paths.ts";
 import { nowUtc, todayEc } from "../src/lib/util/dates.ts";
+import { publicJson, type DocumentName } from "../src/lib/publish/contract.ts";
 
 /**
  * Every site the registry calls a reservoir, in the order it declares them — which puts Mazar
@@ -43,7 +47,9 @@ function readTable(name: string): Record<string, string>[] {
   const directory = join(DATA_CURATED, name);
   if (!existsSync(directory)) return [];
   const rows: Record<string, string>[] = [];
-  for (const file of readdirSync(directory).filter((f) => f.endsWith(".csv")).sort()) {
+  for (const file of readdirSync(directory)
+    .filter((f) => f.endsWith(".csv"))
+    .sort()) {
     rows.push(...parseCsv(readFileSync(join(directory, file), "utf8")));
   }
   return rows;
@@ -55,6 +61,7 @@ function main(): void {
     options: {
       "dry-run": { type: "boolean", default: false },
       out: { type: "string" },
+      restamp: { type: "boolean", default: false },
     },
   });
 
@@ -62,7 +69,7 @@ function main(): void {
   const dryRun = values["dry-run"] ?? false;
 
   const adequacyPath = repoPath("public", "api", "adequacy.json");
-  const adequacy = existsSync(adequacyPath) ? JSON.parse(readFileSync(adequacyPath, "utf8")) : null;
+  const adequacy: unknown = existsSync(adequacyPath) ? JSON.parse(readFileSync(adequacyPath, "utf8")) : null;
 
   const document = buildLatest({
     series: loadSeries(),
@@ -110,6 +117,25 @@ function main(): void {
   mkdirSync(dirname(outPath), { recursive: true });
   writeFileSync(outPath, `${JSON.stringify(document, null, 2)}\n`);
   console.log(`wrote ${outPath}`);
+
+  if (values.restamp) restamp(dirname(outPath));
+}
+
+/**
+ * The other documents are written by their own scripts, each of which stamps the contract as it
+ * writes. This is for the day the contract itself changes: it rewrites the stamp on what is
+ * already published without rerunning a model, and it is idempotent.
+ */
+function restamp(directory: string): void {
+  for (const name of ["status", "forecast", "adequacy", "narrative"] as DocumentName[]) {
+    const path = join(directory, `${name}.json`);
+    if (!existsSync(path)) continue;
+    const before = readFileSync(path, "utf8");
+    const after = publicJson(name, JSON.parse(before) as object);
+    if (after === before) continue;
+    writeFileSync(path, after);
+    console.log(`restamped ${path}`);
+  }
 }
 
 main();

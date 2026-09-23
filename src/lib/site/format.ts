@@ -8,6 +8,8 @@
  */
 
 import { isSiteId, SITES } from "../registry.ts";
+import { declarationCode, feedCode } from "../publish/contract.ts";
+import { ecWallClock } from "../util/dates.ts";
 
 const LOCALE = "es-EC";
 
@@ -29,8 +31,18 @@ export function pct(value: number | null | undefined, digits = 1): string {
 }
 
 const MONTHS = [
-  "enero", "febrero", "marzo", "abril", "mayo", "junio",
-  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+  "enero",
+  "febrero",
+  "marzo",
+  "abril",
+  "mayo",
+  "junio",
+  "julio",
+  "agosto",
+  "septiembre",
+  "octubre",
+  "noviembre",
+  "diciembre",
 ];
 
 /** `2026-09-21` -> `21 de septiembre de 2026`. Built from the parts, never from `new Date`. */
@@ -46,6 +58,22 @@ export function shortDate(iso: string): string {
   const [, month, day] = iso.slice(0, 10).split("-");
   const name = MONTHS[Number(month) - 1];
   return name === undefined ? iso : `${Number(day)} ${name.slice(0, 3)}`;
+}
+
+/** `2026-09-21` -> `21 sep 2026`, where no caption carries the year for it. */
+export function dateWithYear(iso: string): string {
+  return `${shortDate(iso)} ${iso.slice(0, 4)}`;
+}
+
+/** `2026-09-22T12:40:05Z` -> `22 sep 2026, 07:40 (hora de Ecuador)`. */
+export function ecStamp(timestamp: string): string {
+  const wall = ecWallClock(timestamp);
+  return wall === null ? timestamp : `${dateWithYear(wall.date)}, ${wall.time} (hora de Ecuador)`;
+}
+
+/** `servicio de reportes` -> `Servicio de reportes`. */
+export function capitalise(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 /** The Spanish label for each SMEC concept, so the site never prints a column name. */
@@ -67,30 +95,17 @@ export function conceptLabel(concept: string): string {
   return CONCEPT_LABELS[concept] ?? concept;
 }
 
-/** The Spanish label for each feed in `status.json`, which names its endpoints in English. */
-export function feedLabel(feed: string): string {
-  return feed
-    .replace("ORDS levels and inflows", "ORDS: cotas y caudales")
-    .replace("ORDS CELEC Sur energy", "ORDS: energía CELEC Sur")
-    .replace("ORDS historian", "ORDS: historiador")
-    .replace("CENACE SMEC national balance", "CENACE SMEC: balance nacional")
-    .replace("CENACE Información Operativa", "CENACE: Información Operativa")
-    .replace("Open-Meteo ERA5", "Open-Meteo ERA5")
-    .replace("NOAA ONI", "NOAA ONI")
-    .replace("XM exchanges with Colombia", "XM: intercambios con Colombia")
-    .replace("XM Colombian storage", "XM: embalses de Colombia")
-    .replace("Mazar level forecast", "Pronóstico de cota de Mazar")
-    .replace("National adequacy", "Suficiencia nacional");
+/**
+ * The Spanish label of a feed in `status.json`. Since schema version 1 each feed carries its own
+ * `label_es`; a document written before that is looked up by its English label instead.
+ */
+export function feedLabel(feed: { label_es?: string; feed?: string }): string {
+  return feed.label_es ?? feedCode(feed.feed ?? "").label_es;
 }
 
-/** `thresholds.csv` names where a band was declared in English; the page says it in Spanish. */
-const DECLARATION_ES: Record<string, string> = {
-  "report endpoint": "servicio de reportes",
-  "dashboard chart title": "título del gráfico del tablero",
-};
-
-export function declarationLabel(declaration: string): string {
-  return DECLARATION_ES[declaration] ?? declaration;
+/** How a band was declared, in the page's words: the document's own label, or the code's. */
+export function declarationLabel(band: { declaration: string; declaration_es?: string }): string {
+  return band.declaration_es ?? declarationCode(band.declaration).label_es;
 }
 
 /** Basin ids are lowercase registry keys; every one of them is named after its river. */
@@ -103,8 +118,14 @@ const BASIN_ES: Record<string, string> = {
   coca: "Coca",
 };
 
+/** `paute` -> `Paute`. */
+export function basinName(basin: string): string {
+  return BASIN_ES[basin] ?? capitalise(basin);
+}
+
+/** `paute` -> `cuenca del Paute`. */
 export function basinLabel(basin: string): string {
-  return `cuenca del ${BASIN_ES[basin] ?? basin.charAt(0).toUpperCase() + basin.slice(1)}`;
+  return `cuenca del ${basinName(basin)}`;
 }
 
 /**

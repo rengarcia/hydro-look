@@ -36,7 +36,9 @@ export function readOni(root: string = DATA_CURATED): OniSeries {
   const directory = join(root, ENSO_MONTHLY.name);
   const out: OniSeries = new Map();
   if (!existsSync(directory)) return out;
-  for (const file of readdirSync(directory).filter((f) => f.endsWith(".csv")).sort()) {
+  for (const file of readdirSync(directory)
+    .filter((f) => f.endsWith(".csv"))
+    .sort()) {
     for (const row of parseCsv(readFileSync(join(directory, file), "utf8"))) {
       const month = row["month"] ?? "";
       const oni = Number(row["oni"] ?? "");

@@ -21,7 +21,7 @@ function stage(directory: string, observations: unknown[], raw: { endpoint: stri
   mkdirSync(directory, { recursive: true });
   const archive = new RawArchive(join(directory, "raw"));
   for (const response of raw) {
-    archive.add("celec_ords", response.endpoint, { year: 2026, month: "09" }, {
+    archive.add("celec_ords", response.endpoint, "2026-09-20", {
       key: `${response.endpoint}:2026-09-20`,
       url: `https://example/${response.endpoint}`,
       method: "GET",
@@ -33,7 +33,16 @@ function stage(directory: string, observations: unknown[], raw: { endpoint: stri
   archive.flush();
   writeFileSync(
     join(directory, "batch.json"),
-    JSON.stringify({ generated_at: "2026-09-22T00:00:00Z", command: "daily", observations, bands: [], national: [], operativa: [], notes: [], errors: [] }),
+    JSON.stringify({
+      generated_at: "2026-09-22T00:00:00Z",
+      command: "daily",
+      observations,
+      bands: [],
+      national: [],
+      operativa: [],
+      notes: [],
+      errors: [],
+    }),
   );
 }
 
@@ -55,15 +64,24 @@ describe("staged apply", () => {
     mkdirSync(directory);
     const batch = emptyBatch();
     batch.weather.push({
-      date: "2026-09-22", basin: "paute", latitude: -2.6, longitude: -78.6, kind: "forecast",
-      precip_mm: 0, temp_mean_c: 12, issued_at: "2026-09-22T17:00:00Z",
-      source: "open_meteo:forecast", fetched_at: "2026-09-22T17:00:00Z", raw_ref: "test#forecast",
+      date: "2026-09-22",
+      basin: "paute",
+      latitude: -2.6,
+      longitude: -78.6,
+      kind: "forecast",
+      precip_mm: 0,
+      temp_mean_c: 12,
+      issued_at: "2026-09-22T17:00:00Z",
+      source: "open_meteo:forecast",
+      fetched_at: "2026-09-22T17:00:00Z",
+      raw_ref: "test#forecast",
     });
-    batch.enso.push({ month: "2026-07", oni: 1.8, source: "noaa_psl:oni",
-      fetched_at: "2026-09-22T17:00:00Z", raw_ref: "test#oni" });
+    batch.enso.push({ month: "2026-07", oni: 1.8, source: "noaa_psl:oni", fetched_at: "2026-09-22T17:00:00Z", raw_ref: "test#oni" });
     writeFileSync(join(directory, "batch.json"), JSON.stringify({ ...batch, command: "covariates" }));
     execFileSync("npx", ["tsx", "scripts/ingest.ts", "apply", "--in", directory, "--dry-run"], {
-      cwd: repo, env: { ...process.env, HYDRO_LOOK_DATA_ROOT: root }, encoding: "utf8",
+      cwd: repo,
+      env: { ...process.env, HYDRO_LOOK_DATA_ROOT: root },
+      encoding: "utf8",
     });
     expect(existsSync(join(root, "curated"))).toBe(false);
     expect(existsSync(join(root, "latest"))).toBe(false);
@@ -100,7 +118,18 @@ describe("staged apply", () => {
     const batchB = join(dataRoot, "batchB");
     stage(
       batchB,
-      [{ date: "2026-09-20", site: "mazar", variable: "nivel_pct_banda", value: 73.849057, source: "ords:repDiaVolAlm", mrid: "", fetched_at: "2026-09-22T00:00:00Z", raw_ref: "celec_ords/2026/09/repDiaVolAlm.ndjson.gz#repDiaVolAlm:2026-09-20" }],
+      [
+        {
+          date: "2026-09-20",
+          site: "mazar",
+          variable: "nivel_pct_banda",
+          value: 73.849057,
+          source: "ords:repDiaVolAlm",
+          mrid: "",
+          fetched_at: "2026-09-22T00:00:00Z",
+          raw_ref: "celec_ords/2026/09/repDiaVolAlm.ndjson.gz#repDiaVolAlm:2026-09-20",
+        },
+      ],
       [{ endpoint: "repDiaVolAlm", body: '{"cv_1":[]}' }],
     );
     apply(dataRoot, batchB);
@@ -111,10 +140,13 @@ describe("staged apply", () => {
     expect(merged.filter((r) => r["source"] === "ords:repDiaNivQIng")).toHaveLength(8);
     expect(merged.filter((r) => r["source"] === "ords:repDiaVolAlm")).toHaveLength(1);
 
-    // And both raw bundles survived, each under the month of its data.
+    // And both raw files survived, each under the day of its data. The rows were staged with
+    // the old bundle form of raw_ref, as a batch staged before the layout change would be, and
+    // apply pointed them at the day files that hold their responses.
     const archive = new RawArchive(join(dataRoot, "raw"));
-    const bundle = join(dataRoot, "raw", "celec_ords", "2026", "09", "repDiaNivQIng.ndjson.gz");
-    expect(archive.get(bundle, "repDiaNivQIng:2026-09-20")?.body).toBe(body);
+    const nivRow = merged.find((r) => r["source"] === "ords:repDiaNivQIng")!;
+    expect(nivRow["raw_ref"]).toBe("celec_ords/2026/09/repDiaNivQIng.2026-09-20.ndjson#repDiaNivQIng:2026-09-20");
+    expect(archive.read(nivRow["raw_ref"]!)?.body).toBe(body);
 
     // Re-applying the same batch changes nothing, which is what makes the push retry safe.
     const again = apply(dataRoot, batchA);
