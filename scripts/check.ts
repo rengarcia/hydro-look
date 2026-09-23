@@ -48,6 +48,7 @@ import {
 import { parseCsv } from "../src/lib/store/csv.ts";
 import { DATA_CURATED, DATA_REFERENCE } from "../src/lib/util/paths.ts";
 import { nowUtc, todayEc } from "../src/lib/util/dates.ts";
+import { publicJson } from "../src/lib/publish/contract.ts";
 
 /**
  * How long each feed may go without a new row before it counts as stopped.
@@ -238,7 +239,7 @@ function main(): void {
       counts: findings.reduce<Record<string, number>>((acc, f) => ({ ...acc, [f.level]: (acc[f.level] ?? 0) + 1 }), {}),
     };
     mkdirSync(dirname(outPath), { recursive: true });
-    writeFileSync(outPath, `${JSON.stringify(document, null, 2)}\n`);
+    writeFileSync(outPath, publicJson("status", document));
     console.log(`wrote ${outPath}`);
   }
 

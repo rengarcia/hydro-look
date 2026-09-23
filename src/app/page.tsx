@@ -887,10 +887,10 @@ function Data({ status, narrative }: { status: StatusDocument | null; narrative:
             {status.feeds.map((feed) => {
               const state = FRESHNESS[feed.state] ?? { word: feed.state, tone: "watch" };
               return (
-                <li key={feed.feed} title={`Límite: ${feed.limit_days} días · ${state.word}`}>
+                <li key={feed.id ?? feed.feed} title={`Límite: ${feed.limit_days} días · ${state.word}`}>
                   <span>
                     <span className={`dot tone-${state.tone}`} aria-hidden="true" />
-                    {feedLabel(feed.feed).replace(/\s*\([^)]*\)$/, "")}
+                    {feedLabel(feed)}
                     <span className="visually-hidden">: {state.word}</span>
                   </span>
                   <span className="when">{feed.latest ? shortDate(feed.latest) : "—"}</span>

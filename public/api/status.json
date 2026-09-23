@@ -1,70 +1,94 @@
 {
+  "schema_version": 1,
   "generated_at": "2026-09-23T02:36:38Z",
+  "data_date": "2026-09-21",
   "as_of": "2026-09-22",
   "ok": true,
   "status": "warn",
   "feeds": [
     {
+      "id": "ords_levels",
+      "label_es": "ORDS: cotas y caudales",
       "feed": "ORDS levels and inflows (repDiaHid12m)",
       "latest": "2026-09-21",
       "limit_days": 3,
       "state": "current"
     },
     {
+      "id": "ords_energy",
+      "label_es": "ORDS: energía CELEC Sur",
       "feed": "ORDS CELEC Sur energy (repDiaEner12m)",
       "latest": "2026-09-21",
       "limit_days": 3,
       "state": "current"
     },
     {
+      "id": "ords_historian",
+      "label_es": "ORDS: historiador",
       "feed": "ORDS historian (pointValues)",
       "latest": "2026-09-21",
       "limit_days": 3,
       "state": "current"
     },
     {
+      "id": "smec_balance",
+      "label_es": "CENACE SMEC: balance nacional",
       "feed": "CENACE SMEC national balance",
       "latest": "2026-09-21",
       "limit_days": 4,
       "state": "current"
     },
     {
+      "id": "cenace_operativa",
+      "label_es": "CENACE: Información Operativa",
       "feed": "CENACE Información Operativa",
       "latest": "2026-09-23",
       "limit_days": 3,
       "state": "current"
     },
     {
+      "id": "era5",
+      "label_es": "Open-Meteo ERA5",
       "feed": "Open-Meteo ERA5",
       "latest": "2026-09-16",
       "limit_days": 10,
       "state": "current"
     },
     {
+      "id": "oni",
+      "label_es": "NOAA ONI",
       "feed": "NOAA ONI",
       "latest": "2026-07-01",
       "limit_days": 110,
       "state": "current"
     },
     {
+      "id": "xm_exchanges",
+      "label_es": "XM: intercambios con Colombia",
       "feed": "XM exchanges with Colombia",
       "latest": "2026-09-19",
       "limit_days": 7,
       "state": "current"
     },
     {
+      "id": "xm_storage",
+      "label_es": "XM: embalses de Colombia",
       "feed": "XM Colombian storage",
       "latest": "2026-09-21",
       "limit_days": 4,
       "state": "current"
     },
     {
+      "id": "mazar_forecast",
+      "label_es": "Pronóstico de cota de Mazar",
       "feed": "Mazar level forecast",
       "latest": "2026-09-21",
       "limit_days": 3,
       "state": "current"
     },
     {
+      "id": "adequacy",
+      "label_es": "Suficiencia nacional",
       "feed": "National adequacy",
       "latest": "2026-09-21",
       "limit_days": 3,
@@ -122,5 +146,60 @@
   "counts": {
     "warn": 1,
     "info": 15
+  },
+  "deprecated": {
+    "as_of": "data_date; as_of is the day the check ran. Removed in schema_version 2.",
+    "feeds[].feed": "feeds[].id for the code and feeds[].label_es for the label. Removed in schema_version 2."
+  },
+  "license": {
+    "code": "MIT",
+    "code_url": "https://github.com/rengarcia/hydro-look/blob/main/LICENSE",
+    "data": "Copies of public data. Each upstream source keeps its own terms, listed in `attribution`; credit them, and this project, when you republish.",
+    "data_es": "Copias de datos públicos. Cada fuente conserva sus propios términos, listados en `attribution`; cítelas, y a este proyecto, al republicar."
+  },
+  "attribution": [
+    {
+      "id": "celec",
+      "name": "CELEC EP",
+      "provides": "reservoir levels, inflows, declared bands and per-plant energy",
+      "url": "https://www.celec.gob.ec/",
+      "terms": "public web services of a state company; no licence is stated"
+    },
+    {
+      "id": "cenace",
+      "name": "CENACE",
+      "provides": "the national energy balance and live operating data",
+      "url": "https://www.cenace.gob.ec/",
+      "terms": "public web services of the system operator; no licence is stated"
+    },
+    {
+      "id": "xm",
+      "name": "XM S.A. E.S.P.",
+      "provides": "Colombian storage and cross-border exchanges",
+      "url": "https://www.xm.com.co/",
+      "terms": "public data portal of the Colombian market operator"
+    },
+    {
+      "id": "open_meteo",
+      "name": "Open-Meteo (ERA5 and forecast models)",
+      "provides": "precipitation and temperature at the basin centroids",
+      "url": "https://open-meteo.com/",
+      "terms": "CC BY 4.0 (https://open-meteo.com/en/terms); the free API is for non-commercial use"
+    },
+    {
+      "id": "noaa",
+      "name": "NOAA PSL / CPC",
+      "provides": "the Oceanic Niño Index",
+      "url": "https://psl.noaa.gov/data/correlation/oni.data",
+      "terms": "US government work, public domain"
+    }
+  ],
+  "see_also": {
+    "latest": "https://hydro-look.vercel.app/api/latest.json",
+    "forecast": "https://hydro-look.vercel.app/api/forecast.json",
+    "adequacy": "https://hydro-look.vercel.app/api/adequacy.json",
+    "narrative": "https://hydro-look.vercel.app/api/narrative.json",
+    "schema": "https://hydro-look.vercel.app/api/schema/status.schema.json",
+    "documentation": "https://hydro-look.vercel.app/datos/"
   }
 }

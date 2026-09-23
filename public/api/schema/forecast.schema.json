@@ -1,0 +1,524 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hydro-look.vercel.app/api/schema/forecast.schema.json",
+  "title": "forecast.json",
+  "description": "Mazar's level at 7 to 90 days as p10/p50/p90, days to each threshold under analogue years, and the backtest that scores it.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "data_date",
+    "run_id",
+    "origin_date",
+    "site",
+    "disclaimer",
+    "model",
+    "current",
+    "thresholds",
+    "forecast",
+    "days_to_threshold",
+    "backtest",
+    "crisis_check",
+    "license",
+    "attribution",
+    "see_also"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1,
+      "description": "The format version. Changes only when a field is removed, renamed or retyped; added fields do not change it."
+    },
+    "generated_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+      "description": "When the document was written, UTC."
+    },
+    "data_date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "The Ecuadorian calendar day the document's readings describe."
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "origin_date": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "The day the forecast stands on; equal to data_date."
+    },
+    "site": {
+      "type": "string"
+    },
+    "variable": {
+      "type": "string"
+    },
+    "units": {
+      "type": "string"
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "model": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "backtest_origins": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "version",
+        "backtest_origins"
+      ]
+    },
+    "current": {
+      "type": "object",
+      "properties": {
+        "level_masl": {
+          "type": "number"
+        },
+        "observed_on": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "storage_above_lowest_threshold_hm3": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "surface_area_km2": {
+          "type": "number"
+        },
+        "release_stance_m3s": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "level_masl",
+        "observed_on",
+        "storage_above_lowest_threshold_hm3",
+        "surface_area_km2",
+        "release_stance_m3s"
+      ]
+    },
+    "thresholds": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "level_masl": {
+            "type": "number"
+          },
+          "source": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "published",
+              "unverified"
+            ]
+          },
+          "note": {
+            "type": "string"
+          },
+          "metres_above": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "level_masl",
+          "source",
+          "status",
+          "note",
+          "metres_above"
+        ]
+      }
+    },
+    "forecast": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "horizon_days": {
+            "type": "integer"
+          },
+          "target_date": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "p10": {
+            "type": "number"
+          },
+          "p50": {
+            "type": "number"
+          },
+          "p90": {
+            "type": "number"
+          },
+          "median_backtest_residual_m": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "ensemble": {
+            "type": "object",
+            "properties": {
+              "p10": {
+                "type": "number"
+              },
+              "p90": {
+                "type": "number"
+              },
+              "n": {
+                "type": "integer"
+              },
+              "years": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              }
+            },
+            "required": [
+              "p10",
+              "p90",
+              "n",
+              "years"
+            ]
+          },
+          "model": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "horizon_days",
+          "target_date",
+          "p10",
+          "p50",
+          "p90",
+          "ensemble"
+        ]
+      }
+    },
+    "days_to_threshold": {
+      "type": "object",
+      "properties": {
+        "horizon_days": {
+          "type": "integer"
+        },
+        "note": {
+          "type": "string"
+        },
+        "thresholds": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "threshold": {
+                "type": "string"
+              },
+              "level_masl": {
+                "type": "number"
+              },
+              "status": {
+                "type": "string"
+              },
+              "across_all_analogue_years": {
+                "type": "object",
+                "properties": {
+                  "analogue_years": {
+                    "type": "integer"
+                  },
+                  "years_that_cross": {
+                    "type": "integer"
+                  },
+                  "p10_days": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "p50_days": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "p90_days": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "analogue_years",
+                  "years_that_cross",
+                  "p10_days",
+                  "p50_days",
+                  "p90_days"
+                ]
+              },
+              "scenarios": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "scenario": {
+                      "type": "string"
+                    },
+                    "analogYear": {
+                      "type": "integer"
+                    },
+                    "inflowMeanM3s": {
+                      "type": "number"
+                    },
+                    "crossesOn": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    },
+                    "days": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "minimumLevelMasl": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "scenario",
+                    "analogYear",
+                    "inflowMeanM3s",
+                    "crossesOn",
+                    "days",
+                    "minimumLevelMasl"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "threshold",
+              "level_masl",
+              "status",
+              "across_all_analogue_years",
+              "scenarios"
+            ]
+          }
+        }
+      },
+      "required": [
+        "horizon_days",
+        "note",
+        "thresholds"
+      ]
+    },
+    "backtest": {
+      "type": "object",
+      "properties": {
+        "report": {
+          "type": "string"
+        },
+        "horizons": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "horizon_days": {
+                "type": "integer"
+              },
+              "n": {
+                "type": "integer"
+              },
+              "mae_m": {
+                "type": "number"
+              },
+              "skill_vs_persistence": {
+                "type": "number"
+              },
+              "coverage_p10_p90": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "horizon_days",
+              "n",
+              "mae_m",
+              "skill_vs_persistence",
+              "coverage_p10_p90"
+            ]
+          }
+        }
+      },
+      "required": [
+        "report",
+        "horizons"
+      ]
+    },
+    "crisis_check": {
+      "type": "object",
+      "properties": {
+        "threshold_masl": {
+          "type": "number"
+        },
+        "origins_considered": {
+          "type": "integer"
+        },
+        "false_alarms_p50": {
+          "type": "integer"
+        },
+        "episodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "crossed_on": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              "p50_lead_time_days": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "p10_lead_time_days": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "crossed_on",
+              "p50_lead_time_days",
+              "p10_lead_time_days"
+            ]
+          }
+        }
+      },
+      "required": [
+        "threshold_masl",
+        "origins_considered",
+        "false_alarms_p50",
+        "episodes"
+      ]
+    },
+    "license": {
+      "$ref": "#/$defs/license"
+    },
+    "attribution": {
+      "$ref": "#/$defs/attribution"
+    },
+    "see_also": {
+      "$ref": "#/$defs/see_also"
+    }
+  },
+  "$defs": {
+    "license": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "const": "MIT"
+        },
+        "code_url": {
+          "type": "string",
+          "pattern": "^https?://"
+        },
+        "data": {
+          "type": "string"
+        },
+        "data_es": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "code_url",
+        "data",
+        "data_es"
+      ]
+    },
+    "attribution": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "provides": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "pattern": "^https?://"
+          },
+          "terms": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "provides",
+          "url",
+          "terms"
+        ]
+      }
+    },
+    "see_also": {
+      "type": "object",
+      "required": [
+        "schema",
+        "documentation"
+      ],
+      "description": "Absolute URLs to the other documents, this document's schema and the documentation page.",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^https?://"
+      }
+    },
+    "deprecated": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Fields kept for one more schema version, each with what replaces it."
+    }
+  }
+}

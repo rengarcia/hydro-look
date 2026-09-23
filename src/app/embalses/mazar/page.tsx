@@ -345,7 +345,7 @@ function Floors({ mazar }: { mazar: ReservoirSnapshot }) {
   if (bands.length === 0) return null;
   const floors = [...new Set(bands.map((b) => b.min_masl))].sort((a, b) => a - b);
   const who = (floor: number) => {
-    const declarations = bands.filter((b) => b.min_masl === floor).map((b) => declarationLabel(b.declaration));
+    const declarations = bands.filter((b) => b.min_masl === floor).map((b) => declarationLabel(b));
     const counts = new Map<string, number>();
     for (const d of declarations) counts.set(d, (counts.get(d) ?? 0) + 1);
     return [...counts.entries()]
@@ -378,7 +378,7 @@ function Floors({ mazar }: { mazar: ReservoirSnapshot }) {
             {num(b.min_masl, 0)} – {num(b.max_masl, 0)} m
           </span>
           <span>
-            {capitalise(declarationLabel(b.declaration))}
+            {capitalise(declarationLabel(b))}
             <br />
             <span className="source">{b.source}</span>
           </span>

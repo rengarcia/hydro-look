@@ -1,5 +1,7 @@
 {
+  "schema_version": 1,
   "generated_at": "2026-09-23T02:37:18Z",
+  "data_date": "2026-09-21",
   "status": "ok",
   "model": "anthropic/claude-opus-5.5",
   "prompt_version": "es-4",
@@ -640,5 +642,58 @@
       "note": "Fase por el umbral de NOAA sobre el último ONI publicado, que siempre tiene unos dos meses de retraso."
     },
     "stale_feeds": []
+  },
+  "risk_tier_code": "tight",
+  "risk_tier_source": "adequacy.current.worst_tier",
+  "license": {
+    "code": "MIT",
+    "code_url": "https://github.com/rengarcia/hydro-look/blob/main/LICENSE",
+    "data": "Copies of public data. Each upstream source keeps its own terms, listed in `attribution`; credit them, and this project, when you republish.",
+    "data_es": "Copias de datos públicos. Cada fuente conserva sus propios términos, listados en `attribution`; cítelas, y a este proyecto, al republicar."
+  },
+  "attribution": [
+    {
+      "id": "celec",
+      "name": "CELEC EP",
+      "provides": "reservoir levels, inflows, declared bands and per-plant energy",
+      "url": "https://www.celec.gob.ec/",
+      "terms": "public web services of a state company; no licence is stated"
+    },
+    {
+      "id": "cenace",
+      "name": "CENACE",
+      "provides": "the national energy balance and live operating data",
+      "url": "https://www.cenace.gob.ec/",
+      "terms": "public web services of the system operator; no licence is stated"
+    },
+    {
+      "id": "xm",
+      "name": "XM S.A. E.S.P.",
+      "provides": "Colombian storage and cross-border exchanges",
+      "url": "https://www.xm.com.co/",
+      "terms": "public data portal of the Colombian market operator"
+    },
+    {
+      "id": "open_meteo",
+      "name": "Open-Meteo (ERA5 and forecast models)",
+      "provides": "precipitation and temperature at the basin centroids",
+      "url": "https://open-meteo.com/",
+      "terms": "CC BY 4.0 (https://open-meteo.com/en/terms); the free API is for non-commercial use"
+    },
+    {
+      "id": "noaa",
+      "name": "NOAA PSL / CPC",
+      "provides": "the Oceanic Niño Index",
+      "url": "https://psl.noaa.gov/data/correlation/oni.data",
+      "terms": "US government work, public domain"
+    }
+  ],
+  "see_also": {
+    "latest": "https://hydro-look.vercel.app/api/latest.json",
+    "status": "https://hydro-look.vercel.app/api/status.json",
+    "forecast": "https://hydro-look.vercel.app/api/forecast.json",
+    "adequacy": "https://hydro-look.vercel.app/api/adequacy.json",
+    "schema": "https://hydro-look.vercel.app/api/schema/narrative.schema.json",
+    "documentation": "https://hydro-look.vercel.app/datos/"
   }
 }

@@ -65,6 +65,7 @@ import { FORECAST_RUNS, FORECAST_VALUES } from "../src/lib/contracts/tables.ts";
 import { parseCsv } from "../src/lib/store/csv.ts";
 import { DATA_REFERENCE, repoPath } from "../src/lib/util/paths.ts";
 import { nowUtc } from "../src/lib/util/dates.ts";
+import { publicJson } from "../src/lib/publish/contract.ts";
 
 const SITE = "mazar";
 const VARIABLE = "cota_masl";
@@ -314,7 +315,7 @@ function main(): void {
   store.upsert(FORECAST_VALUES, forecast.valueRows);
 
   for (const [path, body] of [
-    [apiPath, `${JSON.stringify(document, null, 2)}\n`],
+    [apiPath, publicJson("forecast", document)],
     [reportPath, report],
   ] as const) {
     mkdirSync(dirname(path), { recursive: true });

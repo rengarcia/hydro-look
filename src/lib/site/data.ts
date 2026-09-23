@@ -24,7 +24,7 @@ import { bandForDayOfYear, binByDayOfYear, type Band } from "../features/climato
 import { parseCsv } from "../store/csv.ts";
 import { dayOfYear } from "../util/stats.ts";
 import { addDays, type IsoDate } from "../util/dates.ts";
-import type { LatestDocument } from "../publish/latest.ts";
+import { dataDateOf, type LatestDocument } from "../publish/latest.ts";
 
 const ROOT = process.cwd();
 const CURATED = join(ROOT, "data", "curated");
@@ -138,9 +138,12 @@ export function mix(days: number): MixDay[] {
   return dates.filter((d) => d >= first).map((date) => ({ date, values: byDate.get(date)! }));
 }
 
-/** The date the newest number on the page describes: the latest reading or closed balance day. */
+/**
+ * The date the newest number on the page describes: the latest reading or closed balance day.
+ * `latest.json` has carried it as `data_date` since schema version 1; a document written before
+ * then is dated the same way from its readings.
+ */
 export function dataDate(now: LatestDocument | null = latest()): string | null {
   if (now === null) return null;
-  const dates = [now.national?.date, ...now.reservoirs.map((r) => r.level?.date)].filter((d): d is string => !!d);
-  return dates.length > 0 ? dates.sort().at(-1)! : now.as_of;
+  return now.data_date ?? dataDateOf(now.reservoirs, now.national) ?? now.as_of;
 }

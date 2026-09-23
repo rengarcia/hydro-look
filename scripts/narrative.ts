@@ -50,6 +50,7 @@ import { NARRATIVE_SNAPSHOTS } from "../src/lib/contracts/tables.ts";
 import { parseCsv } from "../src/lib/store/csv.ts";
 import { DATA_CURATED, DATA_REFERENCE, repoPath } from "../src/lib/util/paths.ts";
 import { nowUtc } from "../src/lib/util/dates.ts";
+import { withContract } from "../src/lib/publish/contract.ts";
 
 const STAGED_ROW = "snapshot.json";
 const STAGED_DOCUMENT = "narrative.json";
@@ -175,7 +176,7 @@ async function main(): Promise<void> {
   const row = snapshotRow({ generatedAt, result, payload, payloadHash: hash });
   const document =
     result.status === "ok" && result.output
-      ? narrativeDocument({ generatedAt, result: { ...result, output: result.output as NarrativeOutput }, payload, payloadHash: hash })
+      ? withContract("narrative", narrativeDocument({ generatedAt, result: { ...result, output: result.output as NarrativeOutput }, payload, payloadHash: hash }))
       : null;
 
   const stageDir = values.stage?.trim();

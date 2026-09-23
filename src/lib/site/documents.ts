@@ -161,7 +161,14 @@ export interface AdequacyDocument {
     };
     editable_at: string;
   };
-  current: { tier: RiskTier; worst_tier: RiskTier; worst_tier_horizon_days: number; worst_deficit_gwh_day: number };
+  current: {
+    tier: RiskTier;
+    worst_tier: RiskTier;
+    worst_tier_horizon_days: number;
+    worst_deficit_gwh_day: number;
+    /** Which of the two tiers the narrative is written about. Stamped by `publish/contract.ts`. */
+    narrative_tier_field?: "worst_tier" | "tier";
+  };
   horizons: AdequacyHorizon[];
   tier_history: {
     horizon_days: number;
@@ -177,6 +184,11 @@ export interface AdequacyDocument {
 }
 
 export interface StatusFeed {
+  /** The feed's stable code, `ords_levels`. */
+  id: string;
+  /** What the page calls it. */
+  label_es: string;
+  /** Deprecated: the English label the log uses. */
   feed: string;
   latest: string | null;
   limit_days: number;
@@ -185,6 +197,7 @@ export interface StatusFeed {
 
 export interface StatusDocument {
   generated_at: string;
+  data_date: string | null;
   as_of: string;
   ok: boolean;
   status: string;
@@ -208,6 +221,8 @@ export interface NarrativeDocument {
   prompt_version: string;
   origin_date: string;
   risk_tier: string | null;
+  /** The adequacy field the tier was copied from, `adequacy.current.worst_tier`. */
+  risk_tier_source?: string;
   outlook_es: string;
   drivers: string[];
   confidence: "low" | "medium" | "high";

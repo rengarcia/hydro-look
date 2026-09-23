@@ -38,6 +38,7 @@ import { parseCsv } from "../src/lib/store/csv.ts";
 import { DATA_CURATED, DATA_REFERENCE, repoPath } from "../src/lib/util/paths.ts";
 import { nowUtc } from "../src/lib/util/dates.ts";
 import { roundTo } from "../src/lib/util/numbers.ts";
+import { publicJson } from "../src/lib/publish/contract.ts";
 
 function readReference(name: string): Record<string, string>[] {
   const path = join(DATA_REFERENCE, name);
@@ -219,7 +220,7 @@ function main(): void {
   );
 
   for (const [path, body] of [
-    [apiPath, `${JSON.stringify(document, null, 2)}\n`],
+    [apiPath, publicJson("adequacy", document)],
     [reportPath, report],
   ] as const) {
     mkdirSync(dirname(path), { recursive: true });
