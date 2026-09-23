@@ -33,17 +33,16 @@ import type { NarrativeSnapshotRow } from "../contracts/tables.ts";
  * The model, as a gateway slug. Switching provider or model is a change to this string and
  * nothing else — that is the gateway's point.
  *
- * Claude Opus 5 because it is the current default Claude model; at one call a day of about two
- * thousand tokens in and a few hundred out it costs cents, well inside the gateway's monthly
- * free credit. `anthropic/claude-haiku-4-5` is the cheaper swap if the `cost_usd` column ever
- * says otherwise.
+ * MiMo v2.6 Flash since 2026-09-23, because the gateway refuses `anthropic/claude-opus-5` to a
+ * free-tier account ("Free tier users do not have access to this model", run 35808200400). With
+ * paid gateway credits, `anthropic/claude-opus-5` is the model this module was written against.
  *
- * The `anthropic/<model>` slug format is Vercel's, not Anthropic's: verify it on the Vercel AI
- * Gateway model list (https://vercel.com/ai-gateway/models) before relying on it. A wrong slug
- * fails the first live run as `failed` with a model-not-found error; it cannot be checked from
- * a sandbox that has no route to the gateway.
+ * The `<provider>/<model>` slug format is Vercel's: verify it on the Vercel AI Gateway model
+ * list (https://vercel.com/ai-gateway/models) before relying on it. A wrong slug fails the first
+ * live run as `failed` with a model-not-found error; it cannot be checked from a sandbox that
+ * has no route to the gateway.
  */
-export const NARRATIVE_MODEL = "anthropic/claude-opus-5";
+export const NARRATIVE_MODEL = "xiaomi/mimo-v2.6-flash";
 
 /** How long to wait before the one retry after a 429. */
 export const RATE_LIMIT_RETRY_MS = 20_000;

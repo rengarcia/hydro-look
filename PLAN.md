@@ -1071,15 +1071,18 @@ from what the repository already publishes: per reservoir the level, bands and s
 same calendar day in every earlier year, and the 16-day Paute rain forecast against ERA5 for the
 same window — from the one provisional point, labelled so; Mazar's p10/p50/p90 and crossings from
 `forecast.json` with 2115 carried as `unverified`; the adequacy tier as an input; ONI at the lag a
-forecaster could have read it. `claude-opus-5` through the gateway returns `{outlook_es, drivers,
+forecaster could have read it. `xiaomi/mimo-v2.6-flash` through the gateway returns `{outlook_es, drivers,
 confidence}`, and a validator rejects any output naming a number or date not in the payload, or
 not naming the tier. A 429 is retried once then recorded `skipped`; every attempt appends a
 `narrative_snapshots` row with tokens and `cost_usd`; an unchanged hash and prompt version is a
 no-op. The daily job runs it last with `continue-on-error`, calling the gateway once and
 retrying only the cheap apply. The page shows the text beside the numbers it was written from.
-**It does nothing until `AI_GATEWAY_API_KEY` is added to the repository's Actions secrets**; the
-model slug, the gateway's cost field and the push loop have not yet run against the real
-services. The acceptance criterion — seven consecutive daily narratives — starts counting then.
+The key was added to the Actions secrets on 2026-09-23. The first live call
+([run 35808200400](https://github.com/rengarcia/hydro-look/actions/runs/35808200400)) authenticated
+but was refused: `anthropic/claude-opus-5` is not available to a free-tier gateway account. The
+model is now `xiaomi/mimo-v2.6-flash`; the push loop worked on that run and recorded the attempt as
+`failed`. The acceptance criterion — seven consecutive daily narratives — starts counting at the
+first `ok` snapshot.
 
 Original phase text, for reference:
 Implements decision 8. The model interprets; it never forecasts.
