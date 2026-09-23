@@ -24,8 +24,9 @@
 
 import { generateText, NoObjectGeneratedError, Output, RetryError, type LanguageModel } from "ai";
 import { z } from "zod";
-import { INSTRUCTIONS, buildPrompt, PROMPT_VERSION } from "./prompt.ts";
-import { validateNarrative } from "./validate.ts";
+import { buildPrompt, instructionsFor, promptVersionFor } from "./prompt.ts";
+import { countWords, DRIVER_COUNT, OUTLOOK_WORDS, validateNarrative } from "./validate.ts";
+import { DRIVER_DIRECTIONS, DRIVER_FACTORS } from "./drivers.ts";
 import type { NarrativePayload } from "./payload.ts";
 import type { NarrativeSnapshotRow } from "../contracts/tables.ts";
 
@@ -55,10 +56,27 @@ export const RATE_LIMIT_RETRY_MS = 20_000;
  */
 export const MAX_OUTPUT_TOKENS = 4_000;
 
-/** Decision 8's contract, as in PLAN.md §6 Phase 6b. */
+/**
+ * Decision 8's contract, as in PLAN.md §6 Phase 6b, tightened in prompt es-5 (§5.6): the length
+ * and the driver count the prompt asks for are enforced here rather than hoped for, and each
+ * driver carries the factor, the payload number and the direction `drivers.ts` checks.
+ */
+export const driverSchema = z.object({
+  text: z.string().min(1),
+  factor: z.enum(DRIVER_FACTORS),
+  direction: z.enum(DRIVER_DIRECTIONS),
+  payload_ref: z.string().min(1),
+});
+
 export const narrativeSchema = z.object({
-  outlook_es: z.string().min(1),
-  drivers: z.array(z.string().min(1)).min(1).max(6),
+  outlook_es: z
+    .string()
+    .min(1)
+    .refine((text) => {
+      const words = countWords(text);
+      return words >= OUTLOOK_WORDS.min && words <= OUTLOOK_WORDS.max;
+    }, `outlook_es must be ${OUTLOOK_WORDS.min} to ${OUTLOOK_WORDS.max} words`),
+  drivers: z.array(driverSchema).min(DRIVER_COUNT.min).max(DRIVER_COUNT.max),
   confidence: z.enum(["low", "medium", "high"]),
 });
 export type NarrativeOutput = z.infer<typeof narrativeSchema>;
@@ -130,7 +148,7 @@ const defaultSleep = (ms: number) => new Promise<void>((resolve) => setTimeout(r
 async function callOnce(payload: NarrativePayload, model: LanguageModel) {
   return generateText({
     model,
-    instructions: INSTRUCTIONS,
+    instructions: instructionsFor(payload),
     prompt: buildPrompt(payload),
     output: Output.object({ schema: narrativeSchema }),
     maxOutputTokens: MAX_OUTPUT_TOKENS,
@@ -232,7 +250,7 @@ export function lastAnswered<T extends SnapshotRef>(rows: readonly T[]): T | nul
 export function isNoOp(
   rows: readonly SnapshotRef[],
   payloadHash: string,
-  promptVersion = PROMPT_VERSION,
+  promptVersion = promptVersionFor(null),
   modelId = NARRATIVE_MODEL,
 ): boolean {
   const last = lastAnswered(rows);
@@ -254,13 +272,14 @@ export function snapshotRow(input: {
   payloadHash: string;
 }): NarrativeSnapshotRow {
   const { result, payload } = input;
+  const promptVersion = promptVersionFor(payload);
   return {
-    run_id: narrativeRunId(payload.origin_date, PROMPT_VERSION, input.payloadHash, input.generatedAt),
+    run_id: narrativeRunId(payload.origin_date, promptVersion, input.payloadHash, input.generatedAt),
     generated_at: input.generatedAt,
     origin_date: payload.origin_date,
     status: result.status,
     model_id: result.modelId,
-    prompt_version: PROMPT_VERSION,
+    prompt_version: promptVersion,
     payload_hash: input.payloadHash,
     forecast_run_id: payload.mazar_forecast?.run_id ?? "",
     adequacy_run_id: payload.adequacy?.run_id ?? "",
@@ -288,8 +307,16 @@ export interface NarrativeDocument {
   payload_hash: string;
   origin_date: string;
   risk_tier: string | null;
+  /**
+   * Which tier the text was given, and from where (§3, §5.6): `adequacy.json` publishes a 7-day
+   * `current.tier` and a `current.worst_tier`, and the text is always handed the worst. Additive.
+   */
+  risk_tier_given: { tier: string; horizon_days: number; source: string; tier_at_7d: string } | null;
   outlook_es: string;
+  /** The drivers' sentences, as the page renders them. */
   drivers: string[];
+  /** The same drivers with the factor, direction and payload number each rests on (prompt es-5). */
+  drivers_structured: NarrativeOutput["drivers"];
   confidence: NarrativeOutput["confidence"];
   usage: { input_tokens: number | null; output_tokens: number | null; cost_usd: number | null };
   disclaimer: string;
@@ -308,12 +335,21 @@ export function narrativeDocument(input: {
     generated_at: input.generatedAt,
     status: "ok",
     model: result.modelId,
-    prompt_version: PROMPT_VERSION,
+    prompt_version: promptVersionFor(payload),
     payload_hash: input.payloadHash,
     origin_date: payload.origin_date,
     risk_tier: payload.adequacy?.risk_tier ?? null,
+    risk_tier_given: payload.adequacy
+      ? {
+          tier: payload.adequacy.risk_tier,
+          horizon_days: payload.adequacy.risk_tier_horizon_days,
+          source: "adequacy.json current.worst_tier: the worst tier across the published horizons",
+          tier_at_7d: payload.adequacy.tier_at_7d,
+        }
+      : null,
     outlook_es: result.output.outlook_es,
-    drivers: result.output.drivers,
+    drivers: result.output.drivers.map((d) => d.text),
+    drivers_structured: result.output.drivers,
     confidence: result.output.confidence,
     usage: { input_tokens: result.usage.inputTokens, output_tokens: result.usage.outputTokens, cost_usd: result.usage.costUsd },
     disclaimer: NARRATIVE_DISCLAIMER_ES,

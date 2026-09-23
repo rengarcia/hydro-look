@@ -31,7 +31,7 @@ import {
   precipitationOutlook,
   type NarrativePayload,
 } from "../src/lib/narrative/payload.ts";
-import { allowedSet, fieldNames, inventedFigures, numberAllowed, readNumber, validateNarrative } from "../src/lib/narrative/validate.ts";
+import { allowedSet, countWords, fieldNames, inventedFigures, numberAllowed, readNumber, validateNarrative } from "../src/lib/narrative/validate.ts";
 import {
   costFromMetadata,
   generateNarrative,
@@ -57,6 +57,18 @@ function fixturePayload(): NarrativePayload {
 
 const payload = fixturePayload();
 const mazar = payload.reservoirs.find((r) => r.site === "mazar")!;
+const MAZAR = payload.reservoirs.findIndex((r) => r.site === "mazar");
+
+/** Prose with no figures in it, to bring a test text inside the 120–220 words the schema enforces. */
+const pad = (sentences: number) => " El texto describe la situación general de los embalses sin añadir cifras nuevas.".repeat(sentences);
+const PAD = pad(9);
+
+/** Three drivers that check out against the fixture payload. */
+const DRIVERS = [
+  { text: "Las pendientes de 7 y 30 días son negativas (-0,2129 y -0,3313 m/día).", factor: "mazar_level", direction: "down", payload_ref: `reservoirs[${MAZAR}].slopes_m_per_day.d30` },
+  { text: "Cobertura de la banda: 74 % en la validación histórica a 7 días.", factor: "mazar_forecast", direction: "steady", payload_ref: "mazar_forecast.horizons[0].coverage_p10_p90" },
+  { text: "El ONI de 2026-07 fue 1,8.", factor: "enso", direction: "up", payload_ref: "enso.oni" },
+] as const;
 
 describe("the payload for 2026-09-21", () => {
   it("copies Mazar's level, bands and slopes from latest.json", () => {
@@ -64,14 +76,14 @@ describe("the payload for 2026-09-21", () => {
     expect(mazar.observed_on).toBe("2026-09-21");
     expect(mazar.slopes_m_per_day).toEqual({ d7: -0.2129, d14: -0.47, d30: -0.3313 });
     // 2100–2153 is published by two report endpoints and folded into one band that names both.
-    expect(mazar.bands[0]).toEqual({
+    expect(mazar.bands![0]).toEqual({
       floor_masl: 2100,
       ceiling_masl: 2153,
       band_pct: 72.4,
       metres_below_ceiling: 14.63,
       declared_by: ["ords:repDiaHid12m", "ords:repDiaVolAlm"],
     });
-    expect(mazar.bands[1]!.floor_masl).toBe(2098);
+    expect(mazar.bands![1]!.floor_masl).toBe(2098);
   });
 
   it("carries 2115 as unverified, with days to it at the 7- and 30-day slopes", () => {
@@ -203,11 +215,9 @@ describe("the validator", () => {
       "como marcador propio, no verificado. Baja 0,21 m al día en la última semana. El pronóstico estadístico sitúa la " +
       "mediana en 2.135,2 m el 28 de septiembre y en 2133,28 m a 30 días, con una banda p10–p90 de 2120,44 a 2137,96 m. " +
       "La suficiencia nacional está en nivel holgado. La lluvia prevista, 80,2 mm, supera la mediana de 55,8 mm " +
-      "(percentil 83) en un punto provisional. El ONI de 2026-07 fue 1,8, fase El Niño. En 2023 la cota cayó 24,82 m en 30 días.",
-    drivers: [
-      "Las pendientes de 7 y 30 días son negativas (-0,2129 y -0,3313 m/día).",
-      "Cobertura de la banda: 74 % en la validación histórica a 7 días.",
-    ],
+      "(percentil 83) en un punto provisional. El ONI de 2026-07 fue 1,8, fase El Niño. En 2023 la cota cayó 24,82 m en 30 días." +
+      pad(3),
+    drivers: [...DRIVERS],
   };
 
   it("accepts a text that only quotes the payload, in Spanish typography", () => {
@@ -270,9 +280,32 @@ describe("the validator", () => {
   });
 
   it("rejects field names and code values, and not Spanish abbreviations", () => {
-    const result = validateNarrative({ ...good, drivers: ["La fase es el_nino según mazar.level_masl."] }, payload);
+    const result = validateNarrative({ ...good, drivers: ["La fase es el_nino según mazar.level_masl.", ...DRIVERS.slice(1)] }, payload);
     expect(result.problems).toEqual(['drivers[0]: field name "el_nino"', 'drivers[0]: field name "mazar.level_masl"']);
     expect(fieldNames("2.138,37 m.s.n.m., p. ej. El Niño; ONI de 2026-07")).toEqual([]);
+  });
+
+  it("enforces 120–220 words and 3–5 drivers", () => {
+    expect(countWords("Mazar, a 2.138,37 m — el 21 de septiembre.")).toBe(8);
+    const short = validateNarrative({ ...good, outlook_es: good.outlook_es.replace(pad(3), "") }, payload);
+    expect(short.problems).toEqual([expect.stringMatching(/^outlook_es: \d+ words, outside 120–220$/)]);
+    const long = validateNarrative({ ...good, outlook_es: good.outlook_es + PAD }, payload);
+    expect(long.problems).toEqual([expect.stringMatching(/words, outside/)]);
+    expect(validateNarrative({ ...good, drivers: DRIVERS.slice(0, 2) }, payload).problems).toEqual(["drivers: 2, outside 3–5"]);
+  });
+
+  it("checks each structured driver against the payload number it cites", () => {
+    const check = (driver: object) => validateNarrative({ ...good, drivers: [driver as never, ...DRIVERS.slice(1)] }, payload).problems;
+    expect(check({ ...DRIVERS[0], payload_ref: `reservoirs[${MAZAR}].slopes_m_per_day.d90` })).toEqual([
+      `drivers[0]: payload_ref "reservoirs[${MAZAR}].slopes_m_per_day.d90" does not resolve to a number in the payload`,
+    ]);
+    expect(check({ ...DRIVERS[0], direction: "up" })).toEqual([
+      `drivers[0]: direction "up" contradicts reservoirs[${MAZAR}].slopes_m_per_day.d30 = -0.3313 against 0`,
+    ]);
+    expect(check({ ...DRIVERS[0], factor: "enso" })).toEqual([`drivers[0]: factor "enso" does not match payload_ref "reservoirs[${MAZAR}].slopes_m_per_day.d30"`]);
+    const other = payload.reservoirs.findIndex((r) => r.site !== "mazar");
+    expect(check({ ...DRIVERS[0], payload_ref: `reservoirs[${other}].level_masl` })[0]).toMatch(/factor "mazar_level" points at/);
+    expect(check({ ...DRIVERS[0], payload_ref: "not a path!" })).toEqual(['drivers[0]: payload_ref "not a path!" is not a path']);
   });
 
   it("requires the outlook to name the risk tier it was given", () => {
@@ -348,8 +381,9 @@ function answering(answer: unknown, metadata?: Record<string, Record<string, str
 const goodAnswer = {
   outlook_es:
     "Mazar está en 2138,37 m y el pronóstico estadístico pone su mediana en 2133,28 m a 30 días. " +
-    "El nivel de suficiencia es holgado: el caso p90 sigue cubierto.",
-  drivers: ["La pendiente de 30 días es de -0,3313 m/día.", "El ONI de 2026-07 fue 1,8."],
+    "El nivel de suficiencia es holgado: el caso p90 sigue cubierto." +
+    PAD,
+  drivers: [...DRIVERS],
   confidence: "medium",
 };
 
