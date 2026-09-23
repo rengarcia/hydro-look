@@ -24,7 +24,8 @@
     "forecast": "tsx scripts/forecast.ts",
     "adequacy": "tsx scripts/adequacy.ts",
     "narrative": "tsx scripts/narrative.ts",
-    "backtest:m4": "tsx scripts/backtest-m4.ts"
+    "backtest:m4": "tsx scripts/backtest-m4.ts",
+    "score": "tsx scripts/score.ts"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
