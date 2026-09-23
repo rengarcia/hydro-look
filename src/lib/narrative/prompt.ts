@@ -13,7 +13,7 @@
 
 import { canonicalJson, type NarrativePayload } from "./payload.ts";
 
-export const PROMPT_VERSION = "es-3";
+export const PROMPT_VERSION = "es-4";
 
 export const INSTRUCTIONS = [
   "You write the short outlook paragraph for a public, unofficial website about Ecuador's hydroelectric reservoirs.",
@@ -28,6 +28,8 @@ export const INSTRUCTIONS = [
   "  separators (2.138,37 m). This is formatting, not a new number.",
   "- The reader is the public, not a programmer. Never write a JSON key, field path or code value:",
   "  write El Niño, not el_nino; la cota de Mazar, not mazar.level_masl.",
+  "- Write fractions as percentages (skill 0.112 is 11,2 %, coverage 0.8 is 80 %) and GWh/día to one decimal.",
+  "  Coverage is judged against the nominal 80 %: 80 % is on target, not below it.",
   "- Do not mention any date, year or month that is not in the payload.",
   "- The only forecast is `mazar_forecast`, a statistical model. Describe what it says; do not extend it",
   "  to other horizons, other reservoirs or other thresholds.",
