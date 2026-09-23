@@ -1,0 +1,3 @@
+# Formatting-only commits; `git config blame.ignoreRevsFile .git-blame-ignore-revs` to skip them locally.
+# Prettier, first run over the whole repository.
+c1fee3d0cf1396b6fe8d0d5ed385b4f17dd9dcda
