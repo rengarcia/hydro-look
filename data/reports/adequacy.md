@@ -1,6 +1,6 @@
 # Energy adequacy — what the model is, and what it was measured at
 
-Generated 2026-09-23T15:01:24Z from 3724 usable national-balance days, 2016-05-01 → 2026-09-21. Origin 2026-09-21.
+Generated 2026-09-23T15:16:33Z from 3725 usable national-balance days, 2016-05-01 → 2026-09-22. Origin 2026-09-22.
 
 This is section 7's target 3: expected deficit in GWh per day over the horizon, and the risk
 tiers read off it. It is the number the site's adequacy tile shows, and the `risk_tier` the
@@ -35,7 +35,7 @@ and in each case the obvious quantity is wrong:
 
 ## Which days the model is allowed to see
 
-3724 of 3781 balance days are usable (98.49%).
+3725 of 3782 balance days are usable (98.49%).
 
 `parse/smec.ts` already rejects pages served before their metering arrived, by requiring
 distribution demand to be at least 20% of generation. That gate is one-sided: it catches a
@@ -102,7 +102,7 @@ cuts.
 | 60 d | 65 | 2.14 | -0.61 | 2.10 | -1.9% |
 | 90 d | 55 | 2.31 | -0.62 | 2.20 | -5.0% |
 
-Growth fitted at the live origin: 6.60% a year, over 1202 unsuppressed days, anchored on the last 14 of them at a factor of 1.0815.
+Growth fitted at the live origin: 6.60% a year, over 1202 unsuppressed days, anchored on the last 14 of them at a factor of 1.0768.
 
 **This rung does not beat the baseline, and the comparison is not the point.** Over a window
 mean a trailing 28-day mean is a very strong predictor of load — load is that persistent at
@@ -223,7 +223,7 @@ interconnection is firm is invited to look at the stressed column before believi
 
 ### When the central case stops assuming the interconnection
 
-At this origin the interconnection is treated as **cut**: imports averaged 0.14 GWh/day over the last 14 usable days while thermal ran at 21.73, so the central case assumes 0.14 GWh/day of imports.
+At this origin the interconnection is treated as **cut**: imports averaged 0.14 GWh/day over the last 14 usable days while thermal ran at 21.80, so the central case assumes 0.14 GWh/day of imports.
 
 The rule: 14 days of imports below 1 GWh/day *while* thermal runs at 70% or more of its ceiling means the imports are not arriving rather than
 not wanted, and the central case then uses what is arriving, held for the horizon. Low imports
@@ -245,9 +245,9 @@ Published in `adequacy.json` as `import_sensitivity`; the central case above is 
 
 | Imports | GWh/day | 7 d | 14 d | 30 d | 60 d | 90 d | Worst tier |
 |---|---:|---|---|---|---|---|---|
-| demonstrated ceiling | 10.78 | -12.47 `holgado` | -12.23 `holgado` | -10.69 `vigilancia` | -9.84 `vigilancia` | -10.14 `holgado` | `vigilancia` (30 d) |
-| stressed (2024) | 0.12 | -1.81 `vigilancia` | -1.57 `vigilancia` | -0.03 `vigilancia` | +0.82 `ajustado` | +0.52 `ajustado` | `ajustado` (60 d) |
-| current regime (trailing) | 0.14 | -1.83 `vigilancia` | -1.59 `vigilancia` | -0.05 `vigilancia` | +0.80 `ajustado` | +0.50 `ajustado` | `ajustado` (60 d) |
+| demonstrated ceiling | 10.78 | -12.46 `holgado` | -12.30 `holgado` | -10.77 `vigilancia` | -10.11 `vigilancia` | -10.50 `holgado` | `vigilancia` (30 d) |
+| stressed (2024) | 0.12 | -1.80 `vigilancia` | -1.65 `vigilancia` | -0.12 `vigilancia` | +0.55 `ajustado` | +0.15 `ajustado` | `ajustado` (60 d) |
+| current regime (trailing) | 0.14 | -1.82 `vigilancia` | -1.67 `vigilancia` | -0.14 `vigilancia` | +0.53 `ajustado` | +0.13 `ajustado` | `ajustado` (60 d) |
 
 Deficit in GWh/day, positive meaning short. The spread between the rows is the part of the tier that rests on
 Colombia rather than on water.
@@ -351,13 +351,13 @@ Imports from Colombia as a least-squares function of `colombia_useful_storage_fr
 | export model | 2024 Colombian cut | 7 d | 91 | 3.32 | 3.92 |
 | export model | 2024 Colombian cut | 14 d | 91 | 4.06 | 3.73 |
 | export model | 2024 Colombian cut | 30 d | 91 | 5.75 | 3.42 |
-| export model | 2026-09 stop | 7 d | 14 | 9.75 | 3.71 |
-| export model | 2026-09 stop | 14 d | 7 | 9.75 | 4.15 |
+| export model | 2026-09 stop | 7 d | 15 | 9.81 | 3.71 |
+| export model | 2026-09 stop | 14 d | 8 | 9.86 | 4.21 |
 | export model + ONI | 2024 Colombian cut | 7 d | 91 | 3.32 | 3.95 |
 | export model + ONI | 2024 Colombian cut | 14 d | 91 | 4.06 | 3.75 |
 | export model + ONI | 2024 Colombian cut | 30 d | 91 | 5.75 | 3.44 |
-| export model + ONI | 2026-09 stop | 7 d | 14 | 9.75 | 3.55 |
-| export model + ONI | 2026-09 stop | 14 d | 7 | 9.75 | 4.04 |
+| export model + ONI | 2026-09 stop | 7 d | 15 | 9.81 | 3.55 |
+| export model + ONI | 2026-09 stop | 14 d | 8 | 9.86 | 4.10 |
 
 **Negative.** The model (without ONI) is better in 2024 Colombian cut at 14 d, 2024 Colombian cut at 30 d, 2026-09 stop at 7 d, 2026-09 stop at 14 d and worse in 2024 Colombian cut at 7 d; with ONI, worse in 2024 Colombian cut at 7 d. Where it wins it is because the rule keeps assuming the demonstrated ceiling until a full regime window of near-zero imports has passed; where it loses, the rule's trailing read of what is arriving is the better nowcast. Neither wins everywhere, so the ceilings and the cutoff rule stay, and the sensitivity table is what a reader should use to weigh the import assumption.
 
