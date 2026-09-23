@@ -1245,6 +1245,11 @@ a zero, and CENACE shows nothing crossing either way those days, the week Colomb
 exports. A `--from` run will re-ask that month each time, which costs eleven requests and nothing
 else.
 
+**Candidate list, 2026-09-23:** `ENHANCEMENTS.md` ranks what to do next across the pipeline,
+the public data contract, the site and the models, with the measurement each item rests on
+(pack growth per run, shipped JavaScript, unused tables, unscored forecasts). It is the working
+list for this phase; the paragraph below is the older one and is kept for the record.
+
 Still listed: ML v2 if it beats v1 in backtests; ARCONEL BNEE monthly loader; CENACE Datos Abiertos per-plant
 validation; Colombia export availability via XM's open API — which Phase 6c has now made the
 highest-value item on this list, because the import ceiling is the adequacy model's most fragile
