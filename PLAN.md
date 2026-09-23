@@ -345,7 +345,7 @@ instead of a multi-megabyte blob. The site reads those files at build time; no d
 
 ## 5. Architecture
 
-- **Language/tooling (decided 2026-09-22, see §9):** TypeScript on Node 22, one package for both
+- **Language/tooling (decided 2026-09-22, see §9):** TypeScript on Node 24 (moved from 22 on 2026-09-23; `.nvmrc`), one package for both
   the ingestion scripts and the site. `tsx` to run the CLI, `vitest` for fixture tests, `tsc
   --noEmit` plus `eslint` in CI. Libraries: `undici` (per-host TLS agents), `cheerio` for the CENACE
   HTML, `zod` for table contracts. The frontend is Next.js (App Router) on Vercel, reading the
