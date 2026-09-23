@@ -4,10 +4,13 @@
  * Two things make this series weaker than its name suggests, and both travel with it into any
  * model that reads it:
  *
- * - **It is one point, not a basin.** `basins.csv` carries a single *provisional* sampling point
- *   for the Paute (-2.6, -78.6), marked as a Phase 0 choice rather than a catchment centroid or
- *   an area average, and nothing at all for the other six catchments. A model that uses it is
- *   using rain at one grid cell of a 0.25° reanalysis, and every table it appears in says so.
+ * - **It is one point, not a basin.** What this reads by default is `basins.csv`'s `paute` row, a
+ *   *provisional* Phase 0 sampling point (-2.6, -78.6), not a catchment centroid or an area
+ *   average. A model that uses it is using rain at one grid cell of a 0.25° reanalysis, and every
+ *   table it appears in says so. The verified catchment centroids added on 2026-09-23
+ *   (`paute_mazar` and six more, `data/reports/catchments.md`) are separate rows so that M4, which
+ *   was backtested on this point, does not change under anyone's feet; moving it onto
+ *   `paute_mazar` is a change to the shipped model and needs its own backtest.
  * - **It arrives late.** ERA5 is published about five days behind real time, so on any day the
  *   newest value a forecaster could have read is five days old. `ERA5_LATENCY_DAYS` is that lag,
  *   and features built from this series never read inside it. The values themselves are today's

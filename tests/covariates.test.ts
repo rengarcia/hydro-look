@@ -107,8 +107,9 @@ describe("covariates", () => {
   it("resumes complete history, retries null days and honours a one-request budget", async () => {
     const root = mkdtempSync(join(tmpdir(), "hydro-weather-resume-"));
     const store = new CuratedStore(root);
-    const read = vi.spyOn(store, "read").mockReturnValue([{ date: "2024-01-01", basin: basin.basin,
-      latitude: String(basin.latitude), longitude: String(basin.longitude), kind: "era5", precip_mm: "0", temp_mean_c: "12" }]);
+    // A complete day for every basin in the reference table, so the first run has nothing to fetch.
+    const read = vi.spyOn(store, "read").mockReturnValue(loadBasins().map((b) => ({ date: "2024-01-01", basin: b.basin,
+      latitude: String(b.latitude), longitude: String(b.longitude), kind: "era5", precip_mm: "0", temp_mean_c: "12" })));
     const source = new Covariates({ fetch: vi.fn() }, new RawArchive(root));
     const weather = vi.spyOn(source, "weather").mockResolvedValue();
     const oni = vi.spyOn(source, "oni").mockResolvedValue();

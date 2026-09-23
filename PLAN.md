@@ -1,6 +1,6 @@
 # hydro-look — Plan v2
 
-**Status:** Phases 0, 2, 3, 5, 6 and 6c are done. Phase 1 is code-complete and waits only on its clock — three consecutive days with a green *scheduled* daily run; 2026-09-22 is the first, so it can close 2026-09-24 at the earliest. Phase 4's reference tables, gates and ERA5 history are done; its catchments are CATCHMENT_STATUS. Phase 6b is live: the AI Gateway is configured and the first `ok` narrative was written 2026-09-23 (run 35810691729), so its seven-day acceptance count has started. The site is deployed on Vercel, and Colombia's side of the interconnection is ingested from XM (Phase 7). **Updated:** 2026-09-23. Supersedes the initial plan and the
+**Status:** Phases 0, 2, 3, 5, 6 and 6c are done. Phase 1 is code-complete and waits only on its clock — three consecutive days with a green *scheduled* daily run; 2026-09-22 is the first, so it can close 2026-09-24 at the earliest. Phase 4's reference tables, gates and ERA5 history are done; its catchments were delineated from a DEM and checked against INAMHI on 2026-09-23, so `basins.csv` now holds a verified centroid for each of the seven, and backfilling ERA5 at them is the one step left. Phase 6b is live: the AI Gateway is configured and the first `ok` narrative was written 2026-09-23 (run 35810691729), so its seven-day acceptance count has started. The site is deployed on Vercel, and Colombia's side of the interconnection is ingested from XM (Phase 7). **Updated:** 2026-09-23. Supersedes the initial plan and the
 follow-up research note ("CELEC dashboard covers 7 plants", "CENACE header has usable numbers").
 
 This version was built after reading the two community scrapers that already run daily against
@@ -310,6 +310,9 @@ press URL per row. Seed (dates to confirm against the linked articles in Phase 0
 
 **`basins.csv`** — centroid lat/lon and area for the catchments feeding Mazar (upper Paute), Coca
 (CCS), Pastaza (Agoyán/Pisayambo), Jubones, Guayllabamba, Daule; used for Open-Meteo queries.
+Delivered 2026-09-23 for all seven dams, Zamora (Delsitanisagua) included, from a DEM delineation
+checked against INAMHI — see §6 Phase 4. Areas are in each row's notes and in
+`data/reports/catchments.md`; the outlines are `catchments.geojson`.
 
 **`mrids.csv`** — plant, variable, mrid, unit, sample value, validated_on, evidence (chart title or
 bundle line). Grows in Phase 3.
@@ -648,7 +651,7 @@ their own `fecha` in the archive. The family does not share the habit: `repDiaVo
 Acceptance: daily level and inflow for the three plants; a documented semantics note per variable.
 Both met.
 
-**Phase 4 · Covariates, reference tables, quality gates — reference tables and gates done 2026-09-22; covariate history outstanding**
+**Phase 4 · Covariates, reference tables, quality gates — reference tables and gates done 2026-09-22; catchments done 2026-09-23; ERA5 at the new centroids outstanding**
 Implemented earlier: `ingest covariates`, Open-Meteo ERA5 (explicit model selection; six-day
 publication buffer), 16-day forecasts, NOAA PSL ONI, schema/range validation, raw archives,
 year-partitioned CSV and the scheduled/manual `covariates.yml` workflow. Historical weather is
@@ -809,6 +812,73 @@ One setting would reopen the route the plan was built around, and it is not in t
 block is on the address, and the development sandbox is a different address that refuses these
 hosts only by its own egress allowlist. Adding `data.hydrosheds.org` to this environment's network
 egress settings tests whether HydroSHEDS refuses everyone or only GitHub.
+
+**Closed 2026-09-23: the catchments, from a DEM, checked against INAMHI.** The search for a
+boundary set with upstream topology ended by not needing one. `npm run catchments`
+(`scripts/catchments.ts`, `src/lib/geo/catchment.ts`) derives the flow network itself: Copernicus
+GLO-90 (3″, ~90 m) from the public `copernicus-dem-90m` bucket, which runners reach; priority-flood
+depression filling with steepest-descent D8; each pour point snapped onto the channel under the
+dam's mapped crest (or within 0.5 km of a point, 2 km for Daule-Peripa's rounded one); the
+mosaic widened a degree on any side a catchment reaches. It runs as the `catchments` job of
+`probe-basins.yml` and commits `data/reference/catchments.geojson`, `data/reports/catchments.md`
+and INAMHI's raw answer. Final run: 35817970669.
+
+Fetching `hidroelectricasshape` whole answered the question the order of work above put first:
+it is **twelve per-scheme polygons from the ENANDES project, one of them drawn at Mazar itself**,
+not only at Molino. Earlier probes saw only `Paute_Molino` because a point-in-polygon test
+returns one polygon and four of the seven dams sat just outside theirs. So every catchment has an
+independent delineation to be checked against:
+
+| basin row | pour point | DEM km² | INAMHI polygon | INAMHI km² | IoU |
+|---|---|---|---|---|---|
+| `paute_mazar` | Presa Mazar, way/311803060 (QID) | 4,418 | Mazar | 4,041 | 91% |
+| `coca_ccs` | dam way/310742588 (QID) | 3,727 | Coca-Codo4326 | 3,726 | 100% |
+| `pastaza_agoyan` | node/8432673468 (QID) | 8,242 | Hidroagoyan | 8,233 | 100% |
+| `guayllabamba_manduriacu` | Wikidata point | 6,969 | manduriacudisolv | 6,959 | 99% |
+| `daule_marcel_laniado` | Wikidata point, snapped 1.9 km | 4,197 | Marcel_Laniado_4326 | 4,165 | 99% |
+| `jubones_msf` | intake dam way/690695821 | 3,345 | Minas_San_fancisco | 3,347 | 99% |
+| `zamora_delsitanisagua` | intake dam way/726604479 | 1,137 | Delsinta (at the powerhouse) | 1,387 | 82% |
+
+- **Both intake leads are settled.** For Minas San Francisco, INAMHI drew its polygon at the
+  unnamed dam §2.4 found on the Jubones: two independent delineations from that point agree at
+  99%. For Delsitanisagua, the re-asked conduit trace (probe run 35816537011) found
+  **way/726604479, "Delsitanisagua hidroelectrica", `waterway=dam`, `operator=CELEC`**, 20 m from
+  the node/2489320895 lead and 480 m above the powerhouse, with an underground CELEC water
+  pipeline (way/690695823) at the powerhouse end. INAMHI drew Delsinta at the powerhouse, and
+  the DEM catchment there matches it at 99%; the row uses the intake, because that is the water
+  the plant takes.
+- **Mazar is the one disagreement, and it is recorded, not resolved.** INAMHI's polygon lies
+  wholly inside the DEM's; the extra ~380 km² is a north-bank lobe whose outlet is beside the
+  dam. A 166 km² branch joins the main channel 0.19 km above the crest cell, which is closer than the
+  DEM can place a junction relative to a dam; the other ~210 km² of the difference enters further up. Whether that lobe drains into the reservoir or below the dam is a
+  question for a better map than either source. Snapping to the crest rather than a radius was
+  tried and changed nothing.
+- **Two defects the first runs found in code written for this.** Priority-flood's own choice of
+  receiver is the lowest neighbour, which on a slope favours the diagonals and sent a test
+  valley's far hillside past its pour point (1,847 km² of an analytic 2,957); every cell is now
+  re-pointed at its steepest neighbour by drop over distance. And a snap radius can reach below a
+  dam, so a dam mapped as a way is snapped to its crest.
+
+**What "verified" means in these rows.** `coordinate_status` describes the sampling point, and
+each of the seven is the DEM catchment's centroid, which lies inside INAMHI's polygon for the same
+scheme, with INAMHI's own centroid inside ours, and in the same 0.25° ERA5 cell as INAMHI's
+centroid (0.1–0.2 km apart for five, 3.6 km for Mazar, 4.2 km for Delsitanisagua). So neither
+open question above changes which rain is sampled. Areas and pour points, with their evidence,
+are in each row's notes and in the report.
+
+**What is still open.**
+- **ERA5 history at the seven new points.** A `covariates.yml` dispatch on `main` with
+  `from: 1990-01-01` (about 260 requests; it resumes by basin-day). Not from a branch, because
+  `weather_daily` is a generated file that main's scheduled runs also write, and not in the
+  minutes around 12:15 or 16:30 UTC, for the reason Phase 1 gives.
+- **The Phase 0 `paute` point stays as it is.** The published M4 median and the narrative's rain
+  outlook were fitted on it, and the weather readers select rows by basin id. Moving either onto
+  `paute_mazar` is a change to a shipped model and needs its own backtest; precipitation as a
+  conditioner (§7, M3) is now possible to try for the first time.
+- **A centroid is still one point.** Area-weighted ERA5 cells over each outline in
+  `catchments.geojson` would be the true basin mean; it waits on a backtest showing it matters.
+  Seasonal ensembles remain deferred.
+- The HydroSHEDS egress test below is no longer needed for this.
 
 
 Original phase scope:

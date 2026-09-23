@@ -237,7 +237,7 @@ No. Scored over the 60 origins where both variants could forecast — the matche
 | M3-water-balance | 2.389 | 3.469 | 6.446 | 7.832 | 8.065 |
 | M3-water-balance-enso | 2.562 | 3.916 | 7.406 | 8.107 | 8.656 |
 
-The phase used is the one a forecaster could actually have read at each origin: ONI is a three-month mean centred on its label, so the newest value available on any day is about two months old, and the backtest never looks through that lag. The conditioner worth having is basin precipitation, and it waits on a verified `basins.csv`.
+The phase used is the one a forecaster could actually have read at each origin: ONI is a three-month mean centred on its label, so the newest value available on any day is about two months old, and the backtest never looks through that lag. The conditioner worth having is basin precipitation, and it waits on ERA5 history at the verified catchment centroids now in `basins.csv`.
 
 ## The crisis check
 
