@@ -1,0 +1,645 @@
+{
+  "generated_at": "2026-09-23T02:33:19Z",
+  "status": "ok",
+  "model": "anthropic/claude-opus-5",
+  "prompt_version": "es-3",
+  "payload_hash": "40c07781513c71f022fdbece8a205888c989b3048a9cc3ee719a6966b062501b",
+  "origin_date": "2026-09-21",
+  "risk_tier": "ajustado",
+  "outlook_es": "Mazar se observó en 2.138,37 m el 21 de septiembre de 2026, con una pendiente de 30 días de -0,33 m por día y un caudal de entrada de 32,14 m³/s, es decir, el percentil 29 de su climatología. El pronóstico estadístico coloca la mediana en 2.135,31 m al 28 de septiembre de 2026 y en 2.133,28 m al 21 de octubre de 2026, con un escenario bajo de 2.120,44 m. El marcador de 2.115 m es propio de este proyecto y no una declaración de CELEC; dividir la distancia de 23,37 m para la pendiente actual da 71 días, lo cual es una división y no una predicción. El nivel de riesgo del modelo de suficiencia es ajustado a 60 días, porque el caso central queda corto en 0,797 GWh/día, aunque a 7 días todavía hay un superávit de 1,832 GWh/día bajo nivel vigilancia. En la cuenca del Paute se prevén 72,9 mm en 16 días, percentil 72, pero provienen de un solo punto de muestreo provisional y no de un promedio de la cuenca. El ONI de 1,8 en julio de 2026 mantiene la fase El Niño.",
+  "drivers": [
+    "Mazar está en 2.138,37 m el 21 de septiembre de 2026, con pendiente de 30 días de -0,33 m por día y caudal de entrada de 32,14 m³/s, en el percentil 29 de su climatología.",
+    "El pronóstico estadístico sitúa la mediana en 2.135,31 m al 28 de septiembre de 2026 y en 2.133,28 m al 21 de octubre de 2026, con banda baja de 2.120,44 m.",
+    "El nivel de riesgo es ajustado a 60 días: el caso central queda corto en 0,797 GWh/día, mientras a 7 días hay superávit de 1,832 GWh/día y nivel vigilancia.",
+    "La lluvia prevista de 72,9 mm en 16 días equivale al percentil 72, pero proviene de un solo punto provisional y no de un promedio de la cuenca.",
+    "El ONI de 1,8 en julio de 2026 ubica la fase en El Niño, subiendo desde 1,39 en junio de 2026.",
+    "La destreza del modelo frente a la persistencia es baja (0,001 a 30 días) y la cobertura observada de 0,80 queda por debajo de lo esperado."
+  ],
+  "confidence": "low",
+  "usage": {
+    "input_tokens": 6609,
+    "output_tokens": 916,
+    "cost_usd": 0.055945
+  },
+  "disclaimer": "Texto redactado por un modelo de lenguaje a partir de los números que lo acompañan. No es un pronóstico: el pronóstico es el estadístico de la sección de Mazar, y el nivel de riesgo lo calcula el modelo de suficiencia, no el de lenguaje.",
+  "basis": {
+    "payload_version": 1,
+    "origin_date": "2026-09-21",
+    "reservoirs": [
+      {
+        "site": "mazar",
+        "label": "Mazar",
+        "basin": "paute",
+        "level_masl": 2138.37,
+        "observed_on": "2026-09-21",
+        "record_from": "2014-09-20",
+        "bands": [
+          {
+            "floor_masl": 2100,
+            "ceiling_masl": 2153,
+            "band_pct": 72.4,
+            "metres_below_ceiling": 14.63,
+            "declared_by": [
+              "ords:repDiaHid12m",
+              "ords:repDiaVolAlm"
+            ]
+          },
+          {
+            "floor_masl": 2098,
+            "ceiling_masl": 2153,
+            "band_pct": 73.4,
+            "metres_below_ceiling": 14.63,
+            "declared_by": [
+              "celec dashboard bundle"
+            ]
+          }
+        ],
+        "slopes_m_per_day": {
+          "d7": -0.2129,
+          "d14": -0.47,
+          "d30": -0.3313
+        },
+        "floors": [
+          {
+            "floor_masl": 2115,
+            "status": "unverified",
+            "metres_above": 23.37,
+            "days_at_slope_7d": 110,
+            "days_at_slope_30d": 71
+          },
+          {
+            "floor_masl": 2100,
+            "status": "published",
+            "metres_above": 38.37,
+            "days_at_slope_7d": 180,
+            "days_at_slope_30d": 116
+          },
+          {
+            "floor_masl": 2098,
+            "status": "published",
+            "metres_above": 40.37,
+            "days_at_slope_7d": 190,
+            "days_at_slope_30d": 122
+          }
+        ],
+        "inflow": {
+          "m3s": 32.14,
+          "climatology_p50_m3s": 41.72,
+          "percentile_today": 29,
+          "climatology_years": 17
+        },
+        "analog_30d": {
+          "years": 12,
+          "change_30d_p10_m": -7.32,
+          "change_30d_p50_m": 1.07,
+          "change_30d_p90_m": 3.45,
+          "years_falling": 5
+        },
+        "analog_years": [
+          {
+            "year": 2014,
+            "level_masl": 2149.2,
+            "change_30d_m": 3.46
+          },
+          {
+            "year": 2015,
+            "level_masl": 2149.11,
+            "change_30d_m": 3.37
+          },
+          {
+            "year": 2016,
+            "level_masl": 2145.4,
+            "change_30d_m": -3.28
+          },
+          {
+            "year": 2017,
+            "level_masl": 2151.09,
+            "change_30d_m": 2.51
+          },
+          {
+            "year": 2018,
+            "level_masl": 2149.68,
+            "change_30d_m": -7.47
+          },
+          {
+            "year": 2019,
+            "level_masl": 2151.35,
+            "change_30d_m": 1.84
+          },
+          {
+            "year": 2020,
+            "level_masl": 2146.28,
+            "change_30d_m": 2.32
+          },
+          {
+            "year": 2021,
+            "level_masl": 2148.27,
+            "change_30d_m": 3.64
+          },
+          {
+            "year": 2022,
+            "level_masl": 2148.74,
+            "change_30d_m": -5.97
+          },
+          {
+            "year": 2023,
+            "level_masl": 2146.85,
+            "change_30d_m": -24.82
+          },
+          {
+            "year": 2024,
+            "level_masl": 2116.46,
+            "change_30d_m": -2.07
+          },
+          {
+            "year": 2025,
+            "level_masl": 2152.09,
+            "change_30d_m": 0.29
+          }
+        ]
+      },
+      {
+        "site": "amaluza",
+        "label": "Amaluza",
+        "basin": "paute",
+        "level_masl": 1985.05,
+        "observed_on": "2026-09-21",
+        "record_from": "2014-09-20",
+        "bands": [
+          {
+            "floor_masl": 1960,
+            "ceiling_masl": 1991,
+            "band_pct": 80.82,
+            "metres_below_ceiling": 5.95,
+            "declared_by": [
+              "ords:repDiaHid12m"
+            ]
+          },
+          {
+            "floor_masl": 1970,
+            "ceiling_masl": 1991,
+            "band_pct": 71.69,
+            "metres_below_ceiling": 5.95,
+            "declared_by": [
+              "ords:repDiaVolAlm"
+            ]
+          },
+          {
+            "floor_masl": 1975,
+            "ceiling_masl": 1991,
+            "band_pct": 62.84,
+            "metres_below_ceiling": 5.95,
+            "declared_by": [
+              "celec dashboard bundle"
+            ]
+          }
+        ],
+        "slopes_m_per_day": {
+          "d7": 0.0807,
+          "d14": -0.0755,
+          "d30": 0.0221
+        },
+        "floors": [
+          {
+            "floor_masl": 1975,
+            "status": "published",
+            "metres_above": 10.05,
+            "days_at_slope_7d": null,
+            "days_at_slope_30d": null
+          },
+          {
+            "floor_masl": 1970,
+            "status": "published",
+            "metres_above": 15.05,
+            "days_at_slope_7d": null,
+            "days_at_slope_30d": null
+          },
+          {
+            "floor_masl": 1960,
+            "status": "published",
+            "metres_above": 25.05,
+            "days_at_slope_7d": null,
+            "days_at_slope_30d": null
+          }
+        ],
+        "inflow": {
+          "m3s": 140.26,
+          "climatology_p50_m3s": 103,
+          "percentile_today": 79.1,
+          "climatology_years": 13
+        },
+        "analog_30d": {
+          "years": 12,
+          "change_30d_p10_m": -1.55,
+          "change_30d_p50_m": 1.2,
+          "change_30d_p90_m": 5.17,
+          "years_falling": 4
+        }
+      },
+      {
+        "site": "sopladora",
+        "label": "Sopladora",
+        "basin": "paute",
+        "level_masl": 1315.64,
+        "observed_on": "2026-09-21",
+        "record_from": "2026-05-31",
+        "bands": [
+          {
+            "floor_masl": 1312,
+            "ceiling_masl": 1318,
+            "band_pct": 60.72,
+            "metres_below_ceiling": 2.36,
+            "declared_by": [
+              "celec dashboard bundle"
+            ]
+          }
+        ],
+        "slopes_m_per_day": {
+          "d7": 0.0265,
+          "d14": 0.0262,
+          "d30": -0.006
+        },
+        "floors": [
+          {
+            "floor_masl": 1312,
+            "status": "published",
+            "metres_above": 3.64,
+            "days_at_slope_7d": null,
+            "days_at_slope_30d": 607
+          }
+        ],
+        "inflow": {
+          "m3s": 147.84,
+          "climatology_p50_m3s": null,
+          "percentile_today": null,
+          "climatology_years": null
+        },
+        "analog_30d": {
+          "years": 0,
+          "change_30d_p10_m": null,
+          "change_30d_p50_m": null,
+          "change_30d_p90_m": null,
+          "years_falling": 0
+        }
+      },
+      {
+        "site": "minas_san_francisco",
+        "label": "Minas San Francisco",
+        "basin": "jubones",
+        "level_masl": 787.64,
+        "observed_on": "2026-09-21",
+        "record_from": "2018-10-11",
+        "bands": [
+          {
+            "floor_masl": 750,
+            "ceiling_masl": 793,
+            "band_pct": 87.53,
+            "metres_below_ceiling": 5.36,
+            "declared_by": [
+              "ords:repDiaHid12m"
+            ]
+          },
+          {
+            "floor_masl": 783.33,
+            "ceiling_masl": 792.86,
+            "band_pct": 45.23,
+            "metres_below_ceiling": 5.22,
+            "declared_by": [
+              "celec dashboard bundle",
+              "ords:repDiaVolAlm"
+            ]
+          }
+        ],
+        "slopes_m_per_day": {
+          "d7": 0.3629,
+          "d14": -0.0329,
+          "d30": 0.0443
+        },
+        "floors": [
+          {
+            "floor_masl": 783.33,
+            "status": "published",
+            "metres_above": 4.31,
+            "days_at_slope_7d": null,
+            "days_at_slope_30d": null
+          },
+          {
+            "floor_masl": 750,
+            "status": "published",
+            "metres_above": 37.64,
+            "days_at_slope_7d": null,
+            "days_at_slope_30d": null
+          }
+        ],
+        "inflow": {
+          "m3s": 9.78,
+          "climatology_p50_m3s": 14,
+          "percentile_today": 22.1,
+          "climatology_years": 8
+        },
+        "analog_30d": {
+          "years": 7,
+          "change_30d_p10_m": -3.24,
+          "change_30d_p50_m": 1.23,
+          "change_30d_p90_m": 3.45,
+          "years_falling": 3
+        }
+      },
+      {
+        "site": "delsitanisagua",
+        "label": "Delsitanisagua",
+        "basin": "zamora",
+        "level_masl": 1490.72,
+        "observed_on": "2026-09-21",
+        "record_from": "2018-12-31",
+        "bands": [
+          {
+            "floor_masl": 1469,
+            "ceiling_masl": 1491,
+            "band_pct": 98.73,
+            "metres_below_ceiling": 0.28,
+            "declared_by": [
+              "ords:repDiaHid12m"
+            ]
+          }
+        ],
+        "slopes_m_per_day": {
+          "d7": -0.0314,
+          "d14": -0.0157,
+          "d30": 0.0673
+        },
+        "floors": [
+          {
+            "floor_masl": 1469,
+            "status": "published",
+            "metres_above": 21.72,
+            "days_at_slope_7d": 692,
+            "days_at_slope_30d": null
+          }
+        ],
+        "inflow": {
+          "m3s": 34,
+          "climatology_p50_m3s": 32,
+          "percentile_today": 61.7,
+          "climatology_years": 9
+        },
+        "analog_30d": {
+          "years": 7,
+          "change_30d_p10_m": -1.59,
+          "change_30d_p50_m": 0.07,
+          "change_30d_p90_m": 9.8,
+          "years_falling": 3
+        }
+      },
+      {
+        "site": "agoyan",
+        "label": "Agoyán",
+        "basin": "pastaza",
+        "level_masl": 1645.9,
+        "observed_on": "2026-09-21",
+        "record_from": "2016-07-05",
+        "bands": [],
+        "slopes_m_per_day": {
+          "d7": -0.3271,
+          "d14": -0.0579,
+          "d30": 0.1647
+        },
+        "floors": [],
+        "inflow": {
+          "m3s": 80,
+          "climatology_p50_m3s": 88,
+          "percentile_today": 41.8,
+          "climatology_years": 11
+        },
+        "analog_30d": {
+          "years": 10,
+          "change_30d_p10_m": -0.18,
+          "change_30d_p50_m": 0.93,
+          "change_30d_p90_m": 3.03,
+          "years_falling": 2
+        }
+      },
+      {
+        "site": "manduriacu",
+        "label": "Manduriacu",
+        "basin": "guayllabamba",
+        "level_masl": 492.1,
+        "observed_on": "2026-09-21",
+        "record_from": "2017-08-01",
+        "bands": [],
+        "slopes_m_per_day": {
+          "d7": 0,
+          "d14": -0.0143,
+          "d30": 0.01
+        },
+        "floors": [],
+        "inflow": {
+          "m3s": 67.7,
+          "climatology_p50_m3s": 71.19,
+          "percentile_today": 31.9,
+          "climatology_years": 10
+        },
+        "analog_30d": {
+          "years": 9,
+          "change_30d_p10_m": -6.12,
+          "change_30d_p50_m": -0.2,
+          "change_30d_p90_m": 0.66,
+          "years_falling": 7
+        }
+      },
+      {
+        "site": "coca_codo_sinclair",
+        "label": "Coca Codo Sinclair",
+        "basin": "coca",
+        "level_masl": 1219,
+        "observed_on": "2026-09-21",
+        "record_from": "2016-06-26",
+        "bands": [],
+        "slopes_m_per_day": {
+          "d7": -0.0714,
+          "d14": -0.1714,
+          "d30": -0.0167
+        },
+        "floors": [],
+        "inflow": {
+          "m3s": 205,
+          "climatology_p50_m3s": 222,
+          "percentile_today": 44.3,
+          "climatology_years": 11
+        },
+        "analog_30d": {
+          "years": 10,
+          "change_30d_p10_m": -5.1,
+          "change_30d_p50_m": -0.4,
+          "change_30d_p90_m": 2.88,
+          "years_falling": 6
+        }
+      }
+    ],
+    "mazar_forecast": {
+      "site": "mazar",
+      "run_id": "2026-09-21-mazar-2-3eaa4e38",
+      "origin_date": "2026-09-21",
+      "model_id": "M3-water-balance",
+      "level_masl": 2138.37,
+      "horizons": [
+        {
+          "horizon_days": 7,
+          "target_date": "2026-09-28",
+          "p10": 2131.86,
+          "p50": 2135.31,
+          "p90": 2137.99,
+          "skill_vs_persistence": 0.112,
+          "coverage_p10_p90": 0.76,
+          "model_id": "M4-gbm-m3-residual"
+        },
+        {
+          "horizon_days": 14,
+          "target_date": "2026-10-05",
+          "p10": 2123.11,
+          "p50": 2130.95,
+          "p90": 2134.25,
+          "skill_vs_persistence": -0.012,
+          "coverage_p10_p90": 0.77,
+          "model_id": "M3-water-balance"
+        },
+        {
+          "horizon_days": 30,
+          "target_date": "2026-10-21",
+          "p10": 2120.44,
+          "p50": 2133.28,
+          "p90": 2137.96,
+          "skill_vs_persistence": 0.001,
+          "coverage_p10_p90": 0.8,
+          "model_id": "M3-water-balance"
+        }
+      ],
+      "scenarios": [
+        {
+          "scenario": "dry",
+          "analog_year": 2022,
+          "inflow_mean_m3s": 63.71,
+          "minimum_level_masl": 2114.09
+        },
+        {
+          "scenario": "median",
+          "analog_year": 2019,
+          "inflow_mean_m3s": 90.18,
+          "minimum_level_masl": 2131.13
+        },
+        {
+          "scenario": "wet",
+          "analog_year": 2011,
+          "inflow_mean_m3s": 103.37,
+          "minimum_level_masl": 2137.35
+        }
+      ],
+      "crossings": [
+        {
+          "threshold_masl": 2115,
+          "status": "unverified",
+          "analogue_years": 14,
+          "years_that_cross": 5,
+          "p10_days": 42,
+          "p50_days": null,
+          "p90_days": null,
+          "crossing_scenarios": [
+            {
+              "scenario": "dry",
+              "crosses_on": "2027-01-05",
+              "days": 106
+            }
+          ]
+        },
+        {
+          "threshold_masl": 2100,
+          "status": "published",
+          "analogue_years": 14,
+          "years_that_cross": 0,
+          "p10_days": null,
+          "p50_days": null,
+          "p90_days": null,
+          "crossing_scenarios": []
+        },
+        {
+          "threshold_masl": 2098,
+          "status": "published",
+          "analogue_years": 14,
+          "years_that_cross": 0,
+          "p10_days": null,
+          "p50_days": null,
+          "p90_days": null,
+          "crossing_scenarios": []
+        }
+      ],
+      "note": "Pronóstico estadístico (§7) con años análogos de caudal. 2115 es un marcador propio del proyecto, no de CELEC."
+    },
+    "adequacy": {
+      "run_id": "2026-09-21-adequacy-1-06a49241",
+      "origin_date": "2026-09-21",
+      "risk_tier": "ajustado",
+      "risk_tier_horizon_days": 60,
+      "risk_tier_definition": "el caso central queda corto en menos de 5 GWh/día",
+      "tier_at_7d": "vigilancia",
+      "hydro_anomaly": 0.9661,
+      "horizons": [
+        {
+          "horizon_days": 7,
+          "tier": "vigilancia",
+          "margin_pct": 1.66,
+          "surplus_gwh_day": 1.832,
+          "surplus_with_stressed_imports_gwh_day": 1.812
+        },
+        {
+          "horizon_days": 30,
+          "tier": "vigilancia",
+          "margin_pct": 0.05,
+          "surplus_gwh_day": 0.053,
+          "surplus_with_stressed_imports_gwh_day": 0.033
+        },
+        {
+          "horizon_days": 60,
+          "tier": "ajustado",
+          "margin_pct": -0.73,
+          "surplus_gwh_day": -0.797,
+          "surplus_with_stressed_imports_gwh_day": -0.817
+        }
+      ],
+      "note": "Nivel calculado por el modelo de suficiencia (§7). hydro_anomaly: hidroeléctrica de 14 días / su climatología."
+    },
+    "precipitation_16d": {
+      "basin": "paute",
+      "latitude": -2.6,
+      "longitude": -78.6,
+      "coordinate_status": "provisional",
+      "issued_at": "2026-09-22T20:04:16Z",
+      "from": "2026-09-22",
+      "to": "2026-10-07",
+      "days": 16,
+      "forecast_total_mm": 72.9,
+      "climatology_years": 36,
+      "climatology_p10_mm": 21.7,
+      "climatology_p50_mm": 56.9,
+      "climatology_p90_mm": 94.4,
+      "percentile_vs_climatology": 72,
+      "note": "Un solo punto provisional, no un promedio de la cuenca; pronóstico Open-Meteo frente a climatología ERA5."
+    },
+    "enso": {
+      "month": "2026-07",
+      "oni": 1.8,
+      "phase": "el_nino",
+      "previous": [
+        {
+          "month": "2026-06",
+          "oni": 1.39
+        },
+        {
+          "month": "2026-05",
+          "oni": 0.95
+        }
+      ],
+      "note": "Fase por el umbral de NOAA sobre el último ONI publicado, que siempre tiene unos dos meses de retraso."
+    },
+    "stale_feeds": []
+  }
+}
