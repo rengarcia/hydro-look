@@ -42,7 +42,7 @@ import { addDays, isCalendarDate } from "../util/dates.ts";
 import type { IsoDate } from "../util/dates.ts";
 import type { DailySeries } from "../features/series.ts";
 import { availableAt, type OniSeries } from "../features/enso.ts";
-import { ERA5_LATENCY_DAYS } from "../features/weather.ts";
+import { ERA5_LATENCY_DAYS, PROVISIONAL_PRECIP_BASIN } from "../features/weather.ts";
 import { impliedReleases, trimReleases, volumeAt } from "../features/hydrology.ts";
 import { dayOfYear, median, quantile } from "../util/stats.ts";
 import { truncate } from "./backtest.ts";
@@ -93,11 +93,24 @@ export const BASE_FEATURES = [
 
 export const M3_FEATURES = ["m3_p50_change_m", "m3_ensemble_p10_p90_width_m", "m3_release_stance_m3s"] as const;
 
+/**
+ * The base feature names with the precipitation columns named after the basin they read. The
+ * provisional point keeps the names every committed snapshot was scored under, so a snapshot
+ * scored on one basin can never be mistaken for one scored on another: the names differ, and
+ * `m4SwitchCheck` compares them.
+ */
+export function baseFeatures(precipBasin: string = PROVISIONAL_PRECIP_BASIN): string[] {
+  if (precipBasin === PROVISIONAL_PRECIP_BASIN) return [...BASE_FEATURES];
+  return BASE_FEATURES.map((name) => name.replace("era5_precip_paute_provisional_point_", `era5_precip_${precipBasin}_`));
+}
+
 /** Covariates the backtest harness does not carry in its context. */
 export interface Covariates {
   oni: OniSeries;
-  /** ERA5 daily precipitation at the provisional Paute point; read with `ERA5_LATENCY_DAYS` of lag. */
+  /** ERA5 daily precipitation at one basin point (`precipBasin`); read with `ERA5_LATENCY_DAYS` of lag. */
   precip: DailySeries;
+  /** Which `basins.csv` row `precip` is; the provisional `paute` point when absent. */
+  precipBasin?: string;
 }
 
 export interface M4Variant {
@@ -443,8 +456,8 @@ export function featureRow(
   return { features, anchor: variant.target === "m3-residual" ? forecast!.p50 : level };
 }
 
-export function featureNames(variant: M4Variant): string[] {
-  return [...BASE_FEATURES, ...(variant.m3Features ? M3_FEATURES : [])];
+export function featureNames(variant: M4Variant, precipBasin: string = PROVISIONAL_PRECIP_BASIN): string[] {
+  return [...baseFeatures(precipBasin), ...(variant.m3Features ? M3_FEATURES : [])];
 }
 
 export function boostedModel(

@@ -223,7 +223,8 @@ export function checkReference(reference: { plants: Rows; thresholds: Rows; rati
       out.push({ check: "reference:thresholds", level: "fail", message: `thresholds.csv names site "${site}", which the registry does not have` });
     }
     const min = Number(row["cota_min_masl"]);
-    const max = Number(row["cota_max_masl"]);
+    // A marker row (Mazar's unverified 2115) has a floor and no ceiling; `Number("")` is 0.
+    const max = row["cota_max_masl"] ? Number(row["cota_max_masl"]) : Number.NaN;
     if (Number.isFinite(min) && Number.isFinite(max) && min >= max) {
       out.push({ check: "reference:thresholds", level: "fail", message: `thresholds.csv has ${site} min ${min} >= max ${max} (${row["source"]})` });
     }

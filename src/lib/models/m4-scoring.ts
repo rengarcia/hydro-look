@@ -204,6 +204,11 @@ export interface M4Snapshot {
   horizonDays: number[];
   settings: M4Settings;
   features: { base: string[]; m3: string[] };
+  /**
+   * The `basins.csv` row the precipitation features were read from. Absent from snapshots written
+   * before 2026-09-23, all of which read the provisional `paute` point.
+   */
+  precipBasin?: string;
   referenceId: string;
   scores: ModelScore[];
   native: { modelId: string; horizons: NativeBandScore[] }[];
