@@ -33,16 +33,17 @@ import type { NarrativeSnapshotRow } from "../contracts/tables.ts";
  * The model, as a gateway slug. Switching provider or model is a change to this string and
  * nothing else — that is the gateway's point.
  *
- * MiMo v2.6 Flash since 2026-09-23, because the gateway refuses `anthropic/claude-opus-5` to a
- * free-tier account ("Free tier users do not have access to this model", run 35808200400). With
- * paid gateway credits, `anthropic/claude-opus-5` is the model this module was written against.
+ * Claude Opus 5, on paid gateway credits: the free tier refuses it (run 35808200400). The free
+ * tier's `xiaomi/mimo-v2.6-flash` was tried on 2026-09-23 and was not good enough to publish —
+ * three answers, all rejected, the last for misspelling a month ("octiembre"); the rows are in
+ * `narrative_snapshots`.
  *
  * The `<provider>/<model>` slug format is Vercel's: verify it on the Vercel AI Gateway model
  * list (https://vercel.com/ai-gateway/models) before relying on it. A wrong slug fails the first
  * live run as `failed` with a model-not-found error; it cannot be checked from a sandbox that
  * has no route to the gateway.
  */
-export const NARRATIVE_MODEL = "xiaomi/mimo-v2.6-flash";
+export const NARRATIVE_MODEL = "anthropic/claude-opus-5";
 
 /** How long to wait before the one retry after a 429. */
 export const RATE_LIMIT_RETRY_MS = 20_000;
@@ -206,6 +207,7 @@ export interface SnapshotRef {
   status: string;
   prompt_version: string;
   payload_hash: string;
+  model_id: string;
 }
 
 /**
@@ -214,8 +216,8 @@ export interface SnapshotRef {
  * `skipped` and `failed` rows are passed over, because nothing was produced and nothing (as far
  * as billing goes) was spent, so trying again is the point. `rejected` rows count: the same
  * payload under the same prompt was paid for once and refused once, and asking again twice a
- * day until the model happens to comply is how a free credit disappears. New data or a new
- * `PROMPT_VERSION` is what earns another call.
+ * day until the model happens to comply is how a free credit disappears. New data, a new
+ * `PROMPT_VERSION` or a new model is what earns another call.
  */
 export function lastAnswered<T extends SnapshotRef>(rows: readonly T[]): T | null {
   let best: T | null = null;
@@ -226,9 +228,16 @@ export function lastAnswered<T extends SnapshotRef>(rows: readonly T[]): T | nul
   return best;
 }
 
-export function isNoOp(rows: readonly SnapshotRef[], payloadHash: string, promptVersion = PROMPT_VERSION): boolean {
+export function isNoOp(
+  rows: readonly SnapshotRef[],
+  payloadHash: string,
+  promptVersion = PROMPT_VERSION,
+  modelId = NARRATIVE_MODEL,
+): boolean {
   const last = lastAnswered(rows);
-  return last !== null && last.payload_hash === payloadHash && last.prompt_version === promptVersion;
+  return (
+    last !== null && last.payload_hash === payloadHash && last.prompt_version === promptVersion && last.model_id === modelId
+  );
 }
 
 /** `2026-09-21-narrative-es-1-1a2b3c4d-121503`: origin, prompt, payload, and the attempt's time. */

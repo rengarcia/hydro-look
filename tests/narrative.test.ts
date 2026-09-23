@@ -36,6 +36,7 @@ import {
   costFromMetadata,
   generateNarrative,
   isNoOp,
+  NARRATIVE_MODEL,
   narrativeDocument,
   snapshotRow,
   type SnapshotRef,
@@ -282,22 +283,24 @@ describe("the validator", () => {
 
 describe("the no-op", () => {
   const hash = payloadHash(payload);
-  const row = (status: string, generated_at: string, payload_hash = hash, prompt_version = PROMPT_VERSION): SnapshotRef => ({
-    status,
-    generated_at,
-    payload_hash,
-    prompt_version,
-  });
+  const row = (
+    status: string,
+    generated_at: string,
+    payload_hash = hash,
+    prompt_version = PROMPT_VERSION,
+    model_id = NARRATIVE_MODEL,
+  ): SnapshotRef => ({ status, generated_at, payload_hash, prompt_version, model_id });
 
   it("is a no-op when the last answered snapshot has the same payload and prompt", () => {
     expect(isNoOp([row("ok", "2026-09-22T12:40:00Z")], hash)).toBe(true);
     expect(isNoOp([row("rejected", "2026-09-22T12:40:00Z")], hash)).toBe(true);
   });
 
-  it("calls again for new data, a new prompt, or when the last attempt produced nothing", () => {
+  it("calls again for new data, a new prompt, a new model, or when the last attempt produced nothing", () => {
     expect(isNoOp([], hash)).toBe(false);
     expect(isNoOp([row("ok", "2026-09-22T12:40:00Z", "0".repeat(64))], hash)).toBe(false);
     expect(isNoOp([row("ok", "2026-09-22T12:40:00Z", hash, "es-0")], hash)).toBe(false);
+    expect(isNoOp([row("rejected", "2026-09-22T12:40:00Z", hash, PROMPT_VERSION, "other/model")], hash)).toBe(false);
     expect(isNoOp([row("skipped", "2026-09-22T12:40:00Z")], hash)).toBe(false);
     expect(isNoOp([row("failed", "2026-09-22T12:40:00Z")], hash)).toBe(false);
   });
@@ -462,7 +465,7 @@ describe("generateNarrative, against a mock model", () => {
     expect(JSON.parse(rows[0]!["drivers_json"]!)).toEqual(goodAnswer.drivers);
     expect(rows[0]!["cost_usd"]).toBe("0.0213");
     expect(existsSync(join(root, "api", "narrative.json"))).toBe(true);
-    expect(isNoOp(rows as unknown as SnapshotRef[], hash)).toBe(true);
+    expect(isNoOp(rows as unknown as SnapshotRef[], hash, PROMPT_VERSION, rows[0]!["model_id"])).toBe(true);
   });
 
   it("fails, without retrying, on any other error", async () => {
