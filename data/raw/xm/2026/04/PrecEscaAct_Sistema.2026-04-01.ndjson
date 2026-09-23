@@ -1,0 +1,1 @@
+{"key":"PrecEscaAct:Sistema:2026-04-01:2026-04-30","url":"https://servapibi.xm.com.co/daily","method":"POST","status":200,"fetched_at":"2026-09-22T19:29:37Z","body":"{\"Metric\":{\"Id\":\"PrecEscaAct\",\"Name\":\"Precio Escasez Activación por Sistema\",\"StartDate\":\"2026-04-01T00:00:00\",\"EndDate\":\"2026-04-30T00:00:00\"},\"Items\":[]}"}
