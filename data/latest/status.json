@@ -1,12 +1,9 @@
 {
-  "generated_at": "2026-09-22T20:04:19Z",
-  "command": "covariates",
+  "generated_at": "2026-09-23T01:55:14Z",
+  "command": "daily",
   "source": "all",
   "errors": [],
-  "notes": [
-    "paute: provisional sampling point, not a verified basin centroid",
-    "era5:paute:-2.6:-78.6:2026-08-18:2026-09-16: 1 days have missing weather values"
-  ],
+  "notes": [],
   "tables": {
     "observations_daily": {
       "rows": 89122,
@@ -21,9 +18,9 @@
       "files": 11
     },
     "operativa_snapshots": {
-      "rows": 235,
+      "rows": 282,
       "first_date": "2026-09-22",
-      "last_date": "2026-09-22",
+      "last_date": "2026-09-23",
       "files": 1
     },
     "operating_bands": {
@@ -33,7 +30,7 @@
       "files": 1
     },
     "weather_daily": {
-      "rows": 13440,
+      "rows": 13472,
       "first_date": "1990-01-01",
       "last_date": "2026-10-07",
       "files": 37
@@ -43,6 +40,18 @@
       "first_date": "1950-01",
       "last_date": "2026-07",
       "files": 77
+    },
+    "xm_exchange_daily": {
+      "rows": 4002,
+      "first_date": "2016-05-01",
+      "last_date": "2026-09-19",
+      "files": 11
+    },
+    "xm_system_daily": {
+      "rows": 33154,
+      "first_date": "2016-05-01",
+      "last_date": "2026-09-21",
+      "files": 11
     }
   }
 }
