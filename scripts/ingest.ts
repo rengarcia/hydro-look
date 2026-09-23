@@ -377,7 +377,14 @@ function applyStaged(options: Options): void {
   // refiled as day files, so point its rows at those.
   canonicaliseRefs(archive, staged);
   const store = new CuratedStore(DATA_CURATED, options.dryRun);
-  const quarantined = writeBatch(store, archive, staged, { ...options, command: staged.command ?? options.command }, staged.requests, staged.run_id);
+  const quarantined = writeBatch(
+    store,
+    archive,
+    staged,
+    { ...options, command: staged.command ?? options.command, source: staged.source ?? options.source },
+    staged.requests,
+    staged.run_id,
+  );
   log(`applied ${merged} archived responses`);
   process.exitCode = staged.errors.length > 0 || quarantined > 0 ? 1 : 0;
 }
