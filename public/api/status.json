@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-23T02:14:50Z",
+  "generated_at": "2026-09-23T02:20:23Z",
   "as_of": "2026-09-22",
   "ok": true,
   "status": "warn",
@@ -79,7 +79,7 @@
       "rows": 58114
     },
     "operativa_snapshots": {
-      "rows": 329
+      "rows": 376
     },
     "operating_bands": {
       "rows": 7
@@ -103,7 +103,7 @@
       "rows": 10
     },
     "narrative_snapshots": {
-      "rows": 1
+      "rows": 2
     },
     "xm_exchange_daily": {
       "rows": 4002
