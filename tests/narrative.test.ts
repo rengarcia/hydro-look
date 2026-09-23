@@ -31,11 +31,12 @@ import {
   precipitationOutlook,
   type NarrativePayload,
 } from "../src/lib/narrative/payload.ts";
-import { allowedSet, inventedFigures, numberAllowed, readNumber, validateNarrative } from "../src/lib/narrative/validate.ts";
+import { allowedSet, fieldNames, inventedFigures, numberAllowed, readNumber, validateNarrative } from "../src/lib/narrative/validate.ts";
 import {
   costFromMetadata,
   generateNarrative,
   isNoOp,
+  NARRATIVE_MODEL,
   narrativeDocument,
   snapshotRow,
   type SnapshotRef,
@@ -205,7 +206,7 @@ describe("the validator", () => {
       "(percentil 83) en un punto provisional. El ONI de 2026-07 fue 1,8, fase El Niño. En 2023 la cota cayó 24,82 m en 30 días.",
     drivers: [
       "Las pendientes de 7 y 30 días son negativas (-0,2129 y -0,3313 m/día).",
-      "Cobertura de la banda: 74 % en el respaldo a 7 días.",
+      "Cobertura de la banda: 74 % en la validación histórica a 7 días.",
     ],
   };
 
@@ -268,6 +269,12 @@ describe("the validator", () => {
     expect(inventedFigures("cobertura del 77", allowed)).toEqual(["number 77"]);
   });
 
+  it("rejects field names and code values, and not Spanish abbreviations", () => {
+    const result = validateNarrative({ ...good, drivers: ["La fase es el_nino según mazar.level_masl."] }, payload);
+    expect(result.problems).toEqual(['drivers[0]: field name "el_nino"', 'drivers[0]: field name "mazar.level_masl"']);
+    expect(fieldNames("2.138,37 m.s.n.m., p. ej. El Niño; ONI de 2026-07")).toEqual([]);
+  });
+
   it("requires the outlook to name the risk tier it was given", () => {
     const result = validateNarrative({ ...good, outlook_es: good.outlook_es.replace("holgado", "tranquilo") }, payload);
     expect(result.problems).toEqual(['outlook_es: does not name the risk tier "holgado"']);
@@ -276,22 +283,24 @@ describe("the validator", () => {
 
 describe("the no-op", () => {
   const hash = payloadHash(payload);
-  const row = (status: string, generated_at: string, payload_hash = hash, prompt_version = PROMPT_VERSION): SnapshotRef => ({
-    status,
-    generated_at,
-    payload_hash,
-    prompt_version,
-  });
+  const row = (
+    status: string,
+    generated_at: string,
+    payload_hash = hash,
+    prompt_version = PROMPT_VERSION,
+    model_id = NARRATIVE_MODEL,
+  ): SnapshotRef => ({ status, generated_at, payload_hash, prompt_version, model_id });
 
   it("is a no-op when the last answered snapshot has the same payload and prompt", () => {
     expect(isNoOp([row("ok", "2026-09-22T12:40:00Z")], hash)).toBe(true);
     expect(isNoOp([row("rejected", "2026-09-22T12:40:00Z")], hash)).toBe(true);
   });
 
-  it("calls again for new data, a new prompt, or when the last attempt produced nothing", () => {
+  it("calls again for new data, a new prompt, a new model, or when the last attempt produced nothing", () => {
     expect(isNoOp([], hash)).toBe(false);
     expect(isNoOp([row("ok", "2026-09-22T12:40:00Z", "0".repeat(64))], hash)).toBe(false);
     expect(isNoOp([row("ok", "2026-09-22T12:40:00Z", hash, "es-0")], hash)).toBe(false);
+    expect(isNoOp([row("rejected", "2026-09-22T12:40:00Z", hash, PROMPT_VERSION, "other/model")], hash)).toBe(false);
     expect(isNoOp([row("skipped", "2026-09-22T12:40:00Z")], hash)).toBe(false);
     expect(isNoOp([row("failed", "2026-09-22T12:40:00Z")], hash)).toBe(false);
   });
@@ -364,7 +373,7 @@ describe("generateNarrative, against a mock model", () => {
       cost_usd: 0.0213,
       drivers_json: JSON.stringify(goodAnswer.drivers),
     });
-    expect(row.run_id).toMatch(/^2026-09-21-narrative-es-1-[0-9a-f]{8}-124005$/);
+    expect(row.run_id).toMatch(new RegExp(`^2026-09-21-narrative-${PROMPT_VERSION}-[0-9a-f]{8}-124005$`));
   });
 
   it("tolerates a gateway that reports no cost", async () => {
@@ -391,6 +400,8 @@ describe("generateNarrative, against a mock model", () => {
     const result = await generateNarrative(payload, { model: answering({ ...goodAnswer, confidence: "certain" }) });
     expect(result.status).toBe("rejected");
     expect(result.reasons[0]).toMatch(/^schema:/);
+    expect(result.reasons).toContain("finish: stop");
+    expect(result.reasons.find((r) => r.startsWith("raw: "))).toContain('"certain"');
   });
 
   const rateLimited = () =>
@@ -454,7 +465,7 @@ describe("generateNarrative, against a mock model", () => {
     expect(JSON.parse(rows[0]!["drivers_json"]!)).toEqual(goodAnswer.drivers);
     expect(rows[0]!["cost_usd"]).toBe("0.0213");
     expect(existsSync(join(root, "api", "narrative.json"))).toBe(true);
-    expect(isNoOp(rows as unknown as SnapshotRef[], hash)).toBe(true);
+    expect(isNoOp(rows as unknown as SnapshotRef[], hash, PROMPT_VERSION, rows[0]!["model_id"])).toBe(true);
   });
 
   it("fails, without retrying, on any other error", async () => {

@@ -19,7 +19,7 @@ import type {
   RiskTier,
   StatusDocument,
 } from "../lib/site/documents.ts";
-import { conceptLabel, feedLabel, longDate, num, pct, signed } from "../lib/site/format.ts";
+import { conceptLabel, feedLabel, findingText, longDate, num, pct, signed } from "../lib/site/format.ts";
 import { eachDay } from "../lib/util/dates.ts";
 
 const REPO = "https://github.com/rengarcia/hydro-look";
@@ -136,7 +136,7 @@ function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
       <h2>Mazar: hacia dónde va</h2>
       <p className="lede">
         Mazar es el único embalse de la flota con almacenamiento de varias semanas, así que es el que se pronostica.
-        El modelo es un balance de agua cerrado en torno al operador: la curva cota–superficie y los m³/s por MW de
+        El modelo es un balance hídrico cerrado en torno al operador: la curva cota–superficie y los m³/s por MW de
         la turbina se ajustan con las lecturas de este repositorio, y la descarga se lee cada día simulado de una
         regla de operación contra la propia cota.
       </p>
@@ -183,9 +183,9 @@ function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
               <>
                 {" "}
                 La fila de {switched.map((h) => h.horizon_days).join(", ")} días viene de otro modelo,{" "}
-                <code>{modelOf(switched[0]!)}</code> (árboles de gradiente que corrigen el error del balance de agua), porque
-                en el respaldo es el único que le gana a la persistencia a una semana; su banda sale de sus propios errores
-                fuera de muestra. El resto de horizontes, los escenarios y los días hasta el umbral son del balance de agua.
+                <code>{modelOf(switched[0]!)}</code> (árboles de decisión potenciados por gradiente que corrigen el error del balance hídrico), porque
+                en la validación histórica es el único que le gana a la persistencia a una semana; su banda sale de sus propios errores
+                fuera de muestra. El resto de horizontes, los escenarios y los días hasta el umbral son del balance hídrico.
               </>
             ) : null}
           </caption>
@@ -222,35 +222,36 @@ function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
       </div>
 
       <p className="note">
-        Lo que el respaldo mide, dicho sin adornos: sobre {forecast.model.backtest_origins} orígenes mensuales desde
-        2018-01 el modelo es{" "}
+        Lo que mide la validación histórica, dicho sin adornos: sobre {forecast.model.backtest_origins} orígenes mensuales
+        desde enero de 2018 el modelo es{" "}
         {sixty ? <strong>{pct(sixty.skill_vs_persistence * 100, 1)} mejor que la persistencia a 60 días</strong> : null}
         {ninety ? <> y {pct(ninety.skill_vs_persistence * 100, 1)} a 90</> : null}, y <strong>indistinguible de ella por
-        debajo del mes</strong>. Para menos de treinta días, suponer que la cota no cambia es tan bueno como esto
+        debajo del mes</strong>. Para menos de treinta días, suponer que la cota no cambia es tan bueno como este modelo
         {switchedScore ? (
           <>
             , salvo a {switchedScore.horizon_days} días, donde se publica el otro modelo:{" "}
-            {pct(switchedScore.skill_vs_persistence * 100, 1)} mejor que la persistencia en el mismo respaldo
+            {pct(switchedScore.skill_vs_persistence * 100, 1)} mejor que la persistencia en la misma validación
           </>
         ) : null}
         . La banda p10–p90 cubre entre el 72 % y el 80 % de los casos según el horizonte, por debajo del 80 % nominal.
         {fellBack ? (
           <>
             {" "}
-            Hoy los {fellBack.horizon_days} días vuelven al balance de agua: <code>{fellBack.candidate_model}</code> no se
-            publica cuando su respaldo no cubre los mismos orígenes que el del balance de agua (el motivo está en{" "}
+            Hoy los {fellBack.horizon_days} días vuelven al balance hídrico: <code>{fellBack.candidate_model}</code> no se
+            publica cuando su validación no cubre los mismos orígenes que la del balance hídrico (el motivo está en{" "}
             <code>horizon_switch</code> de forecast.json).
           </>
         ) : null}
       </p>
 
-      {critical ? <Crossings threshold={critical} note={forecast.days_to_threshold.note} /> : null}
+      {critical ? <Crossings threshold={critical} /> : null}
 
       <p className="note">
         La comprobación de crisis es la menos halagüeña: de los dos episodios en que Mazar bajó de los 2115 m en 2024,
-        la mediana del modelo no anticipó ninguno. La cola seca del conjunto sí situó el cruce de octubre con{" "}
+        la mediana del modelo no anticipó ninguno. La cola seca del conjunto (p10) sí avisó del cruce de octubre con{" "}
         {forecast.crisis_check.episodes.find((e) => e.p10_lead_time_days !== null)?.p10_lead_time_days ?? "—"} días de
-        anticipación frente a los 7 reales, con {forecast.crisis_check.false_alarms_p50} falsa alarma en{" "}
+        anticipación. La mediana, por su parte, dio {forecast.crisis_check.false_alarms_p50}{" "}
+        {forecast.crisis_check.false_alarms_p50 === 1 ? "falsa alarma" : "falsas alarmas"} en{" "}
         {forecast.crisis_check.origins_considered} orígenes. Los números completos están en{" "}
         <a href={`${REPO}/blob/main/${forecast.backtest.report}`}>{forecast.backtest.report}</a>.
       </p>
@@ -258,13 +259,15 @@ function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
   );
 }
 
-function Crossings({ threshold, note }: { threshold: NonNullable<ForecastDocument["days_to_threshold"]["thresholds"][number]>; note: string }) {
+function Crossings({ threshold }: { threshold: NonNullable<ForecastDocument["days_to_threshold"]["thresholds"][number]> }) {
   const all = threshold.across_all_analogue_years;
   return (
     <div className="scroll" style={{ marginTop: 20 }}>
       <table>
         <caption>
-          Días hasta cruzar los {num(threshold.level_masl, 0)} m. {note} Este umbral no lo publica ninguna fuente:
+          Días hasta cruzar los {num(threshold.level_masl, 0)} m. Cada escenario es un año análogo real de caudal —el
+          más seco, el mediano y el más húmedo de los registrados para esta época del año— pasado por la misma regla
+          de descarga. Este umbral no lo publica ninguna fuente:
           es el marcador propio de este proyecto (PLAN.md §7), no una declaración de CELEC. De los{" "}
           {all.analogue_years} años análogos, {all.years_that_cross} llegan a cruzarlo dentro del año.
         </caption>
@@ -390,10 +393,10 @@ function National({ now }: { now: ReturnType<typeof latest> }) {
       </div>
 
       <p className="note">
-        Ese día el agua cubrió {pct(national.hydro_share_pct, 1)} del suministro, la quema{" "}
+        Ese día el agua cubrió {pct(national.hydro_share_pct, 1)} del suministro, la generación térmica{" "}
         {pct(national.thermal_share_pct, 1)} y la importación {pct(national.import_share_pct, 1)}. Es una
-        descripción de lo ocurrido, no una previsión: lo que viene después es la previsión, y lleva su propio
-        respaldo al lado.
+        descripción de lo ocurrido, no una previsión: lo que viene después es la previsión, y lleva al lado su
+        propia validación histórica.
       </p>
     </section>
   );
@@ -445,7 +448,7 @@ function Adequacy({ adequacy }: { adequacy: AdequacyDocument | null }) {
         <article className="card">
           <h3>
             Peor nivel hasta los {adequacy.horizons.at(-1)?.horizon_days ?? 90} días
-            <span className="basin">{adequacy.origin_date}</span>
+            <span className="basin">{longDate(adequacy.origin_date)}</span>
           </h3>
           <p className="figure">
             <span className="pill" style={{ fontSize: "inherit" }}>
@@ -530,7 +533,7 @@ function Adequacy({ adequacy }: { adequacy: AdequacyDocument | null }) {
 
       <p className="note">
         La importación es el supuesto más frágil de la tabla, y no en abstracto. Entre el 1 de octubre y el 10 de
-        noviembre de 2024, con el país racionando catorce horas al día, la importación desde Colombia corrió a{" "}
+        noviembre de 2024, con el país racionando catorce horas al día, la importación desde Colombia fue de{" "}
         {num(adequacy.assumptions.stressed_import_gwh_day, 2)} GWh/día frente a los{" "}
         {num(adequacy.assumptions.import_gwh_day, 2)} que había alcanzado ese agosto, porque Colombia estaba seca al
         mismo tiempo. Un interconector no es firme cuando la sequía es compartida.
@@ -585,7 +588,7 @@ function Adequacy({ adequacy }: { adequacy: AdequacyDocument | null }) {
       ) : null}
 
       <p className="note">
-        Lo que el respaldo mide: sobre {adequacy.model.backtest_origins} orígenes mensuales, el requerimiento le
+        Lo que mide la validación histórica: sobre {adequacy.model.backtest_origins} orígenes mensuales, el requerimiento le
         gana a suponer que el último mes se repite{" "}
         {first?.backtest.requirement_skill_vs_persistence !== null && first !== undefined ? (
           <>
@@ -608,8 +611,8 @@ function Adequacy({ adequacy }: { adequacy: AdequacyDocument | null }) {
         «ajustado» o «déficit». De los marcados,{" "}
         {pct((adequacy.tier_history.share_of_flagged_that_preceded_cuts ?? 0) * 100, 0)} precedieron cortes; de los
         que precedieron cortes, se marcó{" "}
-        {pct((adequacy.tier_history.share_of_cuts_that_were_flagged ?? 0) * 100, 0)}. No grita lobo y se le escapan
-        casi todos los lobos, que es la forma que cabe esperar de un modelo cuyo término más débil es el que decide
+        {pct((adequacy.tier_history.share_of_cuts_that_were_flagged ?? 0) * 100, 0)}. No da falsas alarmas, pero se le
+        escapan la mayoría de las crisis, que es la forma que cabe esperar de un modelo cuyo término más débil es el que decide
         cuánta agua hay. Tres episodios no son una muestra con la que ajustar un umbral, y ninguno de estos se
         ajustó a ellos.
       </p>
@@ -668,7 +671,7 @@ function Narrative({ narrative, forecast }: { narrative: NarrativeDocument | nul
       <h2>Lectura del día</h2>
       <p className="lede">
         Un resumen en prosa de los números de esta página, redactado por un modelo de lenguaje a partir de los datos
-        que se muestran a su derecha y de nada más. Un validador rechaza cualquier texto que cite una cota o una fecha
+        que se muestran junto a este texto y de nada más. Un validador rechaza cualquier texto que cite una cota o una fecha
         que no esté en esos datos; si el de hoy fue rechazado, se mantiene el anterior.
       </p>
 
@@ -766,8 +769,8 @@ function Narrative({ narrative, forecast }: { narrative: NarrativeDocument | nul
 
       <p className="note">
         <strong>El texto lo generó un modelo de lenguaje; el pronóstico es el estadístico.</strong> Las cifras de la
-        cota futura son las de la sección de Mazar (el balance de agua y, donde la tabla lo indica, el modelo que corrige
-        su error a 7 días), con su respaldo medido, y el nivel de
+        cota futura son las de la sección de Mazar (el balance hídrico y, donde la tabla lo indica, el modelo que corrige
+        su error a 7 días), con su validación histórica, y el nivel de
         riesgo lo calcula el modelo de suficiencia: el modelo de lenguaje los describe, no los produce.
         {stale ? (
           <>
@@ -861,7 +864,7 @@ function Freshness({ status }: { status: StatusDocument | null }) {
       </div>
       {status.findings.length > 0 ? (
         <p className="note">
-          Observaciones abiertas del control de calidad: {status.findings.map((f) => f.message).join(" · ")}
+          Observaciones abiertas del control de calidad: {status.findings.map(findingText).join(" · ")}
         </p>
       ) : null}
     </section>
@@ -883,7 +886,7 @@ function Downloads({ narrative }: { narrative: boolean }) {
           <a href="/api/latest.json">latest.json</a> — <code>cota, banda, caudal y mezcla del día</code>
         </li>
         <li>
-          <a href="/api/forecast.json">forecast.json</a> — <code>pronóstico de Mazar con su respaldo</code>
+          <a href="/api/forecast.json">forecast.json</a> — <code>pronóstico de Mazar con su validación histórica</code>
         </li>
         <li>
           <a href="/api/adequacy.json">adequacy.json</a> —{" "}
@@ -906,11 +909,11 @@ function Downloads({ narrative }: { narrative: boolean }) {
         </li>
         <li>
           <a href={`${REPO}/blob/main/data/reports/backtest.md`}>backtest.md</a> —{" "}
-          <code>el respaldo del pronóstico de cota, incluidos los negativos</code>
+          <code>la validación histórica del pronóstico de cota, incluidos los resultados negativos</code>
         </li>
         <li>
           <a href={`${REPO}/blob/main/data/reports/adequacy.md`}>adequacy.md</a> —{" "}
-          <code>el respaldo del cálculo de suficiencia</code>
+          <code>la validación histórica del cálculo de suficiencia</code>
         </li>
       </ul>
     </section>
@@ -939,7 +942,7 @@ function Method() {
         <article className="card">
           <h3><code>repDiaNivQIng</code> responde con los números de ayer</h3>
           <p className="sub">
-            Pedido para el día D devuelve filas fechadas D cuyos valores son los de D−1, medido en 113 días
+            Si se le pide el día D, devuelve filas fechadas D cuyos valores son los de D−1, medido en 113 días
             consecutivos y en capturas de 2016, 2019, 2022, 2024 y 2026. Sus filas se guardan bajo el día que
             describen, no bajo el día que las etiqueta.
           </p>
@@ -948,8 +951,8 @@ function Method() {
           <h3>El caudal del historiador es caudal de entrada</h3>
           <p className="sub">
             <code>mridCaud</code> coincide con <code>q_ingresado</code> del reporte en 4281 días con r = 1,0000; el
-            reporte es exactamente <code>round(historiador)</code> en cada uno de ellos. El caudal turbinado, la otra
-            candidata, correlaciona a r = −0,06.
+            reporte es exactamente <code>round(historiador)</code> en cada uno de ellos. El caudal turbinado, el otro
+            candidato, correlaciona a r = −0,06.
           </p>
         </article>
         <article className="card">

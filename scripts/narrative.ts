@@ -66,6 +66,7 @@ function readSnapshots(): (SnapshotRef & { run_id: string })[] {
         status: row["status"] ?? "",
         prompt_version: row["prompt_version"] ?? "",
         payload_hash: row["payload_hash"] ?? "",
+        model_id: row["model_id"] ?? "",
       });
     }
   }

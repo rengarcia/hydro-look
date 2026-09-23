@@ -7,6 +7,8 @@
  * distinction is the whole point of several of these fields.
  */
 
+import { isSiteId, SITES } from "../registry.ts";
+
 const LOCALE = "es-EC";
 
 export const EM_DASH = "—";
@@ -75,6 +77,54 @@ export function feedLabel(feed: string): string {
     .replace("CENACE Información Operativa", "CENACE: Información Operativa")
     .replace("Open-Meteo ERA5", "Open-Meteo ERA5")
     .replace("NOAA ONI", "NOAA ONI")
+    .replace("XM exchanges with Colombia", "XM: intercambios con Colombia")
+    .replace("XM Colombian storage", "XM: embalses de Colombia")
     .replace("Mazar level forecast", "Pronóstico de cota de Mazar")
     .replace("National adequacy", "Suficiencia nacional");
+}
+
+/** `thresholds.csv` names where a band was declared in English; the page says it in Spanish. */
+const DECLARATION_ES: Record<string, string> = {
+  "report endpoint": "servicio de reportes",
+  "dashboard chart title": "título del gráfico del tablero",
+};
+
+export function declarationLabel(declaration: string): string {
+  return DECLARATION_ES[declaration] ?? declaration;
+}
+
+/** Basin ids are lowercase registry keys; every one of them is named after its river. */
+const BASIN_ES: Record<string, string> = {
+  paute: "Paute",
+  jubones: "Jubones",
+  zamora: "Zamora",
+  pastaza: "Pastaza",
+  guayllabamba: "Guayllabamba",
+  coca: "Coca",
+};
+
+export function basinLabel(basin: string): string {
+  return `cuenca del ${BASIN_ES[basin] ?? basin.charAt(0).toUpperCase() + basin.slice(1)}`;
+}
+
+/**
+ * Quality findings are written in English for the log and `status.json`. The one that stays
+ * open in normal operation is said in Spanish; any other is named by its check and pointed at
+ * the document that carries its detail, rather than pasted into a Spanish page untranslated.
+ */
+function siteName(site: string): string {
+  return isSiteId(site) ? SITES[site].label : site;
+}
+
+export function findingText(finding: { check: string; level: string; message: string }): string {
+  const offBook = /^(\d+) percentage\(s\) sit outside 0\.\.100\b.*first: ([a-z_]+)\/\w+ (\d{4}-\d{2}-\d{2}) ([\d.]+)/.exec(finding.message);
+  if (offBook) {
+    const [, count, site, date, value] = offBook;
+    return (
+      `${count} porcentajes quedan fuera de 0–100 %: un embalse por encima de su banda declarada o una central ` +
+      `por encima de su capacidad nominal, no un error (el primero: ${siteName(site!)}, ${longDate(date)}, ${num(Number(value), 1)} %)`
+    );
+  }
+  const level = finding.level === "fail" ? "fallo" : "aviso";
+  return `${level} de la comprobación «${finding.check}» (detalle en status.json)`;
 }

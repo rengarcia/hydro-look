@@ -33,23 +33,27 @@ import type { NarrativeSnapshotRow } from "../contracts/tables.ts";
  * The model, as a gateway slug. Switching provider or model is a change to this string and
  * nothing else — that is the gateway's point.
  *
- * Claude Opus 5 because it is the current default Claude model; at one call a day of about two
- * thousand tokens in and a few hundred out it costs cents, well inside the gateway's monthly
- * free credit. `anthropic/claude-haiku-4-5` is the cheaper swap if the `cost_usd` column ever
- * says otherwise.
+ * Claude Opus 5.5, on paid gateway credits: the free tier refused Opus 5 (run 35808200400).
+ * Opus 5 wrote the first published narrative (run 35810691729). The free
+ * tier's `xiaomi/mimo-v2.6-flash` was tried on 2026-09-23 and was not good enough to publish —
+ * three answers, all rejected, the last for misspelling a month ("octiembre"); the rows are in
+ * `narrative_snapshots`.
  *
- * The `anthropic/<model>` slug format is Vercel's, not Anthropic's: verify it on the Vercel AI
- * Gateway model list (https://vercel.com/ai-gateway/models) before relying on it. A wrong slug
- * fails the first live run as `failed` with a model-not-found error; it cannot be checked from
- * a sandbox that has no route to the gateway.
+ * The `<provider>/<model>` slug format is Vercel's: verify it on the Vercel AI Gateway model
+ * list (https://vercel.com/ai-gateway/models) before relying on it. A wrong slug fails the first
+ * live run as `failed` with a model-not-found error; it cannot be checked from a sandbox that
+ * has no route to the gateway.
  */
-export const NARRATIVE_MODEL = "anthropic/claude-opus-5";
+export const NARRATIVE_MODEL = "anthropic/claude-opus-5.5";
 
 /** How long to wait before the one retry after a 429. */
 export const RATE_LIMIT_RETRY_MS = 20_000;
 
-/** Enough for 220 words of Spanish plus five drivers with room to spare, and a cap on spend. */
-export const MAX_OUTPUT_TOKENS = 2_000;
+/**
+ * A cap on spend, not a length target: the prompt sets the length. Reasoning counts against it,
+ * and 2,000 cut MiMo's answer off mid-JSON (run 35809878208, `finish: length`).
+ */
+export const MAX_OUTPUT_TOKENS = 4_000;
 
 /** Decision 8's contract, as in PLAN.md §6 Phase 6b. */
 export const narrativeSchema = z.object({
@@ -167,7 +171,13 @@ export async function generateNarrative(payload: NarrativePayload, options: Gene
             outputTokens: error.usage?.outputTokens ?? null,
             costUsd: null,
           },
-          reasons: [`schema: ${describe(error)}`],
+          // The raw answer is the only way to tell a truncated reply from fenced JSON or prose,
+          // and the row is the only place it survives the run.
+          reasons: [
+            `schema: ${describe(error)}`,
+            `finish: ${error.finishReason ?? "unknown"}`,
+            `raw: ${(error.text ?? "").slice(0, 2_000)}`,
+          ],
         };
       }
       return { status: "failed", modelId, output: null, usage: NO_USAGE, reasons: [describe(error)] };
@@ -198,6 +208,7 @@ export interface SnapshotRef {
   status: string;
   prompt_version: string;
   payload_hash: string;
+  model_id: string;
 }
 
 /**
@@ -206,8 +217,8 @@ export interface SnapshotRef {
  * `skipped` and `failed` rows are passed over, because nothing was produced and nothing (as far
  * as billing goes) was spent, so trying again is the point. `rejected` rows count: the same
  * payload under the same prompt was paid for once and refused once, and asking again twice a
- * day until the model happens to comply is how a free credit disappears. New data or a new
- * `PROMPT_VERSION` is what earns another call.
+ * day until the model happens to comply is how a free credit disappears. New data, a new
+ * `PROMPT_VERSION` or a new model is what earns another call.
  */
 export function lastAnswered<T extends SnapshotRef>(rows: readonly T[]): T | null {
   let best: T | null = null;
@@ -218,9 +229,16 @@ export function lastAnswered<T extends SnapshotRef>(rows: readonly T[]): T | nul
   return best;
 }
 
-export function isNoOp(rows: readonly SnapshotRef[], payloadHash: string, promptVersion = PROMPT_VERSION): boolean {
+export function isNoOp(
+  rows: readonly SnapshotRef[],
+  payloadHash: string,
+  promptVersion = PROMPT_VERSION,
+  modelId = NARRATIVE_MODEL,
+): boolean {
   const last = lastAnswered(rows);
-  return last !== null && last.payload_hash === payloadHash && last.prompt_version === promptVersion;
+  return (
+    last !== null && last.payload_hash === payloadHash && last.prompt_version === promptVersion && last.model_id === modelId
+  );
 }
 
 /** `2026-09-21-narrative-es-1-1a2b3c4d-121503`: origin, prompt, payload, and the attempt's time. */

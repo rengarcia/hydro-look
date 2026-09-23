@@ -242,6 +242,17 @@ export function inventedFigures(text: string, allowed: AllowedSet): string[] {
   return problems;
 }
 
+/**
+ * A JSON key, field path or code value copied into prose — `el_nino`, `mazar.level_masl`,
+ * `adequacy.risk_tier`. Lowercase segments joined by `.` or `_`, every segment after the first
+ * at least two characters, so an abbreviation such as "m.s.n.m." is not one.
+ */
+const IDENTIFIER = /\b[a-z][a-z0-9]*(?:[._][a-z0-9]{2,})+\b/g;
+
+export function fieldNames(text: string): string[] {
+  return [...text.matchAll(IDENTIFIER)].map((m) => m[0]);
+}
+
 export interface NarrativeText {
   outlook_es: string;
   drivers: string[];
@@ -253,7 +264,8 @@ export interface ValidationResult {
 }
 
 /**
- * The whole narrative against its payload. Besides the figures, the outlook must name the risk
+ * The whole narrative against its payload. Besides the figures, no field name may reach a public
+ * page written for people, and the outlook must name the risk
  * tier it was given: decision 8 makes the tier an input the text explains, and a paragraph that
  * never mentions it has explained nothing.
  */
@@ -261,8 +273,10 @@ export function validateNarrative(narrative: NarrativeText, payload: NarrativePa
   const allowed = allowedSet(payload);
   const problems: string[] = [];
   for (const problem of inventedFigures(narrative.outlook_es, allowed)) problems.push(`outlook_es: ${problem}`);
+  for (const name of fieldNames(narrative.outlook_es)) problems.push(`outlook_es: field name "${name}"`);
   narrative.drivers.forEach((driver, i) => {
     for (const problem of inventedFigures(driver, allowed)) problems.push(`drivers[${i}]: ${problem}`);
+    for (const name of fieldNames(driver)) problems.push(`drivers[${i}]: field name "${name}"`);
   });
   const tier = payload.adequacy?.risk_tier;
   if (tier && !fold(narrative.outlook_es).includes(fold(tier))) {
