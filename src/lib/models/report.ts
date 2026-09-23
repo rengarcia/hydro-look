@@ -55,6 +55,18 @@ export interface ReportInputs {
    * run fell back to the shipped model. Absent means every horizon publishes the shipped model.
    */
   published?: PublishedSwitch | null;
+  /**
+   * Experiments scored on the ladder's own origins in this run — each a variant of the shipped
+   * model that did not ship, or has not yet — with the verdict written by the caller from the
+   * numbers. Rendered after the ENSO comparison, before the crisis check.
+   */
+  experiments?: readonly ExperimentSection[];
+}
+
+export interface ExperimentSection {
+  heading: string;
+  /** Paragraphs and tables, already rendered; `scoreTable` below renders a table. */
+  body: readonly string[];
 }
 
 export interface PublishedSwitch {
@@ -72,6 +84,15 @@ function table(headers: readonly string[], rows: readonly (readonly string[])[])
     `|${headers.map(() => "---").join("|")}|`,
     ...rows.map((row) => `| ${row.join(" | ")} |`),
   ].join("\n");
+}
+
+/** A model × horizon table of one statistic, as every table in this report is drawn. */
+export function scoreTable(
+  scores: readonly ModelScore[],
+  horizons: readonly number[],
+  pick: (h: ModelScore["horizons"][number]) => string,
+): string {
+  return table(["model", ...horizons.map((h) => `h=${h}`)], scoreRows(scores, horizons, pick));
 }
 
 function scoreRows(scores: readonly ModelScore[], horizons: readonly number[], pick: (h: ModelScore["horizons"][number]) => string) {
@@ -228,10 +249,19 @@ export function renderBacktestReport(inputs: ReportInputs): string {
     lines.push(
       "The phase used is the one a forecaster could actually have read at each origin: ONI is a " +
         "three-month mean centred on its label, so the newest value available on any day is about two " +
-        "months old, and the backtest never looks through that lag. The conditioner worth having is " +
-        "basin precipitation, and it waits on ERA5 history at the verified catchment centroids now in `basins.csv`.",
+        "months old, and the backtest never looks through that lag. Basin precipitation is the other " +
+        "conditioner, and its upper bound is the next section.",
     );
     lines.push("");
+  }
+
+  for (const experiment of inputs.experiments ?? []) {
+    lines.push(`## ${experiment.heading}`);
+    lines.push("");
+    for (const paragraph of experiment.body) {
+      lines.push(paragraph);
+      lines.push("");
+    }
   }
 
   lines.push("## The crisis check");

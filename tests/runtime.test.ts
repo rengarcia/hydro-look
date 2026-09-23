@@ -96,7 +96,9 @@ describe("one simulation per analogue year", () => {
 
   it("with shared members, reads every horizon off the same years", () => {
     const fit = fitAt(context)!;
-    const ensembles = horizonEnsembles(fit, context.inflow, origin, context.horizonDays, crestM, DEFAULT_WATER_BALANCE, undefined, true);
+    const ensembles = horizonEnsembles(fit, context.inflow, origin, context.horizonDays, crestM, DEFAULT_WATER_BALANCE, {
+      sharedMembers: true,
+    });
     const years = ensembles.map((e) => e.years.join(","));
     expect(new Set(years).size).toBe(1);
     expect(ensembles[0]!.years.length).toBeLessThanOrEqual(horizonEnsembles(fit, context.inflow, origin, [7], crestM)[0]!.years.length);

@@ -34,14 +34,17 @@
  * used today; basin precipitation could not when this was written, because `basins.csv` carried
  * one provisional sampling point for Paute and nothing for the other six catchments. It now has
  * verified catchment centroids for all seven (Phase 4, 2026-09-23), but no ERA5 history at them
- * yet, and the conditioner has not been tried against the backtest. ENSO phase on its own is available,
+ * yet. The upper bound has been tried on the provisional point (§5.4, `rain.ts`): keeping the
+ * years whose rain was nearest the rain that *actually* fell over the next sixteen days is worse
+ * at every horizon, and the experiment reruns daily so the centroid's answer appears once its
+ * history does. ENSO phase on its own is available,
  * so it was tried rather than argued about: `M3-water-balance-enso` keeps only the analogue
  * years whose ENSO phase matches the phase in effect at the origin — using the phase a
  * forecaster could actually have read, two months stale, never the label of the month itself.
  * It is worse at every horizon, by 3.5% at sixty days and 15% at a month, and it can only
  * forecast at 60 of the 105 origins because matching on phase starves a pool that had barely a
  * dozen members to begin with. It stays in the backtest as a recorded negative, not in the
- * shipped model. Precipitation is the conditioner worth having, and it waits on `basins.csv`.
+ * shipped model.
  */
 
 import { addDays, isCalendarDate } from "../util/dates.ts";
@@ -235,6 +238,13 @@ export function analogPathsUpTo(
   return out;
 }
 
+/** How a model narrows the analogue pool at one origin; empty keeps every earlier year. */
+export interface AnalogPool {
+  accept?: (startDate: IsoDate) => boolean;
+  select?: (paths: AnalogPath[]) => AnalogPath[];
+  sharedMembers?: boolean;
+}
+
 export interface HorizonEnsemble {
   horizonDays: number;
   /** Simulated level at the horizon, one per member that reaches it. */
@@ -250,9 +260,11 @@ export interface HorizonEnsemble {
  * `simulatePath` line for line, so the levels are the ones a separate simulation per horizon
  * produced — the 90-day path used to be simulated about 2.2 times over.
  *
- * `sharedMembers` keeps only the years that reach the *longest* horizon, so every horizon is
- * read off the same ensemble. It is a recorded experiment, not the default: it drops the years
- * whose record stops short of ninety days from the short horizons too (see the backtest report).
+ * `pool.sharedMembers` keeps only the years that reach the *longest* horizon, so every horizon
+ * is read off the same ensemble. It is a recorded experiment, not the default: it drops the
+ * years whose record stops short of ninety days from the short horizons too (see the backtest
+ * report). `pool.select` narrows the pool by ranking rather than by a yes/no per year, which is
+ * how the rain experiment (`rain.ts`) keeps the years whose rain was nearest the origin's.
  */
 export function horizonEnsembles(
   fit: WaterBalanceFit,
@@ -261,12 +273,12 @@ export function horizonEnsembles(
   horizons: readonly number[],
   crestM: number,
   options: WaterBalanceOptions = DEFAULT_WATER_BALANCE,
-  accept?: (startDate: IsoDate) => boolean,
-  sharedMembers = false,
+  pool: AnalogPool = {},
 ): HorizonEnsemble[] {
   const longest = Math.max(0, ...horizons);
-  let paths = analogPathsUpTo(inflow, origin, longest, accept);
-  if (sharedMembers) paths = paths.filter((path) => path.inflowM3s.length === longest);
+  let paths = analogPathsUpTo(inflow, origin, longest, pool.accept);
+  if (pool.select) paths = pool.select(paths);
+  if (pool.sharedMembers) paths = paths.filter((path) => path.inflowM3s.length === longest);
   const runs = paths.map((path) => ({
     year: path.year,
     levels: simulateLevels(fit.curve, fit.rule, fit.startLevel, path.inflowM3s, fit.stance, crestM, options),
@@ -441,6 +453,8 @@ export interface AnalogVariant {
   labelSuffix: string;
   /** True to keep the analogue year starting on `startDate` in the pool for this `origin`. */
   accept?(startDate: IsoDate, origin: IsoDate): boolean;
+  /** Narrow the pool at `origin` by ranking the candidate years; see `horizonEnsembles`. */
+  select?(paths: AnalogPath[], origin: IsoDate): AnalogPath[];
   /** Read every horizon off the members that reach the longest one; see `horizonEnsembles`. */
   sharedMembers?: boolean;
 }
@@ -456,7 +470,11 @@ export function waterBalanceModel(
     forecast(context: ForecastContext): HorizonForecast[] {
       const fit = fitAt(context, options, cache);
       if (!fit) return [];
-      const accept = variant?.accept && ((start: IsoDate) => variant.accept!(start, context.origin));
+      const pool: AnalogPool = {
+        accept: variant?.accept && ((start: IsoDate) => variant.accept!(start, context.origin)),
+        select: variant?.select && ((paths: AnalogPath[]) => variant.select!(paths, context.origin)),
+        sharedMembers: variant?.sharedMembers ?? false,
+      };
       const out: HorizonForecast[] = [];
       for (const { horizonDays, ends } of horizonEnsembles(
         fit,
@@ -465,8 +483,7 @@ export function waterBalanceModel(
         context.horizonDays,
         context.crestM,
         options,
-        accept,
-        variant?.sharedMembers ?? false,
+        pool,
       )) {
         if (ends.length < options.minAnalogYears) continue;
         const centre = median(ends);
