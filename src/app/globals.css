@@ -2032,6 +2032,11 @@ a.column:hover {
   gap: 6px 20px;
 }
 
+/* The masthead's date: the long label on a wide screen, the short one on a phone. */
+.masthead-date .pill-short {
+  display: none;
+}
+
 .pill-note {
   color: var(--muted);
   font-size: 11.5px;
@@ -2554,6 +2559,12 @@ a.column:hover {
   .nav {
     gap: 18px;
   }
+  .masthead-date .pill-long {
+    display: none;
+  }
+  .masthead-date .pill-short {
+    display: inline;
+  }
   .fleet {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     row-gap: 48px;
@@ -2588,8 +2599,8 @@ a.column:hover {
   .menu {
     display: block;
   }
-  .masthead .pill {
-    display: none;
+  .masthead-date {
+    margin-left: auto;
   }
   .hero,
   .detail-hero {
@@ -2625,6 +2636,12 @@ a.column:hover {
   }
   .masthead .shell {
     height: 64px;
+    gap: 12px;
+  }
+  .masthead-date {
+    padding: 4px 10px 4px 8px;
+    font-size: 11.5px;
+    gap: 6px;
   }
   .brand-word {
     font-size: 22px;
@@ -2840,5 +2857,29 @@ a.column:hover {
   .foresight > div {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+/*
+ * Where the masthead is tight, the date goes under its label: beside the full navigation on a
+ * small laptop, and beside the menu button on a phone.
+ */
+@media (min-width: 901px) and (max-width: 1180px), (max-width: 420px) {
+  .masthead-date {
+    white-space: normal;
+    border-radius: 12px;
+    line-height: 1.2;
+  }
+  .masthead-date .pill-short {
+    display: block;
+  }
+}
+
+@media (max-width: 360px) {
+  .masthead .shell {
+    gap: 8px;
+  }
+  .brand-word {
+    font-size: 19px;
   }
 }
