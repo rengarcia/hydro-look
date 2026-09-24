@@ -43,11 +43,11 @@ export function fanChartOf(forecast: ForecastDocument) {
       level_masl: t.level_masl,
       label:
         t.status === "unverified"
-          ? `${num(t.level_masl, 0)} m · marcador propio, sin fuente oficial`
-          : `${num(t.level_masl, 0)} m · mínimo declarado (${thresholdSource(t.name)})`,
+          ? `${num(t.level_masl, 0)} m · referencia de este sitio, no oficial`
+          : `${num(t.level_masl, 0)} m · mínimo oficial (${thresholdSource(t.name)})`,
       unverified: t.status === "unverified",
     })),
-    label: `Cota de Mazar: ${FAN_HISTORY_DAYS} días observados y pronóstico a ${last.horizon_days} días con banda p10 a p90`,
+    label: `Nivel de Mazar: los últimos ${FAN_HISTORY_DAYS} días y el pronóstico a ${last.horizon_days} días con su rango probable`,
     primaryModel: forecast.model.id,
   };
 }
@@ -58,13 +58,13 @@ export function HorizonsTable({ forecast }: { forecast: ForecastDocument }) {
   return (
     <Table
       className="horizons"
-      caption="Pronóstico de la cota de Mazar por horizonte, en m s. n. m., con su acierto frente a la persistencia"
+      caption="Pronóstico del nivel de Mazar por plazo, en metros sobre el nivel del mar, y cuánto acierta más que suponer que el nivel no cambia"
       captionHidden
       columns={[
-        { label: "Horizonte" },
+        { label: "Plazo" },
         { label: "Fecha", wideOnly: true },
-        { label: "p50 (p10 – p90)", numeric: true },
-        { label: "Acierto" },
+        { label: "Más probable (rango)", numeric: true },
+        { label: "Mejora" },
         { label: "Modelo" },
       ]}
       rows={forecast.forecast.map((h) => {
@@ -118,11 +118,11 @@ export function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
           index="02"
           eyebrow={`Mazar · pronóstico a ${last.horizon_days} días`}
           titleId="mazar-title"
-          title="Hacia dónde va el único embalse con semanas de reserva."
+          title="Hacia dónde va Mazar, el embalse que guarda agua para semanas."
         >
-          Un balance hídrico cerrado en torno al operador: la curva cota–superficie y los m³/s por MW se ajustan con las lecturas de este
-          repositorio, y la descarga sale cada día simulado de una regla de operación contra la propia cota. Junto a cada horizonte, cuánto
-          le gana a suponer que la cota no cambia.
+          El pronóstico hace, día por día, la cuenta del agua: cuánta llega, cuánta se usa para generar electricidad y cuánto sube o baja el
+          nivel por eso. Usa lo que el operador ha hecho en el pasado con el embalse a cada nivel. Junto a cada plazo te decimos si acierta
+          más que la opción más simple: suponer que el nivel se queda igual.
         </SectionIntro>
         <a href="/embalses/mazar/" className="btn btn-ghost">
           Ficha completa de Mazar →
@@ -134,28 +134,28 @@ export function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
           <ul className="legend">
             <li>
               <span className="key-line fill-ink" aria-hidden="true" />
-              Cota observada
+              Nivel real
             </li>
             <li>
               <span className="key-line fill-water" aria-hidden="true" />
-              Pronóstico p50
+              Pronóstico: lo más probable
             </li>
             <li>
               <span className="key-box key-fan" aria-hidden="true" />
-              Banda p10–p90
+              Rango probable (8 de cada 10 casos)
             </li>
             {switched.length > 0 ? (
               <li>
                 <span className="key-ring" aria-hidden="true" />
-                {joinDays(switched.map((h) => h.horizon_days))} días: otro modelo ({modelShort(modelOf(switched[0]!))}, árboles potenciados)
+                {joinDays(switched.map((h) => h.horizon_days))} días: otro modelo ({modelShort(modelOf(switched[0]!))})
               </li>
             ) : null}
             <li>
               <span className="key-dash" aria-hidden="true" />
-              Mínimos
+              Niveles mínimos
             </li>
           </ul>
-          <span className="meta">m s. n. m.</span>
+          <span className="meta">metros sobre el nivel del mar</span>
         </div>
         <FanChart {...fanChartOf(forecast)} />
       </div>
@@ -163,19 +163,23 @@ export function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
       <div className="split">
         <div className="panel tight">
           <div className="panel-head">
-            <h3>Horizontes</h3>
-            <span className="meta">p50 (p10 – p90) · acierto vs. persistencia</span>
+            <h3>Plazos</h3>
+            <span className="meta">lo más probable (rango) · mejora frente a «el nivel no cambia»</span>
           </div>
           <HorizonsTable forecast={forecast} />
           <p className="fine spaced">
-            {forecast.model.backtest_origins} orígenes mensuales desde 2018.
-            {ties.length > 0 ? ` A ${joinDays(ties)} días el modelo empata con la persistencia, y así se publica.` : ""} La banda p10–p90
-            cubre entre el {num(Math.min(...coverage), 0)} % y el {num(Math.max(...coverage), 0)} % de los casos, frente al 80 % nominal.
+            «Mejora» sale de probar el pronóstico con datos del pasado, a inicios de cada mes desde 2018 ({forecast.model.backtest_origins}{" "}
+            veces).
+            {ties.length > 0
+              ? ` A ${joinDays(ties)} días no acierta más que suponer que el nivel no cambia; lo publicamos igual, y lo decimos.`
+              : ""}{" "}
+            El rango probable acertó entre el {num(Math.min(...coverage), 0)} % y el {num(Math.max(...coverage), 0)} % de las veces; lo
+            ideal sería un 80 %.
             {switched.length > 0
-              ? ` La fila de ${joinDays(switched.map((h) => h.horizon_days))} días viene de ${modelOf(switched[0]!)}, que corrige el error del balance hídrico y es el único que le gana a la persistencia a una semana.`
+              ? ` La fila de ${joinDays(switched.map((h) => h.horizon_days))} días viene de otro modelo (${modelOf(switched[0]!)}), que corrige los errores del primero y es el único que mejora a una semana.`
               : ""}
             {fellBack
-              ? ` Hoy los ${fellBack.horizon_days} días vuelven al balance hídrico: ${fellBack.candidate_model} no se publica cuando su validación no cubre los mismos orígenes.`
+              ? ` Hoy los ${fellBack.horizon_days} días vuelven al modelo principal: ${fellBack.candidate_model} no se publica cuando no se pudo probar en las mismas fechas.`
               : ""}
           </p>
         </div>
@@ -183,8 +187,8 @@ export function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
         {critical ? (
           <div className="scenarios">
             <div className="panel-head flush">
-              <h3>Tres años reales de caudal, la misma regla</h3>
-              <span className="meta">umbral {num(critical.level_masl, 0)} m</span>
+              <h3>¿Y si llueve como en otros años?</h3>
+              <span className="meta">referencia: {num(critical.level_masl, 0)} m</span>
             </div>
             {critical.scenarios.map((s) => {
               const kind = scenarioOf(s.scenario);
@@ -196,29 +200,33 @@ export function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
                       {kind.name}
                     </span>
                     <span className="meta">
-                      como {s.analogYear} · {num(s.inflowMeanM3s, 1)} m³/s
+                      como en {s.analogYear} · {num(s.inflowMeanM3s, 1)} m³/s
                     </span>
                   </div>
-                  <div className="scenario-verdict">{s.crossesOn ? `Cruza ${num(critical.level_masl, 0)} m` : "No cruza"}</div>
+                  <div className="scenario-verdict">
+                    {s.crossesOn ? `Baja de ${num(critical.level_masl, 0)} m` : `No baja de ${num(critical.level_masl, 0)} m`}
+                  </div>
                   <div className="scenario-detail">
                     {s.crossesOn
                       ? `el ${longDate(s.crossesOn)}, en ${num(s.days, 0)} días`
                       : `en los próximos ${forecast.days_to_threshold.horizon_days} días`}
                     <br />
-                    mínimo {num(s.minimumLevelMasl, 2)} m
+                    lo más bajo: {num(s.minimumLevelMasl, 2)} m
                   </div>
                 </div>
               );
             })}
             <p className="fine">
-              De los {critical.across_all_analogue_years.analogue_years} años análogos,{" "}
-              {critical.across_all_analogue_years.years_that_cross} cruzan los {num(critical.level_masl, 0)} m
+              Cada escenario repite las lluvias reales de un año pasado. Con las de los {critical.across_all_analogue_years.analogue_years}{" "}
+              años registrados, en {critical.across_all_analogue_years.years_that_cross} el nivel baja de {num(critical.level_masl, 0)} m
               {declared.length > 0
                 ? declared.every((t) => t.across_all_analogue_years.years_that_cross === 0)
-                  ? `; ninguno llega a los ${num(Math.max(...declared.map((t) => t.level_masl)), 0)} m declarados.`
-                  : `; ${Math.max(...declared.map((t) => t.across_all_analogue_years.years_that_cross))} llegan a un mínimo declarado.`
+                  ? `; en ninguno llega al mínimo oficial de ${num(Math.max(...declared.map((t) => t.level_masl)), 0)} m.`
+                  : `; en ${Math.max(...declared.map((t) => t.across_all_analogue_years.years_that_cross))} llega a un mínimo oficial.`
                 : "."}{" "}
-              {critical.status === "unverified" ? `${num(critical.level_masl, 0)} m es un marcador de este proyecto, no de CELEC.` : ""}
+              {critical.status === "unverified"
+                ? `${num(critical.level_masl, 0)} m es un nivel de referencia de este sitio, no una cifra oficial de CELEC.`
+                : ""}
             </p>
           </div>
         ) : null}
@@ -226,14 +234,14 @@ export function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
       <ScorecardPanel
         card={forecast.scorecard}
         nextDue={forecast.scorecard ? nextScoreDue("forecast", forecast.scorecard.observed_through) : null}
-        subject="la cota de Mazar"
+        subject="el nivel de Mazar"
         digits={2}
         id="marcador-mazar"
       >
-        Se compara la cota observada el día objetivo con la p50 y la banda p10–p90 que se publicaron.
+        Cuando llega la fecha de un pronóstico, comparamos el nivel real con el valor más probable y el rango que publicamos.
       </ScorecardPanel>
       <p className="fine">
-        Pronóstico del {dateWithYear(forecast.origin_date)}; los de días anteriores quedan en el <a href="/dia/">archivo diario</a>.
+        Pronóstico del {dateWithYear(forecast.origin_date)}; los de días anteriores están en el <a href="/dia/">archivo diario</a>.
       </p>
     </section>
   );

@@ -33,39 +33,42 @@ export function Method({ forecast, adequacy }: { forecast: ForecastDocument | nu
     <section id="metodo" className="shell section" aria-labelledby="metodo-title">
       <SectionIntro
         index="06"
-        eyebrow="Método y advertencias"
+        eyebrow="Cómo se hace y sus límites"
         titleId="metodo-title"
         title="Lo que conviene saber antes de usar estos números."
       >
-        Cada una está documentada, con las mediciones que la establecieron, en el <a href={REPO}>repositorio</a>.
+        Todo el detalle, con las pruebas que lo respaldan, está en el <a href={REPO}>repositorio del proyecto</a>.
       </SectionIntro>
       <div className="caveats">
         {forecast && sixty && ninety ? (
           <p>
-            <strong>El pronóstico de cota.</strong> Sobre {forecast.model.backtest_origins} orígenes mensuales, el balance hídrico es{" "}
-            {pct(sixty.skill_vs_persistence * 100, 1)} mejor que la persistencia a 60 días y {pct(ninety.skill_vs_persistence * 100, 1)} a
-            90, e indistinguible de ella por debajo del mes. De los {countWord(forecast.crisis_check.episodes.length)} cruces de los{" "}
-            {num(forecast.crisis_check.threshold_masl, 0)} m en 2024, la mediana no anticipó ninguno; dio{" "}
-            {forecast.crisis_check.false_alarms_p50} {forecast.crisis_check.false_alarms_p50 === 1 ? "falsa alarma" : "falsas alarmas"}.
-            Todo, negativos incluidos, en <a href={`${REPO}/blob/main/${forecast.backtest.report}`}>{forecast.backtest.report}</a>.
+            <strong>¿Qué tan bueno es el pronóstico de Mazar?</strong> Lo probamos con datos del pasado, {forecast.model.backtest_origins}{" "}
+            veces. A 60 días acierta {pct(sixty.skill_vs_persistence * 100, 1)} más que suponer que el nivel no cambia, y a 90 días,{" "}
+            {pct(ninety.skill_vs_persistence * 100, 1)} más. A menos de un mes no mejora esa suposición. En 2024 Mazar bajó{" "}
+            {countWord(forecast.crisis_check.episodes.length)} veces de {num(forecast.crisis_check.threshold_masl, 0)} m y el valor más
+            probable no anticipó ninguna; dio {forecast.crisis_check.false_alarms_p50}{" "}
+            {forecast.crisis_check.false_alarms_p50 === 1 ? "falsa alarma" : "falsas alarmas"}. Los resultados, también los malos, están en{" "}
+            <a href={`${REPO}/blob/main/${forecast.backtest.report}`}>{forecast.backtest.report}</a>.
           </p>
         ) : null}
         {adequacy && tiers ? (
           <p>
-            <strong>La suficiencia.</strong> El requerimiento le gana a suponer que el último mes se repite
+            <strong>¿Qué tan buena es la cuenta de energía?</strong> Estima la energía que hace falta mejor que suponer que el último mes se
+            repite
             {firstA?.backtest.requirement_skill_vs_persistence != null
-              ? ` por ${pct(firstA.backtest.requirement_skill_vs_persistence * 100, 1)} a 7 días`
+              ? `: ${pct(firstA.backtest.requirement_skill_vs_persistence * 100, 1)} mejor a 7 días`
               : ""}
             {ninetyA?.backtest.requirement_skill_vs_persistence != null
               ? ` y ${pct(ninetyA.backtest.requirement_skill_vs_persistence * 100, 1)} a 90`
               : ""}
             {coverageA.length > 0
-              ? `, y su banda p10–p90 cubre entre el ${num(Math.min(...coverageA), 0)} % y el ${num(Math.max(...coverageA), 0)} % de los casos, frente al ${nominalA} % nominal.`
+              ? `. Su rango probable acertó entre el ${num(Math.min(...coverageA), 0)} % y el ${num(Math.max(...coverageA), 0)} % de las veces; lo ideal sería un ${nominalA} %.`
               : "."}{" "}
-            Aplicados a {tiers.origins} meses del registro, los niveles marcaron {tiers.origins_flagged}; de los marcados,{" "}
-            {pct((tiers.share_of_flagged_that_preceded_cuts ?? 0) * 100, 0)} precedieron cortes, y de los cortes se marcó{" "}
-            {pct((tiers.share_of_cuts_that_were_flagged ?? 0) * 100, 0)}: no da falsas alarmas, pero se le escapan la mayoría de las crisis.
-            Nada de esto modela la red. Detalle en <a href={`${REPO}/blob/main/data/reports/adequacy.md`}>data/reports/adequacy.md</a>.
+            Probada en {tiers.origins} meses del pasado, dio alerta {tiers.origins_flagged} veces, y el{" "}
+            {pct((tiers.share_of_flagged_that_preceded_cuts ?? 0) * 100, 0)} de esas alertas llegó antes de apagones reales. Pero solo avisó
+            antes del {pct((tiers.share_of_cuts_that_were_flagged ?? 0) * 100, 0)} de los apagones: cuando alerta, suele tener razón, pero
+            se le escapan la mayoría de las crisis. Tampoco tiene en cuenta los problemas de la red de transmisión. Detalle en{" "}
+            <a href={`${REPO}/blob/main/data/reports/adequacy.md`}>data/reports/adequacy.md</a>.
           </p>
         ) : null}
       </div>

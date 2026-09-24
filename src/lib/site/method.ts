@@ -14,34 +14,35 @@ export interface MethodNote {
 
 export const METHOD_NOTES: readonly MethodNote[] = [
   {
-    title: "`volutilalm` no es un volumen",
+    title: "El «% de volumen útil» de CELEC no es volumen",
     body:
-      "El servicio lo publica como «% de volumen útil», pero es exactamente (cota − mín) / (máx − mín), verificado " +
-      "a diez decimales. Aquí se guarda como `nivel_pct_banda` y no debe leerse como agua almacenada.",
+      "CELEC publica un porcentaje llamado «volumen útil» (`volutilalm`), pero en realidad mide la altura del agua dentro " +
+      "de su rango de operación: (nivel − mínimo) / (máximo − mínimo). No dice cuánta agua hay guardada. Aquí se guarda " +
+      "como `nivel_pct_banda`.",
   },
   {
-    title: "`repDiaNivQIng` responde con los números de ayer",
+    title: "Un reporte de CELEC trae los datos del día anterior",
     body:
-      "Si se le pide el día D, devuelve filas fechadas D con los valores de D−1, medido en 113 días consecutivos. " +
-      "Sus filas se guardan bajo el día que describen, no bajo el que las etiqueta.",
+      "Si al reporte `repDiaNivQIng` se le piden los datos de un día, entrega los del día anterior con la fecha cambiada; " +
+      "lo comprobamos en 113 días seguidos. Por eso cada dato se guarda con el día al que de verdad corresponde.",
   },
   {
-    title: "El caudal del historiador es caudal de entrada",
+    title: "El caudal es el agua que entra al embalse",
     body:
-      "`mridCaud` coincide con `q_ingresado` del reporte en 4281 días con r = 1,0000; el caudal turbinado, el otro " +
-      "candidato, correlaciona a r = −0,06.",
+      "Comprobamos en 4.281 días que el caudal del servicio histórico de CELEC (`mridCaud`) es el agua que llega al " +
+      "embalse, y no la que pasa por las turbinas.",
   },
   {
-    title: "La misma lectura de dos servicios se guarda dos veces",
+    title: "Si dos fuentes dan el mismo dato, se guardan las dos",
     body:
-      "Cuando dos servicios de CELEC publican el mismo día se conservan ambas filas con su fuente, para que los " +
-      "desacuerdos sigan siendo visibles. Los modelos resuelven una sola serie por un orden de fuentes declarado.",
+      "Cuando dos servicios de CELEC publican el mismo día, conservamos ambos, cada uno con su fuente, para que se vea si no " +
+      "coinciden. Los modelos usan uno solo, según un orden de preferencia fijo.",
   },
   {
-    title: "Los 2.115 m son un marcador de este proyecto",
+    title: "Los 2.115 m son una referencia de este sitio",
     body:
-      "Ninguna fuente publica ese nivel como crítico. Se pronostica porque el plan lo pide y se etiqueta como no " +
-      "verificado en cada documento, para que nadie lo confunda con una declaración de CELEC.",
+      "Ninguna fuente oficial dice que ese nivel sea crítico. Es una referencia que eligió este proyecto (Mazar bajó de " +
+      "él durante la crisis de 2024), y se marca como no oficial en todas partes para que nadie la confunda con una cifra de CELEC.",
   },
 ];
 
@@ -54,15 +55,15 @@ export function precipFallbackText(reason: string): string {
   const basin = match ? match[1]! : null;
   const why = match ? match[2]! : reason;
   const rules: [RegExp, (m: RegExpExecArray) => string][] = [
-    [/^no ERA5 rows$/, () => "todavía no tiene filas de ERA5"],
-    [/^ERA5 starts (\d{4}-\d{2}-\d{2}), not by/, (m) => `su ERA5 empieza el ${m[1]}, no en enero de 1990`],
+    [/^no ERA5 rows$/, () => "todavía no tiene datos de lluvia"],
+    [/^ERA5 starts (\d{4}-\d{2}-\d{2}), not by/, (m) => `sus datos de lluvia empiezan el ${m[1]}, no en enero de 1990`],
     [
       /^([\d.]+)% of days since (\d{4})-\d{2}-\d{2}, under ([\d.]+)%$/,
       (m) => `tiene el ${m[1]!.replace(".", ",")} % de los días desde ${m[2]}, por debajo del ${m[3]} % exigido`,
     ],
     [
       /^newest ERA5 day (\d{4}-\d{2}-\d{2}) is more than (\d+) days behind/,
-      (m) => `su día de ERA5 más reciente, el ${m[1]}, va más de ${m[2]} días por detrás`,
+      (m) => `su dato de lluvia más reciente, del ${m[1]}, tiene más de ${m[2]} días de atraso`,
     ],
   ];
   for (const [pattern, say] of rules) {
@@ -90,14 +91,16 @@ export function modelNotes(input: {
   const notes: MethodNote[] = [];
   const p = input.precipitation_basin;
   if (p) {
-    const coverage = `${p.era5_days.toLocaleString("es-EC")} días de ERA5, el ${(p.share_since_1990 * 100).toLocaleString("es-EC", { maximumFractionDigits: 1 })} % desde 1990`;
+    const coverage = `${p.era5_days.toLocaleString("es-EC")} días de datos, el ${(p.share_since_1990 * 100).toLocaleString("es-EC", { maximumFractionDigits: 1 })} % desde 1990`;
     notes.push({
-      title: `La lluvia se lee en \`${p.basin}\``,
+      title: `Dónde se mide la lluvia: \`${p.basin}\``,
       body: p.verified_centroid
-        ? `El pronóstico de Mazar lee la lluvia ERA5 del centroide verificado de la cuenca sobre la presa (\`${p.basin}\`): ${coverage}.`
-        : `El pronóstico de Mazar lee la lluvia ERA5 de \`${p.basin}\`, un punto provisional, no del centroide verificado de la ` +
-          `cuenca sobre la presa: ${p.fallback_reason ? precipFallbackText(p.fallback_reason) : "no tiene cobertura suficiente"}. ` +
-          `El cambio es automático en cuanto el centroide tenga historia desde 1990; hoy son ${coverage} en el punto provisional.`,
+        ? `El pronóstico de Mazar usa la lluvia (del registro climático ERA5) en un punto en el centro de la cuenca que ` +
+          `alimenta la presa (\`${p.basin}\`): ${coverage}. Es un solo punto, no un promedio de toda la cuenca.`
+        : `El pronóstico de Mazar usa la lluvia (del registro climático ERA5) en \`${p.basin}\`, un punto provisional, y ` +
+          `no en el centro de la cuenca que alimenta la presa: ` +
+          `${p.fallback_reason ? precipFallbackText(p.fallback_reason) : "todavía no hay datos suficientes allí"}. ` +
+          `Cambiará solo en cuanto ese punto tenga datos desde 1990; hoy hay ${coverage} en el punto provisional.`,
     });
   }
   const b = input.band_method;
@@ -105,17 +108,16 @@ export function modelNotes(input: {
     const stretches = b.stretch_by_horizon.filter((s) => s.stretch !== null);
     const range =
       stretches.length > 0
-        ? ` Hoy el ensanche va de ${Math.min(...stretches.map((s) => s.stretch!)).toLocaleString("es-EC")} a ` +
-          `${Math.max(...stretches.map((s) => s.stretch!)).toLocaleString("es-EC")} veces según el horizonte.`
+        ? ` Hoy se ensancha entre ${Math.min(...stretches.map((s) => s.stretch!)).toLocaleString("es-EC")} y ` +
+          `${Math.max(...stretches.map((s) => s.stretch!)).toLocaleString("es-EC")} veces, según el plazo.`
         : "";
     notes.push({
-      title: "Cómo se calibra la banda de suficiencia",
+      title: "Cómo se calcula el rango de la cuenta de energía",
       body: /stretched/.test(b.method)
-        ? `La banda p10–p90 del requerimiento sale de los errores de todos los orígenes anteriores, ensanchada en cada ` +
-          `horizonte por el menor factor con el que las bandas ya emitidas habrían cubierto el ` +
-          `${Math.round(b.nominal_coverage * 100)} % nominal.${range}`
-        : `La banda p10–p90 del requerimiento sale de los errores de los orígenes anteriores, sin ensanchar; su cobertura ` +
-          `nominal es del ${Math.round(b.nominal_coverage * 100)} %.`,
+        ? `El rango probable de la energía que hace falta sale de cuánto se equivocó la cuenta en el pasado. Se ensancha lo ` +
+          `justo para que, en las pruebas, hubiera acertado el ${Math.round(b.nominal_coverage * 100)} % de las veces.${range}`
+        : `El rango probable de la energía que hace falta sale de cuánto se equivocó la cuenta en el pasado, sin ajustes; ` +
+          `debería acertar el ${Math.round(b.nominal_coverage * 100)} % de las veces.`,
     });
   }
   return notes;

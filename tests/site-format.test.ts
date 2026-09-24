@@ -103,13 +103,13 @@ describe("findingText", () => {
       message:
         "27 percentage(s) sit outside 0..100 — a reservoir above its declared band or a plant above nominal capacity, not an error; first: mazar/nivel_pct_banda 2026-06-02 100.792453",
     });
-    expect(text).toContain("27 porcentajes quedan fuera de 0–100 %");
+    expect(text).toContain("27 porcentajes pasan del 100 % o bajan de 0 %");
     expect(text).toContain("Mazar, 2 de junio de 2026, 100,8 %");
   });
 
   it("points any other finding at status.json rather than pasting English into the page", () => {
     expect(findingText({ check: "shape:x", level: "fail", message: "something broke" })).toBe(
-      "fallo de la comprobación «shape:x» (detalle en status.json)",
+      "la revisión automática «shape:x» falló (detalle en status.json)",
     );
   });
 });

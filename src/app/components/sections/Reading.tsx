@@ -17,9 +17,9 @@ import { ecStamp, longDate } from "../../../lib/site/format.ts";
 import { narrativeTierNote, splitLead, tierOf } from "../../../lib/site/story.ts";
 
 export const CONFIDENCE_ES: Record<NarrativeDocument["confidence"], string> = {
-  low: "baja",
-  medium: "media",
-  high: "alta",
+  low: "poco",
+  medium: "bastante",
+  high: "mucho",
 };
 
 export function Reading({
@@ -46,12 +46,12 @@ export function Reading({
         <div className="reading-main">
           <div className="reading-head">
             <h2 id="lectura-title" className="eyebrow">
-              Lectura del día
+              Resumen del día
             </h2>
             {tier ? (
               <span className="pill">
                 <span className={`dot tone-${tier.tone}`} aria-hidden="true" />
-                Nivel {tier.label.toLowerCase()}
+                Energía: nivel {tier.label.toLowerCase()}
                 {which ? <span className="pill-note">{which}</span> : null}
               </span>
             ) : null}
@@ -64,14 +64,15 @@ export function Reading({
             {rest ? <p className="reading-rest">{rest}”</p> : null}
           </blockquote>
           <p className="reading-fine">
-            Texto redactado por un modelo de lenguaje (<code>{narrative.model}</code>) solo con los números de esta página; el pronóstico y
-            el nivel de riesgo son de los modelos estadísticos, que el texto describe y no produce. Un validador rechaza cualquier cota o
-            fecha que no esté en esos números. Confianza declarada: {CONFIDENCE_ES[narrative.confidence] ?? narrative.confidence} · generado
-            el {ecStamp(narrative.generated_at)}.
+            Este resumen lo escribe una inteligencia artificial (<code>{narrative.model}</code>) usando solo los números de esta página. La
+            IA no hace pronósticos: el pronóstico de Mazar y el nivel de riesgo vienen de los modelos estadísticos del sitio, y ella solo
+            los explica. Antes de publicarse, una revisión automática comprueba que cada cifra y cada fecha coincidan con los datos. Qué
+            tanto coinciden los indicadores entre sí: {CONFIDENCE_ES[narrative.confidence] ?? narrative.confidence} · escrito el{" "}
+            {ecStamp(narrative.generated_at)}.
             {stale
-              ? ` Escrito sobre los datos del ${longDate(narrative.origin_date)}; el resto de la página ya muestra los del ${longDate(forecast.origin_date)}.`
+              ? ` Está escrito con los datos del ${longDate(narrative.origin_date)}; el resto de la página ya muestra los del ${longDate(forecast.origin_date)}.`
               : ""}{" "}
-            <a href="/api/narrative.json">Lo que recibió el modelo</a> ·{" "}
+            <a href="/api/narrative.json">Los datos que recibió la IA</a> ·{" "}
             <a href={`/dia/${narrative.origin_date}/`}>enlace permanente a este día</a>.
           </p>
         </div>

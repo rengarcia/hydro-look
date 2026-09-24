@@ -79,7 +79,7 @@ export function ReservoirCut({
   const labelX = DAM + 96;
 
   const rules: Rule[] = [
-    { y: TOP, long: `${num(crest, 0)} m · cresta de la banda`, short: `${num(crest, 0)} cresta`, color: "var(--ink-2)", width: 1 },
+    { y: TOP, long: `${num(crest, 0)} m · máximo de operación`, short: `${num(crest, 0)} máx.`, color: "var(--ink-2)", width: 1 },
   ];
   if (forecast) {
     rules.push({

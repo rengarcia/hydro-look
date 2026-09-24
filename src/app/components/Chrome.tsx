@@ -20,9 +20,9 @@ export const REPO = REPO_URL;
 export const NAV: NavLink[] = [
   { href: "/#embalses", label: "Embalses" },
   { href: "/#mazar", label: "Mazar" },
-  { href: "/#caudal", label: "Caudal" },
-  { href: "/#balance", label: "Balance" },
-  { href: "/#suficiencia", label: "Suficiencia" },
+  { href: "/#caudal", label: "Ríos" },
+  { href: "/#balance", label: "Electricidad" },
+  { href: "/#suficiencia", label: "¿Alcanza?" },
   { href: "/#datos", label: "Datos" },
 ];
 
@@ -129,8 +129,8 @@ export function Footer() {
         <div className="footer-lead">
           <Brand size={26} />
           <p>
-            <strong>No es una fuente oficial.</strong> Cada número es una copia de lo que publicaron CELEC o CENACE, con la respuesta que lo
-            produjo archivada junto a él. Este sitio no representa la posición de ninguna institución.
+            <strong>No es una fuente oficial.</strong> Cada número viene de lo que publican CELEC y CENACE, las entidades públicas del
+            sector eléctrico, y guardamos la respuesta original junto a cada dato. Este sitio no habla en nombre de ninguna institución.
           </p>
         </div>
         <div className="footer-fine">
@@ -140,9 +140,9 @@ export function Footer() {
             <a href={REPO}>Código y datos en GitHub</a>.
           </p>
           <p className="footer-links">
-            <a href="/datos/">Los datos y su contrato</a>
+            <a href="/datos/">Datos abiertos (para desarrolladores)</a>
             <a href="/dia/">Archivo diario</a>
-            <a href="/feed.xml">Suscribirse (Atom)</a>
+            <a href="/feed.xml">Recibir el resumen del día (Atom)</a>
           </p>
         </div>
       </div>

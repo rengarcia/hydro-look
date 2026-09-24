@@ -19,22 +19,22 @@ export function National({ now }: { now: LatestDocument | null }) {
 
   return (
     <section id="balance" className="section section-tight" aria-labelledby="balance-title">
-      <SectionIntro index="04" eyebrow="Balance nacional" titleId="balance-title" title="De dónde salió la electricidad.">
-        El balance que CENACE cierra cada mañana para el día anterior, en GWh. Los porcentajes van sobre generación más importación: un kWh
-        importado alumbra igual que uno generado.
+      <SectionIntro index="04" eyebrow="La electricidad de ayer" titleId="balance-title" title="De dónde salió la electricidad.">
+        Cada mañana, CENACE, el operador de la red eléctrica, publica de dónde salió la electricidad del día anterior. Se mide en GWh (un
+        GWh es un millón de kWh). Los porcentajes incluyen la electricidad comprada a Colombia.
       </SectionIntro>
       <div className="panel tight">
         <div className="supply-head">
           <div className="supply-caption">
             <span>
-              {dateWithYear(national.date)} · {num(supply, 1)} GWh de suministro
+              {dateWithYear(national.date)} · {num(supply, 1)} GWh en total
             </span>
-            <span className="meta">demanda de distribución {num(national.distribution_demand_gwh, 1)} GWh</span>
+            <span className="meta">entregados a las distribuidoras: {num(national.distribution_demand_gwh, 1)} GWh</span>
           </div>
           <div
             className="supply"
             role="img"
-            aria-label={`Suministro del ${longDate(national.date)}: hidroeléctrica ${pct(national.hydro_share_pct, 1)}, térmica ${pct(national.thermal_share_pct, 1)}, importación ${pct(national.import_share_pct, 1)}.`}
+            aria-label={`Electricidad del ${longDate(national.date)}: del agua ${pct(national.hydro_share_pct, 1)}, térmica ${pct(national.thermal_share_pct, 1)}, comprada a Colombia ${pct(national.import_share_pct, 1)}.`}
           >
             {parts.map((p) => (
               <span
@@ -46,12 +46,12 @@ export function National({ now }: { now: LatestDocument | null }) {
             ))}
           </div>
         </div>
-        <MixChart days={days} label={`Generación diaria del Ecuador por tipo e importación, últimos ${MIX_DAYS} días, en GWh`} />
+        <MixChart days={days} label={`Electricidad de cada día en el Ecuador según su origen, últimos ${MIX_DAYS} días, en GWh`} />
         <Table
           className="mix-table"
-          caption={`Suministro del ${longDate(national.date)} por fuente`}
+          caption={`Electricidad del ${longDate(national.date)} según su origen`}
           captionHidden
-          columns={[{ label: "Fuente" }, { label: "GWh", numeric: true }, { label: "Parte", numeric: true }]}
+          columns={[{ label: "Origen" }, { label: "GWh", numeric: true }, { label: "Parte", numeric: true }]}
           rows={parts.map((p) => [
             <span key="name" className="mix-name">
               <span className={`swatch ${mixClass(p.concept)}`} aria-hidden="true" />

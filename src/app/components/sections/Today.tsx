@@ -10,6 +10,15 @@ import type { LatestDocument } from "../../../lib/publish/latest.ts";
 
 const THERMAL = ["generacion_turbinas_gas", "generacion_motores_bunker", "generacion_vapor_bunker", "generacion_turbinas_diesel"];
 
+/** Where the rain forecast sits against the same days of past years, in words. */
+function rainWords(percentile: number): string {
+  if (percentile >= 95) return "de las más altas para estas fechas";
+  if (percentile > 60) return "más de lo normal para estas fechas";
+  if (percentile >= 40) return "lo normal para estas fechas";
+  if (percentile > 5) return "menos de lo normal para estas fechas";
+  return "de las más bajas para estas fechas";
+}
+
 interface Stat {
   label: string;
   /** A `fill-*` class: the swatch colour. */
@@ -40,53 +49,53 @@ export function Today({
         chip: "fill-water",
         value: num(national.hydro_share_pct, 1),
         unit: "%",
-        note: `de la electricidad del ${shortDate(national.date)}: ${num(gwh("generacion_hidraulica"), 1)} GWh`,
+        note: `de la electricidad del ${shortDate(national.date)} salió del agua: ${num(gwh("generacion_hidraulica"), 1)} GWh`,
       },
       {
         label: "Térmica",
         chip: "fill-t1",
         value: num(national.thermal_share_pct, 1),
         unit: "%",
-        note: `búnker, diésel y gas: ${num(thermal, 1)} GWh`,
+        note: `quemando búnker, diésel y gas: ${num(thermal, 1)} GWh`,
       },
       {
-        label: "Importación",
+        label: "Desde Colombia",
         chip: "fill-import",
         value: num(national.import_share_pct, 1),
         unit: "%",
         note:
           regime?.state === "cutoff"
-            ? `Colombia no está enviando: ${num(regime.trailing_gwh_day, 2)} GWh/día en ${regime.window_days} días`
-            : `${num(national.total_import_gwh, 2)} GWh desde Colombia`,
+            ? `Colombia casi no está enviando: ${num(regime.trailing_gwh_day, 2)} GWh/día en los últimos ${regime.window_days} días`
+            : `${num(national.total_import_gwh, 2)} GWh comprados a Colombia`,
       },
     );
   }
   const rain = narrative?.basis?.precipitation_16d ?? null;
   if (rain) {
     stats.push({
-      label: `Lluvia, ${rain.days} días`,
+      label: `Lluvia prevista, ${rain.days} días`,
       chip: "fill-water-2",
       value: num(rain.forecast_total_mm, 1),
       unit: "mm",
       note:
-        (rain.percentile_vs_climatology !== null ? `percentil ${num(rain.percentile_vs_climatology, 0)} · ` : "") +
-        (rain.coordinate_status === "provisional" ? "un punto provisional del Paute" : "cuenca del Paute"),
+        (rain.percentile_vs_climatology !== null ? `${rainWords(rain.percentile_vs_climatology)} · ` : "") +
+        (rain.coordinate_status === "provisional" ? "medida en un punto del Paute" : "cuenca del Paute, sobre Mazar"),
     });
   }
   const enso = narrative?.basis?.enso ?? null;
   if (enso) {
-    const phase = { el_nino: "El Niño", la_nina: "La Niña", neutral: "Neutral" }[enso.phase] ?? enso.phase;
+    const phase = { el_nino: "Hay El Niño", la_nina: "Hay La Niña", neutral: "Ni El Niño ni La Niña" }[enso.phase] ?? enso.phase;
     const earliest = enso.previous?.at(-1) ?? null;
     const trend =
       earliest === null
         ? ""
         : enso.oni > earliest.oni
-          ? `, en ascenso desde ${num(earliest.oni, 2)} en ${monthName(earliest.month)}`
+          ? `, más fuerte que en ${monthName(earliest.month)} (${num(earliest.oni, 2)})`
           : enso.oni < earliest.oni
-            ? `, en descenso desde ${num(earliest.oni, 2)} en ${monthName(earliest.month)}`
+            ? `, más débil que en ${monthName(earliest.month)} (${num(earliest.oni, 2)})`
             : `, igual que en ${monthName(earliest.month)}`;
     stats.push({
-      label: `ENSO · ONI ${monthName(enso.month)}`,
+      label: `Índice de El Niño · ${monthName(enso.month)}`,
       chip: enso.phase === "el_nino" ? "fill-tight" : enso.phase === "la_nina" ? "fill-water" : "fill-muted",
       value: signed(enso.oni, 1).replace(/^\+/, ""),
       unit: "",

@@ -16,7 +16,7 @@ import { notFound } from "next/navigation";
 import { apiDocument, latest, reservoirHref } from "../../../lib/site/data.ts";
 import type { ForecastDocument } from "../../../lib/site/documents.ts";
 import { dateWithYear, num, pct, signed } from "../../../lib/site/format.ts";
-import { ARROW, DIRECTION_TONE, direction } from "../../../lib/site/story.ts";
+import { ARROW, DIRECTION_TONE, direction, inflowWords } from "../../../lib/site/story.ts";
 import { SITE_URL } from "../../../lib/publish/contract.ts";
 
 export const dynamicParams = false;
@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: { params: Promise<{ site: str
   const { site } = await params;
   const reservoir = latest()?.reservoirs.find((r) => r.site === site);
   return {
-    title: reservoir ? `${reservoir.label}: cota de hoy` : "Embalse",
+    title: reservoir ? `${reservoir.label}: nivel de hoy` : "Embalse",
     robots: { index: false, follow: true },
     alternates: { canonical: reservoirHref(site) },
   };
@@ -56,31 +56,31 @@ export default async function EmbedCard({ params }: { params: Promise<{ site: st
       </div>
       <div className="embed-level num">
         {num(level.masl, 2)}
-        <small>m s. n. m.</small>
+        <small>m sobre el mar</small>
       </div>
       {fill !== null ? (
         <div
           className="embed-bar"
           role="img"
-          aria-label={`${pct(fill, 1)} de la banda ${num(primary!.min_masl, 0)}–${num(primary!.max_masl, 0)} m`}
+          aria-label={`${pct(fill, 1)} de su rango de operación, ${num(primary!.min_masl, 0)}–${num(primary!.max_masl, 0)} m`}
         >
           <span style={{ width: `${Math.min(100, Math.max(0, fill)).toFixed(1)}%` }} />
         </div>
       ) : null}
       <ul className="embed-facts">
-        <li>{fill !== null ? `${pct(fill, 1)} de la banda declarada` : "sin banda declarada"}</li>
+        <li>{fill !== null ? `${pct(fill, 1)} de su rango de operación` : "sin rango oficial publicado"}</li>
         <li>
           <span className={`arrow tone-${DIRECTION_TONE[dir]}`} aria-hidden="true">
             {ARROW[dir]}
           </span>{" "}
-          {signed(slope, 2)} m al día en 7 días
+          {signed(slope, 2)} m al día en la última semana
         </li>
-        {reservoir.inflow?.climatology?.percentile_today != null ? (
-          <li>caudal en el percentil {num(reservoir.inflow.climatology.percentile_today, 0)} de su historia</li>
+        {inflowWords(reservoir.inflow?.climatology?.percentile_today) ? (
+          <li>le llega {inflowWords(reservoir.inflow?.climatology?.percentile_today)}</li>
         ) : null}
         {end ? (
           <li>
-            pronóstico a {end.horizon_days} días: {num(end.p50, 2)} m ({num(end.p10, 0)}–{num(end.p90, 0)})
+            en {end.horizon_days} días, lo más probable: {num(end.p50, 2)} m (entre {num(end.p10, 0)} y {num(end.p90, 0)})
           </li>
         ) : null}
       </ul>
@@ -88,7 +88,7 @@ export default async function EmbedCard({ params }: { params: Promise<{ site: st
         <a href={href} target="_blank" rel="noopener">
           hydro<em>·</em>look
         </a>
-        <span>Copia de datos de CELEC. No es una fuente oficial.</span>
+        <span>Datos de CELEC. No es una fuente oficial.</span>
       </div>
     </main>
   );

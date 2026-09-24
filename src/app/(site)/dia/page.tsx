@@ -16,7 +16,7 @@ import { tierOf, weekday } from "../../../lib/site/story.ts";
 
 export const metadata: Metadata = {
   title: "Archivo diario",
-  description: "Cada día que los modelos publicaron: el pronóstico de Mazar, la suficiencia y la lectura del día, tal como quedaron.",
+  description: "Cada día que el sitio publicó: el pronóstico de Mazar, si alcanza la energía y el resumen del día, tal como quedaron.",
   alternates: { canonical: "/dia/" },
   openGraph: { url: "/dia/" },
 };
@@ -27,9 +27,9 @@ export default function DaysIndex() {
     <main id={MAIN_ID} className="stack-lg">
       <Crumbs trail={[{ href: "/", label: "Inicio" }, { label: "Archivo diario" }]} />
       <section className="shell section" aria-labelledby="archivo-title">
-        <SectionIntro index="—" eyebrow="Archivo" titleId="archivo-title" title="Lo que se publicó sobre cada día.">
-          Una página por cada día en que los modelos corrieron, reconstruida de las tablas donde queda cada corrida: el pronóstico de Mazar,
-          la suficiencia y la lectura del día. Si un día se corrió más de una vez, la página muestra la última corrida y dice cuántas hubo.
+        <SectionIntro index="—" eyebrow="Archivo" titleId="archivo-title" title="Lo que se publicó cada día.">
+          La portada cambia cada mañana; estas páginas no. Hay una por día, con el pronóstico de Mazar, si alcanzaba la energía y el resumen
+          del día tal como se publicaron. Sirven para comprobar, tiempo después, qué decía el sitio en una fecha concreta.
         </SectionIntro>
         {all.length === 0 ? (
           <p className="panel-lede">Aún no hay días archivados.</p>
@@ -37,13 +37,13 @@ export default function DaysIndex() {
           <div className="panel tight">
             <Table
               className="days-table"
-              caption="Días con corridas publicadas, del más reciente al más antiguo"
+              caption="Días con datos publicados, del más reciente al más antiguo"
               captionHidden
               columns={[
                 { label: "Día" },
-                { label: "Mazar p50 al último horizonte", numeric: true },
-                { label: "Peor nivel de suficiencia" },
-                { label: "Lectura", wideOnly: true },
+                { label: "Mazar: nivel más probable al final", numeric: true },
+                { label: "Energía: peor nivel" },
+                { label: "Resumen", wideOnly: true },
               ]}
               rows={all.map((day) => {
                 const lastHorizon = day.forecast?.horizons.at(-1) ?? null;
@@ -61,7 +61,7 @@ export default function DaysIndex() {
                   ) : (
                     "—"
                   ),
-                  day.narrative ? "publicada" : day.runs.narrative > 0 ? "rechazada o fallida" : "—",
+                  day.narrative ? "publicado" : day.runs.narrative > 0 ? "no pasó la revisión" : "—",
                 ];
               })}
             />

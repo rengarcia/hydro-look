@@ -293,9 +293,9 @@ export function snapshotRow(input: {
 }
 
 export const NARRATIVE_DISCLAIMER_ES =
-  "Texto redactado por un modelo de lenguaje a partir de los números que lo acompañan. No es un pronóstico: " +
-  "el pronóstico es el estadístico de la sección de Mazar, y el nivel de riesgo lo calcula el modelo de " +
-  "suficiencia, no el de lenguaje.";
+  "Resumen escrito por inteligencia artificial a partir de los números que lo acompañan. La IA no hace " +
+  "pronósticos: el de Mazar y el nivel de riesgo los calculan los modelos estadísticos del sitio, y el texto " +
+  "solo los explica.";
 
 export interface NarrativeDocument {
   generated_at: string;

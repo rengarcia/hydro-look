@@ -45,8 +45,8 @@ export function RecordChart(props: RecordChartProps) {
         <RecordDrawing {...props} compact />
       </div>
       <ChartData
-        caption="Cota media de cada bloque de cuatro semanas, m s. n. m."
-        columns={[{ label: "Semana central" }, { label: "Cota media", numeric: true }]}
+        caption="Nivel promedio de cada bloque de cuatro semanas, en metros sobre el nivel del mar"
+        columns={[{ label: "Semana central" }, { label: "Nivel promedio", numeric: true }]}
         rows={months.map((p) => [dateWithYear(p.date), num(p.value, 2)])}
         note="Promedios de las lecturas que cada bloque tiene; un bloque sin lecturas no aparece. La serie diaria está en /api/bulk/observations_daily.csv.gz."
       />
@@ -118,7 +118,7 @@ function RecordDrawing({
       fontSize={font}
       yFormat={(v) => num(v, 0)}
       title={label}
-      desc={`Cota semanal entre el ${first} y el ${last}. Mínimo del registro: ${num(minimum.value, 2)} m el ${minimum.date}.`}
+      desc={`Nivel semanal entre el ${first} y el ${last}. Mínimo del registro: ${num(minimum.value, 2)} m el ${minimum.date}.`}
     >
       {band ? (
         <rect

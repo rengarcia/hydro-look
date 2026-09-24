@@ -7,8 +7,8 @@ import "./globals.css";
 const SITE_NAME = "hydro-look";
 
 const DESCRIPTION =
-  "Cotas de embalses, caudales, generación por central y balance nacional, recogidos a diario " +
-  "de los servicios públicos de CELEC y CENACE. No es una fuente oficial.";
+  "Cómo están los embalses del Ecuador, cuánta agua traen los ríos, de dónde sale la electricidad y si alcanzará, " +
+  "con datos públicos de CELEC y CENACE actualizados cada día. No es una fuente oficial.";
 
 /**
  * The metadata every page inherits. `metadataBase` makes each relative URL below absolute, which
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   applicationName: SITE_NAME,
   alternates: {
     canonical: "/",
-    types: { "application/atom+xml": [{ url: "/feed.xml", title: "hydro-look: la lectura del día" }] },
+    types: { "application/atom+xml": [{ url: "/feed.xml", title: "hydro-look: el resumen del día" }] },
   },
   openGraph: {
     type: "website",

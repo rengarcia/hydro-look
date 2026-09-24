@@ -80,12 +80,12 @@ describe("narrativeTierNote", () => {
   const adequacy = { origin_date: "2026-09-21", current: { worst_tier_horizon_days: 60 }, horizons: [{ horizon_days: 7 }] };
 
   it("names the worst tier and its horizon, which is what the text is given", () => {
-    expect(narrativeTierNote({ origin_date: "2026-09-21" }, adequacy)).toBe("el peor de los horizontes, a 60 días");
+    expect(narrativeTierNote({ origin_date: "2026-09-21" }, adequacy)).toBe("el peor momento de los próximos meses: dentro de 60 días");
   });
 
   it("says the first horizon when the document names that field instead", () => {
     const first = { ...adequacy, current: { ...adequacy.current, narrative_tier_field: "tier" } };
-    expect(narrativeTierNote({ origin_date: "2026-09-21" }, first)).toBe("a 7 días");
+    expect(narrativeTierNote({ origin_date: "2026-09-21" }, first)).toBe("dentro de 7 días");
   });
 
   it("says nothing when the text is about another day than the adequacy run", () => {
@@ -106,7 +106,7 @@ describe("criticalThreshold and scenarios", () => {
   });
 
   it("names the analogue years in Spanish and keeps an unknown one as it came", () => {
-    expect(scenarioOf("dry")).toEqual({ name: "Seco", tone: "tight" });
+    expect(scenarioOf("dry")).toEqual({ name: "Año seco", tone: "tight" });
     expect(scenarioOf("other").name).toBe("other");
   });
 });
@@ -155,7 +155,10 @@ describe("inflowHeadline", () => {
 
 describe("marginClause", () => {
   it("uses the tier as the closing word", () => {
-    expect(marginClause("ajustado", 60, 90)).toEqual({ before: "A 60 días el margen nacional queda corto:", word: "ajustado" });
+    expect(marginClause("ajustado", 60, 90)).toEqual({
+      before: "En 60 días la electricidad del país queda justa: nivel",
+      word: "ajustado",
+    });
     expect(marginClause("holgado", 7, 90).before).toContain("90 días");
   });
 });
@@ -211,26 +214,29 @@ describe("scorecardSummary", () => {
 
   it("says honestly that nothing has reached its date yet, and when the first will", () => {
     const s = scorecardSummary(pending, "2026-09-28");
-    expect(s.headline).toBe("Aún ningún pronóstico publicado ha llegado a su fecha; el primero vence el 28 de septiembre de 2026.");
-    expect(s.detail).toContain("10 filas de 2 corridas publicadas siguen pendientes");
-    expect(s.detail).toContain("backtest");
+    expect(s.headline).toBe(
+      "Aún no ha llegado la fecha de ningún pronóstico publicado; el primero se comprueba el 28 de septiembre de 2026.",
+    );
+    expect(s.detail).toContain("10 pronósticos de 2 publicaciones siguen esperando su fecha");
+    expect(s.detail).toContain("pruebas con datos de años anteriores");
   });
 
   it("drops the due date rather than inventing one", () => {
-    expect(scorecardSummary(pending, null).headline).toBe("Aún ningún pronóstico publicado ha llegado a su fecha.");
+    expect(scorecardSummary(pending, null).headline).toBe("Aún no ha llegado la fecha de ningún pronóstico publicado.");
   });
 
   it("has nothing to score before the first run", () => {
     expect(scorecardSummary({ ...pending, rows_pending: 0, runs_considered: 0 }, null).headline).toBe(
-      "Todavía no hay pronósticos publicados que puntuar.",
+      "Todavía no hay pronósticos publicados que comprobar.",
     );
   });
 
   it("counts scored rows against the last observed day, with what is still waiting", () => {
     const s = scorecardSummary({ ...pending, rows_scored: 3, rows_pending: 7, rows_excluded: 1 }, "2026-10-05");
-    expect(s.headline).toBe("3 filas publicadas puntuadas con lo observado hasta el 21 de septiembre de 2026.");
+    expect(s.headline).toBe("3 pronósticos publicados ya comprobados con los datos reales hasta el 21 de septiembre de 2026.");
     expect(s.detail).toBe(
-      "7 filas más esperan su fecha; la próxima vence el 5 de octubre de 2026. 1 fila no puede puntuarse: su fecha pasó sin observación.",
+      "7 pronósticos más esperan su fecha; el próximo se comprueba el 5 de octubre de 2026. " +
+        "1 pronóstico no se puede comprobar: llegó su fecha y no hubo dato publicado.",
     );
   });
 });
@@ -243,18 +249,18 @@ describe("dayScoreNote", () => {
 
   it("names the first horizon to fall due when none has", () => {
     expect(dayScoreNote(horizons, "2026-09-21")).toBe(
-      "Ninguno de sus horizontes ha llegado a su fecha; el primero, a 7 días, vence el 28 de septiembre de 2026.",
+      "Todavía no llega la fecha de ninguno de sus plazos; el primero, a 7 días, se comprueba el 28 de septiembre de 2026.",
     );
   });
 
   it("counts the horizons already past and names the next", () => {
     expect(dayScoreNote(horizons, "2026-09-30")).toBe(
-      "Uno de sus 2 horizontes ya pasó su fecha; el siguiente, a 14 días, vence el 5 de octubre de 2026.",
+      "Ya llegó la fecha de uno de sus 2 plazos; el siguiente, a 14 días, se comprueba el 5 de octubre de 2026.",
     );
   });
 
   it("says when every horizon has passed, and nothing for an empty run", () => {
-    expect(dayScoreNote(horizons, "2026-10-05")).toContain("Todos sus horizontes ya pasaron su fecha");
+    expect(dayScoreNote(horizons, "2026-10-05")).toContain("Ya llegó la fecha de todos sus plazos");
     expect(dayScoreNote([], "2026-10-05")).toBeNull();
   });
 });
@@ -294,19 +300,19 @@ describe("inflowVerdict", () => {
 
   it("says what a published horizon beats", () => {
     expect(inflowVerdict({ published: true, reason: "", backtest: backtest(42.83, 51.19, 47.94) })).toBe(
-      "Se publica: le gana a la persistencia (51,2 m³/s) y a la climatología (47,9 m³/s).",
+      "Se publica: acierta más que suponer que el caudal no cambia (51,2 m³/s) y que usar el promedio de la época (47,9 m³/s).",
     );
   });
 
   it("names what an unpublished horizon lost to, from the numbers rather than the English reason", () => {
     expect(inflowVerdict({ published: false, reason: "x", backtest: backtest(42.77, 52.73, 42.42) })).toBe(
-      "No se publica: no le gana a la climatología (42,4 m³/s).",
+      "No se publica: no acierta más que usar el promedio de la época (42,4 m³/s).",
     );
     expect(inflowVerdict({ published: false, reason: "x", backtest: backtest(49.25, 43.97, 57.04) })).toBe(
-      "No se publica: no le gana a la persistencia (44,0 m³/s).",
+      "No se publica: no acierta más que suponer que el caudal no cambia (44,0 m³/s).",
     );
     expect(inflowVerdict({ published: false, reason: "x", backtest: backtest(60, 50, 55) })).toBe(
-      "No se publica: no le gana ni a la persistencia (50,0 m³/s) ni a la climatología (55,0 m³/s).",
+      "No se publica: no acierta más que suponer que el caudal no cambia (50,0 m³/s) ni que usar el promedio de la época (55,0 m³/s).",
     );
   });
 
@@ -327,8 +333,8 @@ describe("importDependence", () => {
       ],
     });
     expect(text).toBe(
-      "Con el máximo demostrado (10,78 GWh/día) el peor nivel sería vigilancia; con el estrés de 2024 (0,12 GWh/día), " +
-        "ajustado a 60 días. El nivel descansa en el supuesto de importación.",
+      "Con «el máximo visto» (10,78 GWh/día) el peor nivel sería vigilancia; con «como en 2024» (0,12 GWh/día), " +
+        "ajustado dentro de 60 días. El resultado depende de cuánta energía llegue desde Colombia.",
     );
   });
 
@@ -339,7 +345,7 @@ describe("importDependence", () => {
         { case: "stressed", import_gwh_day: 0.1, worst_tier: "holgado", worst_tier_horizon_days: 7 },
       ],
     });
-    expect(text).toBe("Con cualquiera de los dos supuestos el peor nivel es holgado: el nivel no depende de la importación.");
+    expect(text).toBe("Con cualquiera de los dos supuestos el peor nivel es holgado: lo que llegue de Colombia no cambia el resultado.");
   });
 });
 
@@ -354,10 +360,10 @@ describe("the method notes the documents carry", () => {
         fallback_reason: "paute_mazar: no ERA5 rows",
       },
     });
-    expect(note!.title).toBe("La lluvia se lee en `paute`");
+    expect(note!.title).toBe("Dónde se mide la lluvia: `paute`");
     expect(note!.body).toContain("punto provisional");
-    expect(note!.body).toContain("`paute_mazar` todavía no tiene filas de ERA5");
-    expect(note!.body).toContain("13.407 días de ERA5");
+    expect(note!.body).toContain("`paute_mazar` todavía no tiene datos de lluvia");
+    expect(note!.body).toContain("13.407 días de datos");
   });
 
   it("describe the adequacy band's calibration with its stretch range", () => {
@@ -371,8 +377,8 @@ describe("the method notes the documents carry", () => {
         ],
       },
     });
-    expect(note!.body).toContain("80 % nominal");
-    expect(note!.body).toContain("de 1,4 a 1,6 veces");
+    expect(note!.body).toContain("acertado el 80 % de las veces");
+    expect(note!.body).toContain("entre 1,4 y 1,6 veces");
   });
 
   it("are absent when the document predates the blocks", () => {
@@ -383,7 +389,7 @@ describe("the method notes the documents carry", () => {
     expect(precipFallbackText("paute_mazar: 42.5% of days since 1990-01-01, under 95%")).toBe(
       "`paute_mazar` tiene el 42,5 % de los días desde 1990, por debajo del 95 % exigido",
     );
-    expect(precipFallbackText("paute_mazar: ERA5 starts 2001-01-01, not by 1990-01-31")).toContain("empieza el 2001-01-01");
+    expect(precipFallbackText("paute_mazar: ERA5 starts 2001-01-01, not by 1990-01-31")).toContain("empiezan el 2001-01-01");
     expect(precipFallbackText("something new")).toBe("`something new`");
   });
 });
