@@ -84,6 +84,8 @@ Six things worth knowing before using any of it:
 
 ## Running it
 
+When something breaks, or an issue opens, start with `RUNBOOK.md`.
+
 ```sh
 npm ci
 npm test            # every parser against the recorded Phase 0 responses; no network

@@ -1443,7 +1443,10 @@ limit the risk indicator.
    Coca Codo Sinclair out, published beside the stressed-import case; optionally, a tracked
    reference table of reported erosion and sediment events.
 
-6. **No one is named to act when the pipeline needs a person.** Failures open GitHub issues
+6. **No one is named to act when the pipeline needs a person.** *Done 2026-09-24:* `RUNBOOK.md`
+   names the owner and the notification route, and gives one entry per issue label and per
+   condition that opens no issue (quarantine, narrative failures and spend, M4 fallback, a new
+   rationing episode). Adding a second person is left to the owner. The original text follows. Failures open GitHub issues
    (Phase 7), and some outcomes are left "for a person to read" (an M4 fallback for any reason
    other than a new backtest origin), but the plan does not say who watches the issues, how fast,
    or what to do when gateway credits run out or a TLS pin changes. **To do:** a short runbook
