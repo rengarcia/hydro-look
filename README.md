@@ -323,8 +323,9 @@ resolve, to the day file that holds the record.
 trusted. `thresholds.csv` is derived from `operating_bands.csv` and `mrids.csv`, so it needs no
 outside confirmation — and it keeps all three declarations rather than picking one, because they
 disagree: Mazar's floor is 2098 by the dashboard chart title and 2100 by both report endpoints.
-`plants.csv` and `rationing_episodes.csv` carry research from press, so every row of them is marked
-`unverified` with an empty `verified_on` until someone checks it. `adequacy_assumptions.csv` is
+`plants.csv` carries research from press, so every row of it is marked `unverified` with an empty
+`verified_on` until someone checks it. `rationing_episodes.csv` was checked on 2026-09-24: each row
+names its sources and says how the dates were confirmed, including against SMEC demand. `adequacy_assumptions.csv` is
 different again: it is the one file here meant to be *argued with*. The four ceilings the deficit
 is computed against default to what the fleet has demonstrated in the committed record, and
 editing a row changes the published deficit on the next run — which is what §7 means by thermal

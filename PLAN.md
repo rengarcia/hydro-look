@@ -308,6 +308,10 @@ press URL per row. Seed (dates to confirm against the linked articles in Phase 0
 | 2024-09-23 | 2024-12-20 | national, up to 14 h/day in Oct–Nov | "worst drought in 61 years" |
 | 2025-01-01 | — | industry restrictions lifted | none since (verify) |
 
+Checked 2026-09-24. The dates now in `rationing_episodes.csv` differ from this seed: 2023 ends
+2023-12-17, April 2024 ends 2024-04-30, the long episode ends 2024-12-19. Three rows were added:
+the 2026-05/06 maintenance weekends and the AV1 industry curtailment from 2026-09-22.
+
 **`basins.csv`** — centroid lat/lon and area for the catchments feeding Mazar (upper Paute), Coca
 (CCS), Pastaza (Agoyán/Pisayambo), Jubones, Guayllabamba, Daule; used for Open-Meteo queries.
 Delivered 2026-09-23 for all seven dams, Zamora (Delsitanisagua) included, from a DEM delineation
@@ -1124,6 +1128,17 @@ different sides of the identity, agreeing within 3.3. The two short 2023 and Apr
 do *not* agree: the model sees no deficit where there were cuts, and both of those episodes have
 end dates recorded to the month, from press reporting, in a table marked `unverified`.
 
+**Revised 2026-09-24, after the episode table was checked (§8a, gap 4).** The seed's April 2024
+end, 2024-05-31, was a month late: cuts stopped after 2024-04-30, and the extra May days had been
+counted as suppressed. With the checked dates the April episode shows 14.0 GWh/day of measured
+suppression and an implied deficit of **7.3 GWh/day** instead of −2.6, so the model now sees a
+deficit where there were cuts. 2023 moves from −1.3 to +0.3 (short cuts of 2–4 h a day), and the
+long 2024 episode is essentially unchanged (17.2 against 20.5 measured). The demand fit gains 45
+days and every backtest skill score improves slightly (net requirement at 7 days: 12.4% → 14.4%).
+The tier record is unchanged (3 of 99 flagged, all three before cuts). The 30-day tier on
+2026-09-22 moves from vigilancia to ajustado, at a margin of −0.08% against +0.12% before, so it
+is a borderline case, not a new finding.
+
 Applied to every monthly origin at a 30-day horizon, the tiers flag 3 of 99 and all three precede
 cuts; 6 of the 9 origins that precede cuts go unflagged. It does not cry wolf and it misses most
 of the wolves, which is the shape to expect when the weakest term is the one deciding how much
@@ -1401,7 +1416,10 @@ limit the risk indicator.
    non-conventional and emergency units, with the §3 capacities checked against ARCONEL's
    effective-power table at the same time.
 
-4. **The validation labels are unverified.** Every row of `rationing_episodes.csv` is
+4. **The validation labels are unverified.** *Done 2026-09-24:* every row now has sources, and
+   three were added (see the Phase 6c revision and the note under §3's seed table). The dates
+   were confirmed from search-engine listings of the articles, because the sandbox cannot open
+   these hosts, and then checked against SMEC demand. The original text follows. Every row of `rationing_episodes.csv` is
    `unverified` with an empty `source_url`, and two end dates are known only to the month. Those
    rows decide which days count as unsuppressed demand (D10) and are the entire basis of the
    adequacy check in Phase 6c (3 of 99 origins flagged, 6 of 9 missed; the two short episodes'
