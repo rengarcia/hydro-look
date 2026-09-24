@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-24T14:04:25Z",
-  "data_date": "2026-09-22",
+  "generated_at": "2026-09-24T15:30:35Z",
+  "data_date": "2026-09-23",
   "as_of": "2026-09-24",
   "ok": true,
   "status": "warn",
@@ -10,7 +10,7 @@
       "id": "ords_levels",
       "label_es": "ORDS: cotas y caudales",
       "feed": "ORDS levels and inflows (repDiaHid12m)",
-      "latest": "2026-09-22",
+      "latest": "2026-09-23",
       "limit_days": 3,
       "state": "current"
     },
@@ -18,7 +18,7 @@
       "id": "ords_energy",
       "label_es": "ORDS: energía CELEC Sur",
       "feed": "ORDS CELEC Sur energy (repDiaEner12m)",
-      "latest": "2026-09-22",
+      "latest": "2026-09-23",
       "limit_days": 3,
       "state": "current"
     },
@@ -26,7 +26,7 @@
       "id": "ords_historian",
       "label_es": "ORDS: historiador",
       "feed": "ORDS historian (pointValues)",
-      "latest": "2026-09-22",
+      "latest": "2026-09-23",
       "limit_days": 3,
       "state": "current"
     },
@@ -34,7 +34,7 @@
       "id": "smec_balance",
       "label_es": "CENACE SMEC: balance nacional",
       "feed": "CENACE SMEC national balance",
-      "latest": "2026-09-22",
+      "latest": "2026-09-23",
       "limit_days": 4,
       "state": "current"
     },
@@ -42,7 +42,7 @@
       "id": "cenace_operativa",
       "label_es": "CENACE: Información Operativa",
       "feed": "CENACE Información Operativa",
-      "latest": "2026-09-23",
+      "latest": "2026-09-24",
       "limit_days": 3,
       "state": "current"
     },
@@ -97,13 +97,13 @@
   ],
   "tables": {
     "observations_daily": {
-      "rows": 89210
+      "rows": 89290
     },
     "national_balance_daily": {
-      "rows": 58129
+      "rows": 58144
     },
     "operativa_snapshots": {
-      "rows": 658
+      "rows": 705
     },
     "operating_bands": {
       "rows": 7
@@ -145,7 +145,7 @@
   ],
   "counts": {
     "warn": 1,
-    "info": 23
+    "info": 22
   },
   "deprecated": {
     "as_of": "data_date; as_of is the day the check ran. Removed in schema_version 2.",
