@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-24T15:30:35Z",
+  "generated_at": "2026-09-24T17:36:41Z",
   "data_date": "2026-09-23",
   "as_of": "2026-09-24",
   "ok": true,
@@ -82,7 +82,7 @@
       "id": "mazar_forecast",
       "label_es": "Pronóstico de cota de Mazar",
       "feed": "Mazar level forecast",
-      "latest": "2026-09-22",
+      "latest": "2026-09-23",
       "limit_days": 3,
       "state": "current"
     },
@@ -90,7 +90,7 @@
       "id": "adequacy",
       "label_es": "Suficiencia nacional",
       "feed": "National adequacy",
-      "latest": "2026-09-22",
+      "latest": "2026-09-23",
       "limit_days": 3,
       "state": "current"
     }
@@ -103,7 +103,7 @@
       "rows": 58144
     },
     "operativa_snapshots": {
-      "rows": 705
+      "rows": 752
     },
     "operating_bands": {
       "rows": 7
@@ -115,19 +115,19 @@
       "rows": 919
     },
     "forecast_runs": {
-      "rows": 4
+      "rows": 6
     },
     "adequacy_runs": {
-      "rows": 5
+      "rows": 6
     },
     "adequacy_values": {
-      "rows": 25
+      "rows": 30
     },
     "forecast_values": {
-      "rows": 20
+      "rows": 30
     },
     "narrative_snapshots": {
-      "rows": 7
+      "rows": 8
     },
     "xm_exchange_daily": {
       "rows": 4004
