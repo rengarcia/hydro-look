@@ -19,7 +19,7 @@ typecheck, type-aware lint, Prettier, shellcheck, `npm run check` and the static
 
 | § | State | Notes |
 |---|---|---|
-| 1.1 ERA5 at centroids | **code done; dispatch outstanding** | `selectPrecipBasin` switches narrative (prompt `es-5+paute_mazar`) and M4 to `paute_mazar` once it has ERA5 from Jan 1990 with ≥ 95% of days and ≤ 30 days' lag; until then `paute`, with the reason published. The backfill itself needs `covariates.yml` dispatched with `from = 1990-01-01` and a raised `max_requests` |
+| 1.1 ERA5 at centroids | **done 2026-09-24** (covariates run 36009328405; 13,410 days per basin) | `selectPrecipBasin` switches narrative (prompt `es-5+paute_mazar`) and M4 to `paute_mazar` once it has ERA5 from Jan 1990 with ≥ 95% of days and ≤ 30 days' lag; until then `paute`, with the reason published. The backfill itself needs `covariates.yml` dispatched with `from = 1990-01-01` and a raised `max_requests` |
 | 1.2 Phase 1's clock | done | Crons at 12:47 and 16:53 UTC (covariates 17:23); `freshness.yml` reports a slot that never fired |
 | 1.3 Narrative spend | done | `narrative` block in `status.json` |
 | 1.4 Documentation drift | done | README status table, PLAN Phase 7 |
