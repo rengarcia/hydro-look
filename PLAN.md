@@ -1,6 +1,6 @@
 # hydro-look — Plan v2
 
-**Status:** Phases 0, 2, 3, 5, 6 and 6c are done. Phase 1 is code-complete and waits only on its clock — three consecutive days with a green *scheduled* daily run; 2026-09-22 is the first, so it can close 2026-09-24 at the earliest. Phase 4's reference tables, gates and ERA5 history are done; its catchments were delineated from a DEM and checked against INAMHI on 2026-09-23, so `basins.csv` now holds a verified centroid for each of the seven, and backfilling ERA5 at them is the one step left. Phase 6b is live: the AI Gateway is configured and the first `ok` narrative was written 2026-09-23 (run 35810691729), so its seven-day acceptance count has started. The site is deployed on Vercel, and Colombia's side of the interconnection is ingested from XM (Phase 7). The `ENHANCEMENTS.md` list was implemented on 2026-09-23 (Phase 7); what remains of it is the ERA5 dispatches. **Updated:** 2026-09-23. Supersedes the initial plan and the
+**Status:** Phases 0, 2, 3, 4, 5, 6 and 6c are done. Phase 1 is code-complete and waits only on its clock — three consecutive days with a green *scheduled* daily run; 2026-09-22 and 2026-09-23 are green, so a green scheduled run on 2026-09-24 closes it. Phase 4 closed 2026-09-24 when ERA5 history reached all seven verified catchment centroids (13,410 days each from 1990-01-01, covariates run 36009328405); the Mazar models then move onto `paute_mazar` by themselves, and on that basin the shipped M4 design no longer wins at seven days (Phase 4, "What is still open"). Phase 6b is live: the AI Gateway is configured and the first `ok` narrative was written 2026-09-23 (run 35810691729), so its seven-day acceptance count has started. The site is deployed on Vercel, and Colombia's side of the interconnection is ingested from XM (Phase 7). The `ENHANCEMENTS.md` list was implemented on 2026-09-23 (Phase 7); what remains of it is the ERA5 dispatches. Gaps neither plan covered are listed in §8a (added 2026-09-24). **Updated:** 2026-09-24. Supersedes the initial plan and the
 follow-up research note ("CELEC dashboard covers 7 plants", "CENACE header has usable numbers").
 
 This version was built after reading the two community scrapers that already run daily against
@@ -307,6 +307,10 @@ press URL per row. Seed (dates to confirm against the linked articles in Phase 0
 | 2024-09-18 | 2024-09-19 | national scheduled outage | maintenance |
 | 2024-09-23 | 2024-12-20 | national, up to 14 h/day in Oct–Nov | "worst drought in 61 years" |
 | 2025-01-01 | — | industry restrictions lifted | none since (verify) |
+
+Checked 2026-09-24. The dates now in `rationing_episodes.csv` differ from this seed: 2023 ends
+2023-12-17, April 2024 ends 2024-04-30, the long episode ends 2024-12-19. Three rows were added:
+the 2026-05/06 maintenance weekends and the AV1 industry curtailment from 2026-09-22.
 
 **`basins.csv`** — centroid lat/lon and area for the catchments feeding Mazar (upper Paute), Coca
 (CCS), Pastaza (Agoyán/Pisayambo), Jubones, Guayllabamba, Daule; used for Open-Meteo queries.
@@ -651,7 +655,7 @@ their own `fecha` in the archive. The family does not share the habit: `repDiaVo
 Acceptance: daily level and inflow for the three plants; a documented semantics note per variable.
 Both met.
 
-**Phase 4 · Covariates, reference tables, quality gates — reference tables and gates done 2026-09-22; catchments done 2026-09-23; ERA5 at the new centroids outstanding**
+**Phase 4 · Covariates, reference tables, quality gates — done 2026-09-24** (reference tables and gates 2026-09-22; catchments 2026-09-23; ERA5 at the new centroids 2026-09-24)
 Implemented earlier: `ingest covariates`, Open-Meteo ERA5 (explicit model selection; six-day
 publication buffer), 16-day forecasts, NOAA PSL ONI, schema/range validation, raw archives,
 year-partitioned CSV and the scheduled/manual `covariates.yml` workflow. Historical weather is
@@ -867,14 +871,21 @@ open question above changes which rain is sampled. Areas and pour points, with t
 are in each row's notes and in the report.
 
 **What is still open.**
-- **ERA5 history at the seven new points.** A `covariates.yml` dispatch on `main` with
-  `from: 1990-01-01` (about 260 requests; it resumes by basin-day). Not from a branch, because
-  `weather_daily` is a generated file that main's scheduled runs also write, and not in the
-  minutes around 12:15 or 16:30 UTC, for the reason Phase 1 gives.
-- **The Phase 0 `paute` point stays as it is.** The published M4 median and the narrative's rain
-  outlook were fitted on it, and the weather readers select rows by basin id. Moving either onto
-  `paute_mazar` is a change to a shipped model and needs its own backtest; precipitation as a
-  conditioner (§7, M3) is now possible to try for the first time.
+- ~~**ERA5 history at the seven new points.**~~ **Done 2026-09-24** (covariates run
+  36009328405, dispatched on `main` at 13:57 UTC with `from: 1990-01-01`, 320 requests): all
+  eight basin rows now hold 13,410 ERA5 days, 1990-01-01 → 2026-09-18.
+- **What that did to the Mazar models, measured the same day.** `selectPrecipBasin` moves the
+  narrative and M4 onto `paute_mazar` on the first run that sees the history. M4's snapshot was
+  scored on `paute`, so the forecast falls back to M3 at seven days and — because the reason
+  matches `model-and-push.sh`'s rule — the daily job reruns `backtest:m4` by itself. Run here
+  first, on the new basin: M3-residual, the shipped design, still has the lower MAE at seven
+  days (2.03 against M3's 2.29 m, paired interval below zero) but its p10–p90 now covers 73.1%
+  of outcomes against M3's 74.2%, so under the ladder rule (lower MAE *and* a band no worse
+  calibrated) **it no longer wins, and the next forecast publishes M3 at seven days.** The
+  direct design wins at both 7 and 14 days on the new basin (MAE 1.94 and 3.29 m, coverage 78.5%
+  and 80.6%, the 7-day interval below zero). Changing the shipped design is a decision for the
+  owner (`RUNBOOK.md`, "M4 fallback"), not something a run should do on its own. §5.4's rain
+  experiment, rerun at the centroid, is still negative (14-day MAE 3.93 m against 3.62).
 - **A centroid is still one point.** Area-weighted ERA5 cells over each outline in
   `catchments.geojson` would be the true basin mean; it waits on a backtest showing it matters.
   Seasonal ensembles remain deferred.
@@ -1124,6 +1135,17 @@ different sides of the identity, agreeing within 3.3. The two short 2023 and Apr
 do *not* agree: the model sees no deficit where there were cuts, and both of those episodes have
 end dates recorded to the month, from press reporting, in a table marked `unverified`.
 
+**Revised 2026-09-24, after the episode table was checked (§8a, gap 4).** The seed's April 2024
+end, 2024-05-31, was a month late: cuts stopped after 2024-04-30, and the extra May days had been
+counted as suppressed. With the checked dates the April episode shows 14.0 GWh/day of measured
+suppression and an implied deficit of **7.3 GWh/day** instead of −2.6, so the model now sees a
+deficit where there were cuts. 2023 moves from −1.3 to +0.3 (short cuts of 2–4 h a day), and the
+long 2024 episode is essentially unchanged (17.2 against 20.5 measured). The demand fit gains 45
+days and every backtest skill score improves slightly (net requirement at 7 days: 12.4% → 14.4%).
+The tier record is unchanged (3 of 99 flagged, all three before cuts). The 30-day tier on
+2026-09-22 moves from vigilancia to ajustado, at a margin of −0.08% against +0.12% before, so it
+is a borderline case, not a new finding.
+
 Applied to every monthly origin at a 30-day horizon, the tiers flag 3 of 99 and all three precede
 cuts; 6 of the 9 origins that precede cuts go unflagged. It does not cry wolf and it misses most
 of the wolves, which is the shape to expect when the weakest term is the one deciding how much
@@ -1281,11 +1303,9 @@ repository is done; its head now carries a per-item status. In brief:
 - **Tooling.** Node 24, vitest 5, ESLint 10 with type-aware rules, zod 4, undici 8, coverage
   floors, Prettier and shellcheck in CI, Dependabot and SHA-pinned actions.
 
-What the repository cannot do for itself: the ERA5 backfill at the seven centroids needs
-`covariates.yml` dispatched with `from = 1990-01-01` until it reports no new basin-days; the
-narrative and M4 switch to `paute_mazar` on their own once its coverage passes the test in
-`features/weather.ts`, and §5.4's rain experiment reruns at the centroid on the next forecast
-run. TypeScript 7 waits on `typescript-eslint`, which does not yet accept it.
+What the repository cannot do for itself: ~~the ERA5 backfill at the seven centroids~~ (done
+2026-09-24, see Phase 4); whether M4's seven-day point moves to the direct design now that the
+residual design no longer wins on `paute_mazar` (Phase 4, "What is still open"). TypeScript 7 waits on `typescript-eslint`, which does not yet accept it.
 
 Still listed: ML v2 if it beats v1 in backtests; ARCONEL BNEE monthly loader; CENACE Datos Abiertos per-plant
 validation; Colombia export availability via XM's open API — which Phase 6c has now made the
@@ -1367,6 +1387,112 @@ regime differences between Amazon- and Pacific-slope basins.
 | Self-signed TLS | Fingerprint pinning; mismatch fails the run. |
 | AI narrative contradicts the numbers or invents a forecast | Model receives only computed stats and the §7 forecast, risk tier is an input, schema-validated output, numbers rendered next to the text, previous snapshot kept on failure (Phase 6b). |
 | Gateway rate limit / credit exhaustion | One call per ingest run, payload hash makes reruns free, `continue-on-error` so the ingest never fails because of the narrative, spend logged per call. |
+| Physical loss of a plant (Coca Codo Sinclair intake erosion, sediment) | Not prevented, but costed: `adequacy.json`'s `plant_outage` block and the site's "Una sola central" card give the deficit and tier with Coca Codo Sinclair out (§8a, gap 5). |
+
+### 8a. Gaps found on review (2026-09-24)
+
+Neither this plan nor the initial one covers the items below. Each names the evidence it rests on in
+this repository, so an item can be closed or dropped on the same terms. Ordered by how much they
+limit the risk indicator.
+
+1. **Thermal availability is an assumption, not a measurement.** The adequacy identity's
+   second-largest supply term is one number in `adequacy_assumptions.csv`: 25.83 GWh/day, the
+   largest thermal day in three years, whose own basis says "no source this project reaches
+   publishes planned outages". Thermal outages and maintenance were part of the 2024 crisis, and
+   a demonstrated maximum says nothing about which units are down next month. No phase searches
+   for a source. **To do:** look for CENACE's operation-planning publications (weekly and monthly
+   programmes, maintenance schedules) and ARCONEL's effective-capacity table; if none is
+   reachable, record that as a negative here, as §2.4 does for HydroSHEDS.
+   *Leads, 2026-09-24 (web search only; nothing fetched):* CENACE coordinates maintenance through
+   its two-year operation plan (*Plan Bianual de Operación*) and publishes an annual report
+   (`Informe-Anual-CENACE-2024`, PDF on `www.cenace.gob.ec`), and in April 2024 an updated
+   operation plan described the system as "degradada" — so planned outages exist on paper. No
+   machine-readable schedule turned up. Next step: a probe from Actions that lists CENACE's
+   `wp-content/uploads/downloads/` for operation-plan PDFs.
+
+2. **The largest reservoirs are unobserved.** Daule-Peripa (Marcel Laniado, ≈5,400 hm³ —
+   more than ten times Mazar's figure in `plants.csv`) and Pisayambo (Pucará, ≈100 hm³) have no
+   entry in `mrids.csv`, and the Pacific slope is not measured at all. That is the stated reason
+   the adequacy hydro term could not be built from inflows (§7, target 3: r = 0.47 on 30-day
+   means). Target 1 defers them "if their levels become available", but no phase looks.
+   **To do:** a source search for Hidronación (Daule-Peripa) and Hidroagoyán (Pisayambo) level
+   reports, and for any CELEC business unit beyond CELEC Sur that exposes an ORDS or a report
+   endpoint.
+   *Leads, 2026-09-24:* Pisayambo's operating band is 3,541–3,565 masl (CELEC Hidroagoyán's
+   Pucará page), and CENACE treats Mazar and Pisayambo as the two strategic reservoirs, with the
+   level reported to it daily. Daule-Peripa's level appears only in press and in the Guayas
+   provincial risk committee's statements (77–78.55 masl against an 85 masl normal maximum in
+   2026); CELEC Hidronación publishes PDF operation reports, not a series. No public API found
+   for either.
+
+3. **The fleet is a static table.** `plants.csv` has no commissioning or retirement dates, and
+   all twelve capacities are `unverified`. Meanwhile the adequacy report attributes a 5–13
+   GWh/day low bias in five rejected hydro rungs to fleet growth, and the thermal ceiling has to
+   skip 2016 because that fleet has since been retired. **To do:** a dated capacity table
+   (`fleet_capacity.csv`: plant, technology, MW, from, to, source) covering hydro, thermal,
+   non-conventional and emergency units, with the §3 capacities checked against ARCONEL's
+   effective-power table at the same time.
+   *Leads, 2026-09-24:* ARCONEL's annual statistics (`Estadistica2025.pdf`, March 2026) and its
+   BNEE workbooks carry effective power per plant, and `arconel.gob.ec` answers GitHub runners
+   (§2.5). Extracting the table needs a run from Actions; the sandbox cannot reach it.
+
+4. **The validation labels are unverified.** *Done 2026-09-24:* every row now has sources, and
+   three were added (see the Phase 6c revision and the note under §3's seed table). The dates
+   were confirmed from search-engine listings of the articles, because the sandbox cannot open
+   these hosts, and then checked against SMEC demand. The original text follows. Every row of `rationing_episodes.csv` is
+   `unverified` with an empty `source_url`, and two end dates are known only to the month. Those
+   rows decide which days count as unsuppressed demand (D10) and are the entire basis of the
+   adequacy check in Phase 6c (3 of 99 origins flagged, 6 of 9 missed; the two short episodes'
+   disagreement is attributed to exactly these dates). The table also has nothing after
+   2025-01-01, while imports have been near zero since 2026-09-07 (Phase 7). **To do:** confirm
+   each row against an official source (ministry or CENACE communiqués, the official gazette),
+   fill `source_url` and `verified_on`, and add any 2025–2026 cuts. Small effort, large effect.
+
+5. **Physical risks to the plants are outside the risk table.** *Scenario done 2026-09-24:*
+   `src/lib/models/outage.ts` removes Coca Codo Sinclair's share of national hydro over the
+   trailing 28 days (27.0% on 2026-09-22, 22.9 GWh/day) from the hydro forecast, keeps imports and
+   thermal as in the central case, and publishes the result as `plant_outage` in `adequacy.json`
+   and as a card on the site. At the 2026-09-22 origin it is a deficit of 21–23 GWh/day at every
+   horizon (tier `deficit`), the size of the 2024 episode's measured suppression. The optional
+   events table is not built. The original text follows. §8 covers the pipeline, not the
+   supply. Coca Codo Sinclair produces about half of national hydro, and the regressive erosion of
+   the Coca river since the 2020 collapse of the San Rafael falls has been advancing towards its
+   intake; sediment also affects its compensation reservoir and Amaluza (siltation appears in §7
+   only as a modelling pitfall). A forced outage there would be the next crisis, and nothing the
+   indicator reads would anticipate it. **To do:** at minimum, a scenario in `adequacy.json` with
+   Coca Codo Sinclair out, published beside the stressed-import case; optionally, a tracked
+   reference table of reported erosion and sediment events.
+
+6. **No one is named to act when the pipeline needs a person.** *Done 2026-09-24:* `RUNBOOK.md`
+   names the owner and the notification route, and gives one entry per issue label and per
+   condition that opens no issue (quarantine, narrative failures and spend, M4 fallback, a new
+   rationing episode). Adding a second person is left to the owner. The original text follows. Failures open GitHub issues
+   (Phase 7), and some outcomes are left "for a person to read" (an M4 fallback for any reason
+   other than a new backtest origin), but the plan does not say who watches the issues, how fast,
+   or what to do when gateway credits run out or a TLS pin changes. **To do:** a short runbook
+   (`RUNBOOK.md`): owner, notification route, and one entry per issue label with the action it
+   needs.
+
+Smaller:
+
+- **Demand has no holiday or temperature term.** The unsuppressed-demand fit in
+  `models/adequacy.ts` is trend + weekday + day-of-year season. Ecuador's national holidays
+  (Carnaval, Semana Santa, bridge days) move load, and SMEC's `tipo_dia` column may already mark
+  them. Worth one backtest; the season window may already absorb the fixed-date ones.
+  *Tried 2026-09-24, negative.* SMEC's `tipo_dia` marks 252 days `Festivo` (the observed
+  holidays, bridge days included), so no calendar is needed to try it. Leaving them out of the
+  demand fit and its anchor improves the demand term at every horizon (MAE 1.78 → 1.71 GWh/day
+  at 7 days, 2.29 → 2.12 at 90) and the hydro term slightly, but the net requirement — the
+  quantity the deficit and its band rest on — gets worse at 7, 30, 60 and 90 days (3.06 → 3.20
+  at 7). Not adopted. A forward holiday factor would need the future calendar, which SMEC's
+  column cannot give.
+- **"Git is the database" has no size budget.** `data/` is 292 MB in the working tree after
+  three days of history plus backfills (the raw archive is 17k+ plain NDJSON files). Per-run pack
+  growth is small (Phase 7), but the plan sets no limit, no retention rule for the raw archive,
+  and no trigger for moving it out (release assets, a separate data repository).
+- **Skill is measured only against persistence.** No forecast is compared with an official
+  projection (CENACE, the ministry). Where such projections are published, scoring against them
+  is the comparison readers will make anyway.
 
 ---
 

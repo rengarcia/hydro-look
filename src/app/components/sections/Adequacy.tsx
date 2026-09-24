@@ -10,7 +10,7 @@ import { SectionIntro } from "../Chrome.tsx";
 import { Table } from "../DataTable.tsx";
 import { ScorecardPanel } from "../Scorecard.tsx";
 import { nextScoreDue } from "../../../lib/site/data.ts";
-import type { AdequacyDocument, ImportSensitivity } from "../../../lib/site/documents.ts";
+import type { AdequacyDocument, ImportSensitivity, PlantOutage } from "../../../lib/site/documents.ts";
 import { num, signed } from "../../../lib/site/format.ts";
 import {
   IMPORT_CASES,
@@ -159,6 +159,7 @@ export function Adequacy({ adequacy }: { adequacy: AdequacyDocument | null }) {
               {cutoff ? " El caso central usa lo que está llegando, no el máximo." : ""}
             </p>
           </div>
+          <OutageCard outage={adequacy.plant_outage} />
           {episodes.length > 0 ? (
             <div className="inverse check">
               <div className="check-head">
@@ -173,7 +174,9 @@ export function Adequacy({ adequacy }: { adequacy: AdequacyDocument | null }) {
                 <div className="episode" key={e.start}>
                   <div>
                     {monthSpan(e.start, e.end)}
-                    <small>{e.days} días</small>
+                    <small>
+                      {e.days} {e.days === 1 ? "día" : "días"}
+                    </small>
                   </div>
                   <div className="episode-bars">
                     <div>
@@ -201,6 +204,32 @@ export function Adequacy({ adequacy }: { adequacy: AdequacyDocument | null }) {
         (sensitivity ?? scorecard)
       )}
     </section>
+  );
+}
+
+/**
+ * What the margin would be without Coca Codo Sinclair (PLAN §8a gap 5), at 30 days: one plant's
+ * share of the answer, stated as arithmetic rather than as a forecast of losing it.
+ */
+function OutageCard({ outage }: { outage: PlantOutage | undefined }) {
+  const month = outage?.available ? outage.horizons?.find((h) => h.horizon_days === 30) : undefined;
+  if (!outage || month === undefined || outage.share_of_hydro === undefined || outage.plant_gwh_day === undefined) return null;
+  const tier = tierOf(month.tier);
+  return (
+    <div className="inverse fragile">
+      <span className="eyebrow">Una sola central</span>
+      <p className="fragile-claim">
+        {month.deficit_gwh_day > 0
+          ? `Sin Coca Codo Sinclair faltarían ${num(month.deficit_gwh_day, 1)} GWh/día a 30 días.`
+          : `Sin Coca Codo Sinclair el sistema aún cubriría la demanda a 30 días, con ${num(-month.deficit_gwh_day, 1)} GWh/día de margen.`}{" "}
+        Nivel: {tier?.label ?? month.tier}.
+      </p>
+      <p className="fragile-fine">
+        Aportó el {num(outage.share_of_hydro * 100, 0)}% de la hidroelectricidad de las últimas cuatro semanas (
+        {num(outage.plant_gwh_day, 1)} GWh/día). No es un pronóstico: es cuánto del margen depende de una central de pasada cuya captación
+        amenaza la erosión regresiva del río Coca desde 2020.
+      </p>
+    </div>
   );
 }
 
