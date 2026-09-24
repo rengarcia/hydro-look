@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-23T20:30:42Z",
+  "generated_at": "2026-09-24T14:04:25Z",
   "data_date": "2026-09-22",
-  "as_of": "2026-09-23",
+  "as_of": "2026-09-24",
   "ok": true,
   "status": "warn",
   "feeds": [
@@ -50,7 +50,7 @@
       "id": "era5",
       "label_es": "Open-Meteo ERA5",
       "feed": "Open-Meteo ERA5",
-      "latest": "2026-09-17",
+      "latest": "2026-09-18",
       "limit_days": 10,
       "state": "current"
     },
@@ -66,7 +66,7 @@
       "id": "xm_exchanges",
       "label_es": "XM: intercambios con Colombia",
       "feed": "XM exchanges with Colombia",
-      "latest": "2026-09-20",
+      "latest": "2026-09-21",
       "limit_days": 7,
       "state": "current"
     },
@@ -74,7 +74,7 @@
       "id": "xm_storage",
       "label_es": "XM: embalses de Colombia",
       "feed": "XM Colombian storage",
-      "latest": "2026-09-22",
+      "latest": "2026-09-23",
       "limit_days": 4,
       "state": "current"
     },
@@ -109,7 +109,7 @@
       "rows": 7
     },
     "weather_daily": {
-      "rows": 13811
+      "rows": 107472
     },
     "enso_monthly": {
       "rows": 919
@@ -130,10 +130,10 @@
       "rows": 7
     },
     "xm_exchange_daily": {
-      "rows": 4003
+      "rows": 4004
     },
     "xm_system_daily": {
-      "rows": 33163
+      "rows": 33172
     }
   },
   "findings": [
