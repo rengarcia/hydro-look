@@ -1382,7 +1382,7 @@ regime differences between Amazon- and Pacific-slope basins.
 | Self-signed TLS | Fingerprint pinning; mismatch fails the run. |
 | AI narrative contradicts the numbers or invents a forecast | Model receives only computed stats and the §7 forecast, risk tier is an input, schema-validated output, numbers rendered next to the text, previous snapshot kept on failure (Phase 6b). |
 | Gateway rate limit / credit exhaustion | One call per ingest run, payload hash makes reruns free, `continue-on-error` so the ingest never fails because of the narrative, spend logged per call. |
-| Physical loss of a plant (Coca Codo Sinclair intake erosion, sediment) | **None yet** — see §8a, gap 5. |
+| Physical loss of a plant (Coca Codo Sinclair intake erosion, sediment) | Not prevented, but costed: `adequacy.json`'s `plant_outage` block and the site's "Una sola central" card give the deficit and tier with Coca Codo Sinclair out (§8a, gap 5). |
 
 ### 8a. Gaps found on review (2026-09-24)
 
@@ -1428,7 +1428,13 @@ limit the risk indicator.
    each row against an official source (ministry or CENACE communiqués, the official gazette),
    fill `source_url` and `verified_on`, and add any 2025–2026 cuts. Small effort, large effect.
 
-5. **Physical risks to the plants are outside the risk table.** §8 covers the pipeline, not the
+5. **Physical risks to the plants are outside the risk table.** *Scenario done 2026-09-24:*
+   `src/lib/models/outage.ts` removes Coca Codo Sinclair's share of national hydro over the
+   trailing 28 days (27.0% on 2026-09-22, 22.9 GWh/day) from the hydro forecast, keeps imports and
+   thermal as in the central case, and publishes the result as `plant_outage` in `adequacy.json`
+   and as a card on the site. At the 2026-09-22 origin it is a deficit of 21–23 GWh/day at every
+   horizon (tier `deficit`), the size of the 2024 episode's measured suppression. The optional
+   events table is not built. The original text follows. §8 covers the pipeline, not the
    supply. Coca Codo Sinclair produces about half of national hydro, and the regressive erosion of
    the Coca river since the 2020 collapse of the San Rafael falls has been advancing towards its
    intake; sediment also affects its compensation reservoir and Amaluza (siltation appears in §7

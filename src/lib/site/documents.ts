@@ -290,6 +290,8 @@ export interface AdequacyDocument {
   import_sensitivity?: ImportSensitivity;
   /** How the published net requirement did. Absent before 2026-09-23. */
   scorecard?: ScorecardBlock;
+  /** The deficit with Coca Codo Sinclair out of service (PLAN §8a gap 5). Absent before 2026-09-24. */
+  plant_outage?: PlantOutage;
 }
 
 export interface StatusFeed {
@@ -454,6 +456,25 @@ export interface ImportSensitivity {
     worst_tier: RiskTier;
     worst_tier_horizon_days: number;
     horizons: { horizon_days: number; deficit_gwh_day: number; deficit_p90: number | null; tier: RiskTier }[];
+  }[];
+}
+
+/** `adequacy.json`'s `plant_outage`: the deficit and tier with one plant out of service. */
+export interface PlantOutage {
+  note: string;
+  site: string;
+  available: boolean;
+  reason?: string | null;
+  share_of_hydro?: number;
+  plant_gwh_day?: number;
+  share_days?: number;
+  horizons?: {
+    horizon_days: number;
+    lost_gwh_day: number;
+    hydro_gwh_day: number;
+    deficit_gwh_day: number;
+    deficit_p90: number | null;
+    tier: RiskTier;
   }[];
 }
 

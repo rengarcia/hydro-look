@@ -478,6 +478,95 @@
         "cases"
       ]
     },
+    "plant_outage": {
+      "type": "object",
+      "description": "The deficit and tier if Coca Codo Sinclair were out of service for the whole horizon (PLAN §8a gap 5): its recent share of national hydro is removed from the hydro forecast, with imports and thermal as in the central case. Not a forecast. Additive; absent before 2026-09-24.",
+      "required": [
+        "note",
+        "site",
+        "available"
+      ],
+      "properties": {
+        "note": {
+          "type": "string"
+        },
+        "site": {
+          "type": "string"
+        },
+        "available": {
+          "type": "boolean",
+          "description": "False when too few days of the plant's energy were in the share window; `reason` then says why and no horizons are given."
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "share_of_hydro": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Plant energy over SMEC national hydro across the matched days of the window."
+        },
+        "plant_gwh_day": {
+          "type": "number"
+        },
+        "share_days": {
+          "type": "integer"
+        },
+        "share_from": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "share_to": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "horizons": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "horizon_days",
+              "lost_gwh_day",
+              "hydro_gwh_day",
+              "deficit_gwh_day",
+              "deficit_p90",
+              "tier"
+            ],
+            "properties": {
+              "horizon_days": {
+                "type": "integer"
+              },
+              "lost_gwh_day": {
+                "type": "number"
+              },
+              "hydro_gwh_day": {
+                "type": "number"
+              },
+              "deficit_gwh_day": {
+                "type": "number"
+              },
+              "deficit_p90": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "tier": {
+                "type": "string",
+                "enum": [
+                  "holgado",
+                  "vigilancia",
+                  "ajustado",
+                  "deficit"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
     "scorecard": {
       "$ref": "#/$defs/scorecard"
     },

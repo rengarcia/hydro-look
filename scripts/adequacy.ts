@@ -10,7 +10,8 @@
  *   npm run adequacy -- --no-experiments  skip §5.5's experiments (the report then omits them)
  *
  * Besides the central case, `adequacy.json` carries `import_sensitivity` — the deficit and tier
- * under each import assumption — and `scorecard`, how every earlier published run's requirement
+ * under each import assumption — `plant_outage`, the same with Coca Codo Sinclair out of service
+ * (§8a gap 5), and `scorecard`, how every earlier published run's requirement
  * did once its window had passed (§5.1). The report reruns §5.5's experiments each time: the
  * band methods, ONI as a hydro covariate, and the export-availability model over XM's series.
  *
@@ -49,10 +50,17 @@ import {
 } from "../src/lib/models/adequacy-experiments.ts";
 import { DEFAULT_EXPORT_MODEL, importExperiment, importSensitivity, sensitivityBlock, xmSeries } from "../src/lib/models/imports.ts";
 import { scoreAdequacyRuns, scorecardBlock } from "../src/lib/models/scorecard.ts";
+import { OUTAGE_MIN_DAYS, OUTAGE_SITE, outageBlock, outageScenario, plantEnergy, plantShare } from "../src/lib/models/outage.ts";
 import { readOni } from "../src/lib/features/enso.ts";
 import { readBalance, rationingEpisodes } from "../src/lib/features/balance.ts";
 import { CuratedStore } from "../src/lib/store/curated.ts";
-import { ADEQUACY_RUNS, ADEQUACY_VALUES, NATIONAL_BALANCE_DAILY, XM_SYSTEM_DAILY } from "../src/lib/contracts/tables.ts";
+import {
+  ADEQUACY_RUNS,
+  ADEQUACY_VALUES,
+  NATIONAL_BALANCE_DAILY,
+  OBSERVATIONS_DAILY,
+  XM_SYSTEM_DAILY,
+} from "../src/lib/contracts/tables.ts";
 import { parseCsv } from "../src/lib/store/csv.ts";
 import { DATA_CURATED, DATA_REFERENCE, repoPath } from "../src/lib/util/paths.ts";
 import { nowUtc } from "../src/lib/util/dates.ts";
@@ -188,6 +196,19 @@ function main(): void {
     );
   }
 
+  const share = plantShare(balance.days, plantEnergy(readTable(OBSERVATIONS_DAILY.name)), origin);
+  const outage = share === null ? null : outageScenario(forecast, share);
+  if (outage) {
+    console.log(
+      `  ${OUTAGE_SITE} out (${(share!.share * 100).toFixed(1)}% of hydro over ${share!.days} days): ` +
+        outage.horizons
+          .map((h) => `${h.horizonDays}d ${h.deficitGwhDay >= 0 ? "+" : ""}${h.deficitGwhDay.toFixed(2)} ${h.tier}`)
+          .join("  "),
+    );
+  } else {
+    console.log(`  ${OUTAGE_SITE} out: fewer than ${OUTAGE_MIN_DAYS} days with its energy in the share window; not published`);
+  }
+
   const experiments: ReportSection[] = [];
   if (!values["no-experiments"]) {
     const bands = bandExperiment(balance.days, episodes, ceilings, backtestOptions, backtest);
@@ -225,6 +246,10 @@ function main(): void {
     generatedAt,
   });
   document["import_sensitivity"] = sensitivityBlock(forecast, sensitivity);
+  document["plant_outage"] = outageBlock(
+    outage,
+    outage === null ? `fewer than ${OUTAGE_MIN_DAYS} days with ${OUTAGE_SITE} energy in the share window` : null,
+  );
   const report = renderAdequacyReport({
     generatedAt,
     forecast,
