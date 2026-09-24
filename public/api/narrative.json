@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-24T15:36:41Z",
+  "generated_at": "2026-09-24T20:13:05Z",
   "data_date": "2026-09-23",
   "status": "ok",
   "model": "anthropic/claude-opus-5.5",
-  "prompt_version": "es-5+paute_mazar",
+  "prompt_version": "es-6+paute_mazar",
   "payload_hash": "81589a4c4132c86f6ae45c7a3bd0468e0d36b79323594c912502ec87c88c3b75",
   "origin_date": "2026-09-23",
   "risk_tier": "ajustado",
@@ -14,41 +14,41 @@
     "source": "adequacy.json current.worst_tier: the worst tier across the published horizons",
     "tier_at_7d": "vigilancia"
   },
-  "outlook_es": "Al 23 de septiembre de 2026, Mazar está en 2.136,54 m y viene bajando unos 0,38 m por día en los últimos 30 días. El pronóstico estadístico sitúa su valor central en 2.131,38 m para el 23 de octubre de 2026, con un rango entre 2.118,54 m y 2.136,06 m; sin embargo, su habilidad frente a la simple persistencia es prácticamente nula y su cobertura, de 80 %, está en la meta nominal. Ninguno de los años análogos cruza el piso publicado de 2.100 m; solo el escenario seco, con el año 2022 como análogo, cruza el marcador propio de este proyecto de 2.115 m, que no es una declaración de CELEC. El nivel nacional de suficiencia es ajustado: a 60 días el caso central queda corto en 1,1 GWh/día, dentro del umbral de menos de 5 GWh/día que define ese nivel, aunque a 7 días todavía hay un pequeño superávit. El caudal de entrada a Mazar está por encima de lo habitual para la fecha. La lluvia pronosticada para 16 días, en un solo punto en el centroide verificado de la cuenca y no como promedio de la cuenca, alcanza 129,9 mm, en el máximo de la climatología. El índice de El Niño subió a 1,8 en julio de 2026, con tendencia al alza.",
+  "outlook_es": "Mazar, el principal embalse del país, está bajando, y el nivel de electricidad es «ajustado»: en el escenario más probable faltaría algo de energía. Hoy el nivel del agua en Mazar es de 2.136,5 metros sobre el nivel del mar. En la última semana bajó unos 0,3 m al día. El modelo estadístico ubica el valor más probable en 2.131,4 metros para el 23 de octubre de 2026. El rango probable va de 2.118,5 a 2.136,1 metros. Pero a ese plazo el pronóstico no acierta más que suponer que el nivel se queda igual. En la próxima semana la energía alcanza, pero con poco margen. A 60 días faltaría cerca de 1,1 GWh/día, es decir, energía por día. Para los próximos 16 días se esperan 129,9 mm de lluvia, medida en un solo punto, en el centro de la cuenca. Es la lluvia más alta registrada para esta época. El agua que llega a Mazar es más de lo normal para estas fechas. El índice de El Niño está en 1,8, en fase de El Niño.",
   "drivers": [
-    "Mazar desciende en promedio 0,38 m por día en los últimos 30 días.",
-    "A 30 días el modelo estadístico no mejora a la persistencia, con una habilidad de 0,1 %.",
-    "A 60 días el caso central de suficiencia queda corto en 1,1 GWh/día, lo que sostiene el nivel ajustado.",
-    "La lluvia pronosticada en el centroide de la cuenca, un solo punto, está en el percentil 100 de la climatología.",
-    "El índice ONI llegó a 1,8 en julio de 2026, en fase de El Niño."
+    "Mazar bajó unos 0,3 m al día en la última semana.",
+    "A 60 días faltaría cerca de 1,1 GWh/día de energía en el escenario más probable.",
+    "Se esperan 129,9 mm de lluvia en 16 días, la más alta registrada para esta época.",
+    "El río que alimenta a Mazar trae más agua de lo normal para estas fechas.",
+    "El índice de El Niño está en 1,8, en fase de El Niño."
   ],
   "drivers_structured": [
     {
-      "text": "Mazar desciende en promedio 0,38 m por día en los últimos 30 días.",
+      "text": "Mazar bajó unos 0,3 m al día en la última semana.",
       "factor": "mazar_level",
       "direction": "down",
-      "payload_ref": "reservoirs[0].slopes_m_per_day.d30"
+      "payload_ref": "reservoirs[0].slopes_m_per_day.d7"
     },
     {
-      "text": "A 30 días el modelo estadístico no mejora a la persistencia, con una habilidad de 0,1 %.",
-      "factor": "mazar_forecast",
-      "direction": "steady",
-      "payload_ref": "mazar_forecast.horizons[2].skill_vs_persistence"
-    },
-    {
-      "text": "A 60 días el caso central de suficiencia queda corto en 1,1 GWh/día, lo que sostiene el nivel ajustado.",
+      "text": "A 60 días faltaría cerca de 1,1 GWh/día de energía en el escenario más probable.",
       "factor": "adequacy",
       "direction": "down",
       "payload_ref": "adequacy.horizons[2].surplus_gwh_day"
     },
     {
-      "text": "La lluvia pronosticada en el centroide de la cuenca, un solo punto, está en el percentil 100 de la climatología.",
+      "text": "Se esperan 129,9 mm de lluvia en 16 días, la más alta registrada para esta época.",
       "factor": "precipitation",
       "direction": "up",
       "payload_ref": "precipitation_16d.percentile_vs_climatology"
     },
     {
-      "text": "El índice ONI llegó a 1,8 en julio de 2026, en fase de El Niño.",
+      "text": "El río que alimenta a Mazar trae más agua de lo normal para estas fechas.",
+      "factor": "inflow",
+      "direction": "up",
+      "payload_ref": "reservoirs[0].inflow.percentile_today"
+    },
+    {
+      "text": "El índice de El Niño está en 1,8, en fase de El Niño.",
       "factor": "enso",
       "direction": "up",
       "payload_ref": "enso.oni"
@@ -56,11 +56,11 @@
   ],
   "confidence": "low",
   "usage": {
-    "input_tokens": 5553,
-    "output_tokens": 938,
-    "cost_usd": 0.040972
+    "input_tokens": 6629,
+    "output_tokens": 784,
+    "cost_usd": 0.042196
   },
-  "disclaimer": "Texto redactado por un modelo de lenguaje a partir de los números que lo acompañan. No es un pronóstico: el pronóstico es el estadístico de la sección de Mazar, y el nivel de riesgo lo calcula el modelo de suficiencia, no el de lenguaje.",
+  "disclaimer": "Resumen escrito por inteligencia artificial a partir de los números que lo acompañan. La IA no hace pronósticos: el de Mazar y el nivel de riesgo los calculan los modelos estadísticos del sitio, y el texto solo los explica.",
   "basis": {
     "payload_version": 2,
     "origin_date": "2026-09-23",
