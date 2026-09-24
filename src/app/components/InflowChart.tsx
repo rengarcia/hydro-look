@@ -30,7 +30,7 @@ export function InflowChart({
   readings,
   ribbon,
   label,
-  subject = "Caudal de entrada",
+  subject = "Agua que llega al embalse",
 }: {
   readings: SeriesPoint[];
   ribbon: RibbonPoint[];
@@ -67,7 +67,7 @@ export function InflowChart({
         xLabels={responsiveLabels(monthLabels(first, last, 3, at), monthLabels(first, last, 4, at))}
         yFormat={(v) => num(v, 0)}
         title={label}
-        desc={`Caudal diario entre el ${first} y el ${last}, sobre la franja p10–p90 de los mismos días del año en todos los años disponibles.`}
+        desc={`Agua que llegó cada día entre el ${first} y el ${last}, sobre la franja de lo normal para esas fechas en todos los años disponibles.`}
       >
         {upper.length > 1 ? <path d={bandPath(upper, lower)} fill="var(--water-3)" opacity={0.8} /> : null}
         {median.length > 1 ? <path d={linePath(median)} fill="none" stroke="var(--muted)" strokeWidth={1.3} strokeDasharray="4 4" /> : null}
@@ -84,13 +84,13 @@ export function InflowChart({
         />
       </Plot>
       <ChartData
-        caption={`${subject}, m³/s, una lectura por semana, con la franja histórica del mismo día`}
+        caption={`${subject}, m³/s, un dato por semana, con lo normal para esa fecha`}
         columns={[
           { label: "Día" },
-          { label: "Caudal", numeric: true },
-          { label: "p10", numeric: true },
-          { label: "Mediana", numeric: true },
-          { label: "p90", numeric: true },
+          { label: "Agua que llegó", numeric: true },
+          { label: "Normal, bajo", numeric: true },
+          { label: "Lo típico", numeric: true },
+          { label: "Normal, alto", numeric: true },
         ]}
         rows={sampleBack(readings, 7).map((r) => {
           const band = bandOn.get(r.date);

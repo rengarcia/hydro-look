@@ -97,7 +97,7 @@ describe("the home page, from fixtures", () => {
   });
 
   it("names the tier the reading was written about", () => {
-    expect(textOf(home)).toContain(`el peor de los horizontes, a ${adequacy.current.worst_tier_horizon_days} días`);
+    expect(textOf(home)).toContain(`el peor momento de los próximos meses: dentro de ${adequacy.current.worst_tier_horizon_days} días`);
   });
 
   it("uses real tables with header cells, and folds a data table under each chart", () => {
@@ -116,18 +116,18 @@ describe("documents written before the additive blocks", () => {
     const text = textOf(home);
     expect(text).not.toContain("Cómo les fue a los pronósticos publicados");
     expect(text).not.toContain("¿Cuánto depende de Colombia?");
-    expect(text).not.toContain("La lluvia se lee en");
+    expect(text).not.toContain("Dónde se mide la lluvia");
   });
 
   it("render a plant's page and a day's page without an inflow forecast or a scorecard", async () => {
     const { default: ReservoirPage } = await import("../src/app/(site)/embalses/[site]/page.tsx");
     const { default: DayPage } = await import("../src/app/(site)/dia/[date]/page.tsx");
     const plant = textOf(renderToStaticMarkup(await ReservoirPage({ params: Promise.resolve({ site: "amaluza" }) })));
-    expect(plant).toContain("Solo Mazar tiene pronóstico de cota");
-    expect(plant).not.toContain("Pronóstico de caudal de entrada");
+    expect(plant).toContain("Solo Mazar tiene pronóstico de nivel");
+    expect(plant).not.toContain("Pronóstico del agua que llegará");
     const day = textOf(renderToStaticMarkup(await DayPage({ params: Promise.resolve({ date: "2026-09-21" }) })));
-    expect(day).toContain("Pronóstico de la cota de Mazar");
-    expect(day).not.toContain("Marcador.");
+    expect(day).toContain("Pronóstico del nivel de Mazar");
+    expect(day).not.toContain("¿Acertó?");
   });
 });
 
@@ -242,18 +242,18 @@ describe("the additive blocks, rendered", () => {
     const text = textOf(html);
     expect(text).toContain("Cómo les fue a los pronósticos publicados");
     expect(text).toContain(scorecardSummary(pendingCard, due).headline);
-    expect(text).toContain("el primero vence el");
+    expect(text).toContain("el primero se comprueba el");
     expect(text).not.toContain("Error medio");
   });
 
   it("once rows are scored, shows them in a real table by horizon, with the rows folded under it", () => {
     const html = render(
-      createElement(components.ScorecardPanel, { card: scoredCard, nextDue: "2026-10-05", subject: "la cota de Mazar", digits: 2 }),
+      createElement(components.ScorecardPanel, { card: scoredCard, nextDue: "2026-10-05", subject: "el nivel de Mazar", digits: 2 }),
     );
     expect(html).toMatch(/<th scope="col"[^>]*>Error medio<\/th>/);
     expect(html).toMatch(/<th scope="row"[^>]*>7 días<\/th>/);
     expect(html).toContain('<details class="chart-data">');
-    expect(textOf(html)).toContain("1 fila publicada puntuada con lo observado hasta el 28 de septiembre de 2026.");
+    expect(textOf(html)).toContain("1 pronóstico publicado ya comprobado con los datos reales hasta el 28 de septiembre de 2026.");
   });
 
   it("in the adequacy section, tables the tier under each import case and carries the scorecard", () => {
@@ -261,16 +261,16 @@ describe("the additive blocks, rendered", () => {
     const text = textOf(html);
     expect(text).toContain("¿Cuánto depende de Colombia?");
     expect(text).toContain(importDependence(adequacy.import_sensitivity!)!);
-    expect(text).toContain("caso central");
-    expect(html).toMatch(/<th scope="row"[^>]*><span>Máximo demostrado/);
+    expect(text).toContain("el que usa la cuenta");
+    expect(html).toMatch(/<th scope="row"[^>]*><span>El máximo visto/);
     expect(text).toContain("Cómo les fue a los pronósticos publicados");
-    expect(text).toContain("el déficit es un contrafactual");
+    expect(text).toContain("El faltante no se comprueba");
   });
 
   it("names the rain's basin and the band's calibration in the method notes", () => {
     const text = textOf(render(createElement(components.Method, { forecast, adequacy })));
-    expect(text).toContain(`La lluvia se lee en ${liveForecast.precipitation_basin!.basin}`);
-    expect(text).toContain("Cómo se calibra la banda de suficiencia");
+    expect(text).toContain(`Dónde se mide la lluvia: ${liveForecast.precipitation_basin!.basin}`);
+    expect(text).toContain("Cómo se calcula el rango de la cuenta de energía");
   });
 
   it("on a day's page, says which of the run's horizons have reached their date and shows its scored rows", () => {
@@ -283,11 +283,13 @@ describe("the additive blocks, rendered", () => {
         createElement(components.DayScore, { card: pendingCard, runId: scoredRow.run_id, horizons, digits: 2, subject: "x", href: "/#m" }),
       ),
     );
-    expect(pending).toContain("Ninguno de sus horizontes ha llegado a su fecha; el primero, a 7 días, vence el 28 de septiembre de 2026.");
+    expect(pending).toContain(
+      "Todavía no llega la fecha de ninguno de sus plazos; el primero, a 7 días, se comprueba el 28 de septiembre de 2026.",
+    );
     const scored = render(
       createElement(components.DayScore, { card: scoredCard, runId: scoredRow.run_id, horizons, digits: 2, subject: "x", href: "/#m" }),
     );
-    expect(textOf(scored)).toContain("Uno de sus 2 horizontes ya pasó su fecha");
+    expect(textOf(scored)).toContain("Ya llegó la fecha de uno de sus 2 plazos");
     expect(scored).toMatch(/<th scope="row"[^>]*>28 sep 2026<\/th>/);
     expect(
       render(createElement(components.DayScore, { card: undefined, runId: "x", horizons, digits: 2, subject: "x", href: "/#m" })),
@@ -313,17 +315,17 @@ describe("Mazar's page, from fixtures", () => {
   it("keeps its sections: record, crossing, foresight, inflow and floors", () => {
     const text = textOf(mazar);
     for (const heading of [
-      "El registro completo",
-      "¿Cuándo cruzaría",
+      "Toda su historia",
+      "¿Bajaría de",
       "¿Lo habría visto venir?",
-      "Caudal frente a su historia",
-      "Dos pisos, los dos de CELEC",
+      "El agua que llega, frente a otros años",
+      "Dos niveles mínimos, los dos de CELEC",
     ]) {
       expect(text).toContain(heading);
     }
   });
 
   it("draws the analogue-year strip as one image with its count as its name", () => {
-    expect(mazar).toMatch(/class="years" role="img" aria-label="\d+ de \d+ años análogos cruzan/);
+    expect(mazar).toMatch(/class="years" role="img" aria-label="En \d+ de \d+ años de lluvias el nivel baja de/);
   });
 });

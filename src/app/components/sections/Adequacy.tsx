@@ -14,6 +14,7 @@ import type { AdequacyDocument, ImportSensitivity, PlantOutage } from "../../../
 import { num, signed } from "../../../lib/site/format.ts";
 import {
   IMPORT_CASES,
+  TIERS,
   adequacyHeadline,
   countWord,
   importCaseLabel,
@@ -51,12 +52,13 @@ export function Adequacy({ adequacy }: { adequacy: AdequacyDocument | null }) {
     <ScorecardPanel
       card={adequacy.scorecard}
       nextDue={nextScoreDue("adequacy", adequacy.scorecard.observed_through)}
-      subject="el requerimiento neto nacional"
+      subject="la energía que el país necesita además de la hidroeléctrica"
       digits={2}
       id="marcador-suficiencia"
     >
-      Se puntúa el requerimiento neto —demanda menos hidroeléctrica, en promedio sobre la ventana—, que es lo que el balance mide; el
-      déficit es un contrafactual y no se puntúa. Una ventana con un día de racionamiento queda fuera.
+      Se comprueba la energía que el país necesita además de la que dan sus hidroeléctricas (la demanda menos la hidroeléctrica), porque eso
+      sí se puede medir después. El faltante no se comprueba: es una cuenta de «qué pasaría si», no algo que se observe. Los períodos con
+      apagones quedan fuera.
     </ScorecardPanel>
   ) : null;
 
@@ -64,24 +66,24 @@ export function Adequacy({ adequacy }: { adequacy: AdequacyDocument | null }) {
     <section id="suficiencia" className="shell section" aria-labelledby="suficiencia-title">
       <SectionIntro
         index="05"
-        eyebrow="Suficiencia energética"
+        eyebrow="Energía para los próximos meses"
         titleId="suficiencia-title"
         title={adequacyHeadline(adequacy.horizons)}
         wide
       >
-        Una sola identidad: demanda no suprimida menos hidroeléctrica menos el techo térmico menos la importación. Lo que queda es el
-        superávit; en negativo, el déficit esperado. La demanda excluye los días de racionamiento, porque durante un corte los contadores
-        miden la demanda que se permitió, no la que había.
+        Una cuenta sencilla: la electricidad que el país necesitaría, menos lo que pueden dar las hidroeléctricas, las centrales térmicas y
+        lo que llega de Colombia. Si el resultado es positivo, sobra energía; si es negativo, faltaría. Para estimar cuánto se necesita no
+        usamos los días de apagones, porque esos días se consumió lo que se pudo, no lo que hacía falta.
       </SectionIntro>
 
       <div className="split wide-left">
         <div className="panel">
           <div className="panel-head roomy">
-            <h3>Superávit esperado por horizonte</h3>
+            <h3>Energía que sobraría (+) o faltaría (−) cada día</h3>
             {worst ? (
               <span className="pill">
                 <span className={`dot tone-${worst.tone}`} aria-hidden="true" />
-                Peor nivel: {worst.label.toLowerCase()} a {adequacy.current.worst_tier_horizon_days} días
+                Peor momento: {worst.label.toLowerCase()}, dentro de {adequacy.current.worst_tier_horizon_days} días
               </span>
             ) : null}
           </div>
@@ -93,13 +95,13 @@ export function Adequacy({ adequacy }: { adequacy: AdequacyDocument | null }) {
                 const surplus = -h.deficit_gwh_day;
                 return (
                   <li className={`step tone-${tier?.tone ?? "muted"}`} key={h.horizon_days}>
-                    <div className="step-when">{h.horizon_days} días</div>
+                    <div className="step-when">en {h.horizon_days} días</div>
                     <div className="step-dot" aria-hidden="true" />
                     <div className={surplus < 0 ? "step-value num short" : "step-value num"}>{signed(surplus, 1)}</div>
                     <div className="step-note">
                       GWh/día
                       <br />
-                      margen {signed(h.margin_pct, 2)} %
+                      margen: {signed(h.margin_pct, 2)} %
                     </div>
                     <div className="step-tier">{tier?.label ?? h.tier}</div>
                   </li>
@@ -109,66 +111,69 @@ export function Adequacy({ adequacy }: { adequacy: AdequacyDocument | null }) {
           </div>
           {worst && first ? (
             <p className="fine spaced tier-note">
-              Dos niveles salen de este documento: el del primer horizonte ({first.label.toLowerCase()}) y el peor de todos (
-              {worst.label.toLowerCase()}, a {adequacy.current.worst_tier_horizon_days} días).{" "}
+              Para la próxima semana el nivel es {first.label.toLowerCase()}; el peor momento es {worst.label.toLowerCase()}, dentro de{" "}
+              {adequacy.current.worst_tier_horizon_days} días.{" "}
               {usesWorst
-                ? "La lectura del día y el titular de la página usan el peor; en adequacy.json es el campo current.worst_tier."
-                : "La lectura del día usa el del primer horizonte; en adequacy.json es el campo current.tier."}
+                ? "El resumen del día y el titular de la página usan el peor momento."
+                : "El resumen del día usa el nivel de la próxima semana."}{" "}
+              {Object.values(TIERS)
+                .map((t) => `${t.label}: ${t.gloss}.`)
+                .join(" ")}
             </p>
           ) : null}
           <div className="assumptions">
             <div className="assumption">
               <span className="assumption-label">Térmica</span>
               <span className="assumption-value num">{num(a.thermal_gwh_day, 2)}</span>
-              <span className="assumption-note">GWh/día · máx. demostrado</span>
+              <span className="assumption-note">GWh/día · lo más que ha dado</span>
             </div>
             <div className="assumption">
-              <span className="assumption-label">Importación</span>
+              <span className="assumption-label">Desde Colombia</span>
               <span className="assumption-value num">{num(cutoff ? regime.central_import_gwh_day : a.import_gwh_day, 2)}</span>
-              <span className="assumption-note">GWh/día · {cutoff ? "lo que llega" : "máx. demostrado"}</span>
+              <span className="assumption-note">GWh/día · {cutoff ? "lo que está llegando" : "lo más que ha llegado"}</span>
             </div>
             <div className="assumption">
-              <span className="assumption-label">Otros tipos</span>
+              <span className="assumption-label">Otras fuentes</span>
               <span className="assumption-value num">{num(a.other_gwh_day, 2)}</span>
-              <span className="assumption-note">GWh/día · mediana</span>
+              <span className="assumption-note">GWh/día · lo típico</span>
             </div>
             <div className="assumption">
-              <span className="assumption-label">Quincena hídrica</span>
+              <span className="assumption-label">Hidroeléctrica, 15 días</span>
               <span className="assumption-value num">{num(adequacy.data.hydro_anomaly, 2)} ×</span>
-              <span className="assumption-note">su climatología</span>
+              <span className="assumption-note">lo normal para la época</span>
             </div>
           </div>
           <p className="fine spaced">
-            Los techos son máximos demostrados en los últimos tres años, no declaraciones de disponibilidad: ninguna fuente que alcance este
-            proyecto publica los mantenimientos programados. Se editan en <code>{a.editable_at}</code>.
+            Estos topes son lo máximo que cada fuente ha dado en los últimos tres años, no su capacidad oficial: no hay una fuente pública
+            con los mantenimientos programados de las centrales.
           </p>
         </div>
 
         <div className="aside-stack">
           <div className="inverse fragile">
-            <span className="eyebrow">El supuesto más frágil</span>
+            <span className="eyebrow">Lo que más puede fallar</span>
             <p className="fragile-claim">
               {cutoff
                 ? `Colombia envió ${num(regime.trailing_gwh_day, 2)} GWh/día en los últimos ${regime.window_days} días.`
-                : `El caso central cuenta con ${num(a.import_gwh_day, 2)} GWh/día desde Colombia.`}{" "}
+                : `La cuenta supone que llegan ${num(a.import_gwh_day, 2)} GWh/día desde Colombia.`}{" "}
               {peak ? `En ${monthName(peak)} de ${peak.slice(0, 4)} llegó a ${num(a.import_gwh_day, 2)}.` : ""}
             </p>
             <p className="fragile-fine">
-              Un interconector no es firme cuando la sequía es compartida: entre el 1 de octubre y el 10 de noviembre de 2024, con el país
-              racionando, llegaron {num(a.stressed_import_gwh_day, 2)} GWh/día.
-              {cutoff ? " El caso central usa lo que está llegando, no el máximo." : ""}
+              Colombia no siempre puede vender cuando la sequía también la golpea: entre el 1 de octubre y el 10 de noviembre de 2024, con
+              apagones en Ecuador, llegaron solo {num(a.stressed_import_gwh_day, 2)} GWh/día.
+              {cutoff ? " Por eso la cuenta usa lo que está llegando ahora, no el máximo." : ""}
             </p>
           </div>
           <OutageCard outage={adequacy.plant_outage} />
           {episodes.length > 0 ? (
             <div className="inverse check">
               <div className="check-head">
-                <strong>La comprobación</strong>
+                <strong>¿Funciona la cuenta?</strong>
                 <span>GWh/día</span>
               </div>
               <p className="check-lede">
-                En cada racionamiento, la demanda suprimida que midieron los contadores frente al déficit que calcula el modelo. Si la
-                identidad es correcta, deben tener el mismo tamaño.
+                En cada período de apagones, la energía que dejó de consumirse (medida) frente a la que, según la cuenta, faltaba. Si la
+                cuenta es buena, las dos barras deberían medir parecido.
               </p>
               {episodes.map((e) => (
                 <div className="episode" key={e.start}>
@@ -181,7 +186,7 @@ export function Adequacy({ adequacy }: { adequacy: AdequacyDocument | null }) {
                   <div className="episode-bars">
                     <div>
                       <span className="episode-bar fill-inv-accent" style={{ width: barWidth(e.measured_suppression_gwh_day) }} />
-                      {num(e.measured_suppression_gwh_day, 1)} observada
+                      {num(e.measured_suppression_gwh_day, 1)} medida
                     </div>
                     <div>
                       <span className="episode-bar fill-t3" style={{ width: barWidth(e.implied_deficit_gwh_day) }} />
@@ -217,17 +222,17 @@ function OutageCard({ outage }: { outage: PlantOutage | undefined }) {
   const tier = tierOf(month.tier);
   return (
     <div className="inverse fragile">
-      <span className="eyebrow">Una sola central</span>
+      <span className="eyebrow">Si falla una sola central</span>
       <p className="fragile-claim">
         {month.deficit_gwh_day > 0
           ? `Sin Coca Codo Sinclair faltarían ${num(month.deficit_gwh_day, 1)} GWh/día a 30 días.`
           : `Sin Coca Codo Sinclair el sistema aún cubriría la demanda a 30 días, con ${num(-month.deficit_gwh_day, 1)} GWh/día de margen.`}{" "}
-        Nivel: {tier?.label ?? month.tier}.
+        Nivel: {(tier?.label ?? month.tier).toLowerCase()}.
       </p>
       <p className="fragile-fine">
-        Aportó el {num(outage.share_of_hydro * 100, 0)}% de la hidroelectricidad de las últimas cuatro semanas (
-        {num(outage.plant_gwh_day, 1)} GWh/día). No es un pronóstico: es cuánto del margen depende de una central de pasada cuya captación
-        amenaza la erosión regresiva del río Coca desde 2020.
+        Dio el {num(outage.share_of_hydro * 100, 0)} % de la electricidad hidráulica de las últimas cuatro semanas (
+        {num(outage.plant_gwh_day, 1)} GWh/día). No es un pronóstico: muestra cuánto depende el margen de una sola central, que no tiene
+        embalse y cuya toma de agua está amenazada desde 2020 por la erosión del río Coca.
       </p>
     </div>
   );
@@ -256,17 +261,17 @@ export function ImportSensitivityPanel({ sensitivity }: { sensitivity: ImportSen
     <div className="panel tight">
       <div className="panel-head">
         <h3>¿Cuánto depende de Colombia?</h3>
-        <span className="meta">importación en GWh/día</span>
+        <span className="meta">lo que llega de Colombia, en GWh/día</span>
       </div>
       {verdict ? <p className="panel-lede">{verdict}</p> : null}
       <Table
-        caption="Peor nivel de riesgo bajo cada supuesto de importación desde Colombia"
+        caption="Peor nivel de riesgo según cuánta energía llegue desde Colombia"
         captionHidden
-        columns={[{ label: "Supuesto" }, { label: "Importación", numeric: true }, { label: "Peor nivel" }]}
+        columns={[{ label: "Si llega…" }, { label: "Desde Colombia", numeric: true }, { label: "Peor nivel" }]}
         rows={sensitivity.cases.map((c) => [
           <span key="c">
             {importCaseLabel(c.case)}
-            {c.case === sensitivity.central_case ? <small className="central-tag"> · caso central</small> : null}
+            {c.case === sensitivity.central_case ? <small className="central-tag"> · el que usa la cuenta</small> : null}
             {IMPORT_CASES[c.case] ? (
               <>
                 <br />
@@ -275,18 +280,18 @@ export function ImportSensitivityPanel({ sensitivity }: { sensitivity: ImportSen
             ) : null}
           </span>,
           num(c.import_gwh_day, 2),
-          <TierCell key="t" tier={c.worst_tier} suffix={`a ${c.worst_tier_horizon_days} días`} />,
+          <TierCell key="t" tier={c.worst_tier} suffix={`en ${c.worst_tier_horizon_days} días`} />,
         ])}
       />
       <details className="chart-data">
-        <summary>Ver cada horizonte bajo cada supuesto</summary>
+        <summary>Ver cada plazo en cada caso</summary>
         <div className="table-scroll">
           <Table
-            caption="Superávit esperado y nivel por horizonte bajo cada supuesto de importación, en GWh/día"
+            caption="Energía que sobraría o faltaría y nivel, por plazo, según lo que llegue de Colombia, en GWh/día"
             columns={[
-              { label: "Supuesto y horizonte" },
-              { label: "Superávit", numeric: true },
-              { label: "Superávit, caso p90", numeric: true },
+              { label: "Caso y plazo" },
+              { label: "Sobra (+) o falta (−)", numeric: true },
+              { label: "Si la demanda sube más", numeric: true },
               { label: "Nivel" },
             ]}
             rows={sensitivity.cases.flatMap((c) =>
@@ -300,13 +305,14 @@ export function ImportSensitivityPanel({ sensitivity }: { sensitivity: ImportSen
           />
         </div>
         <p className="fine">
-          El caso p90 es el requerimiento en su percentil 90: el nivel pasa de holgado a vigilancia cuando ese caso queda corto.
+          «Si la demanda sube más» es un caso exigente: la demanda solo lo supera 1 de cada 10 veces. Cuando en ese caso falta energía, el
+          nivel pasa de holgado a vigilancia.
         </p>
       </details>
       <p className="fine spaced">
-        Todo lo demás —demanda, hidroeléctrica, techo térmico— es igual en{" "}
-        {sensitivity.cases.length === 1 ? "la fila" : `las ${countWord(sensitivity.cases.length)} filas`}; solo cambia lo que se supone que
-        llega por el interconector. El caso central es {importCaseLabel(sensitivity.central_case).toLowerCase()}.
+        Todo lo demás —demanda, hidroeléctrica, térmica— es igual en{" "}
+        {sensitivity.cases.length === 1 ? "la fila" : `las ${countWord(sensitivity.cases.length)} filas`}; solo cambia cuánta energía se
+        supone que llega de Colombia. La cuenta usa «{importCaseLabel(sensitivity.central_case).toLowerCase()}».
       </p>
     </div>
   );

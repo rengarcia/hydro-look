@@ -90,7 +90,7 @@ export function MixChart({ days, label }: { days: MixDay[]; label: string }) {
         xLabels={responsiveLabels(monthLabels(first, last, 2, at), monthLabels(first, last, 3, at))}
         yFormat={(v) => num(v, 0)}
         title={label}
-        desc={`Generación diaria por tipo e importación, en GWh, entre el ${first} y el ${last}.`}
+        desc={`Electricidad de cada día según su origen, incluida la comprada a Colombia, en GWh, entre el ${first} y el ${last}.`}
       >
         {MIX_SERIES.map((series, slot) => {
           const band = bands[slot]!;
@@ -123,7 +123,7 @@ export function MixChart({ days, label }: { days: MixDay[]; label: string }) {
         })}
       </Plot>
       <ChartData
-        caption="Generación diaria por tipo e importación, GWh, un día por semana"
+        caption="Electricidad de cada día según su origen, incluida la comprada a Colombia, GWh, un día por semana"
         columns={[{ label: "Día" }, ...shown.map((s) => ({ label: conceptLabel(s.concept), numeric: true }))]}
         rows={sampleBack(days, 7).map((d) => [dateWithYear(d.date), ...shown.map((s) => num(d.values[s.concept], 2))])}
         note="Cada séptimo día contado desde el más reciente. El balance diario completo está en /api/bulk/national_balance_daily.csv.gz."

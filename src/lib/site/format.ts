@@ -83,7 +83,7 @@ export const CONCEPT_LABELS: Record<string, string> = {
   generacion_motores_bunker: "Motores de búnker",
   generacion_vapor_bunker: "Vapor de búnker",
   generacion_turbinas_diesel: "Turbinas diésel",
-  generacion_otros_tipos: "Otros tipos",
+  generacion_otros_tipos: "Otras fuentes",
   total_importacion: "Importación",
   total_exportacion: "Exportación",
   total_generacion: "Generación total",
@@ -142,10 +142,10 @@ export function findingText(finding: { check: string; level: string; message: st
   if (offBook) {
     const [, count, site, date, value] = offBook;
     return (
-      `${count} porcentajes quedan fuera de 0–100 %: un embalse por encima de su banda declarada o una central ` +
-      `por encima de su capacidad nominal, no un error (el primero: ${siteName(site!)}, ${longDate(date)}, ${num(Number(value), 1)} %)`
+      `${count} porcentajes pasan del 100 % o bajan de 0 %: un embalse por encima de su rango de operación o una central ` +
+      `produciendo más que su capacidad oficial, no un error (el primero: ${siteName(site!)}, ${longDate(date)}, ${num(Number(value), 1)} %)`
     );
   }
-  const level = finding.level === "fail" ? "fallo" : "aviso";
-  return `${level} de la comprobación «${finding.check}» (detalle en status.json)`;
+  const level = finding.level === "fail" ? "falló" : "alertó";
+  return `la revisión automática «${finding.check}» ${level} (detalle en status.json)`;
 }

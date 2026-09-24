@@ -31,11 +31,11 @@ function RecentTable({ rows, units, digits, caption }: { rows: readonly Scorecar
       caption={caption}
       columns={[
         { label: "Fecha" },
-        { label: "Horizonte" },
-        { label: `p50 (p10 – p90), ${unitsEs(units)}`, numeric: true },
-        { label: "Observado", numeric: true },
+        { label: "Plazo" },
+        { label: `Más probable (rango), ${unitsEs(units)}`, numeric: true },
+        { label: "Real", numeric: true },
         { label: "Error", numeric: true },
-        { label: "En banda" },
+        { label: "Dentro del rango" },
       ]}
       rows={rows.map((r) => [
         dateWithYear(r.target_date),
@@ -85,13 +85,13 @@ export function ScorecardPanel({
             caption={`Error de los pronósticos publicados de ${subject}, por modelo, versión y horizonte, en ${units}`}
             captionHidden
             columns={[
-              { label: "Horizonte" },
+              { label: "Plazo" },
               { label: "Modelo" },
-              { label: "n", numeric: true },
+              { label: "Casos", numeric: true },
               { label: "Error medio", numeric: true },
               { label: "Sesgo", numeric: true },
-              { label: "Cobertura p10–p90", numeric: true },
-              { label: "Orígenes", wideOnly: true },
+              { label: "Dentro del rango", numeric: true },
+              { label: "Publicados", wideOnly: true },
             ]}
             rows={card.by_horizon.map((g) => [
               `${g.horizon_days} días`,
@@ -113,20 +113,22 @@ export function ScorecardPanel({
       ) : null}
       {card.recent.length > 0 ? (
         <details className="chart-data">
-          <summary>Ver las últimas filas puntuadas</summary>
+          <summary>Ver los últimos pronósticos comprobados</summary>
           <div className="table-scroll">
-            <RecentTable rows={card.recent} units={card.units} digits={digits} caption={`Últimas filas puntuadas de ${subject}`} />
+            <RecentTable rows={card.recent} units={card.units} digits={digits} caption={`Últimos pronósticos comprobados de ${subject}`} />
           </div>
         </details>
       ) : null}
       <p className="fine spaced">
         {children}
         {children ? " " : ""}
-        Cada fila se puntúa bajo el modelo y la versión que la publicaron, y de cada origen solo la última corrida
+        Cada pronóstico se compara tal como se publicó, con el modelo que lo hizo; si un día se calculó más de una vez, cuenta solo el
+        último
         {card.runs_superseded > 0
-          ? ` (${card.runs_superseded} ${card.runs_superseded === 1 ? "corrida reemplazada queda" : "corridas reemplazadas quedan"} fuera)`
+          ? ` (${card.runs_superseded} ${card.runs_superseded === 1 ? "cálculo reemplazado queda" : "cálculos reemplazados quedan"} fuera)`
           : ""}
-        . Unas pocas filas son una anécdota, no una puntuación: lea la n antes que el error.
+        . El sesgo dice si tiende a quedarse corto (−) o a pasarse (+). Con pocos casos, el resultado todavía es anecdótico: mira cuántos
+        casos hay antes de sacar conclusiones.
       </p>
     </div>
   );
@@ -160,18 +162,18 @@ export function DayScore({
     <>
       {note ? (
         <p className="fine spaced">
-          <strong>Marcador.</strong> {note}
+          <strong>¿Acertó?</strong> {note}
           {passed && scored.length === 0 ? (
             <>
               {" "}
-              Sus filas puntuadas cuentan en el <a href={href}>marcador de la portada</a>.
+              Sus resultados cuentan en el <a href={href}>marcador de la portada</a>.
             </>
           ) : null}
         </p>
       ) : null}
       {scored.length > 0 ? (
         <div className="table-scroll">
-          <RecentTable rows={scored} units={card.units} digits={digits} caption={`Filas de esta corrida ya puntuadas: ${subject}`} />
+          <RecentTable rows={scored} units={card.units} digits={digits} caption={`Pronósticos de este día ya comprobados: ${subject}`} />
         </div>
       ) : null}
     </>

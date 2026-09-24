@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: { params: Promise<{ date: str
   const path = `/dia/${date}/`;
   return {
     title: `El ${longDate(date)}`,
-    description: `Lo que hydro-look publicó sobre el ${longDate(date)}: pronóstico de Mazar, suficiencia energética y la lectura del día.`,
+    description: `Lo que hydro-look publicó sobre el ${longDate(date)}: pronóstico de Mazar, si alcanza la energía y el resumen del día.`,
     alternates: { canonical: path },
     openGraph: { url: path, type: "article" },
   };
@@ -59,19 +59,19 @@ export default async function DayPage({ params }: { params: Promise<{ date: stri
       <Crumbs trail={[{ href: "/", label: "Inicio" }, { href: "/dia/", label: "Archivo diario" }, { label: dateWithYear(date) }]} />
       <section className="shell section" aria-labelledby="dia-title">
         <SectionIntro index="—" eyebrow={`Archivo · ${weekday(date)}`} titleId="dia-title" title={`El ${longDate(date)}.`}>
-          Lo que se publicó sobre este día, tal como quedó: los datos que describe son los del {longDate(date)}, y cada corrida lleva la
-          hora en que se hizo.
+          Lo que el sitio publicó sobre este día, sin cambios: los datos son los del {longDate(date)}, y cada cálculo lleva la hora en que
+          se hizo.
         </SectionIntro>
 
         {day.narrative ? (
           <div className="reading inverse">
             <div className="reading-main">
               <div className="reading-head">
-                <h2 className="eyebrow">Lectura del día</h2>
+                <h2 className="eyebrow">Resumen del día</h2>
                 {narrativeTier ? (
                   <span className="pill">
                     <span className={`dot tone-${narrativeTier.tone}`} aria-hidden="true" />
-                    Nivel {narrativeTier.label.toLowerCase()}
+                    Energía: nivel {narrativeTier.label.toLowerCase()}
                   </span>
                 ) : null}
               </div>
@@ -79,10 +79,11 @@ export default async function DayPage({ params }: { params: Promise<{ date: stri
                 <p className="reading-rest">“{day.narrative.outlook_es}”</p>
               </blockquote>
               <p className="reading-fine">
-                Redactado por <code>{day.narrative.model_id}</code> el {ecStamp(day.narrative.generated_at)}; confianza declarada{" "}
+                Escrito por inteligencia artificial (<code>{day.narrative.model_id}</code>) el {ecStamp(day.narrative.generated_at)}. Qué
+                tanto coinciden los indicadores entre sí:{" "}
                 {CONFIDENCE_ES[day.narrative.confidence as keyof typeof CONFIDENCE_ES] ?? day.narrative.confidence}.
                 {day.runs.narrative > 1
-                  ? ` Hubo ${day.runs.narrative} intentos para este día; esta es la última lectura que el validador aprobó.`
+                  ? ` Hubo ${day.runs.narrative} intentos para este día; este es el último que pasó la revisión automática de cifras.`
                   : ""}
               </p>
             </div>
@@ -100,8 +101,8 @@ export default async function DayPage({ params }: { params: Promise<{ date: stri
         ) : (
           <p className="panel-lede">
             {day.runs.narrative > 0
-              ? `No se publicó lectura para este día: ${day.runs.narrative === 1 ? "el intento fue rechazado o falló" : `los ${day.runs.narrative} intentos fueron rechazados o fallaron`}.`
-              : "No hay lectura del día para esta fecha."}
+              ? `No se publicó resumen para este día: ${day.runs.narrative === 1 ? "el intento no pasó la revisión o falló" : `los ${day.runs.narrative} intentos no pasaron la revisión o fallaron`}.`
+              : "No hay resumen del día para esta fecha."}
           </p>
         )}
 
@@ -126,23 +127,23 @@ function ForecastPanel({ day, card }: { day: DayRecord; card: ScorecardBlock | n
   return (
     <div className="panel tight">
       <div className="panel-head">
-        <h3>Pronóstico de la cota de Mazar</h3>
-        <span className="meta">m s. n. m.</span>
+        <h3>Pronóstico del nivel de Mazar</h3>
+        <span className="meta">metros sobre el nivel del mar</span>
       </div>
       <p className="panel-lede">
-        Desde {num(forecast.origin_level_masl, 2)} m. Corrida {forecast.run_id}, {ecStamp(forecast.generated_at)}
-        {day.runs.forecast > 1 ? `; la última de ${day.runs.forecast} para este día` : ""}.
+        Partía de {num(forecast.origin_level_masl, 2)} m. Calculado el {ecStamp(forecast.generated_at)}
+        {day.runs.forecast > 1 ? `; el último de ${day.runs.forecast} cálculos para este día` : ""} (<code>{forecast.run_id}</code>).
       </p>
       <Table
-        caption={`Pronóstico de la cota de Mazar publicado sobre el ${longDate(day.date)}, y la cota observada después`}
+        caption={`Pronóstico del nivel de Mazar publicado sobre el ${longDate(day.date)}, y el nivel real después`}
         captionHidden
         columns={[
-          { label: "Horizonte" },
+          { label: "Plazo" },
           { label: "Fecha", wideOnly: true },
-          { label: "p10", numeric: true },
-          { label: "p50", numeric: true },
-          { label: "p90", numeric: true },
-          { label: "Observada", numeric: true },
+          { label: "Bajo", numeric: true },
+          { label: "Más probable", numeric: true },
+          { label: "Alto", numeric: true },
+          { label: "Nivel real", numeric: true },
           { label: "Modelo", wideOnly: true },
         ]}
         rows={forecast.horizons.map((h) => {
@@ -160,13 +161,16 @@ function ForecastPanel({ day, card }: { day: DayRecord; card: ScorecardBlock | n
           ];
         })}
       />
-      <p className="fine spaced">«Aún no» es un día que todavía no llega o que la fuente no publicó.</p>
+      <p className="fine spaced">
+        «Bajo» y «alto» son los extremos del rango probable: 8 de cada 10 veces el nivel real debería quedar entre ellos. «Aún no» es un día
+        que todavía no llega o del que la fuente no publicó dato.
+      </p>
       <DayScore
         card={card}
         runId={forecast.run_id}
         horizons={forecast.horizons}
         digits={2}
-        subject="la cota de Mazar"
+        subject="el nivel de Mazar"
         href="/#marcador-mazar"
       />
     </div>
@@ -178,17 +182,22 @@ function AdequacyPanel({ day, card }: { day: DayRecord; card: ScorecardBlock | n
   return (
     <div className="panel tight">
       <div className="panel-head">
-        <h3>Suficiencia energética</h3>
+        <h3>¿Alcanza la energía?</h3>
         <span className="meta">GWh/día</span>
       </div>
       <p className="panel-lede">
-        Corrida {adequacy.run_id}, {ecStamp(adequacy.generated_at)}
-        {day.runs.adequacy > 1 ? `; la última de ${day.runs.adequacy} para este día` : ""}.
+        Calculado el {ecStamp(adequacy.generated_at)}
+        {day.runs.adequacy > 1 ? `; el último de ${day.runs.adequacy} cálculos para este día` : ""} (<code>{adequacy.run_id}</code>).
       </p>
       <Table
-        caption={`Superávit esperado por horizonte, publicado sobre el ${longDate(day.date)}`}
+        caption={`Energía que sobraría o faltaría cada día, por plazo, publicada sobre el ${longDate(day.date)}`}
         captionHidden
-        columns={[{ label: "Horizonte" }, { label: "Superávit", numeric: true }, { label: "Margen", numeric: true }, { label: "Nivel" }]}
+        columns={[
+          { label: "Plazo" },
+          { label: "Sobra (+) o falta (−)", numeric: true },
+          { label: "Margen", numeric: true },
+          { label: "Nivel" },
+        ]}
         rows={adequacy.horizons.map((h) => {
           const tier = tierOf(h.tier);
           return [
@@ -207,7 +216,7 @@ function AdequacyPanel({ day, card }: { day: DayRecord; card: ScorecardBlock | n
         runId={adequacy.run_id}
         horizons={adequacy.horizons}
         digits={2}
-        subject="el requerimiento neto nacional, en GWh/día"
+        subject="la energía que el país necesita de fuentes no hidráulicas, en GWh/día"
         href="/#marcador-suficiencia"
       />
     </div>

@@ -38,9 +38,9 @@ const INSIDE_ABOVE = 75;
 export function PercentileAbbr({ percentile, empty = "—" }: { percentile: number | null; empty?: ReactNode }) {
   if (percentile === null) return <>{empty}</>;
   return (
-    <abbr title={`percentil ${percentile} del caudal de hoy frente a su historia`}>
+    <abbr title={`el agua que llega hoy supera a la de ${percentile} de cada 100 días de esta época en otros años`}>
       p{percentile}
-      <span className="visually-hidden"> (percentil {percentile} del caudal frente a su historia)</span>
+      <span className="visually-hidden"> (el agua que llega hoy supera a la de {percentile} de cada 100 días de esta época)</span>
     </abbr>
   );
 }
@@ -122,7 +122,7 @@ function TankColumn({ column }: { column: Column }) {
       <div
         className={column.declared ? "tank" : "tank hatched"}
         role="img"
-        aria-label={`${reservoir.label}: ${num(column.masl, 2)} m, ${pct(column.share, 1)} ${column.declared ? "de la banda declarada" : "del rango registrado"}, en una escala de ${num(column.min, 0)} a ${num(column.max, 0)} m`}
+        aria-label={`${reservoir.label}: ${num(column.masl, 2)} m, ${pct(column.share, 1)} ${column.declared ? "de su rango de operación" : "del rango registrado"}, en una escala de ${num(column.min, 0)} a ${num(column.max, 0)} m`}
       >
         <div className="tank-fill" style={{ height: `${fill.toFixed(1)}%` }} />
         <div className="tank-surface" style={{ bottom: `${fill.toFixed(1)}%` }} />
@@ -157,7 +157,7 @@ function TankColumn({ column }: { column: Column }) {
             <PercentileAbbr percentile={column.percentile} />
           </span>
         </div>
-        <div className="column-scale">{column.declared ? "banda declarada" : "sin banda: rango registrado"}</div>
+        <div className="column-scale">{column.declared ? "rango oficial" : "sin rango oficial: lo registrado"}</div>
       </div>
     </>
   );
@@ -193,10 +193,11 @@ function BarRow({ column }: { column: Column }) {
       </div>
       <div className="bottom">
         <span>
-          {pct(column.share, 1)} {column.declared ? "de la banda" : "del rango registrado"}
+          {pct(column.share, 1)} {column.declared ? "de su rango" : "del rango registrado"}
         </span>
         <span>
-          {dir === "flat" ? num(0, 2) : signed(slope, 2)} m/día · caudal <PercentileAbbr percentile={column.percentile} empty="sin base" />
+          {dir === "flat" ? num(0, 2) : signed(slope, 2)} m/día · agua que llega{" "}
+          <PercentileAbbr percentile={column.percentile} empty="sin datos" />
         </span>
       </div>
     </>

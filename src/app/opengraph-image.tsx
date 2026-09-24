@@ -16,7 +16,7 @@ import { dateWithYear, num, pct } from "../lib/site/format.ts";
 import { direction, heroHeadline } from "../lib/site/story.ts";
 
 export const dynamic = "force-static";
-export const alt = "hydro-look: cuánta de la electricidad del Ecuador salió del agua ayer, y la cota de Mazar.";
+export const alt = "hydro-look: cuánta de la electricidad del Ecuador salió del agua ayer, y el nivel de Mazar.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -75,8 +75,8 @@ export default function OpenGraphImage() {
         </div>
         <div style={{ display: "flex", fontSize: 26, color: INK_2 }}>
           {level
-            ? `Mazar, el único embalse con semanas de reserva: ${num(level.masl, 2)} m${dir === "down" ? ", bajando" : dir === "up" ? ", subiendo" : ", estable"}.`
-            : "Embalses, caudales y balance nacional, día a día."}
+            ? `Mazar, el embalse que guarda agua para semanas: ${num(level.masl, 2)} m${dir === "down" ? ", bajando" : dir === "up" ? ", subiendo" : ", estable"}.`
+            : "Embalses, ríos y electricidad del Ecuador, día a día."}
         </div>
       </div>
       {level && fill !== null ? (
@@ -110,7 +110,7 @@ export default function OpenGraphImage() {
           </div>
           <div style={{ display: "flex", fontFamily: "Geist Mono", fontSize: 20, color: DEFICIT }}>{num(band!.min_masl, 0)} m mín.</div>
           <div style={{ display: "flex", marginTop: 14, fontFamily: "Instrument Serif", fontSize: 44 }}>{pct(fill, 1)}</div>
-          <div style={{ display: "flex", fontSize: 18, color: INK_2 }}>de la banda, no de agua</div>
+          <div style={{ display: "flex", fontSize: 18, color: INK_2 }}>de su rango, no de agua</div>
         </div>
       ) : null}
     </div>,

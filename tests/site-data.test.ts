@@ -187,7 +187,7 @@ describe("atomFeed", () => {
       expect(xml).toContain(tag);
     }
     expect(xml).toContain('href="https://example.org/dia/2026-09-21/"');
-    expect(xml).toContain("La lectura del 21 de septiembre de 2026");
+    expect(xml).toContain("El resumen del 21 de septiembre de 2026");
   });
 
   it("escapes the model's text: it is text, never markup", () => {

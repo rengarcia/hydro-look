@@ -31,7 +31,7 @@ export function SinceYesterday({ now }: { now: LatestDocument | null }) {
   const mazar = now.reservoirs.find((r) => r.site === "mazar");
   if (mazar?.level) {
     changes.push({
-      label: "Cota de Mazar",
+      label: "Nivel de Mazar",
       now: `${num(mazar.level.masl, 2)} m`,
       change: changeWord(mazar.level.delta_1d_m, 2, "m"),
       sign: signOf(mazar.level.delta_1d_m, 2),
@@ -39,7 +39,7 @@ export function SinceYesterday({ now }: { now: LatestDocument | null }) {
   }
   if (mazar?.inflow) {
     changes.push({
-      label: "Caudal a Mazar",
+      label: "Agua que llega a Mazar",
       now: `${num(mazar.inflow.m3s, 1)} m³/s`,
       change: changeWord(mazar.inflow.delta_1d_m3s, 1, "m³/s"),
       sign: signOf(mazar.inflow.delta_1d_m3s, 1),
@@ -49,13 +49,13 @@ export function SinceYesterday({ now }: { now: LatestDocument | null }) {
   if (national) {
     changes.push(
       {
-        label: "Parte hidroeléctrica",
+        label: "Electricidad del agua",
         now: `${num(national.hydro_share_pct, 1)} %`,
         change: changeWord(national.delta_1d?.hydro_share_pct_points, 1, "puntos"),
         sign: signOf(national.delta_1d?.hydro_share_pct_points, 1),
       },
       {
-        label: "Generación total",
+        label: "Electricidad generada",
         now: `${num(national.total_generation_gwh, 1)} GWh`,
         change: changeWord(national.delta_1d?.total_generation_gwh, 1, "GWh"),
         sign: signOf(national.delta_1d?.total_generation_gwh, 1),
@@ -83,7 +83,7 @@ export function SinceYesterday({ now }: { now: LatestDocument | null }) {
           <li key={c.label}>
             <span className="since-label">{c.label}</span>
             <span className="since-now num">{c.now}</span>
-            <span className={`since-change num since-${c.sign}`}>{c.change ?? "sin lectura de ayer"}</span>
+            <span className={`since-change num since-${c.sign}`}>{c.change ?? "sin dato de ayer"}</span>
           </li>
         ))}
         <li>
@@ -91,7 +91,7 @@ export function SinceYesterday({ now }: { now: LatestDocument | null }) {
           <span className="since-now num">
             {rising} suben · {falling} bajan
           </span>
-          <span className="since-change">de {now.reservoirs.length}, frente a su lectura de ayer</span>
+          <span className="since-change">de {now.reservoirs.length}, comparado con ayer</span>
         </li>
       </ul>
     </section>

@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: { params: Promise<{ site: str
   return {
     title: reservoir.label,
     description:
-      `Cota, bandas declaradas, pendientes y caudal frente a su historia del embalse ${reservoir.label} ` +
+      `Nivel del agua, rango de operación, tendencia y el agua que le llega al embalse ${reservoir.label} ` +
       `(${basinLabel(reservoir.basin)})${reservoir.level ? `: ${num(reservoir.level.masl, 2)} m el ${reservoir.level.date}` : ""}. ` +
       "No es una fuente oficial.",
     alternates: { canonical: path },
@@ -54,12 +54,12 @@ export async function generateMetadata({ params }: { params: Promise<{ site: str
  */
 function ledeOf(reservoir: ReservoirSnapshot): string {
   if (reservoir.site === "amaluza") {
-    return "El embalse de la central Molino, aguas abajo de Mazar en la cascada del Paute: lo que Mazar descarga llega aquí.";
+    return "El embalse de la central Molino, río abajo de Mazar en el Paute: el agua que suelta Mazar llega aquí.";
   }
   if (reservoir.bands.length === 0) {
-    return "Ninguna fuente le declara una banda de operación, así que su escala es el rango que este repositorio ha registrado.";
+    return "No hay un rango de operación oficial publicado, así que su escala va del nivel más bajo al más alto que hemos registrado.";
   }
-  return "CELEC le declara una banda de operación, y su cota se lee dentro de ella: metros de carga útil, no agua almacenada.";
+  return "CELEC publica su rango de operación, y su nivel se lee dentro de él: mide altura del agua, no cuánta agua hay.";
 }
 
 export default async function ReservoirPage({ params }: { params: Promise<{ site: string }> }) {
@@ -75,24 +75,24 @@ export default async function ReservoirPage({ params }: { params: Promise<{ site
       <Crumbs trail={[{ href: "/", label: "Inicio" }, { href: "/#embalses", label: "Embalses" }, { label: reservoir.label }]} />
       <ReservoirHero reservoir={reservoir} forecast={null} lede={ledeOf(reservoir)} />
       <RecordSection reservoir={reservoir} forecast={null} />
-      <section className="shell split lean-left" aria-label="Caudal y bandas declaradas">
-        <InflowPanel reservoir={reservoir} heading="Caudal frente a su historia" />
+      <section className="shell split lean-left" aria-label="Agua que llega y rango de operación">
+        <InflowPanel reservoir={reservoir} heading="El agua que llega, frente a otros años" />
         <FloorsPanel reservoir={reservoir} />
       </section>
       {plant ? (
-        <section className="shell" aria-label="Pronóstico de caudal de entrada">
+        <section className="shell" aria-label="Pronóstico del agua que llega">
           <InflowForecastPanel plant={plant} report={inflowForecasts?.report} label={reservoir.label} />
         </section>
       ) : null}
       <div className="shell">
         <p className="fine">
-          Solo Mazar tiene pronóstico de cota: es el único embalse con semanas de reserva.
+          Solo Mazar tiene pronóstico de nivel: es el único embalse que guarda agua para varias semanas.
           {plant
             ? publishes
-              ? ` De ${reservoir.label} se pronostica el caudal de entrada, en /api/forecast.json.`
-              : ` De ${reservoir.label} se prueba un pronóstico de caudal de entrada, que hoy no se publica.`
+              ? ` De ${reservoir.label} se pronostica el agua que le llegará, en /api/forecast.json.`
+              : ` De ${reservoir.label} se prueba un pronóstico del agua que le llegará, que hoy no se publica.`
             : ""}{" "}
-          Para insertar esta ficha en otra página, <a href={`/embed/${site}/`}>/embed/{site}/</a>; sus números, en{" "}
+          Para poner esta ficha en otra página web, usa <a href={`/embed/${site}/`}>/embed/{site}/</a>; sus números están en{" "}
           <a href="/api/latest.json">/api/latest.json</a>.
         </p>
       </div>

@@ -30,14 +30,16 @@ export function cutFloors(forecast: ForecastDocument | null, reservoir: Reservoi
       return {
         level_masl: t.level_masl,
         unverified,
-        label: unverified ? `${num(t.level_masl, 0)} m · marcador propio` : `${num(t.level_masl, 0)} m · mín. ${thresholdSource(t.name)}`,
-        short: unverified ? `${num(t.level_masl, 0)} propio` : `${num(t.level_masl, 0)} mín.`,
+        label: unverified
+          ? `${num(t.level_masl, 0)} m · referencia de este sitio`
+          : `${num(t.level_masl, 0)} m · mín. ${thresholdSource(t.name)}`,
+        short: unverified ? `${num(t.level_masl, 0)} ref.` : `${num(t.level_masl, 0)} mín.`,
       };
     });
   }
   return [...new Set(reservoir.bands.map((b) => b.min_masl))].map((level) => ({
     level_masl: level,
-    label: `${num(level, 0)} m · mínimo declarado`,
+    label: `${num(level, 0)} m · mínimo oficial`,
     short: `${num(level, 0)} mín.`,
   }));
 }
@@ -59,11 +61,11 @@ export function ReservoirCutFor({ reservoir, forecast }: { reservoir: ReservoirS
       floors={floors}
       forecast={end ? { p10: end.p10, p50: end.p50, p90: end.p90, days: end.horizon_days } : null}
       label={
-        `Corte del embalse de ${reservoir.label}: cota de ${num(reservoir.level.masl, 2)} m el ${longDate(reservoir.level.date)}` +
-        (lowest !== null ? `, entre el mínimo declarado más bajo, ${num(lowest, 0)} m,` : "") +
+        `Corte del embalse de ${reservoir.label}: nivel de ${num(reservoir.level.masl, 2)} m el ${longDate(reservoir.level.date)}` +
+        (lowest !== null ? `, entre el mínimo oficial más bajo, ${num(lowest, 0)} m,` : "") +
         (declared
-          ? ` y la cresta de la banda, ${num(crest, 0)} m.`
-          : ` y el máximo registrado, ${num(crest, 0)} m; no hay banda declarada.`)
+          ? ` y el máximo de operación, ${num(crest, 0)} m.`
+          : ` y el máximo registrado, ${num(crest, 0)} m; no hay rango oficial publicado.`)
       }
     />
   );
@@ -76,7 +78,7 @@ export function PercentileTrack({ percentile, years }: { percentile: number; yea
         <span className="percentile-mark" style={{ left: `${Math.min(100, Math.max(0, percentile))}%` }} />
       </div>
       <span className="percentile-caption mono">
-        percentil {num(percentile, 0)} · {years} años
+        {num(percentile, 0)} de 100 · frente a {years} años
       </span>
     </div>
   );
@@ -96,15 +98,15 @@ export function InflowLegend() {
     <ul className="legend legend-small">
       <li>
         <span className="key-line key-water key-short" aria-hidden="true" />
-        Caudal diario
+        Agua que llegó cada día
       </li>
       <li>
         <span className="key-box key-band" aria-hidden="true" />
-        p10–p90 histórico
+        Lo normal (8 de cada 10 años)
       </li>
       <li>
         <span className="key-dash key-muted key-short" aria-hidden="true" />
-        Mediana
+        Lo típico
       </li>
     </ul>
   );
@@ -119,7 +121,7 @@ export function InflowPanel({ reservoir, heading }: { reservoir: ReservoirSnapsh
   const inflow = reservoir.inflow;
   if (data === null || inflow === null) return null;
   const climatology = inflow.climatology;
-  const label = `Caudal de entrada a ${reservoir.label} del último año frente a su franja histórica p10 a p90`;
+  const label = `Agua que llegó a ${reservoir.label} cada día del último año, frente a lo normal para cada fecha`;
   return (
     <div className="panel tight">
       <div className="figure-row">
@@ -127,8 +129,8 @@ export function InflowPanel({ reservoir, heading }: { reservoir: ReservoirSnapsh
           {heading ? <h3 className="panel-title">{heading}</h3> : null}
           {heading && climatology ? (
             <p className="panel-lede">
-              p10 {num(climatology.p10, 1)} · p50 {num(climatology.p50, 1)} · p90 {num(climatology.p90, 1)} m³/s en esta época del año,{" "}
-              {climatology.years} años.
+              En esta época del año lo normal es entre {num(climatology.p10, 1)} y {num(climatology.p90, 1)} m³/s, y lo típico,{" "}
+              {num(climatology.p50, 1)} m³/s, según {climatology.years} años de registros.
             </p>
           ) : null}
           <span className="big-figure num">
@@ -137,7 +139,7 @@ export function InflowPanel({ reservoir, heading }: { reservoir: ReservoirSnapsh
           </span>
           <span className="figure-caption">
             {shortDate(inflow.date)}
-            {climatology ? ` · mediana histórica ${num(climatology.p50, 1)} m³/s` : ""}
+            {climatology ? ` · lo típico para la fecha: ${num(climatology.p50, 1)} m³/s` : ""}
           </span>
         </div>
         {climatology?.percentile_today != null ? (
@@ -145,11 +147,13 @@ export function InflowPanel({ reservoir, heading }: { reservoir: ReservoirSnapsh
         ) : null}
       </div>
       <InflowLegend />
-      <InflowChart readings={data.readings} ribbon={data.band} label={label} subject={`Caudal de entrada a ${reservoir.label}`} />
+      <InflowChart readings={data.readings} ribbon={data.band} label={label} subject={`Agua que llega a ${reservoir.label}`} />
       <p className="fine spaced">
-        Los cortes en la línea son días que la fuente nunca publicó. Un cero no significa «el río se detuvo»: en los reportes de doce meses
-        es cualquier valor por debajo de 0,5 m³/s.
-        {climatology === null ? " Este registro aún es corto para una franja histórica: se necesitan al menos cinco años." : ""}
+        El caudal es la cantidad de agua que trae el río, en metros cúbicos por segundo (m³/s). Los huecos en la línea son días sin dato
+        publicado. Un cero no significa que el río se secó: en algunos reportes, cualquier valor menor a 0,5 m³/s aparece como 0.
+        {climatology === null
+          ? " Todavía no hay suficientes años de registro para saber qué es lo normal: hacen falta al menos cinco."
+          : ""}
       </p>
     </div>
   );

@@ -26,8 +26,8 @@ import { countWord, criticalThreshold, scenarioOf } from "../../../../lib/site/s
 export const metadata: Metadata = {
   title: "Mazar",
   description:
-    "Cota, pronóstico a 90 días, años análogos y los dos mínimos declarados de Mazar, el embalse con más " +
-    "almacenamiento del Ecuador. No es una fuente oficial.",
+    "Nivel del agua, pronóstico a 90 días, escenarios de lluvia y los dos mínimos oficiales de Mazar, el embalse " +
+    "que más agua guarda en el Ecuador. No es una fuente oficial.",
   alternates: { canonical: "/embalses/mazar/" },
   openGraph: { url: "/embalses/mazar/" },
 };
@@ -44,19 +44,19 @@ export default function MazarPage() {
         <ReservoirHero
           reservoir={mazar}
           forecast={forecast}
-          lede="El único embalse de la flota con almacenamiento de varias semanas, y por eso el que se pronostica."
+          lede="El único embalse del país que guarda agua para varias semanas, y por eso el único con pronóstico."
         />
       ) : null}
       {mazar ? <RecordSection reservoir={mazar} forecast={forecast} /> : null}
       {forecast ? (
-        <section className="shell split even" aria-label="Umbrales y validación">
+        <section className="shell split even" aria-label="Escenarios y qué tan bien acierta">
           <Crossing forecast={forecast} />
           <Foresight forecast={forecast} />
         </section>
       ) : null}
       {mazar ? (
-        <section className="shell split lean-left" aria-label="Caudal y mínimos declarados">
-          <InflowPanel reservoir={mazar} heading="Caudal frente a su historia" />
+        <section className="shell split lean-left" aria-label="Agua que llega y mínimos oficiales">
+          <InflowPanel reservoir={mazar} heading="El agua que llega, frente a otros años" />
           <FloorsPanel reservoir={mazar} />
         </section>
       ) : null}
@@ -76,14 +76,17 @@ function Crossing({ forecast }: { forecast: ForecastDocument }) {
   if (!threshold) return null;
   const all = threshold.across_all_analogue_years;
   const level = num(threshold.level_masl, 0);
-  const strip = `${all.years_that_cross} de ${all.analogue_years} años análogos cruzan los ${level} m`;
+  const strip = `En ${all.years_that_cross} de ${all.analogue_years} años de lluvias el nivel baja de ${level} m`;
 
   return (
     <div className="panel">
-      <h3 className="panel-title">¿Cuándo cruzaría los {level} m?</h3>
+      <h3 className="panel-title">¿Bajaría de {level} m?</h3>
       <p className="panel-lede">
-        Cada año análogo es un año real de caudal —de los registrados para esta época del año— pasado por la misma regla de descarga.
-        {threshold.status === "unverified" ? ` ${level} m es un marcador de este proyecto (PLAN.md §7), no de CELEC.` : ""}
+        Repetimos, para los próximos meses, las lluvias reales de cada año registrado en esta misma época, con la misma forma de operar el
+        embalse. Cada cuadro es un año; los rellenos son los años en que el nivel bajaría de {level} m.
+        {threshold.status === "unverified"
+          ? ` Ojo: ${level} m es un nivel de referencia de este sitio, no una cifra oficial de CELEC.`
+          : ""}
       </p>
       {/* One square per analogue year, filled when that year crosses. A picture of a count: the
           list items are empty, so the strip is one image with the count as its name. */}
@@ -94,21 +97,22 @@ function Crossing({ forecast }: { forecast: ForecastDocument }) {
       </div>
       <div className="years-caption">
         <span>
+          En{" "}
           <strong>
             {all.years_that_cross} de {all.analogue_years}
           </strong>{" "}
-          años análogos cruzan
+          años, el nivel bajaría de {level} m
         </span>
-        {all.p10_days !== null ? <span>en el 10 % más seco, en {all.p10_days} días</span> : null}
+        {all.p10_days !== null ? <span>en los años más secos, en unos {all.p10_days} días</span> : null}
       </div>
       <Table
         className="scenarios-table"
-        caption={`Tres años análogos con nombre, frente a los ${level} m`}
+        caption={`Tres escenarios de lluvia, frente a los ${level} m`}
         captionHidden
         columns={[
           { label: "Escenario" },
-          { label: "Año", numeric: true },
-          { label: "Caudal medio", numeric: true, wideOnly: true },
+          { label: "Lluvias como en", numeric: true },
+          { label: "Agua que llegaría", numeric: true, wideOnly: true },
           { label: "Resultado" },
         ]}
         rows={threshold.scenarios.map((s) => [
@@ -116,8 +120,8 @@ function Crossing({ forecast }: { forecast: ForecastDocument }) {
           s.analogYear,
           `${num(s.inflowMeanM3s, 2)} m³/s`,
           s.crossesOn
-            ? `cruza el ${dateWithYear(s.crossesOn)} · ${num(s.days, 0)} días`
-            : `no cruza · mínimo ${num(s.minimumLevelMasl, 2)} m`,
+            ? `bajaría de ${level} m el ${dateWithYear(s.crossesOn)} · en ${num(s.days, 0)} días`
+            : `no baja de ${level} m · lo más bajo: ${num(s.minimumLevelMasl, 2)} m`,
         ])}
       />
     </div>
@@ -133,25 +137,26 @@ function Foresight({ forecast }: { forecast: ForecastDocument }) {
     <div className="panel">
       <h3 className="panel-title">¿Lo habría visto venir?</h3>
       <p className="panel-lede">
-        Aplicado a las {countWord(check.episodes.length)} veces que Mazar bajó de {num(check.threshold_masl, 0)} m
-        {years.length === 1 ? ` en ${years[0]}` : ""}, desde {check.origins_considered} orígenes mensuales.
+        Probamos el pronóstico con datos del pasado: lo calculamos a inicios de cada mes ({check.origins_considered} veces) y miramos si
+        anticipaba las {countWord(check.episodes.length)} veces que Mazar bajó de {num(check.threshold_masl, 0)} m
+        {years.length === 1 ? ` en ${years[0]}` : ""}.
       </p>
       <div className="foresight">
         {check.episodes.map((e) => {
           const verdict =
             e.p50_lead_time_days !== null
               ? {
-                  text: `La mediana lo anticipó ${e.p50_lead_time_days} días antes.`,
+                  text: `El valor más probable lo anticipó ${e.p50_lead_time_days} días antes.`,
                   pill: `${e.p50_lead_time_days} días antes`,
                   tone: "good",
                 }
               : e.p10_lead_time_days !== null
                 ? {
-                    text: `La cola seca (p10) lo marcó ${e.p10_lead_time_days} días antes; la mediana, no.`,
+                    text: `El escenario seco lo avisó ${e.p10_lead_time_days} días antes; el valor más probable, no.`,
                     pill: `${e.p10_lead_time_days} días antes`,
                     tone: "watch",
                   }
-                : { text: "Ni la mediana ni el caso seco lo anticiparon.", pill: "No anticipado", tone: "deficit" };
+                : { text: "No lo anticiparon ni el valor más probable ni el escenario seco.", pill: "No lo vio venir", tone: "deficit" };
           return (
             <div key={e.crossed_on}>
               <div>
@@ -168,7 +173,7 @@ function Foresight({ forecast }: { forecast: ForecastDocument }) {
         <div>
           <div>
             <strong>Falsas alarmas</strong>
-            <p>Veces que la mediana anunció un cruce que no ocurrió.</p>
+            <p>Veces que el valor más probable anunció una bajada que no ocurrió.</p>
           </div>
           <span className="count num">
             {check.false_alarms_p50} <small>de {check.origins_considered}</small>

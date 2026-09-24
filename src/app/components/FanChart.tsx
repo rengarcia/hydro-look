@@ -126,7 +126,7 @@ function FanDrawing({
       fontSize={font}
       yFormat={(v) => num(v, 0)}
       title={label}
-      desc={`Cota observada de Mazar hasta el ${origin} y banda p10–p90 pronosticada hasta el ${last}.`}
+      desc={`Nivel real de Mazar hasta el ${origin} y rango probable pronosticado hasta el ${last}.`}
     >
       <rect x={originX} y={top} width={round(WIDTH - MARGIN.right - originX)} height={bottom - top} fill="var(--water-4)" opacity=".55" />
 
@@ -226,13 +226,13 @@ export function FanChart(props: FanChartProps) {
         <FanDrawing {...props} compact />
       </div>
       <ChartData
-        caption="Cota de Mazar, m s. n. m.: la observada, una lectura por semana, y el pronóstico p10, p50 y p90 en cada horizonte"
+        caption="Nivel de Mazar, en metros sobre el nivel del mar: el real, un dato por semana, y el pronóstico (valor más probable y rango) en cada plazo"
         columns={[
           { label: "Día" },
-          { label: "Observada", numeric: true },
-          { label: "p10", numeric: true },
-          { label: "p50", numeric: true },
-          { label: "p90", numeric: true },
+          { label: "Nivel real", numeric: true },
+          { label: "Bajo", numeric: true },
+          { label: "Más probable", numeric: true },
+          { label: "Alto", numeric: true },
           { label: "Modelo" },
         ]}
         rows={[
@@ -246,7 +246,7 @@ export function FanChart(props: FanChartProps) {
             h.model ?? primaryModel ?? "",
           ]),
         ]}
-        note="La cota diaria completa está en /api/bulk/observations_daily.csv.gz; el pronóstico, en /api/forecast.json."
+        note="El nivel diario completo está en /api/bulk/observations_daily.csv.gz; el pronóstico, en /api/forecast.json."
       />
     </>
   );

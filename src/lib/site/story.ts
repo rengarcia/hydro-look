@@ -17,10 +17,10 @@ import { longDate, num } from "./format.ts";
 export type Tone = "good" | "watch" | "tight" | "deficit";
 
 export const TIERS: Record<RiskTier, { label: string; tone: Tone; gloss: string }> = {
-  holgado: { label: "Holgado", tone: "good", gloss: "incluso el caso p90 queda cubierto" },
-  vigilancia: { label: "Vigilancia", tone: "watch", gloss: "el caso p90 queda corto; el central, no" },
-  ajustado: { label: "Ajustado", tone: "tight", gloss: "el caso central queda corto en menos de 5 GWh/día" },
-  deficit: { label: "Déficit", tone: "deficit", gloss: "el caso central queda corto en 5 GWh/día o más" },
+  holgado: { label: "Holgado", tone: "good", gloss: "hay margen de sobra, incluso si la demanda sube más de lo previsto" },
+  vigilancia: { label: "Vigilancia", tone: "watch", gloss: "alcanza, pero con poco margen si la demanda sube más de lo previsto" },
+  ajustado: { label: "Ajustado", tone: "tight", gloss: "en el escenario más probable faltaría algo de energía, menos de 5 GWh al día" },
+  deficit: { label: "Déficit", tone: "deficit", gloss: "en el escenario más probable faltarían 5 GWh al día o más" },
 };
 
 export function tierOf(tier: string | null | undefined): { label: string; tone: Tone; gloss: string } | null {
@@ -95,6 +95,20 @@ export function inflowHeadline(percentile: number | null | undefined): string {
 }
 
 /**
+ * The same percentile as a phrase a reader does not need statistics for: how today's water
+ * compares with what is normal for the date. The bands are `inflowHeadline`'s, so the headline
+ * and the sentences under it never disagree.
+ */
+export function inflowWords(percentile: number | null | undefined): string | null {
+  if (percentile === null || percentile === undefined || !Number.isFinite(percentile)) return null;
+  if (percentile < 20) return "mucha menos agua de lo normal para esta época";
+  if (percentile < 40) return "menos agua de lo normal para esta época";
+  if (percentile <= 60) return "la cantidad de agua normal para esta época";
+  if (percentile <= 80) return "más agua de lo normal para esta época";
+  return "mucha más agua de lo normal para esta época";
+}
+
+/**
  * The adequacy headline: the first horizon's answer, then the worst one's if it is worse.
  *
  * "Por poco" is said when the first horizon is covered but only just — watch rather than
@@ -124,13 +138,13 @@ export function adequacyHeadline(horizons: readonly { horizon_days: number; tier
 export function marginClause(tier: RiskTier, horizonDays: number, lastHorizonDays: number): { before: string; word: string } {
   switch (tier) {
     case "holgado":
-      return { before: `Hasta los ${lastHorizonDays} días el margen nacional queda`, word: "holgado" };
+      return { before: `En los próximos ${lastHorizonDays} días la electricidad del país tiene un margen`, word: "holgado" };
     case "vigilancia":
-      return { before: `A ${horizonDays} días el margen nacional pide`, word: "vigilancia" };
+      return { before: `En ${horizonDays} días la electricidad del país alcanza, pero pide`, word: "vigilancia" };
     case "ajustado":
-      return { before: `A ${horizonDays} días el margen nacional queda corto:`, word: "ajustado" };
+      return { before: `En ${horizonDays} días la electricidad del país queda justa: nivel`, word: "ajustado" };
     default:
-      return { before: `A ${horizonDays} días el margen nacional queda en`, word: "déficit" };
+      return { before: `En ${horizonDays} días a la electricidad del país le faltaría energía: nivel de`, word: "déficit" };
   }
 }
 
@@ -263,9 +277,9 @@ export function narrativeTierNote(
 ): string | null {
   if (adequacy === null || adequacy.origin_date !== narrative.origin_date) return null;
   if ((adequacy.current.narrative_tier_field ?? "worst_tier") === "worst_tier") {
-    return `el peor de los horizontes, a ${adequacy.current.worst_tier_horizon_days} días`;
+    return `el peor momento de los próximos meses: dentro de ${adequacy.current.worst_tier_horizon_days} días`;
   }
-  return `a ${adequacy.horizons[0]?.horizon_days ?? 7} días`;
+  return `dentro de ${adequacy.horizons[0]?.horizon_days ?? 7} días`;
 }
 
 /**
@@ -273,9 +287,9 @@ export function narrativeTierNote(
  * the dry year is drawn in the warning colour and the wet one in the reservoir's own.
  */
 export const SCENARIOS: Record<string, { name: string; tone: string }> = {
-  dry: { name: "Seco", tone: "tight" },
-  median: { name: "Mediano", tone: "water-2" },
-  wet: { name: "Húmedo", tone: "water" },
+  dry: { name: "Año seco", tone: "tight" },
+  median: { name: "Año normal", tone: "water-2" },
+  wet: { name: "Año lluvioso", tone: "water" },
 };
 
 export function scenarioOf(scenario: string): { name: string; tone: string } {
@@ -330,31 +344,31 @@ export function scorecardSummary(
 ): { headline: string; detail: string } {
   const excluded =
     card.rows_excluded > 0
-      ? `${card.rows_excluded} ${plural(card.rows_excluded, "fila no puede puntuarse", "filas no pueden puntuarse")}: su fecha pasó sin observación`
+      ? `${card.rows_excluded} ${plural(card.rows_excluded, "pronóstico no se puede comprobar", "pronósticos no se pueden comprobar")}: llegó su fecha y no hubo dato publicado`
       : "";
 
   if (card.rows_scored === 0) {
-    if (card.runs_considered === 0) return { headline: "Todavía no hay pronósticos publicados que puntuar.", detail: "" };
+    if (card.runs_considered === 0) return { headline: "Todavía no hay pronósticos publicados que comprobar.", detail: "" };
     if (card.rows_pending > 0) {
       const waiting =
-        `${card.rows_pending} ${plural(card.rows_pending, "fila", "filas")} de ${card.runs_considered} ` +
-        `${plural(card.runs_considered, "corrida publicada", "corridas publicadas")} ${plural(card.rows_pending, "sigue pendiente", "siguen pendientes")}`;
+        `${card.rows_pending} ${plural(card.rows_pending, "pronóstico", "pronósticos")} de ${card.runs_considered} ` +
+        `${plural(card.runs_considered, "publicación", "publicaciones")} ${plural(card.rows_pending, "sigue esperando", "siguen esperando")} su fecha`;
       return {
-        headline: `Aún ningún pronóstico publicado ha llegado a su fecha${nextDue ? `; el primero vence el ${longDate(nextDue)}` : ""}.`,
-        detail: sentences(waiting, excluded, "hasta entonces, la única medida del modelo es su backtest"),
+        headline: `Aún no ha llegado la fecha de ningún pronóstico publicado${nextDue ? `; el primero se comprueba el ${longDate(nextDue)}` : ""}.`,
+        detail: sentences(waiting, excluded, "mientras tanto, la única medida de su acierto son las pruebas con datos de años anteriores"),
       };
     }
-    return { headline: "Ningún pronóstico publicado ha podido puntuarse todavía.", detail: sentences(excluded) };
+    return { headline: "Todavía no se ha podido comprobar ningún pronóstico publicado.", detail: sentences(excluded) };
   }
   const pending =
     card.rows_pending > 0
-      ? `${card.rows_pending} ${plural(card.rows_pending, "fila más espera", "filas más esperan")} su fecha` +
-        (nextDue ? `; la próxima vence el ${longDate(nextDue)}` : "")
+      ? `${card.rows_pending} ${plural(card.rows_pending, "pronóstico más espera", "pronósticos más esperan")} su fecha` +
+        (nextDue ? `; el próximo se comprueba el ${longDate(nextDue)}` : "")
       : "";
   return {
     headline:
-      `${card.rows_scored} ${plural(card.rows_scored, "fila publicada puntuada", "filas publicadas puntuadas")}` +
-      (card.observed_through ? ` con lo observado hasta el ${longDate(card.observed_through)}.` : "."),
+      `${card.rows_scored} ${plural(card.rows_scored, "pronóstico publicado ya comprobado", "pronósticos publicados ya comprobados")}` +
+      (card.observed_through ? ` con los datos reales hasta el ${longDate(card.observed_through)}.` : "."),
     detail: sentences(pending, excluded),
   };
 }
@@ -373,14 +387,14 @@ export function dayScoreNote(
     .filter((h) => observedThrough === null || h.target_date > observedThrough)
     .sort((a, b) => (a.target_date < b.target_date ? -1 : a.target_date > b.target_date ? 1 : 0));
   const next = waiting[0];
-  if (next === undefined) return `Todos sus horizontes ya pasaron su fecha (observado hasta el ${longDate(observedThrough)}).`;
+  if (next === undefined) return `Ya llegó la fecha de todos sus plazos (datos reales hasta el ${longDate(observedThrough)}).`;
   if (waiting.length === horizons.length) {
-    return `Ninguno de sus horizontes ha llegado a su fecha; el primero, a ${next.horizon_days} días, vence el ${longDate(next.target_date)}.`;
+    return `Todavía no llega la fecha de ninguno de sus plazos; el primero, a ${next.horizon_days} días, se comprueba el ${longDate(next.target_date)}.`;
   }
   const done = horizons.length - waiting.length;
   return (
-    `${countWord(done, true)} de sus ${horizons.length} horizontes ya ${plural(done, "pasó", "pasaron")} su fecha; ` +
-    `el siguiente, a ${next.horizon_days} días, vence el ${longDate(next.target_date)}.`
+    `Ya llegó la fecha de ${countWord(done)} de sus ${horizons.length} plazos; ` +
+    `el siguiente, a ${next.horizon_days} días, se comprueba el ${longDate(next.target_date)}.`
   );
 }
 
@@ -402,27 +416,27 @@ export function inflowVerdict(h: {
   const vs = (name: string, value: number) => `${name} (${num(value, 1)} m³/s)`;
   if (h.published) {
     const beaten = [
-      b.persistence_mae_m3s !== null ? vs("la persistencia", b.persistence_mae_m3s) : null,
-      b.climatology_mae_m3s !== null ? vs("la climatología", b.climatology_mae_m3s) : null,
+      b.persistence_mae_m3s !== null ? vs("suponer que el caudal no cambia", b.persistence_mae_m3s) : null,
+      b.climatology_mae_m3s !== null ? vs("usar el promedio de la época", b.climatology_mae_m3s) : null,
     ].filter((x): x is string => x !== null);
-    return beaten.length > 0 ? `Se publica: le gana a ${beaten.join(" y a ")}.` : "Se publica.";
+    return beaten.length > 0 ? `Se publica: acierta más que ${beaten.join(" y que ")}.` : "Se publica.";
   }
-  if (mae === null || b.n === 0) return "No se publica: no hay backtest suficiente.";
+  if (mae === null || b.n === 0) return "No se publica: todavía no hay suficientes pruebas con datos pasados.";
   const lost = [
-    b.persistence_mae_m3s !== null && b.persistence_mae_m3s <= mae ? vs("la persistencia", b.persistence_mae_m3s) : null,
-    b.climatology_mae_m3s !== null && b.climatology_mae_m3s <= mae ? vs("la climatología", b.climatology_mae_m3s) : null,
+    b.persistence_mae_m3s !== null && b.persistence_mae_m3s <= mae ? vs("suponer que el caudal no cambia", b.persistence_mae_m3s) : null,
+    b.climatology_mae_m3s !== null && b.climatology_mae_m3s <= mae ? vs("usar el promedio de la época", b.climatology_mae_m3s) : null,
   ].filter((x): x is string => x !== null);
-  if (lost.length === 2) return `No se publica: no le gana ni a ${lost[0]} ni a ${lost[1]}.`;
-  if (lost.length === 1) return `No se publica: no le gana a ${lost[0]}.`;
+  if (lost.length === 2) return `No se publica: no acierta más que ${lost[0]} ni que ${lost[1]}.`;
+  if (lost.length === 1) return `No se publica: no acierta más que ${lost[0]}.`;
   return `No se publica (${h.reason}).`;
 }
 
 /* ------------------------------------------------------------------ imports */
 
 export const IMPORT_CASES: Record<string, { label: string; gloss: string }> = {
-  demonstrated: { label: "Máximo demostrado", gloss: "lo más que ha llegado desde Colombia en tres años" },
-  stressed: { label: "Estrés de 2024", gloss: "lo que llegó en la sequía compartida de 2024" },
-  current_regime: { label: "Régimen actual", gloss: "lo que está llegando en la ventana reciente" },
+  demonstrated: { label: "El máximo visto", gloss: "lo más que ha llegado desde Colombia en tres años" },
+  stressed: { label: "Como en 2024", gloss: "lo que llegó en 2024, cuando la sequía golpeó a los dos países" },
+  current_regime: { label: "Lo que llega hoy", gloss: "lo que está llegando en las últimas semanas" },
 };
 
 export function importCaseLabel(name: string): string {
@@ -440,13 +454,13 @@ export function importDependence(sensitivity: {
   if (cases.length === 0) return null;
   const best = cases.reduce((a, b) => (RANK[b.worst_tier] < RANK[a.worst_tier] ? b : a));
   const worst = cases.reduce((a, b) => (RANK[b.worst_tier] > RANK[a.worst_tier] ? b : a));
-  const describe = (c: (typeof cases)[number]) => `${importCaseLabel(c.case).toLowerCase()} (${num(c.import_gwh_day, 2)} GWh/día)`;
+  const describe = (c: (typeof cases)[number]) => `«${importCaseLabel(c.case).toLowerCase()}» (${num(c.import_gwh_day, 2)} GWh/día)`;
   const word = (tier: RiskTier) => TIERS[tier].label.toLowerCase();
   if (RANK[best.worst_tier] === RANK[worst.worst_tier]) {
-    return `Con ${cases.length === 1 ? "este supuesto" : `cualquiera de los ${countWord(cases.length)} supuestos`} el peor nivel es ${word(best.worst_tier)}: el nivel no depende de la importación.`;
+    return `Con ${cases.length === 1 ? "este supuesto" : `cualquiera de los ${countWord(cases.length)} supuestos`} el peor nivel es ${word(best.worst_tier)}: lo que llegue de Colombia no cambia el resultado.`;
   }
   return (
-    `Con el ${describe(best)} el peor nivel sería ${word(best.worst_tier)}; con el ${describe(worst)}, ${word(worst.worst_tier)} ` +
-    `a ${worst.worst_tier_horizon_days} días. El nivel descansa en el supuesto de importación.`
+    `Con ${describe(best)} el peor nivel sería ${word(best.worst_tier)}; con ${describe(worst)}, ${word(worst.worst_tier)} ` +
+    `dentro de ${worst.worst_tier_horizon_days} días. El resultado depende de cuánta energía llegue desde Colombia.`
   );
 }

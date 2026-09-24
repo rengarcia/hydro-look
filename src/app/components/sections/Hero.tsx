@@ -6,7 +6,7 @@
 import { ReservoirCutFor } from "../ReservoirParts.tsx";
 import type { AdequacyDocument, ForecastDocument } from "../../../lib/site/documents.ts";
 import { longDate, num } from "../../../lib/site/format.ts";
-import { direction, heroHeadline, marginClause, tierOf, weekday } from "../../../lib/site/story.ts";
+import { direction, heroHeadline, inflowWords, marginClause, tierOf, weekday } from "../../../lib/site/story.ts";
 import type { LatestDocument, ReservoirSnapshot } from "../../../lib/publish/latest.ts";
 
 export function Hero({
@@ -25,7 +25,7 @@ export function Hero({
   const headline = heroHeadline(now?.national?.hydro_share_pct);
   const slope = mazar?.slopes_m_per_day.d7 ?? null;
   const dir = direction(slope);
-  const percentile = mazar?.inflow?.climatology?.percentile_today ?? null;
+  const water = inflowWords(mazar?.inflow?.climatology?.percentile_today);
   const worst = adequacy?.current.worst_tier ?? null;
   const worstTier = tierOf(worst);
   const clause =
@@ -52,9 +52,9 @@ export function Hero({
         </h1>
         {mazar?.level ? (
           <p className="hero-lede">
-            Mazar, el único embalse con reserva para semanas, está a {num(mazar.level.masl, 2)} m
+            Mazar, el embalse que guarda agua para varias semanas, está a {num(mazar.level.masl, 2)} m sobre el nivel del mar
             {dir === "flat" ? " y se mantiene estable" : ` y ${dir === "down" ? "baja" : "sube"} ${num(Math.abs(slope!), 2)} m al día`}.
-            {percentile !== null ? ` El caudal que le entra está en el percentil ${num(percentile, 0)} de su historia.` : ""}
+            {water ? ` Hoy le llega ${water}.` : ""}
             {clause && worstTier ? (
               <>
                 {" "}

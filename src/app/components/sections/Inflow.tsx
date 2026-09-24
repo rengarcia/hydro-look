@@ -9,9 +9,14 @@ export function Inflow({ mazar }: { mazar: ReservoirSnapshot | null }) {
   if (mazar === null) return null;
   return (
     <section id="caudal" className="section section-tight" aria-labelledby="caudal-title">
-      <SectionIntro index="03" eyebrow="Caudal" titleId="caudal-title" title={inflowHeadline(mazar.inflow?.climatology?.percentile_today)}>
-        Caudal de entrada a Mazar del último año sobre la franja p10–p90 de los mismos días en todo el registro desde 2010. La franja
-        describe lo que este río ha hecho, no lo que vaya a hacer.
+      <SectionIntro
+        index="03"
+        eyebrow="El agua que llega"
+        titleId="caudal-title"
+        title={inflowHeadline(mazar.inflow?.climatology?.percentile_today)}
+      >
+        La línea es el agua que llegó a Mazar cada día del último año. La franja es lo normal para cada fecha según los registros desde
+        2010: 8 de cada 10 años caen dentro. Muestra lo que el río ha hecho, no lo que hará.
       </SectionIntro>
       <InflowPanel reservoir={mazar} />
     </section>
