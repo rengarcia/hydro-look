@@ -1,10 +1,20 @@
 {
-  "generated_at": "2026-09-24T20:12:30Z",
-  "command": "daily",
+  "generated_at": "2026-09-24T20:34:10Z",
+  "command": "covariates",
   "source": "all",
-  "requests": 53,
+  "requests": 17,
   "errors": [],
-  "notes": [],
+  "notes": [
+    "paute: provisional sampling point, not a verified basin centroid",
+    "era5:paute:-2.6:-78.6:2026-08-20:2026-09-18: 1 days have missing weather values",
+    "era5:paute_mazar:-2.8819:-78.9173:2026-08-20:2026-09-18: 1 days have missing weather values",
+    "era5:coca_ccs:-0.3034:-77.9266:2026-08-20:2026-09-18: 1 days have missing weather values",
+    "era5:pastaza_agoyan:-1.4018:-78.6128:2026-08-20:2026-09-18: 1 days have missing weather values",
+    "era5:guayllabamba_manduriacu:-0.0475:-78.4355:2026-08-20:2026-09-18: 1 days have missing weather values",
+    "era5:daule_marcel_laniado:-0.544:-79.6412:2026-08-20:2026-09-18: 1 days have missing weather values",
+    "era5:jubones_msf:-3.3653:-79.2546:2026-08-20:2026-09-18: 1 days have missing weather values",
+    "era5:zamora_delsitanisagua:-3.8792:-79.1596:2026-08-20:2026-09-18: 1 days have missing weather values"
+  ],
   "tables": {
     "observations_daily": {
       "rows": 89290,
@@ -31,9 +41,9 @@
       "files": 1
     },
     "weather_daily": {
-      "rows": 107472,
+      "rows": 107600,
       "first_date": "1990-01-01",
-      "last_date": "2026-10-08",
+      "last_date": "2026-10-09",
       "files": 37
     },
     "enso_monthly": {
@@ -56,17 +66,17 @@
     }
   },
   "narrative": {
-    "calls": 8,
+    "calls": 9,
     "by_status": {
       "failed": 1,
       "rejected": 3,
-      "ok": 4
+      "ok": 5
     },
-    "spend_usd": 0.1773,
+    "spend_usd": 0.2195,
     "calls_without_cost": 2,
     "by_month": {
-      "2026-09": 0.1773
+      "2026-09": 0.2195
     },
-    "last_call_at": "2026-09-24T15:36:41Z"
+    "last_call_at": "2026-09-24T20:13:05Z"
   }
 }
