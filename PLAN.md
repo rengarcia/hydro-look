@@ -1,6 +1,6 @@
 # hydro-look — Plan v2
 
-**Status:** Phases 0, 2, 3, 5, 6 and 6c are done. Phase 1 is code-complete and waits only on its clock — three consecutive days with a green *scheduled* daily run; 2026-09-22 is the first, so it can close 2026-09-24 at the earliest. Phase 4's reference tables, gates and ERA5 history are done; its catchments were delineated from a DEM and checked against INAMHI on 2026-09-23, so `basins.csv` now holds a verified centroid for each of the seven, and backfilling ERA5 at them is the one step left. Phase 6b is live: the AI Gateway is configured and the first `ok` narrative was written 2026-09-23 (run 35810691729), so its seven-day acceptance count has started. The site is deployed on Vercel, and Colombia's side of the interconnection is ingested from XM (Phase 7). The `ENHANCEMENTS.md` list was implemented on 2026-09-23 (Phase 7); what remains of it is the ERA5 dispatches. **Updated:** 2026-09-23. Supersedes the initial plan and the
+**Status:** Phases 0, 2, 3, 5, 6 and 6c are done. Phase 1 is code-complete and waits only on its clock — three consecutive days with a green *scheduled* daily run; 2026-09-22 is the first, so it can close 2026-09-24 at the earliest. Phase 4's reference tables, gates and ERA5 history are done; its catchments were delineated from a DEM and checked against INAMHI on 2026-09-23, so `basins.csv` now holds a verified centroid for each of the seven, and backfilling ERA5 at them is the one step left. Phase 6b is live: the AI Gateway is configured and the first `ok` narrative was written 2026-09-23 (run 35810691729), so its seven-day acceptance count has started. The site is deployed on Vercel, and Colombia's side of the interconnection is ingested from XM (Phase 7). The `ENHANCEMENTS.md` list was implemented on 2026-09-23 (Phase 7); what remains of it is the ERA5 dispatches. Gaps neither plan covered are listed in §8a (added 2026-09-24). **Updated:** 2026-09-24. Supersedes the initial plan and the
 follow-up research note ("CELEC dashboard covers 7 plants", "CENACE header has usable numbers").
 
 This version was built after reading the two community scrapers that already run daily against
@@ -1367,6 +1367,78 @@ regime differences between Amazon- and Pacific-slope basins.
 | Self-signed TLS | Fingerprint pinning; mismatch fails the run. |
 | AI narrative contradicts the numbers or invents a forecast | Model receives only computed stats and the §7 forecast, risk tier is an input, schema-validated output, numbers rendered next to the text, previous snapshot kept on failure (Phase 6b). |
 | Gateway rate limit / credit exhaustion | One call per ingest run, payload hash makes reruns free, `continue-on-error` so the ingest never fails because of the narrative, spend logged per call. |
+| Physical loss of a plant (Coca Codo Sinclair intake erosion, sediment) | **None yet** — see §8a, gap 5. |
+
+### 8a. Gaps found on review (2026-09-24)
+
+Neither this plan nor the initial one covers the items below. Each names the evidence it rests on in
+this repository, so an item can be closed or dropped on the same terms. Ordered by how much they
+limit the risk indicator.
+
+1. **Thermal availability is an assumption, not a measurement.** The adequacy identity's
+   second-largest supply term is one number in `adequacy_assumptions.csv`: 25.83 GWh/day, the
+   largest thermal day in three years, whose own basis says "no source this project reaches
+   publishes planned outages". Thermal outages and maintenance were part of the 2024 crisis, and
+   a demonstrated maximum says nothing about which units are down next month. No phase searches
+   for a source. **To do:** look for CENACE's operation-planning publications (weekly and monthly
+   programmes, maintenance schedules) and ARCONEL's effective-capacity table; if none is
+   reachable, record that as a negative here, as §2.4 does for HydroSHEDS.
+
+2. **The largest reservoirs are unobserved.** Daule-Peripa (Marcel Laniado, ≈5,400 hm³ —
+   more than ten times Mazar's figure in `plants.csv`) and Pisayambo (Pucará, ≈100 hm³) have no
+   entry in `mrids.csv`, and the Pacific slope is not measured at all. That is the stated reason
+   the adequacy hydro term could not be built from inflows (§7, target 3: r = 0.47 on 30-day
+   means). Target 1 defers them "if their levels become available", but no phase looks.
+   **To do:** a source search for Hidronación (Daule-Peripa) and Hidroagoyán (Pisayambo) level
+   reports, and for any CELEC business unit beyond CELEC Sur that exposes an ORDS or a report
+   endpoint.
+
+3. **The fleet is a static table.** `plants.csv` has no commissioning or retirement dates, and
+   all twelve capacities are `unverified`. Meanwhile the adequacy report attributes a 5–13
+   GWh/day low bias in five rejected hydro rungs to fleet growth, and the thermal ceiling has to
+   skip 2016 because that fleet has since been retired. **To do:** a dated capacity table
+   (`fleet_capacity.csv`: plant, technology, MW, from, to, source) covering hydro, thermal,
+   non-conventional and emergency units, with the §3 capacities checked against ARCONEL's
+   effective-power table at the same time.
+
+4. **The validation labels are unverified.** Every row of `rationing_episodes.csv` is
+   `unverified` with an empty `source_url`, and two end dates are known only to the month. Those
+   rows decide which days count as unsuppressed demand (D10) and are the entire basis of the
+   adequacy check in Phase 6c (3 of 99 origins flagged, 6 of 9 missed; the two short episodes'
+   disagreement is attributed to exactly these dates). The table also has nothing after
+   2025-01-01, while imports have been near zero since 2026-09-07 (Phase 7). **To do:** confirm
+   each row against an official source (ministry or CENACE communiqués, the official gazette),
+   fill `source_url` and `verified_on`, and add any 2025–2026 cuts. Small effort, large effect.
+
+5. **Physical risks to the plants are outside the risk table.** §8 covers the pipeline, not the
+   supply. Coca Codo Sinclair produces about half of national hydro, and the regressive erosion of
+   the Coca river since the 2020 collapse of the San Rafael falls has been advancing towards its
+   intake; sediment also affects its compensation reservoir and Amaluza (siltation appears in §7
+   only as a modelling pitfall). A forced outage there would be the next crisis, and nothing the
+   indicator reads would anticipate it. **To do:** at minimum, a scenario in `adequacy.json` with
+   Coca Codo Sinclair out, published beside the stressed-import case; optionally, a tracked
+   reference table of reported erosion and sediment events.
+
+6. **No one is named to act when the pipeline needs a person.** Failures open GitHub issues
+   (Phase 7), and some outcomes are left "for a person to read" (an M4 fallback for any reason
+   other than a new backtest origin), but the plan does not say who watches the issues, how fast,
+   or what to do when gateway credits run out or a TLS pin changes. **To do:** a short runbook
+   (`RUNBOOK.md`): owner, notification route, and one entry per issue label with the action it
+   needs.
+
+Smaller:
+
+- **Demand has no holiday or temperature term.** The unsuppressed-demand fit in
+  `models/adequacy.ts` is trend + weekday + day-of-year season. Ecuador's national holidays
+  (Carnaval, Semana Santa, bridge days) move load, and SMEC's `tipo_dia` column may already mark
+  them. Worth one backtest; the season window may already absorb the fixed-date ones.
+- **"Git is the database" has no size budget.** `data/` is 292 MB in the working tree after
+  three days of history plus backfills (the raw archive is 17k+ plain NDJSON files). Per-run pack
+  growth is small (Phase 7), but the plan sets no limit, no retention rule for the raw archive,
+  and no trigger for moving it out (release assets, a separate data repository).
+- **Skill is measured only against persistence.** No forecast is compared with an official
+  projection (CENACE, the ministry). Where such projections are published, scoring against them
+  is the comparison readers will make anyway.
 
 ---
 
