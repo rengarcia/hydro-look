@@ -1,6 +1,6 @@
 {
- "startedAt": "2026-09-25T02:44:08Z",
- "finishedAt": "2026-09-25T02:44:28Z",
+ "startedAt": "2026-09-25T02:46:41Z",
+ "finishedAt": "2026-09-25T02:47:07Z",
  "store": {
   "url": "https://geoglows-v2.s3-us-west-2.amazonaws.com/retrospective/return-periods.zarr",
   "title": "River Forecast System v2 Retrospective Simulation Return Periods",
@@ -52,9 +52,83 @@
  },
  "portal": {
   "url": "https://inamhi.geoglows.org/apps/hydroviewer-ecuador/",
-  "status": "HTTP 200, 69,343 characters",
-  "archived": "inamhi/hydroviewer-ecuador_2026-09-25.html.gz",
-  "endpoints": []
+  "status": "HTTP 200, 6 bundles reached, 485,401 characters in all",
+  "archived": "inamhi/hydroviewer-ecuador_2026-09-25/",
+  "files": [
+   {
+    "url": "https://inamhi.geoglows.org/apps/hydroviewer-ecuador/",
+    "status": "HTTP 200",
+    "bytes": 69343
+   },
+   {
+    "url": "https://inamhi.geoglows.org/apps/hydroviewer-ecuador/chunk-CZCQDTLK.js",
+    "status": "HTTP 200",
+    "bytes": 69343
+   },
+   {
+    "url": "https://inamhi.geoglows.org/apps/hydroviewer-ecuador/chunk-NPKXJC7B.js",
+    "status": "HTTP 200",
+    "bytes": 69343
+   },
+   {
+    "url": "https://inamhi.geoglows.org/apps/hydroviewer-ecuador/chunk-XMJSESVI.js",
+    "status": "HTTP 200",
+    "bytes": 69343
+   },
+   {
+    "url": "https://inamhi.geoglows.org/apps/hydroviewer-ecuador/main-WN7HSYMU.js",
+    "status": "HTTP 200",
+    "bytes": 69343
+   },
+   {
+    "url": "https://inamhi.geoglows.org/apps/hydroviewer-ecuador/polyfills-QL7OZAL3.js",
+    "status": "HTTP 200",
+    "bytes": 69343
+   },
+   {
+    "url": "https://inamhi.geoglows.org/apps/hydroviewer-ecuador/scripts-YXDGOZI7.js",
+    "status": "HTTP 200",
+    "bytes": 69343
+   }
+  ],
+  "endpoints": [
+   {
+    "literal": "https://fonts.gstatic.com",
+    "context": "<!doctype html> <html lang=\"en\" data-critters-container> <head><link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin> <meta charset=\"utf-8\"> <title>INAMHI GEOGLOWS</title> <base href=\"/\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale",
+    "file": ""
+   },
+   {
+    "literal": "https://fonts.gstatic.com",
+    "context": "<!doctype html> <html lang=\"en\" data-critters-container> <head><link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin> <meta charset=\"utf-8\"> <title>INAMHI GEOGLOWS</title> <base href=\"/\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale",
+    "file": "chunk-CZCQDTLK.js"
+   },
+   {
+    "literal": "https://fonts.gstatic.com",
+    "context": "<!doctype html> <html lang=\"en\" data-critters-container> <head><link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin> <meta charset=\"utf-8\"> <title>INAMHI GEOGLOWS</title> <base href=\"/\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale",
+    "file": "chunk-NPKXJC7B.js"
+   },
+   {
+    "literal": "https://fonts.gstatic.com",
+    "context": "<!doctype html> <html lang=\"en\" data-critters-container> <head><link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin> <meta charset=\"utf-8\"> <title>INAMHI GEOGLOWS</title> <base href=\"/\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale",
+    "file": "chunk-XMJSESVI.js"
+   },
+   {
+    "literal": "https://fonts.gstatic.com",
+    "context": "<!doctype html> <html lang=\"en\" data-critters-container> <head><link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin> <meta charset=\"utf-8\"> <title>INAMHI GEOGLOWS</title> <base href=\"/\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://fonts.gstatic.com",
+    "context": "<!doctype html> <html lang=\"en\" data-critters-container> <head><link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin> <meta charset=\"utf-8\"> <title>INAMHI GEOGLOWS</title> <base href=\"/\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale",
+    "file": "polyfills-QL7OZAL3.js"
+   },
+   {
+    "literal": "https://fonts.gstatic.com",
+    "context": "<!doctype html> <html lang=\"en\" data-critters-container> <head><link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin> <meta charset=\"utf-8\"> <title>INAMHI GEOGLOWS</title> <base href=\"/\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale",
+    "file": "scripts-YXDGOZI7.js"
+   }
+  ],
+  "tries": []
  },
  "rule": "segments whose point lies within half their length + 2 km of the pour point; closest downstream drainage area to the delineated catchment, within ±10%",
  "results": [
