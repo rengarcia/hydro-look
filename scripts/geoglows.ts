@@ -45,7 +45,7 @@ import {
   type RiverSegment,
 } from "../src/lib/geo/geoglows.ts";
 import { loadSeries } from "../src/lib/features/series.ts";
-import { bundleRefs, endpointsIn, resolveRef, type EndpointHit } from "../src/lib/probe/portal.ts";
+import { baseOf, bundleRefs, endpointsIn, isHtml, resolveRef, type EndpointHit } from "../src/lib/probe/portal.ts";
 import { toCsv } from "../src/lib/store/csv.ts";
 import { roundTo } from "../src/lib/util/numbers.ts";
 import { nowUtc } from "../src/lib/util/dates.ts";
@@ -342,14 +342,16 @@ async function probePortal(tries: readonly string[]): Promise<PortalProbe> {
 
   const files: PortalFile[] = [{ url: PORTAL, status: "HTTP 200", bytes: page.text.length }];
   const bodies = new Map<string, string>([[PORTAL, page.text]]);
-  const queue = bundleRefs(page.text).map((ref) => resolveRef(ref, PORTAL));
+  const base = baseOf(page.text, PORTAL);
+  const queue = bundleRefs(page.text).map((ref) => resolveRef(ref, base));
   const queued = new Set(queue);
   while (queue.length > 0 && files.length <= MAX_BUNDLES) {
     const url = queue.shift()!;
     try {
       const got = await getText(url);
-      files.push({ url, status: `HTTP ${got.status}`, bytes: got.text.length });
-      if (got.status !== 200) continue;
+      const shell = isHtml(got.text);
+      files.push({ url, status: `HTTP ${got.status}${shell ? ", the app's HTML shell, not a bundle" : ""}`, bytes: got.text.length });
+      if (got.status !== 200 || shell) continue;
       bodies.set(url, got.text);
       for (const ref of bundleRefs(got.text)) {
         const next = resolveRef(ref, url);
@@ -480,6 +482,9 @@ function report(startedAt: string, store: StoreRead, portal: PortalProbe, result
     "",
     `\`${portal.url}\`: ${portal.status}.${portal.archived ? ` Archived under \`data/raw/${portal.archived}\`.` : ""}`,
     "",
+    ...(portal.files.length > 1
+      ? ["Files read:", "", ...portal.files.map((f) => `- \`${f.url}\`: ${f.status}, ${f.bytes.toLocaleString("en")} characters`), ""]
+      : []),
     ...(portal.endpoints.length > 0
       ? [
           "URL-like literals in the page and its bundles (hosts, API-looking paths, hydrology words), with the code around each:",

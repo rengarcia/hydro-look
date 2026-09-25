@@ -48,6 +48,19 @@ export function endpointsIn(text: string, file: string, contextChars = 160): End
   return [...seen.values()];
 }
 
+/**
+ * The URL a page's relative references resolve against: its `<base href>` if it has one, made
+ * absolute against the page. Angular pages carry `<base href="/">`, so the bundles of
+ * `/apps/hydroviewer-ecuador/` live at the site root, not beside the page.
+ */
+export function baseOf(html: string, pageUrl: string): string {
+  const m = /<base\s+href=["']([^"']*)["']/i.exec(html);
+  return m ? new URL(m[1]!, pageUrl).toString() : pageUrl;
+}
+
+/** A single-page app answers any path with its shell; a `.js` request that comes back as HTML is not a bundle. */
+export const isHtml = (text: string): boolean => /^\s*<(?:!doctype html|html)/i.test(text);
+
 /** A bundle reference made absolute against the URL of the page or bundle that named it. */
 export function resolveRef(ref: string, base: string): string {
   return new URL(ref, base).toString();

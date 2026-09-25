@@ -6,8 +6,9 @@
  * is no Blosc in Node, and the store is read about once a year, so this implements the small part
  * of the format the store uses rather than taking a native dependency: the 16-byte header, the
  * block offsets, the per-block split streams, LZ4 block decoding, Zstd through `node:zlib`, and the
- * byte unshuffle. Anything else in the header (bit-shuffle, delta, another codec) is refused, not
- * guessed at. Tested on frames written by numcodecs.
+ * byte and bit unshuffle. A chunk can also be read a few blocks at a time, which is how one member of
+ * a 15 MB forecast chunk is read by HTTP range. Anything else in the header (delta, another codec)
+ * is refused, not guessed at. Tested on frames written by numcodecs.
  */
 
 import { zstdDecompressSync } from "node:zlib";
@@ -115,36 +116,117 @@ export function unshuffle(src: Uint8Array, typesize: number): Uint8Array {
   return out;
 }
 
+/**
+ * Undo Blosc's bit shuffle (bitshuffle's `bshuf_untrans_bit_elem`): the input is one row of bits
+ * per bit of the element — byte 0's bit 0 of every element, then byte 0's bit 1, and so on — each
+ * row packed least significant bit first. It works on whole groups of eight elements; format
+ * version 2 frames leave a block that is not one unshuffled, later versions only its tail.
+ */
+export function bitUnshuffle(src: Uint8Array, typesize: number, version = 2): Uint8Array {
+  const total = Math.floor(src.length / typesize);
+  if (version <= 2 && total % 8 !== 0) return src;
+  const n = total - (total % 8);
+  const out = new Uint8Array(src.length);
+  const rowBytes = n / 8;
+  for (let k = 0; k < typesize; k++) {
+    for (let b = 0; b < 8; b++) {
+      const row = (k * 8 + b) * rowBytes;
+      const mask = 1 << b;
+      for (let byte = 0; byte < rowBytes; byte++) {
+        const v = src[row + byte]!;
+        if (v === 0) continue;
+        for (let t = 0; t < 8; t++) if ((v >> t) & 1) out[(byte * 8 + t) * typesize + k]! |= mask;
+      }
+    }
+  }
+  out.set(src.subarray(n * typesize), n * typesize);
+  return out;
+}
+
+/** Where each block of a frame starts; read from the frame's first `16 + 4 × blocks` bytes. */
+export interface BloscIndex {
+  header: BloscHeader;
+  /** Offset of each block in the frame, and the frame's length after the last. */
+  starts: number[];
+}
+
+/** The bytes a frame's index needs: its header, then one 32-bit offset per block. */
+export function bloscIndexBytes(header: BloscHeader): number {
+  return HEADER_BYTES + 4 * Math.ceil(header.nbytes / header.blocksize);
+}
+
+export function bloscIndex(prefix: Uint8Array): BloscIndex {
+  const header = bloscHeader(prefix);
+  if (header.flags & FLAG_MEMCPYED) throw new Error("blosc: a stored frame has no block index");
+  const nblocks = Math.ceil(header.nbytes / header.blocksize);
+  if (prefix.length < bloscIndexBytes(header))
+    throw new Error(`blosc: the index needs ${bloscIndexBytes(header)} bytes, got ${prefix.length}`);
+  const view = new DataView(prefix.buffer, prefix.byteOffset, prefix.byteLength);
+  const starts = Array.from({ length: nblocks }, (_, i) => view.getInt32(HEADER_BYTES + 4 * i, true));
+  return { header, starts: [...starts, header.cbytes] };
+}
+
+/**
+ * The blocks holding decompressed bytes `[from, to)`, and the compressed byte range that holds
+ * those blocks — what to ask for with an HTTP range request instead of the whole chunk. Blosc
+ * writes blocks in order, so the range is contiguous.
+ */
+export function blocksFor(index: BloscIndex, from: number, to: number): { first: number; last: number; byteFrom: number; byteTo: number } {
+  const { blocksize, nbytes } = index.header;
+  if (from < 0 || to > nbytes || from >= to) throw new Error(`blosc: [${from}, ${to}) is outside the frame's ${nbytes} bytes`);
+  const first = Math.floor(from / blocksize);
+  const last = Math.floor((to - 1) / blocksize);
+  return { first, last, byteFrom: index.starts[first]!, byteTo: index.starts[last + 1]! };
+}
+
+function decodeBlock(h: BloscHeader, bytes: Uint8Array, offset: number, i: number): Uint8Array {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const bsize = Math.min(h.blocksize, h.nbytes - i * h.blocksize);
+  const split =
+    !(h.flags & FLAG_DONT_SPLIT) && h.typesize <= MAX_SPLITS && bsize === h.blocksize && h.blocksize / h.typesize >= MIN_BUFFERSIZE;
+  const nsplits = split ? h.typesize : 1;
+  const neblock = bsize / nsplits;
+  const block = new Uint8Array(bsize);
+  let s = offset;
+  for (let j = 0; j < nsplits; j++) {
+    const csize = view.getInt32(s, true);
+    s += 4;
+    const src = bytes.subarray(s, s + csize);
+    // A stream that did not compress is stored as is, and says so by its size.
+    block.set(csize === neblock ? src : decodeStream(h.codec, src, neblock), j * neblock);
+    s += csize;
+  }
+  if (h.flags & FLAG_BITSHUFFLE && h.typesize > 1) return bitUnshuffle(block, h.typesize, h.version);
+  return h.flags & FLAG_SHUFFLE ? unshuffle(block, h.typesize) : block;
+}
+
+function checkFlags(h: BloscHeader): void {
+  if (h.version !== 2 && h.version !== 1) throw new Error(`blosc: format version ${h.version} is not supported`);
+  if (h.flags & FLAG_DELTA) throw new Error(`blosc: flags 0x${h.flags.toString(16)} (delta) are not supported`);
+}
+
+/**
+ * Blocks `first..last` of a frame, from `bytes` — the frame's compressed bytes starting at frame
+ * offset `byteFrom`, as `blocksFor` gives them. Returns the decompressed bytes from the start of
+ * block `first`.
+ */
+export function decodeBlocks(index: BloscIndex, bytes: Uint8Array, byteFrom: number, first: number, last: number): Uint8Array {
+  const h = index.header;
+  checkFlags(h);
+  const end = Math.min(h.nbytes, (last + 1) * h.blocksize);
+  const out = new Uint8Array(end - first * h.blocksize);
+  for (let i = first; i <= last; i++) out.set(decodeBlock(h, bytes, index.starts[i]! - byteFrom, i), (i - first) * h.blocksize);
+  return out;
+}
+
 export function bloscDecompress(frame: Uint8Array): Uint8Array {
   const h = bloscHeader(frame);
-  if (h.version !== 2 && h.version !== 1) throw new Error(`blosc: format version ${h.version} is not supported`);
+  checkFlags(h);
   if (h.cbytes !== frame.length) throw new Error(`blosc: header says ${h.cbytes} compressed bytes, frame has ${frame.length}`);
   if (h.flags & FLAG_MEMCPYED) {
     if (frame.length - HEADER_BYTES < h.nbytes) throw new Error("blosc: stored frame is truncated");
     return frame.slice(HEADER_BYTES, HEADER_BYTES + h.nbytes);
   }
-  if (h.flags & (FLAG_BITSHUFFLE | FLAG_DELTA))
-    throw new Error(`blosc: flags 0x${h.flags.toString(16)} (bit-shuffle or delta) are not supported`);
-  const view = new DataView(frame.buffer, frame.byteOffset, frame.byteLength);
-  const out = new Uint8Array(h.nbytes);
-  const nblocks = Math.ceil(h.nbytes / h.blocksize);
-  for (let i = 0; i < nblocks; i++) {
-    const bsize = Math.min(h.blocksize, h.nbytes - i * h.blocksize);
-    const split =
-      !(h.flags & FLAG_DONT_SPLIT) && h.typesize <= MAX_SPLITS && bsize === h.blocksize && h.blocksize / h.typesize >= MIN_BUFFERSIZE;
-    const nsplits = split ? h.typesize : 1;
-    const neblock = bsize / nsplits;
-    const block = new Uint8Array(bsize);
-    let s = view.getInt32(HEADER_BYTES + 4 * i, true);
-    for (let j = 0; j < nsplits; j++) {
-      const csize = view.getInt32(s, true);
-      s += 4;
-      const src = frame.subarray(s, s + csize);
-      // A stream that did not compress is stored as is, and says so by its size.
-      block.set(csize === neblock ? src : decodeStream(h.codec, src, neblock), j * neblock);
-      s += csize;
-    }
-    out.set(h.flags & FLAG_SHUFFLE ? unshuffle(block, h.typesize) : block, i * h.blocksize);
-  }
-  return out;
+  const index = bloscIndex(frame);
+  return decodeBlocks(index, frame, 0, 0, index.starts.length - 2);
 }
