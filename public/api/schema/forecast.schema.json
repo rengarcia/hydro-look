@@ -472,7 +472,7 @@
     },
     "inflow_forecasts": {
       "type": "object",
-      "description": "Mean inflow forecasts for the plants whose level is not worth forecasting (ENHANCEMENTS §5.3). A horizon is published only where the analogue years beat persistence and climatology on the backtest; the others carry the reason. Additive; absent before 2026-09-23.",
+      "description": "Mean inflow forecasts for the plants whose level is not worth forecasting (ENHANCEMENTS §5.3). A horizon is published only where the published rung (`backtest.model`: since 2026-09-25 the ensemble, the mean of the analogue years and climatology, plus a river forecast where one is validated) beats persistence and climatology on the backtest; the others carry the reason. Additive; absent before 2026-09-23.",
       "properties": {
         "report": {
           "type": "string"

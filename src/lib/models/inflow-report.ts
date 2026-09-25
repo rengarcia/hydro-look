@@ -39,24 +39,32 @@ export function renderInflowReport(inputs: InflowReportInputs): string {
       `(clamped to ${options.ratioBounds[0]}–${options.ratioBounds[1]}), and, where the plant's catchment centroid has adequate ERA5, ` +
       `first keeps the ${options.rainKeepShare * 100}% of years whose ${options.rainDays} days of rain before the origin were nearest today's.`,
   );
+  lines.push(
+    "- **ensemble**, the published rung since 2026-09-25, is the mean of the analogue and climatology rungs — and of a " +
+      "short-range river forecast's anomaly where one is supplied. The two rungs err in different directions, and their " +
+      "average beat the analogue alone at every plant and both horizons (`data/reports/geoglows-experiment.md`)." +
+      (inputs.backtests.some((b) => b.forecastShare > 0)
+        ? ` A river forecast was a member in ${inputs.backtests.map((b) => `${b.site} ${(b.forecastShare * 100).toFixed(0)}%`).join(", ")} of the scored cases.`
+        : " No river forecast is a member yet."),
+  );
   lines.push("");
   lines.push(
-    "A plant's forecast is published at a horizon only where the analogue rung's MAE beats *both* persistence and " +
-      "climatology over the same origins. Its band is the analogue median widened by its own out-of-sample residual " +
+    "A plant's forecast is published at a horizon only where the ensemble's MAE beats *both* persistence and " +
+      "climatology over the same origins. Its band is the ensemble median widened by its own out-of-sample residual " +
       "quantiles, as every forecast here is.",
   );
   lines.push("");
 
   lines.push("## Verdict");
   lines.push("");
-  lines.push("| plant | origins | horizon | analogue MAE | persistence | climatology | analogue coverage p10–p90 | published |");
-  lines.push("|---|---:|---:|---:|---:|---:|---:|---|");
+  lines.push("| plant | origins | horizon | ensemble MAE | analogue | persistence | climatology | ensemble coverage p10–p90 | published |");
+  lines.push("|---|---:|---:|---:|---:|---:|---:|---:|---|");
   for (const b of inputs.backtests) {
     for (const d of b.decisions) {
       const s = (m: string) => b.scores.find((x) => x.model === m && x.horizonDays === d.horizonDays);
-      const a = s("analogue");
+      const a = s("ensemble");
       lines.push(
-        `| ${SITES[b.site as keyof typeof SITES]?.label ?? b.site} | ${b.origins} | ${d.horizonDays} d | ${f(a?.maeM3s)} | ` +
+        `| ${SITES[b.site as keyof typeof SITES]?.label ?? b.site} | ${b.origins} | ${d.horizonDays} d | ${f(a?.maeM3s)} | ${f(s("analogue")?.maeM3s)} | ` +
           `${f(s("persistence")?.maeM3s)} | ${f(s("climatology")?.maeM3s)} | ` +
           `${a?.coverageP10P90 === null || a?.coverageP10P90 === undefined ? "—" : `${(a.coverageP10P90 * 100).toFixed(0)}%`} | ` +
           `${d.ships ? "**yes**" : `no — ${d.reason}`} |`,
@@ -120,7 +128,7 @@ export function renderInflowReport(inputs: InflowReportInputs): string {
       "and is silted; its level moves with the day's dispatch, not with the season, and a rule curve fitted over " +
       "years has nothing to hold on to. A real cascade model would route Mazar's simulated release and the inter-dam " +
       "inflow through a daily dispatch rule for Molino, which this data does not constrain. What is published for " +
-      "Amaluza is its inflow, above, where the analogue earns it.",
+      "Amaluza is its inflow, above, where the ensemble earns it.",
   );
   lines.push("");
   return `${lines.join("\n").trimEnd()}\n`;

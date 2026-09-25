@@ -3,7 +3,15 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { backtestInflow, DEFAULT_INFLOW, inflowEntry, inflowOrigins, predictInflow, windowMean } from "../src/lib/models/inflow.ts";
+import {
+  backtestInflow,
+  DEFAULT_INFLOW,
+  inflowEntry,
+  inflowOrigins,
+  predictInflow,
+  PUBLISHED_INFLOW_MODEL,
+  windowMean,
+} from "../src/lib/models/inflow.ts";
 import { nearestByRain, perfectForesightRain, rainAfter } from "../src/lib/models/rain.ts";
 import type { AnalogPath } from "../src/lib/models/water-balance.ts";
 import type { DailySeries } from "../src/lib/features/series.ts";
@@ -59,6 +67,33 @@ describe("predictInflow", () => {
   });
 });
 
+describe("the ensemble rung", () => {
+  const inflow = river(8);
+  const cut = new Map([...inflow].filter(([date]) => date <= "2018-06-01"));
+  const analogue = predictInflow("analogue", cut, "2018-06-01", 7)!.p50;
+  const climatology = predictInflow("climatology", cut, "2018-06-01", 7)!.p50;
+
+  it("is the mean of the analogue and climatology rungs", () => {
+    const p = predictInflow("ensemble", cut, "2018-06-01", 7)!;
+    expect(p.p50).toBeCloseTo((analogue + climatology) / 2, 9);
+    expect(p.withForecast).toBe(false);
+  });
+
+  it("takes a river forecast as a third member where one is issued, and only for its own origin", () => {
+    const forecast = (origin: string, h: number) => (origin === "2018-06-01" && h === 7 ? 999 : null);
+    const p = predictInflow("ensemble", cut, "2018-06-01", 7, DEFAULT_INFLOW, null, forecast)!;
+    expect(p.p50).toBeCloseTo((analogue + climatology + 999) / 3, 9);
+    expect(p.withForecast).toBe(true);
+    expect(predictInflow("ensemble", cut, "2018-06-01", 14, DEFAULT_INFLOW, null, forecast)!.withForecast).toBe(false);
+  });
+
+  it("is what the backtest publishes, and says how often a forecast was in it", () => {
+    const result = backtestInflow("test", river(9), DEFAULT_INFLOW, null, () => null);
+    expect(PUBLISHED_INFLOW_MODEL).toBe("ensemble");
+    expect(result.forecastShare).toBe(0);
+  });
+});
+
 describe("backtestInflow", () => {
   const inflow = river(9);
   const result = backtestInflow("test", inflow);
@@ -70,8 +105,11 @@ describe("backtestInflow", () => {
     expect(result.origins).toBeGreaterThanOrEqual(inflowOrigins(inflow).length - 2);
   });
 
-  it("ships the analogue where it beats both baselines, as it must on a river this regular", () => {
-    expect(result.decisions.every((d) => d.ships)).toBe(true);
+  it("ships the published rung exactly where it beats both baselines", () => {
+    for (const d of result.decisions) {
+      const mae = (m: string) => result.scores.find((s) => s.model === m && s.horizonDays === d.horizonDays)!.maeM3s;
+      expect(d.ships).toBe(mae(PUBLISHED_INFLOW_MODEL) < mae("persistence") && mae(PUBLISHED_INFLOW_MODEL) < mae("climatology"));
+    }
   });
 
   it("refuses a rung that does not beat persistence, and says so", () => {
@@ -82,7 +120,8 @@ describe("backtestInflow", () => {
   });
 
   it("publishes a live band around the median only where it ships", () => {
-    const entry = inflowEntry(result, inflow, null, null) as {
+    const shipping = { ...result, decisions: result.decisions.map((d) => ({ ...d, ships: true })) };
+    const entry = inflowEntry(shipping, inflow, null, null) as {
       horizons: { published: boolean; p10?: number; p50?: number; p90?: number }[];
     };
     for (const h of entry.horizons) {

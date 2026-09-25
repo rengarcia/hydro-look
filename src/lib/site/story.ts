@@ -403,7 +403,8 @@ export function dayScoreNote(
 /**
  * Why an inflow horizon is or is not published, in the page's words and from the backtest's own
  * numbers — the document's `reason` is written in English, for the report. A horizon ships only
- * when the analogue years beat both persistence and climatology; one that does not is named by
+ * when the ensemble (analogue years averaged with the calendar's usual) beats both persistence and
+ * climatology; one that does not is named by
  * what it lost to.
  */
 export function inflowVerdict(h: {

@@ -3,7 +3,8 @@
  *
  * For the run-of-river and daily-storage plants the level is an operating decision, so the
  * forecast target is the mean inflow over the next week or fortnight. A horizon is published only
- * where the analogue years beat both persistence and climatology on the rolling-origin backtest;
+ * where the ensemble (analogue years averaged with the calendar's usual) beats both persistence and
+ * climatology on the rolling-origin backtest;
  * every horizon is listed either way, with its backtest beside it, and one that is not published
  * says what it lost to — a missing row would read as a forecast nobody tried.
  *

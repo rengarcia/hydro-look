@@ -340,7 +340,8 @@ function main(): void {
     inflowBlock = {
       report: "data/reports/inflow.md",
       note:
-        "Caudal medio de entrada en los próximos días, por central, donde el pronóstico por años análogos supera a la " +
+        "Caudal medio de entrada en los próximos días, por central, donde el pronóstico (años análogos promediados con lo " +
+        "normal para la época) supera a la " +
         "persistencia y a la climatología en el backtest; en las demás se indica por qué no se publica.",
       plants: entries,
     };
