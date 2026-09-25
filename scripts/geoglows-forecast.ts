@@ -185,11 +185,11 @@ function report(startedAt: string, origins: IsoDate[], step: number, missing: Is
     "",
     "## Floods on the scored days",
     "",
-    "Days whose measured inflow reached the site's measured 2-year flood, and how each method did at every lead together",
-    "(hits / misses / false alarms). The last column counts the days the raw forecast reached INAMHI's 2-year flow — the",
+    "Cases (origin × lead) whose measured inflow reached the site's measured 2-year flood, and how each method did on them",
+    "(hits / misses / false alarms). The last column counts the cases in which the raw forecast reached INAMHI's 2-year flow — the",
     "Hydroviewer's own threshold, on the model's scale — which is when the portal would have coloured the river.",
     "",
-    "| site | scale | measured 2 y | days reaching it | raw | scaled | relative | persistence | INAMHI 2 y | raw ≥ INAMHI 2 y |",
+    "| site | scale | measured 2 y | cases reaching it | raw | scaled | relative | persistence | INAMHI 2 y | raw ≥ INAMHI 2 y |",
     "|---|---|---|---|---|---|---|---|---|---|",
   );
   for (const r of results) {

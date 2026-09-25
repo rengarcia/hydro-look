@@ -1400,11 +1400,12 @@ which way the two thresholds disagree and how closely the model follows the rive
   scored against CELEC's inflow, each against persistence (the last measured day):
   - *GEOGLOWS' own* (`npm run geoglows:forecast`, `data/reports/geoglows-forecast.md`): every
     third day's high-resolution member since 2024-07-01, read from the public forecast archive by
-    range request. Worse than persistence at one day everywhere; a little better from three to
-    ten days at Mazar, Coca Codo Sinclair and Delsitanisagua raw, and at Minas San Francisco once
-    scaled by the retrospective's volume bias (skill 0.03–0.23); much worse at Agoyán and
-    Manduriacu raw. Of the days whose measured inflow reached the measured 2-year flood, it
-    caught almost none.
+    range request (272 origins, seven rivers, 1.2 GB). Worse than persistence at one day
+    everywhere (skill −0.18 to −2.98); a little better from three to ten days at Mazar, Coca Codo
+    Sinclair, Amaluza and Delsitanisagua raw, and at Minas San Francisco once scaled by the
+    retrospective's volume bias (skill 0.03–0.23); much worse at Agoyán and Manduriacu raw (−1.2
+    to −2.9). Of the 55 origin × lead cases whose measured inflow reached the measured 2-year
+    flood, the raw forecast caught 3.
   - *INAMHI's own* (`npm run inamhi:hydropower`, `data/reports/inamhi-hydropower.md`): the
     Hydropower app's corrected forecasts, served back to 2025-05-29, every third day, 1,891
     requests archived. Its ensemble mean, high-resolution member and chart line all tie
@@ -1416,8 +1417,9 @@ which way the two thresholds disagree and how closely the model follows the rive
   Neither earns a place on the page as an inflow forecast, by the rule §5.3 applies to this
   repository's own (published only where it beats persistence and climatology). The live
   "is the Hydroviewer colouring this river?" state is not published either: over the backtest,
-  the raw forecast reached INAMHI's 2-year flow on almost no day while the measured inflow
-  reached the measured one on dozens, so a green light from it would say nothing. Both scripts
+  the raw forecast reached INAMHI's 2-year flow in 13 of some 11,400 cases — 10 of them at
+  Delsitanisagua — while the measured inflow reached the measured one in 55, so a green light
+  from it would say nothing. Both scripts
   stay, so the question can be asked again when GEOGLOWS or INAMHI changes their method.
 
 **Candidate list, 2026-09-23:** `ENHANCEMENTS.md` ranks what to do next across the pipeline,
