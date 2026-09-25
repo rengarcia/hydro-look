@@ -38,9 +38,12 @@ Six things worth knowing before using any of it:
 - **`repDiaNivQIng` answers with the previous day's numbers.** Asked for date D it returns rows
   stamped D whose level and inflow are D−1's, identical to what `repDiaHid12m` publishes for D−1 —
   measured on 113 consecutive days and on captures from 2016, 2019, 2022, 2024 and 2026. Rows from
-  it are therefore stored under the day they describe, not the day they are stamped. The other
-  per-day reports are not shifted; `DATA_DATE_OFFSET_DAYS` in `src/lib/registry.ts` says which are
-  known to be, which are known not to be, and which are untested.
+  it are therefore stored under the day they describe, not the day they are stamped.
+  `repDiaPotQTurb` is shifted the same way: it publishes Molino's turbined flow, digit for digit,
+  as `repDiaNivQIng`'s Sopladora inflow for the same requested date (116 of 116 days, and every
+  capture), and both are midnight snapshots rather than daily figures. The other per-day reports
+  are measured and not shifted; `DATA_DATE_OFFSET_DAYS` in `src/lib/registry.ts` has the evidence
+  for each.
 - **The historian's flow mrids are inflow, and carry more precision than the reports.**
   `mridCaud` (30538 for Mazar) is `q_ingresado`, agreeing with `repDiaHid12m` on 4,281 days at
   r = 1.0000; the only difference is that the report rounds to whole m³/s and the historian does

@@ -202,7 +202,7 @@ export function parseRepDiaNivQIng(body: string): ParseResult {
   return { observations, notes };
 }
 
-/** `repDiaPotQTurb?fecha=` — one day: power, units online and turbined flow per plant. */
+/** `repDiaPotQTurb?fecha=` — power, units online and turbined flow per plant, at one instant. */
 export function parseRepDiaPotQTurb(body: string): ParseResult {
   const endpoint = "ords:repDiaPotQTurb";
   const rows = itemsOf(body, endpoint);
@@ -210,7 +210,9 @@ export function parseRepDiaPotQTurb(body: string): ParseResult {
 
   const observations: Observation[] = [];
   for (const row of rows) {
-    const date = localDateOf(requireString(row, "fecha", endpoint));
+    // A snapshot at the midnight in its own stamp, dated like repDiaNivQIng's, which publishes
+    // Molino's turbined flow again as Sopladora's inflow. See DATA_DATE_OFFSET_DAYS.
+    const date = addDays(localDateOf(requireString(row, "fecha", endpoint)), DATA_DATE_OFFSET_DAYS[endpoint] ?? 0);
     const site = siteFromLabel(requireString(row, "central", endpoint));
     const power = asNumber(row["potencia"]);
     const turbined = asNumber(row["q_turbinado"]);
