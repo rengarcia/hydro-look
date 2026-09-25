@@ -29,7 +29,6 @@ import {
   LEADS,
   METHODS,
   scoreByLead,
-  type Case,
   type ForecastRun,
   type LeadScore,
 } from "../src/lib/models/geoglows-forecast.ts";
@@ -108,14 +107,12 @@ async function main(): Promise<void> {
   }
 
   const results: SiteBacktest[] = [];
-  const allCases: Record<string, Case[]> = {};
   for (const r of sites) {
     const site = r["site"]!;
     const riverId = Number(r["river_id"]);
     const measured = series.get(site, "caudal_m3s");
     const { scale, days } = scales.get(site)!;
     const cs = cases(runs.get(riverId)!, measured, scale);
-    allCases[site] = cs;
     // The Hydroviewer's own threshold: INAMHI's fit, on the model's scale, like the raw forecast.
     const geoglowsTwoYear = Number(r["q2_inamhi_m3s"]);
     const measuredTwoYear = measuredQ2(measured);
@@ -134,11 +131,21 @@ async function main(): Promise<void> {
     });
   }
 
+  // Every run's daily means at every lead, so models can be backtested with the forecast as a covariate
+  // (scripts/geoglows-experiment.ts) without reading the archive again.
+  const runsBySite = Object.fromEntries(
+    sites.map((r) => [
+      r["site"]!,
+      runs
+        .get(Number(r["river_id"]))!
+        .map((run) => ({ origin: run.origin, daily: run.daily.map((v) => (v === null ? null : Math.round(v * 1000) / 1000)) })),
+    ]),
+  );
   mkdirSync(repoPath("data", "reports"), { recursive: true });
   writeFileSync(repoPath("data", "reports", "geoglows-forecast.md"), `${report(startedAt, origins, step, missing, bytes, results)}\n`);
   writeFileSync(
     repoPath("data", "reports", "geoglows-forecast.json"),
-    `${JSON.stringify({ startedAt, finishedAt: nowUtc(), from, to, step, member: HIGH_RES_MEMBER, missing, results, cases: allCases }, null, 1)}\n`,
+    `${JSON.stringify({ startedAt, finishedAt: nowUtc(), from, to, step, member: HIGH_RES_MEMBER, missing, results, runs: runsBySite }, null, 1)}\n`,
   );
   console.log(`wrote data/reports/geoglows-forecast.{md,json}; ${(bytes / 1e6).toFixed(0)} MB read, ${missing.length} origins missing`);
 }
