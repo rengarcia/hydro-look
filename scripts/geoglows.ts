@@ -308,7 +308,7 @@ const MAX_BUNDLES = 80;
 const MAX_ARCHIVE_BYTES = 12_000_000;
 
 async function getText(url: string): Promise<{ status: number; text: string; contentType: string }> {
-  const response = await fetch(url, { signal: AbortSignal.timeout(30_000), headers: { "user-agent": USER_AGENT } });
+  const response = await fetch(url, { signal: AbortSignal.timeout(120_000), headers: { "user-agent": USER_AGENT } });
   return { status: response.status, text: await response.text(), contentType: response.headers.get("content-type") ?? "" };
 }
 
