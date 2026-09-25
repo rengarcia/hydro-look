@@ -24,6 +24,8 @@
     "probe:basins": "tsx scripts/probe-basins.ts",
     "catchments": "tsx scripts/catchments.ts",
     "geoglows": "tsx scripts/geoglows.ts",
+    "geoglows:forecast": "tsx scripts/geoglows-forecast.ts",
+    "inamhi:hydropower": "tsx scripts/inamhi-hydropower.ts",
     "check": "tsx scripts/check.ts",
     "publish:api": "tsx scripts/publish.ts",
     "export:bulk": "tsx scripts/export-bulk.ts",

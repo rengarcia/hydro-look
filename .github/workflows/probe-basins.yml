@@ -17,6 +17,11 @@ name: Basin sources probe
 # `geoglows-v2` bucket, fits the same statistic on CELEC's record, asks the portal itself once
 # (the sandbox cannot), and commits data/reference/geoglows_return_periods.csv and
 # data/reports/return-periods.{md,json}. The store is revised about once a year (PLAN.md Phase 7).
+#
+# `phases: inamhi-hydropower` backtests INAMHI's own hydropower inflow forecasts, which only a
+# runner can reach: `npm run inamhi:hydropower` finds the first date they are served, asks every
+# third day's forecast of each plant since, scores it against CELEC's inflow and commits
+# data/reports/inamhi-hydropower.{md,json} and the answers under data/raw/inamhi/hydropower/.
 # Dispatch-only now that it is on main: a dispatch names the ref it runs, so a probe under
 # development is run from its own branch without a push trigger pinned to a branch name that
 # stops existing the moment it merges.
@@ -29,7 +34,8 @@ on:
           delsitanisagua, official; the settled re-checks are hydrosheds, mirrors, arcgis,
           robots, overpass, contains. wikidata is added whenever a phase needs an anchor.
           "catchments" alone runs the DEM delineation job instead, which commits its output;
-          "geoglows" alone reads the GEOGLOWS return periods at the dams and commits them.
+          "geoglows" alone reads the GEOGLOWS return periods at the dams and commits them;
+          "inamhi-hydropower" alone backtests INAMHI's hydropower forecasts and commits the report.
         required: false
         default: all
       urls:
@@ -43,7 +49,7 @@ permissions: {}
 
 jobs:
   probe:
-    if: inputs.phases != 'catchments' && inputs.phases != 'geoglows'
+    if: inputs.phases != 'catchments' && inputs.phases != 'geoglows' && inputs.phases != 'inamhi-hydropower'
     runs-on: ubuntu-latest
     # Ten was not enough: run 35732611773 was killed at the limit mid-walk. Overpass is the
     # slow part and the least predictable, since a busy instance answers late or not at all.
@@ -150,6 +156,42 @@ jobs:
           git add data/reference/geoglows_return_periods.csv data/reports/return-periods.md data/reports/return-periods.json data/raw/inamhi 2>/dev/null || true
           if git diff --cached --quiet; then echo "Nothing to commit."; exit 0; fi
           git commit -m "GEOGLOWS return periods at the dams (run $RUN_ID)"
+          for attempt in 1 2 3 4; do
+            git pull --rebase origin "$BRANCH" && git push origin "HEAD:$BRANCH" && exit 0
+            sleep $((attempt * 5))
+          done
+          exit 1
+
+  inamhi-hydropower:
+    if: inputs.phases == 'inamhi-hydropower'
+    runs-on: ubuntu-latest
+    # About 1,500 requests at one every half second, and the answers' own time.
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      # This job holds the push token, so no dependency's install script runs.
+      - run: npm ci --ignore-scripts
+      - name: Backtest
+        run: npm run inamhi:hydropower -- --earliest --step 3 2>&1 | tee "$RUNNER_TEMP/inamhi.log"
+      - name: Summarise
+        if: always()
+        run: cat data/reports/inamhi-hydropower.md >> "$GITHUB_STEP_SUMMARY" || true
+      - name: Commit
+        env:
+          BRANCH: ${{ github.ref_name }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/reports/inamhi-hydropower.md data/reports/inamhi-hydropower.json data/raw/inamhi/hydropower 2>/dev/null || true
+          if git diff --cached --quiet; then echo "Nothing to commit."; exit 0; fi
+          git commit -m "INAMHI hydropower forecast backtest (run $RUN_ID)"
           for attempt in 1 2 3 4; do
             git pull --rebase origin "$BRANCH" && git push origin "HEAD:$BRANCH" && exit 0
             sleep $((attempt * 5))

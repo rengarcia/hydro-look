@@ -28,12 +28,14 @@
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { parseArgs } from "node:util";
+import { createHash } from "node:crypto";
 import { gzipSync } from "node:zlib";
 import { asyncBufferFromUrl, cachedAsyncBuffer, parquetMetadataAsync, parquetRead } from "hyparquet";
 import { fetch } from "undici";
 import { USER_AGENT } from "../src/lib/http/client.ts";
 import { arrayMeta, positionsOf, readChunk, readConsolidated } from "../src/lib/geo/zarr.ts";
 import { httpZarrSource } from "../src/lib/geo/zarr-http.ts";
+import { readSimulated, SIMULATED } from "../src/lib/geo/geoglows-stores.ts";
 import {
   annualMaxima,
   compareFlows,
@@ -48,7 +50,7 @@ import {
   type RiverMatch,
   type RiverSegment,
 } from "../src/lib/geo/geoglows.ts";
-import { loadSeries, type DailySeries } from "../src/lib/features/series.ts";
+import { loadSeries } from "../src/lib/features/series.ts";
 import { baseOf, bundleRefs, endpointsIn, isHtml, keywordHits, resolveRef, type EndpointHit } from "../src/lib/probe/portal.ts";
 import { toCsv } from "../src/lib/store/csv.ts";
 import { roundTo } from "../src/lib/util/numbers.ts";
@@ -57,7 +59,6 @@ import { DATA_RAW, repoPath } from "../src/lib/util/paths.ts";
 
 const BUCKET = "https://geoglows-v2.s3-us-west-2.amazonaws.com";
 const STORE = `${BUCKET}/retrospective/return-periods.zarr`;
-const SIMULATED = `${BUCKET}/retrospective/daily.zarr`;
 const METADATA_TABLE = `${BUCKET}/tables/package-metadata-table.parquet`;
 const MODEL_TABLE = `${BUCKET}/tables/v2-model-table.parquet`;
 const PORTAL = "https://inamhi.geoglows.org/apps/hydroviewer-ecuador/";
@@ -220,44 +221,6 @@ async function readStore(riverIds: readonly number[]): Promise<StoreRead> {
   };
 }
 
-/**
- * GEOGLOWS' simulated daily mean flow at each river, 1940 → the store's last day. The store is
- * `[time, river_id]` in chunks of ~31,000 days by 50 rivers, so each river costs one or two chunks.
- */
-async function readSimulated(riverIds: readonly number[]): Promise<{ series: Map<number, DailySeries>; etags: Record<string, string> }> {
-  const source = httpZarrSource(SIMULATED);
-  const md = await readConsolidated(source);
-  const timeMeta = arrayMeta(md, "time");
-  const unit = String((md["time/.zattrs"] ?? {})["units"] ?? "");
-  const epoch = /^seconds since (\d{4}-\d{2}-\d{2})$/.exec(unit)?.[1];
-  if (!epoch) throw new Error(`zarr: daily.zarr's time is in "${unit}", not seconds since a date`);
-  const times: number[] = [];
-  for (let c = 0; c < Math.ceil(timeMeta.shape[0]! / timeMeta.chunks[0]!); c++)
-    times.push(...Array.from(await readChunk(source, "time", timeMeta, [c])));
-  const dates = times
-    .slice(0, timeMeta.shape[0])
-    .map((t) => new Date(Date.parse(`${epoch}T00:00:00Z`) + t * 1000).toISOString().slice(0, 10));
-
-  const position = await positionsOf(source, "river_id", arrayMeta(md, "river_id"), riverIds);
-  const q = arrayMeta(md, "Q");
-  const [tChunk, rChunk] = q.chunks as [number, number];
-  const series = new Map<number, DailySeries>();
-  for (const id of riverIds) {
-    const at = position.get(id);
-    if (at === undefined) throw new Error(`zarr: river ${id} is not in daily.zarr`);
-    const out: DailySeries = new Map();
-    for (let tc = 0; tc < Math.ceil(q.shape[0]! / tChunk); tc++) {
-      const data = await readChunk(source, "Q", q, [tc, Math.floor(at / rChunk)]);
-      for (let i = 0; i < tChunk && tc * tChunk + i < dates.length; i++) {
-        const v = data[i * rChunk + (at % rChunk)]!;
-        if (Number.isFinite(v)) out.set(dates[tc * tChunk + i]!, v);
-      }
-    }
-    series.set(id, out);
-  }
-  return { series, etags: Object.fromEntries(source.etags) };
-}
-
 // ---------------------------------------------------------------------------------------------
 // The portal
 // ---------------------------------------------------------------------------------------------
@@ -362,10 +325,11 @@ async function probePortal(tries: readonly string[]): Promise<PortalProbe> {
   }
 
   const tried: PortalTry[] = [];
-  for (const [i, url] of tries.entries()) {
+  for (const url of tries) {
     try {
       const got = await getText(url);
-      const archived = `${dir}/try-${i + 1}.gz`;
+      // Named after the URL, so a second run on the same day adds to the archive instead of overwriting it.
+      const archived = `${dir}/try-${createHash("sha256").update(url).digest("hex").slice(0, 12)}.gz`;
       writeFileSync(`${DATA_RAW}/${archived}`, gzipSync(`${url}\n\n${got.text}`));
       tried.push({
         url,
