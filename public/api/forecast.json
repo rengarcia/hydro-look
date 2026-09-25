@@ -858,6 +858,14 @@
       "terms_es": "CC BY 4.0 (https://open-meteo.com/en/terms); la API gratuita es para uso no comercial"
     },
     {
+      "id": "geoglows",
+      "name": "GEOGLOWS River Forecast System v2 (ECMWF, BYU; shown in Ecuador by the INAMHI–GEOGLOWS portal)",
+      "provides": "streamflow return periods at the rivers the dams stand on",
+      "url": "https://inamhi.geoglows.org/",
+      "terms": "CC BY-NC-SA 4.0, the licence of the return-period store: credit it, no commercial use, share derivatives alike",
+      "terms_es": "CC BY-NC-SA 4.0, la licencia del almacén de periodos de retorno: citarlo, sin uso comercial, compartir igual"
+    },
+    {
       "id": "noaa",
       "name": "NOAA PSL / CPC",
       "provides": "the Oceanic Niño Index",

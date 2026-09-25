@@ -17,6 +17,7 @@ import { Crumbs, MAIN_ID } from "../../../components/Chrome.tsx";
 import { InflowPanel } from "../../../components/ReservoirParts.tsx";
 import { InflowForecastPanel, inflowPlantOf } from "../../../components/InflowForecast.tsx";
 import { FloorsPanel, RecordSection, ReservoirHero } from "../../../components/ReservoirPage.tsx";
+import { ReturnPeriodsSection } from "../../../components/ReturnPeriods.tsx";
 import { apiDocument, latest } from "../../../../lib/site/data.ts";
 import type { ForecastDocument } from "../../../../lib/site/documents.ts";
 import { basinLabel, num } from "../../../../lib/site/format.ts";
@@ -79,6 +80,7 @@ export default async function ReservoirPage({ params }: { params: Promise<{ site
         <InflowPanel reservoir={reservoir} heading="El agua que llega, frente a otros años" />
         <FloorsPanel reservoir={reservoir} />
       </section>
+      <ReturnPeriodsSection reservoir={reservoir} />
       {plant ? (
         <section className="shell" aria-label="Pronóstico del agua que llega">
           <InflowForecastPanel plant={plant} report={inflowForecasts?.report} label={reservoir.label} />

@@ -19,6 +19,8 @@ import {
   importDependence,
   inflowHeadline,
   inflowVerdict,
+  returnPeriodAgreement,
+  returnPeriodReachedWords,
   scorecardSummary,
 } from "../src/lib/site/story.ts";
 import type { LatestDocument } from "../src/lib/publish/latest.ts";
@@ -124,6 +126,9 @@ describe("documents written before the additive blocks", () => {
     const { default: DayPage } = await import("../src/app/(site)/dia/[date]/page.tsx");
     const plant = textOf(renderToStaticMarkup(await ReservoirPage({ params: Promise.resolve({ site: "amaluza" }) })));
     expect(plant).toContain("Solo Mazar tiene pronóstico de nivel");
+    // Amaluza has no GEOGLOWS river matched, so only the record's column is shown.
+    expect(plant).toContain("Registro de CELEC");
+    expect(plant).not.toContain("GEOGLOWS (INAMHI)");
     expect(plant).not.toContain("Pronóstico del agua que llegará");
     const day = textOf(renderToStaticMarkup(await DayPage({ params: Promise.resolve({ date: "2026-09-21" }) })));
     expect(day).toContain("Pronóstico del nivel de Mazar");
@@ -312,7 +317,7 @@ describe("the additive blocks, rendered", () => {
 });
 
 describe("Mazar's page, from fixtures", () => {
-  it("keeps its sections: record, crossing, foresight, inflow and floors", () => {
+  it("keeps its sections: record, crossing, foresight, inflow, floors and return periods", () => {
     const text = textOf(mazar);
     for (const heading of [
       "Toda su historia",
@@ -320,9 +325,18 @@ describe("Mazar's page, from fixtures", () => {
       "¿Lo habría visto venir?",
       "El agua que llega, frente a otros años",
       "Dos niveles mínimos, los dos de CELEC",
+      "Crecidas: cada cuántos años llega tanta agua",
     ]) {
       expect(text).toContain(heading);
     }
+  });
+
+  it("puts GEOGLOWS' return periods beside the record's, and says how far apart they are", () => {
+    const periods = readJson<LatestDocument>("latest.json").reservoirs.find((r) => r.site === "mazar")!.inflow!.return_periods;
+    const [model, measured] = [periods.geoglows!.daily[0]!.m3s, periods.measured!.values[0]!.m3s];
+    const text = textOf(mazar);
+    expect(text).toContain(returnPeriodAgreement(model, measured));
+    expect(text).toContain(`según GEOGLOWS, ${returnPeriodReachedWords(periods.geoglows!.reached_years, model)}`);
   });
 
   it("draws the analogue-year strip as one image with its count as its name", () => {

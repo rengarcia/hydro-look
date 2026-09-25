@@ -464,3 +464,29 @@ export function importDependence(sensitivity: {
     `dentro de ${worst.worst_tier_horizon_days} días. El resultado depende de cuánta energía llegue desde Colombia.`
   );
 }
+
+/**
+ * How far GEOGLOWS' 2-year flood is from the one fitted on CELEC's record, in words. Within 15%
+ * the two are said to agree: less than the spread a nine-year Gumbel fit has on its own.
+ */
+export const RETURN_PERIOD_AGREEMENT = 0.15;
+
+export function returnPeriodAgreement(modelled: number, measured: number): string {
+  const ratio = modelled / measured;
+  if (!Number.isFinite(ratio) || ratio <= 0) return "";
+  if (Math.abs(ratio - 1) <= RETURN_PERIOD_AGREEMENT) {
+    return `Para la crecida de 2 años, el modelo y el registro de CELEC casi coinciden (${num(modelled, 0)} frente a ${num(measured, 0)} m³/s).`;
+  }
+  const times = ratio >= 1 ? `${num(ratio, 1)} veces` : `${num((1 - ratio) * 100, 0)} % menos que`;
+  return ratio > 1
+    ? `Para la crecida de 2 años, el modelo da ${times} lo que da el registro de CELEC (${num(modelled, 0)} frente a ${num(measured, 0)} m³/s): ` +
+        "espera crecidas más grandes de las que se han medido aquí, así que con sus umbrales una crecida real parecería más pequeña."
+    : `Para la crecida de 2 años, el modelo da un ${times} el registro de CELEC (${num(modelled, 0)} frente a ${num(measured, 0)} m³/s): ` +
+        "espera crecidas más pequeñas de las que se han medido aquí, así que con sus umbrales una crecida real parecería más grande.";
+}
+
+/** Today's inflow against one source's return periods, as the end of a sentence. */
+export function returnPeriodReachedWords(reached: number | null, twoYear: number): string {
+  if (reached === null) return `por debajo de la crecida de 2 años (${num(twoYear, 0)} m³/s)`;
+  return `alcanza la crecida de ${reached} años`;
+}

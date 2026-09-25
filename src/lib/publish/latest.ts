@@ -30,6 +30,14 @@ import { bandForDayOfYear, binByDayOfYear, sampleForDate } from "../features/cli
 import { dayOfYear } from "../util/stats.ts";
 import type { DailySeries, SeriesSet } from "../features/series.ts";
 import { declarationCode, tierCode, withContract, NARRATIVE_TIER_FIELD, TIER_CODES, type ContractFields } from "./contract.ts";
+import {
+  annualMaxima,
+  gumbelReturnPeriods,
+  RETURN_PERIODS,
+  returnPeriodReached,
+  roundTable,
+  type ReturnPeriodValue,
+} from "../geo/geoglows.ts";
 
 export interface ThresholdRow {
   site: string;
@@ -55,6 +63,44 @@ export interface BandDeclaration {
   band_pct: number | null;
   /** Metres between the current level and this declaration's floor; negative means below it. */
   metres_above_min: number | null;
+}
+
+/** A row of `data/reference/geoglows_return_periods.csv`, written by `npm run geoglows`. */
+export type GeoglowsRow = Record<string, string>;
+
+/** Fewer complete years of inflow than this, and the measured return periods are not fitted. */
+export const MIN_MEASURED_YEARS = 5;
+
+/**
+ * How today's inflow compares with the floods the river is known for, from two sources that are
+ * kept apart because they disagree: GEOGLOWS' model, which INAMHI's portal shows, and the same
+ * statistic fitted on CELEC's own record. Neither is preferred here; the page says how far apart
+ * they are, and `data/reports/return-periods.md` says where each one is trustworthy.
+ */
+export interface ReturnPeriods {
+  geoglows: {
+    river_id: number;
+    /** Gumbel fit on the annual maxima of GEOGLOWS' daily simulated flow, 1940 →, m³/s. Comparable with daily inflow. */
+    daily: ReturnPeriodValue[];
+    /** The same on hourly flow: the thresholds the Hydroviewer colours rivers by. */
+    hourly: ReturnPeriodValue[];
+    /** GEOGLOWS' downstream drainage area against the catchment this repository delineated, %. */
+    area_diff_pct: number;
+    store_revision_date: string;
+    /** The longest return period whose daily flow today's inflow reaches; null below the 2-year flow. */
+    reached_years: number | null;
+  } | null;
+  measured: {
+    /** Complete calendar years (≥ 330 readings) whose maxima the fit is on. */
+    years: number;
+    first_year: number;
+    last_year: number;
+    values: ReturnPeriodValue[];
+    reached_years: number | null;
+    /** The largest daily inflow on record and its day. */
+    record_m3s: number;
+    record_date: IsoDate;
+  } | null;
 }
 
 export interface Climatology {
@@ -104,6 +150,7 @@ export interface ReservoirSnapshot {
     climatology: Climatology | null;
     previous: { m3s: number; date: IsoDate } | null;
     delta_1d_m3s: number | null;
+    return_periods: ReturnPeriods;
   } | null;
 }
 
@@ -225,6 +272,44 @@ export function climatologyFor(series: DailySeries, date: IsoDate, today: number
   };
 }
 
+const tableFrom = (row: GeoglowsRow, suffix: string): ReturnPeriodValue[] =>
+  RETURN_PERIODS.map((years) => ({ years, m3s: Number(row[`q${years}${suffix}_m3s`]) }));
+
+export function returnPeriodsFor(inflow: DailySeries, today: number, row: GeoglowsRow | undefined): ReturnPeriods {
+  const daily = row ? tableFrom(row, "") : null;
+  const hourly = row ? tableFrom(row, "_hourly") : null;
+  const geoglows =
+    row && daily && hourly && daily.every((v) => Number.isFinite(v.m3s)) && hourly.every((v) => Number.isFinite(v.m3s))
+      ? {
+          river_id: Number(row["river_id"]),
+          daily,
+          hourly,
+          area_diff_pct: Number(row["area_diff_pct"]),
+          store_revision_date: row["store_revision_date"] ?? "",
+          reached_years: returnPeriodReached(today, daily),
+        }
+      : null;
+  const maxima = annualMaxima(inflow);
+  let record: { m3s: number; date: IsoDate } | null = null;
+  for (const [date, m3s] of inflow) if (record === null || m3s > record.m3s) record = { m3s, date };
+  const values = maxima.length >= MIN_MEASURED_YEARS ? roundTable(gumbelReturnPeriods(maxima.map((m) => m.m3s))) : null;
+  return {
+    geoglows,
+    measured:
+      values && record
+        ? {
+            years: maxima.length,
+            first_year: maxima[0]!.year,
+            last_year: maxima.at(-1)!.year,
+            values,
+            reached_years: returnPeriodReached(today, values),
+            record_m3s: roundTo(record.m3s, 2),
+            record_date: record.date,
+          }
+        : null,
+  };
+}
+
 /**
  * Every band declared for a site, best-evidenced first.
  *
@@ -302,7 +387,12 @@ function rangeOf(series: DailySeries): [number, number] {
   return [min, max];
 }
 
-export function reservoirSnapshot(series: SeriesSet, site: SiteId, thresholds: readonly ThresholdRow[]): ReservoirSnapshot {
+export function reservoirSnapshot(
+  series: SeriesSet,
+  site: SiteId,
+  thresholds: readonly ThresholdRow[],
+  geoglows: readonly GeoglowsRow[] = [],
+): ReservoirSnapshot {
   const levels = series.get(site, "cota_masl");
   const inflow = series.get(site, "caudal_m3s");
   const lastLevel = lastOf(levels);
@@ -341,6 +431,11 @@ export function reservoirSnapshot(series: SeriesSet, site: SiteId, thresholds: r
       climatology: climatologyFor(inflow, lastInflow.date, lastInflow.value),
       previous: inflowBefore && { m3s: roundTo(inflowBefore.value, 2), date: inflowBefore.date },
       delta_1d_m3s: inflowBefore ? roundTo(lastInflow.value - inflowBefore.value, 2) : null,
+      return_periods: returnPeriodsFor(
+        inflow,
+        lastInflow.value,
+        geoglows.find((r) => r["site"] === site),
+      ),
     },
   };
 }
@@ -508,6 +603,8 @@ export function adequacySummary(document: unknown): AdequacySummary | null {
 export interface LatestInputs {
   series: SeriesSet;
   thresholds: readonly ThresholdRow[];
+  /** `data/reference/geoglows_return_periods.csv`; absent or empty leaves every `geoglows` null. */
+  geoglows?: readonly GeoglowsRow[];
   balance: readonly BalanceRow[];
   sites: readonly SiteId[];
   generatedAt: string;
@@ -531,7 +628,7 @@ export function dataDateOf(reservoirs: readonly ReservoirSnapshot[], national: N
 }
 
 export function buildLatest(inputs: LatestInputs): LatestDocument {
-  const reservoirs = inputs.sites.map((site) => reservoirSnapshot(inputs.series, site, inputs.thresholds));
+  const reservoirs = inputs.sites.map((site) => reservoirSnapshot(inputs.series, site, inputs.thresholds, inputs.geoglows));
   const national = nationalSnapshot(balanceByDay(inputs.balance));
   return withContract("latest", {
     generated_at: inputs.generatedAt,

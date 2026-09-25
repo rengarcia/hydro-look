@@ -1,0 +1,1728 @@
+{
+ "startedAt": "2026-09-25T02:29:28Z",
+ "finishedAt": "2026-09-25T02:30:10Z",
+ "store": {
+  "url": "https://geoglows-v2.s3-us-west-2.amazonaws.com/retrospective/return-periods.zarr",
+  "title": "River Forecast System v2 Retrospective Simulation Return Periods",
+  "revision": 4,
+  "revisionDate": "2026-06-10",
+  "license": "CC-BY-NC-SA 4.0",
+  "etags": {
+   "return_period/0": "\"884ece7412f43030ae96b79d44eb36a2\"",
+   "river_id/0": "\"fb1d4883fbc88316e3c816929e21a014\"",
+   "river_id/1": "\"86ea07bd6311b62a3f9a01ca5b80bfb2\"",
+   "river_id/2": "\"888e8c6287283920c26f1ccef56d0e66\"",
+   "river_id/3": "\"33d51c5a19fb9d3f4798fd20d0f9721c\"",
+   "river_id/4": "\"6f807d513c5e422d6119223f666e76ab\"",
+   "river_id/5": "\"a0d8da985334ddf7e94ca2d43d4ba203\"",
+   "river_id/6": "\"d08bd2bb7bfafa3b4a7b8fbde69c984c\"",
+   "river_id/7": "\"54890c0c12639f4ca1a23850b9a6416c\"",
+   "river_id/8": "\"c12d9e303f93ab28d1a0ef93e731dd88\"",
+   "river_id/9": "\"c2013bd01dad92c66c089c74eca7226b\"",
+   "river_id/10": "\"47a3ab9f5b2aa74aa4c8eb9d27a96550\"",
+   "river_id/11": "\"723abb9f61bcd479cfce7da149971379\"",
+   "river_id/12": "\"cff2fa5de36ffb4b6e12c1b109cc09c5\"",
+   "river_id/13": "\"744fe221be32caa9a974204307c7771f\"",
+   "river_id/14": "\"6109835ae4002754914fc2e38784f0d9\"",
+   "river_id/15": "\"4bb27a738b9b5e68f6792e57d97e828c\"",
+   "river_id/16": "\"b95d15fe99c0b394783a441a73003eb7\"",
+   "river_id/17": "\"24ced867fffc6f533f836381af39c83c\"",
+   "river_id/18": "\"135ee9529b7f017ea6e5cf25a723e64c\"",
+   "river_id/19": "\"e44cdbe46ca9fd1820a9ded943547d93\"",
+   "river_id/20": "\"9ef00e3f88798ffe94ec60935641aeaa\"",
+   "river_id/21": "\"8570e2e6b050f15884a802970db4f89f\"",
+   "river_id/22": "\"61c1b5e9adf09e23e4013c4d4ed72314\"",
+   "river_id/23": "\"eb4233fab985f4d5a2e892e3c1632bb3\"",
+   "river_id/24": "\"b3a3fa85c7954c72a1aa2969ebca56c3\"",
+   "river_id/25": "\"ee62a89b90ad03ccf2ed7aca6f49ca04\"",
+   "river_id/26": "\"8101aff6a71a27052c1eb1800a523afa\"",
+   "gumbel_daily/0.129": "\"823f367f08716e9b4f632787ac61fe25\"",
+   "gumbel_daily/0.128": "\"ef87cb2b7936caddde6d7b4b8d1fc0d0\"",
+   "gumbel_daily/0.143": "\"7f811eb10e441212bd220a96ab0270ec\"",
+   "gumbel_hourly/0.129": "\"b637e04cb55105f3c94e5557abf53d25\"",
+   "gumbel_hourly/0.128": "\"2fd7a50d58b097ef29a1b60b980efe7f\"",
+   "gumbel_hourly/0.143": "\"f24309bb600ee84e3549e3f894bbcd90\"",
+   "gumbel/0.129": "\"b637e04cb55105f3c94e5557abf53d25\"",
+   "gumbel/0.128": "\"2fd7a50d58b097ef29a1b60b980efe7f\"",
+   "gumbel/0.143": "\"f24309bb600ee84e3549e3f894bbcd90\"",
+   "max_simulated/129": "\"d7a136926e15397eabdd2406084dbbdc\"",
+   "max_simulated/128": "\"77fa80f8220c3096108e42484a29736d\"",
+   "max_simulated/143": "\"a4b0d866aa38c59103fe7429701078a4\""
+  }
+ },
+ "portal": {
+  "url": "https://inamhi.geoglows.org/apps/hydroviewer-ecuador/",
+  "status": "HTTP 403",
+  "archived": null,
+  "endpoints": []
+ },
+ "rule": "segments whose point lies within half their length + 2 km of the pour point; closest downstream drainage area to the delineated catchment, within ±10%",
+ "results": [
+  {
+   "site": {
+    "site": "mazar",
+    "basin": "paute",
+    "label": "Mazar (Paute)",
+    "lat": -2.59375,
+    "lon": -78.619583,
+    "areaKm2": 4418.056244111172
+   },
+   "chosen": {
+    "segment": {
+     "riverId": 620988388,
+     "downstreamId": 620989764,
+     "vpu": 605,
+     "lat": -2.5888888888903896,
+     "lon": -78.61255555555536,
+     "upstreamKm2": 4357.187072,
+     "downstreamKm2": 4359.003136,
+     "lengthKm": 1.3322849566761819
+    },
+    "distanceKm": 0.95,
+    "areaDiffPct": -1.34
+   },
+   "candidates": [
+    {
+     "segment": {
+      "riverId": 620988388,
+      "downstreamId": 620989764,
+      "vpu": 605,
+      "lat": -2.5888888888903896,
+      "lon": -78.61255555555536,
+      "upstreamKm2": 4357.187072,
+      "downstreamKm2": 4359.003136,
+      "lengthKm": 1.3322849566761819
+     },
+     "distanceKm": 0.95,
+     "areaDiffPct": -1.34
+    },
+    {
+     "segment": {
+      "riverId": 620967750,
+      "downstreamId": 620988388,
+      "vpu": 605,
+      "lat": -2.5933333333348347,
+      "lon": -78.62177777777758,
+      "upstreamKm2": 4178.220288,
+      "downstreamKm2": 4192.773888,
+      "lengthKm": 4.123337495563773
+     },
+     "distanceKm": 0.25,
+     "areaDiffPct": -5.1
+    },
+    {
+     "segment": {
+      "riverId": 620885190,
+      "downstreamId": 620967750,
+      "vpu": 605,
+      "lat": -2.62522222222373,
+      "lon": -78.61866666666647,
+      "upstreamKm2": 156.567952,
+      "downstreamKm2": 166.783776,
+      "lengthKm": 5.796327905513555
+     },
+     "distanceKm": 3.5,
+     "areaDiffPct": -96.22
+    },
+    {
+     "segment": {
+      "riverId": 620786115,
+      "downstreamId": 620988388,
+      "vpu": 605,
+      "lat": -2.5933333333348347,
+      "lon": -78.62177777777758,
+      "upstreamKm2": 150.384368,
+      "downstreamKm2": 164.4072,
+      "lengthKm": 5.748331100927338
+     },
+     "distanceKm": 0.25,
+     "areaDiffPct": -96.28
+    },
+    {
+     "segment": {
+      "riverId": 620714565,
+      "downstreamId": 620883814,
+      "vpu": 605,
+      "lat": -2.631222222223731,
+      "lon": -78.67011111111093,
+      "upstreamKm2": 43.322336,
+      "downstreamKm2": 84.255424,
+      "lengthKm": 11.573122705544487
+     },
+     "distanceKm": 6.99,
+     "areaDiffPct": -98.09
+    }
+   ],
+   "geoglows": {
+    "daily": [
+     {
+      "years": 2,
+      "m3s": 614.8
+     },
+     {
+      "years": 5,
+      "m3s": 808.6
+     },
+     {
+      "years": 10,
+      "m3s": 936.9
+     },
+     {
+      "years": 25,
+      "m3s": 1099
+     },
+     {
+      "years": 50,
+      "m3s": 1219.3
+     },
+     {
+      "years": 100,
+      "m3s": 1338.7
+     }
+    ],
+    "hourly": [
+     {
+      "years": 2,
+      "m3s": 693.2
+     },
+     {
+      "years": 5,
+      "m3s": 919.4
+     },
+     {
+      "years": 10,
+      "m3s": 1069.2
+     },
+     {
+      "years": 25,
+      "m3s": 1258.4
+     },
+     {
+      "years": 50,
+      "m3s": 1398.8
+     },
+     {
+      "years": 100,
+      "m3s": 1538.2
+     }
+    ],
+    "maxSimulated": 1937.2
+   },
+   "observed": {
+    "maxima": [
+     {
+      "year": 2011,
+      "m3s": 678.78,
+      "date": "2011-07-11",
+      "days": 365
+     },
+     {
+      "year": 2012,
+      "m3s": 570.26,
+      "date": "2012-06-25",
+      "days": 366
+     },
+     {
+      "year": 2013,
+      "m3s": 448.19,
+      "date": "2013-06-10",
+      "days": 361
+     },
+     {
+      "year": 2014,
+      "m3s": 443,
+      "date": "2014-10-12",
+      "days": 365
+     },
+     {
+      "year": 2015,
+      "m3s": 654,
+      "date": "2015-06-25",
+      "days": 365
+     },
+     {
+      "year": 2016,
+      "m3s": 635,
+      "date": "2016-06-20",
+      "days": 366
+     },
+     {
+      "year": 2017,
+      "m3s": 677,
+      "date": "2017-07-25",
+      "days": 365
+     },
+     {
+      "year": 2018,
+      "m3s": 617,
+      "date": "2018-05-24",
+      "days": 365
+     },
+     {
+      "year": 2019,
+      "m3s": 600,
+      "date": "2019-06-05",
+      "days": 365
+     },
+     {
+      "year": 2020,
+      "m3s": 840,
+      "date": "2020-05-02",
+      "days": 366
+     },
+     {
+      "year": 2021,
+      "m3s": 777,
+      "date": "2021-07-19",
+      "days": 365
+     },
+     {
+      "year": 2022,
+      "m3s": 867,
+      "date": "2022-07-03",
+      "days": 365
+     },
+     {
+      "year": 2023,
+      "m3s": 323,
+      "date": "2023-06-15",
+      "days": 365
+     },
+     {
+      "year": 2024,
+      "m3s": 267,
+      "date": "2024-06-16",
+      "days": 366
+     },
+     {
+      "year": 2025,
+      "m3s": 783,
+      "date": "2025-05-12",
+      "days": 365
+     }
+    ],
+    "fit": [
+     {
+      "years": 2,
+      "m3s": 582.7
+     },
+     {
+      "years": 5,
+      "m3s": 740.2
+     },
+     {
+      "years": 10,
+      "m3s": 844.4
+     },
+     {
+      "years": 25,
+      "m3s": 976.1
+     },
+     {
+      "years": 50,
+      "m3s": 1073.8
+     },
+     {
+      "years": 100,
+      "m3s": 1170.8
+     }
+    ]
+   }
+  },
+  {
+   "site": {
+    "site": "coca_codo_sinclair",
+    "basin": "coca",
+    "label": "Coca Codo Sinclair (Coca)",
+    "lat": -0.195417,
+    "lon": -77.684583,
+    "areaKm2": 3727.2950827659292
+   },
+   "chosen": {
+    "segment": {
+     "riverId": 620922213,
+     "downstreamId": 620882307,
+     "vpu": 605,
+     "lat": -0.16533333333437294,
+     "lon": -77.64899999999962,
+     "upstreamKm2": 3677.135872,
+     "downstreamKm2": 3697.172224,
+     "lengthKm": 8.25963162548939
+    },
+    "distanceKm": 5.18,
+    "areaDiffPct": -0.81
+   },
+   "candidates": [
+    {
+     "segment": {
+      "riverId": 620922213,
+      "downstreamId": 620882307,
+      "vpu": 605,
+      "lat": -0.16533333333437294,
+      "lon": -77.64899999999962,
+      "upstreamKm2": 3677.135872,
+      "downstreamKm2": 3697.172224,
+      "lengthKm": 8.25963162548939
+     },
+     "distanceKm": 5.18,
+     "areaDiffPct": -0.81
+    },
+    {
+     "segment": {
+      "riverId": 620905703,
+      "downstreamId": 620922213,
+      "vpu": 605,
+      "lat": -0.20666666666771416,
+      "lon": -77.68455555555518,
+      "upstreamKm2": 2720.086016,
+      "downstreamKm2": 2751.670272,
+      "lengthKm": 8.164557224464788
+     },
+     "distanceKm": 1.25,
+     "areaDiffPct": -26.18
+    },
+    {
+     "segment": {
+      "riverId": 620908457,
+      "downstreamId": 620905703,
+      "vpu": 605,
+      "lat": -0.24155555555660957,
+      "lon": -77.69522222222184,
+      "upstreamKm2": 2551.881984,
+      "downstreamKm2": 2579.859712,
+      "lengthKm": 12.073834558368281
+     },
+     "distanceKm": 5.27,
+     "areaDiffPct": -30.78
+    },
+    {
+     "segment": {
+      "riverId": 620863044,
+      "downstreamId": 620922213,
+      "vpu": 605,
+      "lat": -0.20666666666771416,
+      "lon": -77.68455555555518,
+      "upstreamKm2": 922.186688,
+      "downstreamKm2": 925.465792,
+      "lengthKm": 3.4055966944076745
+     },
+     "distanceKm": 1.25,
+     "areaDiffPct": -75.17
+    },
+    {
+     "segment": {
+      "riverId": 620861668,
+      "downstreamId": 620863044,
+      "vpu": 605,
+      "lat": -0.1925555555566003,
+      "lon": -77.70333333333296,
+      "upstreamKm2": 914.15296,
+      "downstreamKm2": 914.684032,
+      "lengthKm": 0.9979225951513577
+     },
+     "distanceKm": 2.11,
+     "areaDiffPct": -75.46
+    }
+   ],
+   "geoglows": {
+    "daily": [
+     {
+      "years": 2,
+      "m3s": 1225.4
+     },
+     {
+      "years": 5,
+      "m3s": 1486.8
+     },
+     {
+      "years": 10,
+      "m3s": 1659.9
+     },
+     {
+      "years": 25,
+      "m3s": 1878.5
+     },
+     {
+      "years": 50,
+      "m3s": 2040.8
+     },
+     {
+      "years": 100,
+      "m3s": 2201.8
+     }
+    ],
+    "hourly": [
+     {
+      "years": 2,
+      "m3s": 1357.7
+     },
+     {
+      "years": 5,
+      "m3s": 1637.6
+     },
+     {
+      "years": 10,
+      "m3s": 1822.9
+     },
+     {
+      "years": 25,
+      "m3s": 2057
+     },
+     {
+      "years": 50,
+      "m3s": 2230.7
+     },
+     {
+      "years": 100,
+      "m3s": 2403.1
+     }
+    ],
+    "maxSimulated": 2104.7
+   },
+   "observed": {
+    "maxima": [
+     {
+      "year": 2017,
+      "m3s": 1034,
+      "date": "2017-11-20",
+      "days": 363
+     },
+     {
+      "year": 2018,
+      "m3s": 831,
+      "date": "2018-05-24",
+      "days": 360
+     },
+     {
+      "year": 2019,
+      "m3s": 1400,
+      "date": "2019-07-14",
+      "days": 363
+     },
+     {
+      "year": 2020,
+      "m3s": 1188,
+      "date": "2020-05-16",
+      "days": 366
+     },
+     {
+      "year": 2021,
+      "m3s": 1846,
+      "date": "2021-05-15",
+      "days": 364
+     },
+     {
+      "year": 2022,
+      "m3s": 1250,
+      "date": "2022-07-03",
+      "days": 365
+     },
+     {
+      "year": 2023,
+      "m3s": 1069,
+      "date": "2023-07-17",
+      "days": 363
+     },
+     {
+      "year": 2024,
+      "m3s": 1456,
+      "date": "2024-05-20",
+      "days": 366
+     },
+     {
+      "year": 2025,
+      "m3s": 1933,
+      "date": "2025-07-02",
+      "days": 364
+     }
+    ],
+    "fit": [
+     {
+      "years": 2,
+      "m3s": 1273.7
+     },
+     {
+      "years": 5,
+      "m3s": 1598.7
+     },
+     {
+      "years": 10,
+      "m3s": 1813.8
+     },
+     {
+      "years": 25,
+      "m3s": 2085.7
+     },
+     {
+      "years": 50,
+      "m3s": 2287.4
+     },
+     {
+      "years": 100,
+      "m3s": 2487.6
+     }
+    ]
+   }
+  },
+  {
+   "site": {
+    "site": "agoyan",
+    "basin": "pastaza",
+    "label": "Agoyán (Pastaza)",
+    "lat": -1.402083,
+    "lon": -78.37125,
+    "areaKm2": 8242.401273676123
+   },
+   "chosen": {
+    "segment": {
+     "riverId": 621014469,
+     "downstreamId": 621015845,
+     "vpu": 605,
+     "lat": -1.399888888890163,
+     "lon": -78.35111111111085,
+     "upstreamKm2": 8144.265728,
+     "downstreamKm2": 8148.897792,
+     "lengthKm": 2.240225437193363
+    },
+    "distanceKm": 2.25,
+    "areaDiffPct": -1.13
+   },
+   "candidates": [
+    {
+     "segment": {
+      "riverId": 621014469,
+      "downstreamId": 621015845,
+      "vpu": 605,
+      "lat": -1.399888888890163,
+      "lon": -78.35111111111085,
+      "upstreamKm2": 8144.265728,
+      "downstreamKm2": 8148.897792,
+      "lengthKm": 2.240225437193363
+     },
+     "distanceKm": 2.25,
+     "areaDiffPct": -1.13
+    },
+    {
+     "segment": {
+      "riverId": 620964932,
+      "downstreamId": 621014469,
+      "vpu": 605,
+      "lat": -1.4011111111123862,
+      "lon": -78.36833333333308,
+      "upstreamKm2": 8128.36352,
+      "downstreamKm2": 8137.069056,
+      "lengthKm": 3.0404253993994264
+     },
+     "distanceKm": 0.34,
+     "areaDiffPct": -1.28
+    },
+    {
+     "segment": {
+      "riverId": 620963556,
+      "downstreamId": 620964932,
+      "vpu": 605,
+      "lat": -1.3932222222234953,
+      "lon": -78.39088888888864,
+      "upstreamKm2": 7906.377728,
+      "downstreamKm2": 7908.0576,
+      "lengthKm": 1.028709969539199
+     },
+     "distanceKm": 2.4,
+     "areaDiffPct": -4.06
+    },
+    {
+     "segment": {
+      "riverId": 620962180,
+      "downstreamId": 620963556,
+      "vpu": 605,
+      "lat": -1.392333333334606,
+      "lon": -78.39922222222198,
+      "upstreamKm2": 7842.52672,
+      "downstreamKm2": 7850.008576,
+      "lengthKm": 2.801508052741011
+     },
+     "distanceKm": 3.29,
+     "areaDiffPct": -4.76
+    },
+    {
+     "segment": {
+      "riverId": 620864482,
+      "downstreamId": 620964932,
+      "vpu": 605,
+      "lat": -1.3932222222234953,
+      "lon": -78.39088888888864,
+      "upstreamKm2": 206.604368,
+      "downstreamKm2": 220.302672,
+      "lengthKm": 6.729376645489047
+     },
+     "distanceKm": 2.4,
+     "areaDiffPct": -97.33
+    },
+    {
+     "segment": {
+      "riverId": 620640198,
+      "downstreamId": 620963556,
+      "vpu": 605,
+      "lat": -1.392333333334606,
+      "lon": -78.39922222222198,
+      "upstreamKm2": 45.434808,
+      "downstreamKm2": 56.368108,
+      "lengthKm": 4.551638317309956
+     },
+     "distanceKm": 3.29,
+     "areaDiffPct": -99.32
+    }
+   ],
+   "geoglows": {
+    "daily": [
+     {
+      "years": 2,
+      "m3s": 998.3
+     },
+     {
+      "years": 5,
+      "m3s": 1261
+     },
+     {
+      "years": 10,
+      "m3s": 1435
+     },
+     {
+      "years": 25,
+      "m3s": 1654.8
+     },
+     {
+      "years": 50,
+      "m3s": 1817.9
+     },
+     {
+      "years": 100,
+      "m3s": 1979.7
+     }
+    ],
+    "hourly": [
+     {
+      "years": 2,
+      "m3s": 1086.6
+     },
+     {
+      "years": 5,
+      "m3s": 1372.3
+     },
+     {
+      "years": 10,
+      "m3s": 1561.5
+     },
+     {
+      "years": 25,
+      "m3s": 1800.5
+     },
+     {
+      "years": 50,
+      "m3s": 1977.8
+     },
+     {
+      "years": 100,
+      "m3s": 2153.8
+     }
+    ],
+    "maxSimulated": 2387.8
+   },
+   "observed": {
+    "maxima": [
+     {
+      "year": 2017,
+      "m3s": 680,
+      "date": "2017-07-26",
+      "days": 365
+     },
+     {
+      "year": 2018,
+      "m3s": 750,
+      "date": "2018-01-20",
+      "days": 360
+     },
+     {
+      "year": 2019,
+      "m3s": 750,
+      "date": "2019-06-21",
+      "days": 361
+     },
+     {
+      "year": 2020,
+      "m3s": 1000,
+      "date": "2020-06-21",
+      "days": 366
+     },
+     {
+      "year": 2021,
+      "m3s": 780,
+      "date": "2021-07-19",
+      "days": 365
+     },
+     {
+      "year": 2022,
+      "m3s": 968,
+      "date": "2022-07-03",
+      "days": 364
+     },
+     {
+      "year": 2023,
+      "m3s": 500,
+      "date": "2023-05-28",
+      "days": 364
+     },
+     {
+      "year": 2024,
+      "m3s": 900,
+      "date": "2024-06-16",
+      "days": 366
+     },
+     {
+      "year": 2025,
+      "m3s": 1065,
+      "date": "2025-07-02",
+      "days": 365
+     }
+    ],
+    "fit": [
+     {
+      "years": 2,
+      "m3s": 792.2
+     },
+     {
+      "years": 5,
+      "m3s": 949.7
+     },
+     {
+      "years": 10,
+      "m3s": 1053.9
+     },
+     {
+      "years": 25,
+      "m3s": 1185.7
+     },
+     {
+      "years": 50,
+      "m3s": 1283.5
+     },
+     {
+      "years": 100,
+      "m3s": 1380.5
+     }
+    ]
+   }
+  },
+  {
+   "site": {
+    "site": "manduriacu",
+    "basin": "guayllabamba",
+    "label": "Manduriacu (Guayllabamba)",
+    "lat": 0.214583,
+    "lon": -78.91625,
+    "areaKm2": 6969.337545983613
+   },
+   "chosen": {
+    "segment": {
+     "riverId": 670078161,
+     "downstreamId": 670094546,
+     "vpu": 614,
+     "lat": 0.20399999999974483,
+     "lon": -78.94788888888853,
+     "upstreamKm2": 7006.097408,
+     "downstreamKm2": 7012.378112,
+     "lengthKm": 4.129600699003996
+    },
+    "distanceKm": 3.71,
+    "areaDiffPct": 0.62
+   },
+   "candidates": [
+    {
+     "segment": {
+      "riverId": 670078161,
+      "downstreamId": 670094546,
+      "vpu": 614,
+      "lat": 0.20399999999974483,
+      "lon": -78.94788888888853,
+      "upstreamKm2": 7006.097408,
+      "downstreamKm2": 7012.378112,
+      "lengthKm": 4.129600699003996
+     },
+     "distanceKm": 3.71,
+     "areaDiffPct": 0.62
+    },
+    {
+     "segment": {
+      "riverId": 670077137,
+      "downstreamId": 670078161,
+      "vpu": 614,
+      "lat": 0.2205555555553005,
+      "lon": -78.92222222222186,
+      "upstreamKm2": 6893.310464,
+      "downstreamKm2": 6897.460736,
+      "lengthKm": 3.8987727544842237
+     },
+     "distanceKm": 0.94,
+     "areaDiffPct": -1.03
+    },
+    {
+     "segment": {
+      "riverId": 670076113,
+      "downstreamId": 670077137,
+      "vpu": 614,
+      "lat": 0.21844444444418976,
+      "lon": -78.89444444444408,
+      "upstreamKm2": 6857.918976,
+      "downstreamKm2": 6858.645504,
+      "lengthKm": 1.0212365167424062
+     },
+     "distanceKm": 2.46,
+     "areaDiffPct": -1.59
+    },
+    {
+     "segment": {
+      "riverId": 670091472,
+      "downstreamId": 670076113,
+      "vpu": 614,
+      "lat": 0.22111111111085613,
+      "lon": -78.88699999999963,
+      "upstreamKm2": 6840.8576,
+      "downstreamKm2": 6849.240576,
+      "lengthKm": 3.7142563951140173
+     },
+     "distanceKm": 3.33,
+     "areaDiffPct": -1.72
+    },
+    {
+     "segment": {
+      "riverId": 670063829,
+      "downstreamId": 670088402,
+      "vpu": 614,
+      "lat": 0.19377777777752314,
+      "lon": -78.93844444444409,
+      "upstreamKm2": 253.295872,
+      "downstreamKm2": 273.801088,
+      "lengthKm": 12.00362394602975
+     },
+     "distanceKm": 3.38,
+     "areaDiffPct": -96.07
+    },
+    {
+     "segment": {
+      "riverId": 670061777,
+      "downstreamId": 670078161,
+      "vpu": 614,
+      "lat": 0.2205555555553005,
+      "lon": -78.92222222222186,
+      "upstreamKm2": 107.422248,
+      "downstreamKm2": 108.636232,
+      "lengthKm": 0.6743327536203502
+     },
+     "distanceKm": 0.94,
+     "areaDiffPct": -98.44
+    },
+    {
+     "segment": {
+      "riverId": 670044365,
+      "downstreamId": 670061777,
+      "vpu": 614,
+      "lat": 0.22399999999974618,
+      "lon": -78.92044444444409,
+      "upstreamKm2": 10.650445,
+      "downstreamKm2": 95.802344,
+      "lengthKm": 17.73777360133064
+     },
+     "distanceKm": 1.15,
+     "areaDiffPct": -98.63
+    },
+    {
+     "segment": {
+      "riverId": 670076114,
+      "downstreamId": 670077138,
+      "vpu": 614,
+      "lat": 0.19199999999974438,
+      "lon": -78.92311111111074,
+      "upstreamKm2": 72.489352,
+      "downstreamKm2": 75.889056,
+      "lengthKm": 2.5632712835516216
+     },
+     "distanceKm": 2.62,
+     "areaDiffPct": -98.91
+    }
+   ],
+   "geoglows": {
+    "daily": [
+     {
+      "years": 2,
+      "m3s": 1582.7
+     },
+     {
+      "years": 5,
+      "m3s": 1890.4
+     },
+     {
+      "years": 10,
+      "m3s": 2094.1
+     },
+     {
+      "years": 25,
+      "m3s": 2351.5
+     },
+     {
+      "years": 50,
+      "m3s": 2542.5
+     },
+     {
+      "years": 100,
+      "m3s": 2732
+     }
+    ],
+    "hourly": [
+     {
+      "years": 2,
+      "m3s": 1796
+     },
+     {
+      "years": 5,
+      "m3s": 2177.6
+     },
+     {
+      "years": 10,
+      "m3s": 2430.2
+     },
+     {
+      "years": 25,
+      "m3s": 2749.5
+     },
+     {
+      "years": 50,
+      "m3s": 2986.3
+     },
+     {
+      "years": 100,
+      "m3s": 3221.4
+     }
+    ],
+    "maxSimulated": 3338.1
+   },
+   "observed": {
+    "maxima": [
+     {
+      "year": 2018,
+      "m3s": 834,
+      "date": "2018-04-01",
+      "days": 357
+     },
+     {
+      "year": 2019,
+      "m3s": 680.59,
+      "date": "2019-12-12",
+      "days": 355
+     },
+     {
+      "year": 2020,
+      "m3s": 650.11,
+      "date": "2020-04-17",
+      "days": 366
+     },
+     {
+      "year": 2021,
+      "m3s": 639.97,
+      "date": "2021-05-08",
+      "days": 365
+     },
+     {
+      "year": 2022,
+      "m3s": 643.76,
+      "date": "2022-02-06",
+      "days": 364
+     },
+     {
+      "year": 2023,
+      "m3s": 691.29,
+      "date": "2023-12-28",
+      "days": 363
+     },
+     {
+      "year": 2024,
+      "m3s": 721.59,
+      "date": "2024-04-02",
+      "days": 364
+     },
+     {
+      "year": 2025,
+      "m3s": 653.86,
+      "date": "2025-03-18",
+      "days": 362
+     }
+    ],
+    "fit": [
+     {
+      "years": 2,
+      "m3s": 678.8
+     },
+     {
+      "years": 5,
+      "m3s": 736
+     },
+     {
+      "years": 10,
+      "m3s": 773.9
+     },
+     {
+      "years": 25,
+      "m3s": 821.8
+     },
+     {
+      "years": 50,
+      "m3s": 857.3
+     },
+     {
+      "years": 100,
+      "m3s": 892.5
+     }
+    ]
+   }
+  },
+  {
+   "site": {
+    "site": "marcel_laniado",
+    "basin": "daule",
+    "label": "Marcel Laniado (Daule)",
+    "lat": -0.93875,
+    "lon": -79.762083,
+    "areaKm2": 4196.721192443178
+   },
+   "chosen": {
+    "segment": {
+     "riverId": 670095610,
+     "downstreamId": 670095612,
+     "vpu": 614,
+     "lat": -0.9552222222225097,
+     "lon": -79.773333333333,
+     "upstreamKm2": 4153.231616,
+     "downstreamKm2": 4164.936704,
+     "lengthKm": 8.335918375383974
+    },
+    "distanceKm": 2.22,
+    "areaDiffPct": -0.76
+   },
+   "candidates": [
+    {
+     "segment": {
+      "riverId": 670095610,
+      "downstreamId": 670095612,
+      "vpu": 614,
+      "lat": -0.9552222222225097,
+      "lon": -79.773333333333,
+      "upstreamKm2": 4153.231616,
+      "downstreamKm2": 4164.936704,
+      "lengthKm": 8.335918375383974
+     },
+     "distanceKm": 2.22,
+     "areaDiffPct": -0.76
+    },
+    {
+     "segment": {
+      "riverId": 670094586,
+      "downstreamId": 670095610,
+      "vpu": 614,
+      "lat": -0.9058888888891747,
+      "lon": -79.74022222222189,
+      "upstreamKm2": 3763.096064,
+      "downstreamKm2": 3775.124992,
+      "lengthKm": 5.420621855022834
+     },
+     "distanceKm": 4.39,
+     "areaDiffPct": -10.05
+    },
+    {
+     "segment": {
+      "riverId": 670079224,
+      "downstreamId": 670086394,
+      "vpu": 614,
+      "lat": -0.8906666666669523,
+      "lon": -79.7544444444441,
+      "upstreamKm2": 263.955872,
+      "downstreamKm2": 276.965056,
+      "lengthKm": 7.523989359273305
+     },
+     "distanceKm": 5.41,
+     "areaDiffPct": -93.4
+    },
+    {
+     "segment": {
+      "riverId": 670054653,
+      "downstreamId": 670077181,
+      "vpu": 614,
+      "lat": -0.986888888889176,
+      "lon": -79.79899999999967,
+      "upstreamKm2": 35.96826,
+      "downstreamKm2": 52.390028,
+      "lengthKm": 10.866248068752888
+     },
+     "distanceKm": 6.75,
+     "areaDiffPct": -98.75
+    },
+    {
+     "segment": {
+      "riverId": 670042364,
+      "downstreamId": 670095612,
+      "vpu": 614,
+      "lat": -0.9552222222225097,
+      "lon": -79.773333333333,
+      "upstreamKm2": 12.0230535,
+      "downstreamKm2": 21.26468,
+      "lengthKm": 1.8985800567180753
+     },
+     "distanceKm": 2.22,
+     "areaDiffPct": -99.49
+    }
+   ],
+   "geoglows": {
+    "daily": [
+     {
+      "years": 2,
+      "m3s": 1558.1
+     },
+     {
+      "years": 5,
+      "m3s": 2305.5
+     },
+     {
+      "years": 10,
+      "m3s": 2800.3
+     },
+     {
+      "years": 25,
+      "m3s": 3425.6
+     },
+     {
+      "years": 50,
+      "m3s": 3889.4
+     },
+     {
+      "years": 100,
+      "m3s": 4349.8
+     }
+    ],
+    "hourly": [
+     {
+      "years": 2,
+      "m3s": 1738
+     },
+     {
+      "years": 5,
+      "m3s": 2552.8
+     },
+     {
+      "years": 10,
+      "m3s": 3092.3
+     },
+     {
+      "years": 25,
+      "m3s": 3774
+     },
+     {
+      "years": 50,
+      "m3s": 4279.7
+     },
+     {
+      "years": 100,
+      "m3s": 4781.7
+     }
+    ],
+    "maxSimulated": 4615.9
+   },
+   "observed": null
+  },
+  {
+   "site": {
+    "site": "minas_san_francisco",
+    "basin": "jubones",
+    "label": "Minas San Francisco (Jubones)",
+    "lat": -3.315417,
+    "lon": -79.482917,
+    "areaKm2": 3344.594273266352
+   },
+   "chosen": {
+    "segment": {
+     "riverId": 670027091,
+     "downstreamId": 670028115,
+     "vpu": 614,
+     "lat": -3.3107777777781298,
+     "lon": -79.51188888888854,
+     "upstreamKm2": 3318.731264,
+     "downstreamKm2": 3332.91136,
+     "lengthKm": 4.164640099672053
+    },
+    "distanceKm": 3.26,
+    "areaDiffPct": -0.35
+   },
+   "candidates": [
+    {
+     "segment": {
+      "riverId": 670027091,
+      "downstreamId": 670028115,
+      "vpu": 614,
+      "lat": -3.3107777777781298,
+      "lon": -79.51188888888854,
+      "upstreamKm2": 3318.731264,
+      "downstreamKm2": 3332.91136,
+      "lengthKm": 4.164640099672053
+     },
+     "distanceKm": 3.26,
+     "areaDiffPct": -0.35
+    },
+    {
+     "segment": {
+      "riverId": 670026067,
+      "downstreamId": 670027091,
+      "vpu": 614,
+      "lat": -3.3176666666670194,
+      "lon": -79.47988888888854,
+      "upstreamKm2": 2954.6624,
+      "downstreamKm2": 2959.020544,
+      "lengthKm": 2.2142636240331246
+     },
+     "distanceKm": 0.42,
+     "areaDiffPct": -11.53
+    },
+    {
+     "segment": {
+      "riverId": 670049620,
+      "downstreamId": 670025043,
+      "vpu": 614,
+      "lat": -3.3302222222225755,
+      "lon": -79.46155555555521,
+      "upstreamKm2": 2803.277568,
+      "downstreamKm2": 2822.183424,
+      "lengthKm": 6.986049251026914
+     },
+     "distanceKm": 2.89,
+     "areaDiffPct": -15.62
+    },
+    {
+     "segment": {
+      "riverId": 670022995,
+      "downstreamId": 670027091,
+      "vpu": 614,
+      "lat": -3.3176666666670194,
+      "lon": -79.47988888888854,
+      "upstreamKm2": 357.252672,
+      "downstreamKm2": 359.70896,
+      "lengthKm": 1.6543144169640178
+     },
+     "distanceKm": 0.42,
+     "areaDiffPct": -89.25
+    },
+    {
+     "segment": {
+      "riverId": 670038354,
+      "downstreamId": 670022995,
+      "vpu": 614,
+      "lat": -3.3091111111114646,
+      "lon": -79.46999999999966,
+      "upstreamKm2": 345.088256,
+      "downstreamKm2": 348.343296,
+      "lengthKm": 1.7665727629075512
+     },
+     "distanceKm": 1.6,
+     "areaDiffPct": -89.58
+    },
+    {
+     "segment": {
+      "riverId": 670027089,
+      "downstreamId": 670038354,
+      "vpu": 614,
+      "lat": -3.3016666666670194,
+      "lon": -79.45911111111076,
+      "upstreamKm2": 307.956,
+      "downstreamKm2": 333.19488,
+      "lengthKm": 8.217799641003152
+     },
+     "distanceKm": 3.05,
+     "areaDiffPct": -90.04
+    },
+    {
+     "segment": {
+      "riverId": 670037333,
+      "downstreamId": 670025043,
+      "vpu": 614,
+      "lat": -3.3302222222225755,
+      "lon": -79.46155555555521,
+      "upstreamKm2": 115.855464,
+      "downstreamKm2": 126.322136,
+      "lengthKm": 4.722290787725114
+     },
+     "distanceKm": 2.89,
+     "areaDiffPct": -96.22
+    }
+   ],
+   "geoglows": {
+    "daily": [
+     {
+      "years": 2,
+      "m3s": 697.6
+     },
+     {
+      "years": 5,
+      "m3s": 940.5
+     },
+     {
+      "years": 10,
+      "m3s": 1101.3
+     },
+     {
+      "years": 25,
+      "m3s": 1304.5
+     },
+     {
+      "years": 50,
+      "m3s": 1455.2
+     },
+     {
+      "years": 100,
+      "m3s": 1604.9
+     }
+    ],
+    "hourly": [
+     {
+      "years": 2,
+      "m3s": 915.4
+     },
+     {
+      "years": 5,
+      "m3s": 1232.4
+     },
+     {
+      "years": 10,
+      "m3s": 1442.3
+     },
+     {
+      "years": 25,
+      "m3s": 1707.5
+     },
+     {
+      "years": 50,
+      "m3s": 1904.2
+     },
+     {
+      "years": 100,
+      "m3s": 2099.5
+     }
+    ],
+    "maxSimulated": 2412.6
+   },
+   "observed": {
+    "maxima": [
+     {
+      "year": 2019,
+      "m3s": 426,
+      "date": "2019-04-03",
+      "days": 365
+     },
+     {
+      "year": 2020,
+      "m3s": 456,
+      "date": "2020-05-02",
+      "days": 366
+     },
+     {
+      "year": 2021,
+      "m3s": 669,
+      "date": "2021-03-11",
+      "days": 365
+     },
+     {
+      "year": 2022,
+      "m3s": 485,
+      "date": "2022-03-05",
+      "days": 365
+     },
+     {
+      "year": 2023,
+      "m3s": 386,
+      "date": "2023-12-28",
+      "days": 365
+     },
+     {
+      "year": 2024,
+      "m3s": 149,
+      "date": "2024-06-16",
+      "days": 366
+     },
+     {
+      "year": 2025,
+      "m3s": 543,
+      "date": "2025-04-11",
+      "days": 365
+     }
+    ],
+    "fit": [
+     {
+      "years": 2,
+      "m3s": 418.6
+     },
+     {
+      "years": 5,
+      "m3s": 559.7
+     },
+     {
+      "years": 10,
+      "m3s": 653.1
+     },
+     {
+      "years": 25,
+      "m3s": 771.2
+     },
+     {
+      "years": 50,
+      "m3s": 858.8
+     },
+     {
+      "years": 100,
+      "m3s": 945.7
+     }
+    ]
+   }
+  },
+  {
+   "site": {
+    "site": "delsitanisagua",
+    "basin": "zamora",
+    "label": "Delsitanisagua (Zamora)",
+    "lat": -3.98125,
+    "lon": -79.017083,
+    "areaKm2": 1137.0021619731033
+   },
+   "chosen": {
+    "segment": {
+     "riverId": 620922413,
+     "downstreamId": 620930672,
+     "vpu": 605,
+     "lat": -4.01877777777955,
+     "lon": -79.0182222222221,
+     "upstreamKm2": 1115.134848,
+     "downstreamKm2": 1149.122816,
+     "lengthKm": 6.989191176930091
+    },
+    "distanceKm": 4.17,
+    "areaDiffPct": 1.07
+   },
+   "candidates": [
+    {
+     "segment": {
+      "riverId": 620922413,
+      "downstreamId": 620930672,
+      "vpu": 605,
+      "lat": -4.01877777777955,
+      "lon": -79.0182222222221,
+      "upstreamKm2": 1115.134848,
+      "downstreamKm2": 1149.122816,
+      "lengthKm": 6.989191176930091
+     },
+     "distanceKm": 4.17,
+     "areaDiffPct": 1.07
+    },
+    {
+     "segment": {
+      "riverId": 620921037,
+      "downstreamId": 620922413,
+      "vpu": 605,
+      "lat": -3.9628888888906504,
+      "lon": -79.01677777777765,
+      "upstreamKm2": 1072.293824,
+      "downstreamKm2": 1073.124928,
+      "lengthKm": 1.1284717447832657
+     },
+     "distanceKm": 2.04,
+     "areaDiffPct": -5.62
+    },
+    {
+     "segment": {
+      "riverId": 620919661,
+      "downstreamId": 620921037,
+      "vpu": 605,
+      "lat": -3.95700000000176,
+      "lon": -79.02333333333321,
+      "upstreamKm2": 1025.894144,
+      "downstreamKm2": 1031.149376,
+      "lengthKm": 3.129970004116038
+     },
+     "distanceKm": 2.78,
+     "areaDiffPct": -9.31
+    },
+    {
+     "segment": {
+      "riverId": 620616942,
+      "downstreamId": 620919661,
+      "vpu": 605,
+      "lat": -3.9502222222239824,
+      "lon": -79.04777777777765,
+      "upstreamKm2": 59.465928,
+      "downstreamKm2": 83.4004,
+      "lengthKm": 7.259784167526697
+     },
+     "distanceKm": 4.85,
+     "areaDiffPct": -92.66
+    },
+    {
+     "segment": {
+      "riverId": 620593549,
+      "downstreamId": 620922413,
+      "vpu": 605,
+      "lat": -3.9628888888906504,
+      "lon": -79.01677777777765,
+      "upstreamKm2": 10.6294085,
+      "downstreamKm2": 42.009592,
+      "lengthKm": 0.41841367744723373
+     },
+     "distanceKm": 2.04,
+     "areaDiffPct": -96.31
+    },
+    {
+     "segment": {
+      "riverId": 620630700,
+      "downstreamId": 620921037,
+      "vpu": 605,
+      "lat": -3.95700000000176,
+      "lon": -79.02333333333321,
+      "upstreamKm2": 11.8398505,
+      "downstreamKm2": 41.143572,
+      "lengthKm": 3.516049852438458
+     },
+     "distanceKm": 2.78,
+     "areaDiffPct": -96.38
+    }
+   ],
+   "geoglows": {
+    "daily": [
+     {
+      "years": 2,
+      "m3s": 184.3
+     },
+     {
+      "years": 5,
+      "m3s": 253.1
+     },
+     {
+      "years": 10,
+      "m3s": 298.7
+     },
+     {
+      "years": 25,
+      "m3s": 356.2
+     },
+     {
+      "years": 50,
+      "m3s": 398.9
+     },
+     {
+      "years": 100,
+      "m3s": 441.3
+     }
+    ],
+    "hourly": [
+     {
+      "years": 2,
+      "m3s": 239
+     },
+     {
+      "years": 5,
+      "m3s": 328.3
+     },
+     {
+      "years": 10,
+      "m3s": 387.3
+     },
+     {
+      "years": 25,
+      "m3s": 462
+     },
+     {
+      "years": 50,
+      "m3s": 517.4
+     },
+     {
+      "years": 100,
+      "m3s": 572.3
+     }
+    ],
+    "maxSimulated": 641.4
+   },
+   "observed": {
+    "maxima": [
+     {
+      "year": 2019,
+      "m3s": 279,
+      "date": "2019-07-27",
+      "days": 365
+     },
+     {
+      "year": 2020,
+      "m3s": 187,
+      "date": "2020-09-23",
+      "days": 366
+     },
+     {
+      "year": 2021,
+      "m3s": 177,
+      "date": "2021-07-19",
+      "days": 365
+     },
+     {
+      "year": 2022,
+      "m3s": 249,
+      "date": "2022-07-03",
+      "days": 365
+     },
+     {
+      "year": 2023,
+      "m3s": 246,
+      "date": "2023-06-01",
+      "days": 365
+     },
+     {
+      "year": 2024,
+      "m3s": 141,
+      "date": "2024-06-12",
+      "days": 366
+     },
+     {
+      "year": 2025,
+      "m3s": 812,
+      "date": "2025-07-02",
+      "days": 365
+     }
+    ],
+    "fit": [
+     {
+      "years": 2,
+      "m3s": 260.7
+     },
+     {
+      "years": 5,
+      "m3s": 465.2
+     },
+     {
+      "years": 10,
+      "m3s": 600.6
+     },
+     {
+      "years": 25,
+      "m3s": 771.7
+     },
+     {
+      "years": 50,
+      "m3s": 898.6
+     },
+     {
+      "years": 100,
+      "m3s": 1024.5
+     }
+    ]
+   }
+  }
+ ]
+}
