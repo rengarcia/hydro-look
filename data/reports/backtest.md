@@ -1,8 +1,8 @@
 # Backtest — mazar level forecast
 
-Generated 2026-09-25T06:37:15Z from the committed tables; no network. Origins are the first of each month, each one refitting every model on the data before it. 105 origins scored per horizon, 93 of them with a calibrated band (the first twelve are the calibration's warm-up).
+Generated 2026-09-25T15:26:38Z from the committed tables; no network. Origins are the first of each month, each one refitting every model on the data before it. 105 origins scored per horizon, 93 of them with a calibrated band (the first twelve are the calibration's warm-up).
 
-Level history: 4387 days, 2014-09-20 → 2026-09-23.
+Level history: 4388 days, 2014-09-20 → 2026-09-24.
 
 ## Verdict
 
@@ -323,10 +323,10 @@ False alarms: across 105 origins, the P50 named a crossing within thirty days th
 |---|---|---|
 | area-elevation exponent | 2.50 | fitted |
 | area-elevation datum | 2036.7 m | fitted |
-| fit residual | 0.689 m/day over 1999 days | fitted |
+| fit residual | 0.689 m/day over 2000 days | fitted |
 | turbined flow per MW | 0.671 m³/s | fitted jointly with the curve |
 | storage, lowest declared minimum → crest | 230.7 hm³ | integral of the fitted curve |
-| release rule points | 19 | median implied release over 4300 days |
+| release rule points | 19 | median implied release over 4301 days |
 | operator's current stance | 29.6 m³/s vs the rule | trailing 30 days |
 | crest used as the spill cap | 2155.83 m | highest level in the record |
 
