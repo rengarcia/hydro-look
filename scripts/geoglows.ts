@@ -32,10 +32,14 @@ import { gzipSync } from "node:zlib";
 import { asyncBufferFromUrl, cachedAsyncBuffer, parquetMetadataAsync, parquetRead } from "hyparquet";
 import { fetch } from "undici";
 import { USER_AGENT } from "../src/lib/http/client.ts";
-import { bloscDecompress } from "../src/lib/geo/blosc.ts";
+import { arrayMeta, positionsOf, readChunk, readConsolidated } from "../src/lib/geo/zarr.ts";
+import { httpZarrSource } from "../src/lib/geo/zarr-http.ts";
 import {
   annualMaxima,
+  compareFlows,
+  FLOW_PERCENTILES,
   gumbelReturnPeriods,
+  type FlowAgreement,
   matchRiver,
   RETURN_PERIODS,
   type AnnualMaximum,
@@ -44,7 +48,7 @@ import {
   type RiverMatch,
   type RiverSegment,
 } from "../src/lib/geo/geoglows.ts";
-import { loadSeries } from "../src/lib/features/series.ts";
+import { loadSeries, type DailySeries } from "../src/lib/features/series.ts";
 import { baseOf, bundleRefs, endpointsIn, isHtml, keywordHits, resolveRef, type EndpointHit } from "../src/lib/probe/portal.ts";
 import { toCsv } from "../src/lib/store/csv.ts";
 import { roundTo } from "../src/lib/util/numbers.ts";
@@ -53,6 +57,7 @@ import { DATA_RAW, repoPath } from "../src/lib/util/paths.ts";
 
 const BUCKET = "https://geoglows-v2.s3-us-west-2.amazonaws.com";
 const STORE = `${BUCKET}/retrospective/return-periods.zarr`;
+const SIMULATED = `${BUCKET}/retrospective/daily.zarr`;
 const METADATA_TABLE = `${BUCKET}/tables/package-metadata-table.parquet`;
 const MODEL_TABLE = `${BUCKET}/tables/v2-model-table.parquet`;
 const PORTAL = "https://inamhi.geoglows.org/apps/hydroviewer-ecuador/";
@@ -62,25 +67,6 @@ const BOX_DEG = 0.15;
 export const MIN_OBSERVED_YEARS = 5;
 
 const round = roundTo;
-
-async function get(url: string, deadlineMs = 120_000) {
-  for (let attempt = 1; ; attempt++) {
-    try {
-      const response = await fetch(url, { signal: AbortSignal.timeout(deadlineMs), headers: { "user-agent": USER_AGENT } });
-      if (response.status >= 500 && attempt < 3) throw new Error(`HTTP ${response.status}`);
-      return response;
-    } catch (error) {
-      if (attempt >= 3) throw error;
-      await new Promise((r) => setTimeout(r, 2000 * attempt));
-    }
-  }
-}
-
-async function getBytes(url: string): Promise<{ bytes: Uint8Array; etag: string }> {
-  const response = await get(url);
-  if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
-  return { bytes: new Uint8Array(await response.arrayBuffer()), etag: response.headers.get("etag") ?? "" };
-}
 
 // ---------------------------------------------------------------------------------------------
 // Pour points
@@ -183,12 +169,6 @@ async function segmentsNear(sites: readonly Site[]): Promise<RiverSegment[]> {
 // The Zarr store
 // ---------------------------------------------------------------------------------------------
 
-interface ZarrArray {
-  shape: number[];
-  chunks: number[];
-  dtype: string;
-}
-
 interface StoreRead {
   title: string;
   revision: number | null;
@@ -200,79 +180,33 @@ interface StoreRead {
   etags: Record<string, string>;
 }
 
-function typed(bytes: Uint8Array, dtype: string): ArrayLike<number | bigint> {
-  const buffer = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
-  switch (dtype) {
-    case "<i4":
-      return new Int32Array(buffer);
-    case "<i8":
-      return new BigInt64Array(buffer);
-    case "<f4":
-      return new Float32Array(buffer);
-    case "<f8":
-      return new Float64Array(buffer);
-    default:
-      throw new Error(`zarr: dtype ${dtype} is not handled`);
-  }
-}
-
 async function readStore(riverIds: readonly number[]): Promise<StoreRead> {
-  const { bytes } = await getBytes(`${STORE}/.zmetadata`);
-  const consolidated = JSON.parse(new TextDecoder().decode(bytes)) as { metadata: Record<string, Record<string, unknown>> };
-  const md = consolidated.metadata;
+  const source = httpZarrSource(STORE);
+  const md = await readConsolidated(source);
   const attrs = md[".zattrs"] ?? {};
-  const array = (name: string): ZarrArray => {
-    const a = md[`${name}/.zarray`];
-    if (!a) throw new Error(`zarr: the store has no array ${name}`);
-    if (a["order"] !== "C" || (a["filters"] ?? null) !== null)
-      throw new Error(`zarr: ${name} uses an order or filters this reader does not handle`);
-    return a as unknown as ZarrArray;
-  };
-  const etags: Record<string, string> = {};
-  const chunk = async (key: string, dtype: string) => {
-    const got = await getBytes(`${STORE}/${key}`);
-    etags[key] = got.etag;
-    return typed(bloscDecompress(got.bytes), dtype);
-  };
+  const periodsMeta = arrayMeta(md, "return_period");
+  const periods = Array.from(await readChunk(source, "return_period", periodsMeta, [0]));
 
-  const periodsArray = array("return_period");
-  const periods = Array.from(await chunk("return_period/0", periodsArray.dtype), (v) => Number(v));
-
-  // The index: river ids are in the store's own order, not sorted, so every chunk is read until all are found.
-  const ids = array("river_id");
-  const wanted = new Set(riverIds);
-  const position = new Map<number, number>();
-  const idChunks = Math.ceil(ids.shape[0]! / ids.chunks[0]!);
-  for (let c = 0; c < idChunks && position.size < wanted.size; c++) {
-    const values = await chunk(`river_id/${c}`, ids.dtype);
-    for (let i = 0; i < values.length; i++) {
-      const id = Number(values[i]);
-      if (wanted.has(id)) position.set(id, c * ids.chunks[0]! + i);
-    }
-  }
+  // The index: river ids are in the store's own order, not sorted, so chunks are read until all are found.
+  const position = await positionsOf(source, "river_id", arrayMeta(md, "river_id"), riverIds);
   const missing = riverIds.filter((id) => !position.has(id));
   if (missing.length > 0) throw new Error(`zarr: river ids not in the store: ${missing.join(", ")}`);
 
   const values = new Map<number, Record<string, number[]>>(riverIds.map((id) => [id, {}]));
   for (const name of ["gumbel_daily", "gumbel_hourly", "gumbel", "max_simulated"]) {
-    const a = array(name);
-    const cache = new Map<string, ArrayLike<number | bigint>>();
+    const a = arrayMeta(md, name);
+    const cache = new Map<string, ArrayLike<number>>();
     for (const id of riverIds) {
       const at = position.get(id)!;
-      if (a.shape.length === 2) {
-        // [return_period, river_id], one chunk spanning every period.
-        if (a.chunks[0] !== a.shape[0]) throw new Error(`zarr: ${name} splits return periods across chunks`);
-        const key = `${name}/0.${Math.floor(at / a.chunks[1]!)}`;
-        const data = cache.get(key) ?? (await chunk(key, a.dtype));
-        cache.set(key, data);
-        const offset = at % a.chunks[1]!;
-        values.get(id)![name] = periods.map((_, p) => Number(data[p * a.chunks[1]! + offset]));
-      } else {
-        const key = `${name}/${Math.floor(at / a.chunks[0]!)}`;
-        const data = cache.get(key) ?? (await chunk(key, a.dtype));
-        cache.set(key, data);
-        values.get(id)![name] = [Number(data[at % a.chunks[0]!])];
-      }
+      const riverChunk = a.chunks.at(-1)!;
+      const index = a.shape.length === 2 ? [0, Math.floor(at / riverChunk)] : [Math.floor(at / riverChunk)];
+      // [return_period, river_id] in one chunk spanning every period, or [river_id].
+      if (a.shape.length === 2 && a.chunks[0] !== a.shape[0]) throw new Error(`zarr: ${name} splits return periods across chunks`);
+      const key = index.join(".");
+      const data = cache.get(key) ?? (await readChunk(source, name, a, index));
+      cache.set(key, data);
+      const offset = at % riverChunk;
+      values.get(id)![name] = a.shape.length === 2 ? periods.map((_, p) => data[p * riverChunk + offset]!) : [data[offset]!];
     }
   }
   return {
@@ -282,8 +216,46 @@ async function readStore(riverIds: readonly number[]): Promise<StoreRead> {
     license: String(attrs["license"] ?? ""),
     periods,
     values,
-    etags,
+    etags: Object.fromEntries(source.etags),
   };
+}
+
+/**
+ * GEOGLOWS' simulated daily mean flow at each river, 1940 → the store's last day. The store is
+ * `[time, river_id]` in chunks of ~31,000 days by 50 rivers, so each river costs one or two chunks.
+ */
+async function readSimulated(riverIds: readonly number[]): Promise<{ series: Map<number, DailySeries>; etags: Record<string, string> }> {
+  const source = httpZarrSource(SIMULATED);
+  const md = await readConsolidated(source);
+  const timeMeta = arrayMeta(md, "time");
+  const unit = String((md["time/.zattrs"] ?? {})["units"] ?? "");
+  const epoch = /^seconds since (\d{4}-\d{2}-\d{2})$/.exec(unit)?.[1];
+  if (!epoch) throw new Error(`zarr: daily.zarr's time is in "${unit}", not seconds since a date`);
+  const times: number[] = [];
+  for (let c = 0; c < Math.ceil(timeMeta.shape[0]! / timeMeta.chunks[0]!); c++)
+    times.push(...Array.from(await readChunk(source, "time", timeMeta, [c])));
+  const dates = times
+    .slice(0, timeMeta.shape[0])
+    .map((t) => new Date(Date.parse(`${epoch}T00:00:00Z`) + t * 1000).toISOString().slice(0, 10));
+
+  const position = await positionsOf(source, "river_id", arrayMeta(md, "river_id"), riverIds);
+  const q = arrayMeta(md, "Q");
+  const [tChunk, rChunk] = q.chunks as [number, number];
+  const series = new Map<number, DailySeries>();
+  for (const id of riverIds) {
+    const at = position.get(id);
+    if (at === undefined) throw new Error(`zarr: river ${id} is not in daily.zarr`);
+    const out: DailySeries = new Map();
+    for (let tc = 0; tc < Math.ceil(q.shape[0]! / tChunk); tc++) {
+      const data = await readChunk(source, "Q", q, [tc, Math.floor(at / rChunk)]);
+      for (let i = 0; i < tChunk && tc * tChunk + i < dates.length; i++) {
+        const v = data[i * rChunk + (at % rChunk)]!;
+        if (Number.isFinite(v)) out.set(dates[tc * tChunk + i]!, v);
+      }
+    }
+    series.set(id, out);
+  }
+  return { series, etags: Object.fromEntries(source.etags) };
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -426,6 +398,8 @@ interface SiteResult {
   match: RiverMatch;
   geoglows: { daily: ReturnPeriodValue[]; hourly: ReturnPeriodValue[]; maxSimulated: number } | null;
   observed: { maxima: AnnualMaximum[]; fit: ReturnPeriodValue[] | null } | null;
+  /** The model's simulated daily flow against CELEC's measured inflow, on the days both have. */
+  agreement: FlowAgreement | null;
 }
 
 const fmt = (v: number | null | undefined, digits = 0) =>
@@ -441,7 +415,7 @@ function report(startedAt: string, store: StoreRead, portal: PortalProbe, result
     "# Streamflow return periods at the fleet's dams",
     "",
     `Generated by \`npm run geoglows\` (\`scripts/geoglows.ts\`), started ${startedAt}, finished ${nowUtc()}.`,
-    `Store: \`${STORE.replace(BUCKET, "s3://geoglows-v2")}\` — "${store.title}", revision ${store.revision ?? "?"} of ${store.revisionDate}, licence ${store.license}.`,
+    `Simulated flow: \`${SIMULATED.replace(BUCKET, "s3://geoglows-v2")}\`. Store: \`${STORE.replace(BUCKET, "s3://geoglows-v2")}\` — "${store.title}", revision ${store.revision ?? "?"} of ${store.revisionDate}, licence ${store.license}.`,
     "Return periods are GEOGLOWS' Gumbel (type I) fits by the method of moments on the annual maxima of its retrospective",
     "simulation (1940 →). `gumbel_daily` is fitted on daily means, which is what CELEC's inflow is, so it is the column",
     "compared below; `gumbel` (identical to `gumbel_hourly`) is the one the Hydroviewer colours rivers by.",
@@ -485,6 +459,36 @@ function report(startedAt: string, store: StoreRead, portal: PortalProbe, result
       push(`| ${r.site.site} | GEOGLOWS ÷ measured | ${r.geoglows.daily.map((v, i) => `${fmt(v.m3s / fit[i]!.m3s, 2)}×`).join(" | ")} | |`);
     }
   }
+  push(
+    "",
+    "## The model's daily flow against the measured inflow",
+    "",
+    "GEOGLOWS' simulated daily mean flow (`retrospective/daily.zarr`) at the matched river, on every day CELEC also published an",
+    "inflow. **Ratio** is mean simulated ÷ mean measured; **r** the correlation of the daily values, and of monthly means; **KGE** the Kling–Gupta",
+    "efficiency (1 is perfect; below −0.41 the measured mean would do better). The **p** columns compare each series' own",
+    "percentile, simulated ÷ measured: independent of timing, so a model that is the measured distribution scaled reads a flat",
+    "row even when it gets the days wrong, and a reading that saturates at high flow shows as a row that climbs at the top.",
+    "",
+    `| site | days | from | ratio | r | r, monthly | KGE | ${FLOW_PERCENTILES.map((p) => `p${p}`).join(" | ")} | 2 y, model on the record's years | 2 y, measured |`,
+    `|---|---|---|---|---|---|---|${FLOW_PERCENTILES.map(() => "---").join("|")}|---|---|`,
+  );
+  for (const r of results) {
+    const a = r.agreement;
+    if (!a) {
+      push(`| ${r.site.site} | — | | | | | |${FLOW_PERCENTILES.map(() => " |").join("")} | |`);
+      continue;
+    }
+    push(
+      `| ${r.site.site} | ${fmt(a.days)} | ${a.first} | ${fmt(a.ratio, 2)}× | ${fmt(a.r, 2)} | ${fmt(a.rMonthly, 2)} | ${fmt(a.kge, 2)} | ` +
+        `${a.quantiles.map((q) => `${fmt(q.ratio, 2)}×`).join(" | ")} | ${fmt(a.simulatedSameYears?.[0]?.m3s)} | ${fmt(r.observed?.fit?.[0]?.m3s)} |`,
+    );
+  }
+  push("", "Annual maxima on the shared days, measured / simulated (m³/s):", "", "| site | year: measured / simulated |", "|---|---|");
+  for (const r of results) {
+    if (r.agreement)
+      push(`| ${r.site.site} | ${r.agreement.annual.map((y) => `${y.year}: ${fmt(y.measured)} / ${fmt(y.simulated)}`).join("; ")} |`);
+  }
+
   push("", "## Annual maxima of the measured daily inflow", "", "| site | year: m³/s (date) |", "|---|---|");
   for (const r of results) {
     push(
@@ -552,15 +556,18 @@ async function main(): Promise<void> {
     throw new Error(`the store's return periods changed: ${store.periods.join(", ")} (this code expects ${RETURN_PERIODS.join(", ")})`);
   }
 
+  const simulated = await readSimulated(riverIds);
   const series = loadSeries();
   const results: SiteResult[] = matches.map(({ site, match }) => {
     const v = match.chosen ? store.values.get(match.chosen.segment.riverId)! : null;
     const table = (xs: number[] | undefined) => store.periods.map((years, i) => ({ years, m3s: round(xs?.[i] ?? NaN, 1) }));
     const inflow = series.get(site.site, "caudal_m3s");
     const maxima = inflow.size > 0 ? annualMaxima(inflow) : [];
+    const sim = match.chosen ? simulated.series.get(match.chosen.segment.riverId) : undefined;
     return {
       site,
       match,
+      agreement: sim && inflow.size > 0 ? compareFlows(inflow, sim, MIN_OBSERVED_YEARS) : null,
       geoglows: v
         ? { daily: table(v["gumbel_daily"]), hourly: table(v["gumbel_hourly"]), maxSimulated: round(v["max_simulated"]![0]!, 1) }
         : null,
@@ -598,6 +605,13 @@ async function main(): Promise<void> {
     ...RETURN_PERIODS.map((p) => `q${p}_m3s`),
     ...RETURN_PERIODS.map((p) => `q${p}_hourly_m3s`),
     "max_simulated_m3s",
+    "sim_days",
+    "sim_ratio",
+    "sim_r",
+    "sim_r_monthly",
+    "sim_kge",
+    "sim_p50_ratio",
+    "sim_p99_ratio",
     "store_revision",
     "store_revision_date",
     "license",
@@ -623,6 +637,13 @@ async function main(): Promise<void> {
         ...Object.fromEntries(r.geoglows.daily.map((v) => [`q${v.years}_m3s`, v.m3s])),
         ...Object.fromEntries(r.geoglows.hourly.map((v) => [`q${v.years}_hourly_m3s`, v.m3s])),
         max_simulated_m3s: r.geoglows.maxSimulated,
+        sim_days: r.agreement?.days ?? "",
+        sim_ratio: r.agreement ? round(r.agreement.ratio, 3) : "",
+        sim_r: r.agreement ? round(r.agreement.r, 3) : "",
+        sim_r_monthly: r.agreement?.rMonthly != null ? round(r.agreement.rMonthly, 3) : "",
+        sim_kge: r.agreement ? round(r.agreement.kge, 3) : "",
+        sim_p50_ratio: r.agreement ? round(r.agreement.quantiles.find((q) => q.percentile === 50)!.ratio, 3) : "",
+        sim_p99_ratio: r.agreement ? round(r.agreement.quantiles.find((q) => q.percentile === 99)!.ratio, 3) : "",
         store_revision: store.revision ?? "",
         store_revision_date: store.revisionDate,
         license: store.license,
@@ -658,6 +679,7 @@ async function main(): Promise<void> {
           candidates: r.match.candidates,
           geoglows: r.geoglows,
           observed: r.observed,
+          agreement: r.agreement,
         })),
       },
       null,

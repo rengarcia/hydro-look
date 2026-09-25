@@ -163,3 +163,138 @@ export function matchRiver(pour: PourPoint, segments: readonly RiverSegment[], o
       `closest downstream drainage area to the delineated catchment, within ±${options.maxAreaDiffPct}%`,
   };
 }
+
+// ------------------------------------------------------------------------------------------
+// The model's simulated flow against the measured inflow
+// ------------------------------------------------------------------------------------------
+
+export interface QuantileRatio {
+  /** Percentile of each series' own distribution over the shared days. */
+  percentile: number;
+  measured: number;
+  simulated: number;
+  /** Simulated ÷ measured at that percentile. */
+  ratio: number;
+}
+
+export interface AnnualPair {
+  year: number;
+  measured: number;
+  measuredDate: string;
+  simulated: number;
+  simulatedDate: string;
+}
+
+export interface FlowAgreement {
+  days: number;
+  first: string;
+  last: string;
+  measuredMean: number;
+  simulatedMean: number;
+  /** Mean simulated ÷ mean measured over every shared day. */
+  ratio: number;
+  /** Pearson correlation of the daily values. */
+  r: number;
+  /** The same on monthly means, over months with at least 20 shared days: timing errors of a few days wash out. */
+  rMonthly: number | null;
+  months: number;
+  /** Kling–Gupta efficiency: 1 is perfect, below −0.41 is worse than the measured mean. */
+  kge: number;
+  /**
+   * Each series' own percentiles, compared: independent of timing, so a model that gets the days
+   * wrong still reads a flat ratio if its distribution is the measured one scaled. A reading that
+   * saturates at high flow shows as a ratio that climbs at the top percentiles, because the
+   * model's floods keep growing and the reading does not.
+   */
+  quantiles: QuantileRatio[];
+  /** Annual maxima of both, over the complete measured years and on the shared days only. */
+  annual: AnnualPair[];
+  /** The Gumbel fit on the simulated maxima of those same years: the model's own answer on the record's years. */
+  simulatedSameYears: ReturnPeriodValue[] | null;
+}
+
+export const FLOW_PERCENTILES = [10, 50, 90, 99, 99.9] as const;
+
+/** The `p`-th percentile of an ascending array, by linear interpolation. */
+function percentileSorted(sorted: readonly number[], p: number): number {
+  const at = (p / 100) * (sorted.length - 1);
+  const lo = Math.floor(at);
+  return sorted[lo]! + (sorted[Math.min(lo + 1, sorted.length - 1)]! - sorted[lo]!) * (at - lo);
+}
+
+const meanOf = (xs: readonly number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+
+export function pearson(a: readonly number[], b: readonly number[]): number {
+  const ma = meanOf(a);
+  const mb = meanOf(b);
+  let num = 0;
+  let da = 0;
+  let db = 0;
+  for (let i = 0; i < a.length; i++) {
+    num += (a[i]! - ma) * (b[i]! - mb);
+    da += (a[i]! - ma) ** 2;
+    db += (b[i]! - mb) ** 2;
+  }
+  return num / Math.sqrt(da * db);
+}
+
+export function compareFlows(measured: DailySeries, simulated: DailySeries, minYears = 5): FlowAgreement | null {
+  const days = [...measured.keys()].filter((d) => simulated.has(d)).sort();
+  if (days.length < 30) return null;
+  const m = days.map((d) => measured.get(d)!);
+  const s = days.map((d) => simulated.get(d)!);
+  const mm = meanOf(m);
+  const sm = meanOf(s);
+  const sdm = Math.sqrt(meanOf(m.map((x) => (x - mm) ** 2)));
+  const sds = Math.sqrt(meanOf(s.map((x) => (x - sm) ** 2)));
+  const r = meanOf(m.map((x, i) => (x - mm) * (s[i]! - sm))) / (sdm * sds);
+  const kge = 1 - Math.sqrt((r - 1) ** 2 + (sds / sdm - 1) ** 2 + (sm / mm - 1) ** 2);
+
+  const byMonth = new Map<string, { m: number[]; s: number[] }>();
+  days.forEach((d, i) => {
+    const e = byMonth.get(d.slice(0, 7)) ?? byMonth.set(d.slice(0, 7), { m: [], s: [] }).get(d.slice(0, 7))!;
+    e.m.push(m[i]!);
+    e.s.push(s[i]!);
+  });
+  const monthly = [...byMonth.values()].filter((e) => e.m.length >= 20).map((e) => [meanOf(e.m), meanOf(e.s)] as const);
+  const rMonthly =
+    monthly.length >= 12
+      ? pearson(
+          monthly.map((x) => x[0]),
+          monthly.map((x) => x[1]),
+        )
+      : null;
+
+  const mSorted = [...m].sort((a, b) => a - b);
+  const sSorted = [...s].sort((a, b) => a - b);
+  const quantiles = FLOW_PERCENTILES.map((percentile) => {
+    const measuredQ = percentileSorted(mSorted, percentile);
+    const simulatedQ = percentileSorted(sSorted, percentile);
+    return { percentile, measured: measuredQ, simulated: simulatedQ, ratio: simulatedQ / measuredQ };
+  });
+
+  const shared: DailySeries = new Map(days.map((d) => [d, measured.get(d)!]));
+  const years = new Set(annualMaxima(shared).map((y) => y.year));
+  const annual: AnnualPair[] = [];
+  for (const year of [...years].sort()) {
+    const inYear = days.filter((d) => d.startsWith(`${year}-`));
+    const mBest = inYear.reduce((a, b) => (measured.get(b)! > measured.get(a)! ? b : a));
+    const sBest = inYear.reduce((a, b) => (simulated.get(b)! > simulated.get(a)! ? b : a));
+    annual.push({ year, measured: measured.get(mBest)!, measuredDate: mBest, simulated: simulated.get(sBest)!, simulatedDate: sBest });
+  }
+  return {
+    days: days.length,
+    first: days[0]!,
+    last: days.at(-1)!,
+    measuredMean: mm,
+    simulatedMean: sm,
+    ratio: sm / mm,
+    r,
+    rMonthly,
+    months: monthly.length,
+    kge,
+    quantiles,
+    annual,
+    simulatedSameYears: annual.length >= minYears ? gumbelReturnPeriods(annual.map((a) => a.simulated)) : null,
+  };
+}
