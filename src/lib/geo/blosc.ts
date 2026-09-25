@@ -167,16 +167,22 @@ export function bloscIndex(prefix: Uint8Array): BloscIndex {
 }
 
 /**
- * The blocks holding decompressed bytes `[from, to)`, and the compressed byte range that holds
- * those blocks — what to ask for with an HTTP range request instead of the whole chunk. Blosc
- * writes blocks in order, so the range is contiguous.
+ * Block `i`'s compressed bytes, `[from, to)` in the frame. Blosc compresses blocks in parallel and
+ * writes each where it finishes, so blocks are not in order in the frame: a block ends where the
+ * next block *by position* begins, not where block `i + 1` does.
  */
-export function blocksFor(index: BloscIndex, from: number, to: number): { first: number; last: number; byteFrom: number; byteTo: number } {
+export function blockExtent(index: BloscIndex, i: number): { from: number; to: number } {
+  const from = index.starts[i]!;
+  let to = index.header.cbytes;
+  for (const start of index.starts) if (start > from && start < to) to = start;
+  return { from, to };
+}
+
+/** The blocks holding decompressed bytes `[from, to)`: what to fetch by range instead of the whole chunk. */
+export function blocksFor(index: BloscIndex, from: number, to: number): { first: number; last: number } {
   const { blocksize, nbytes } = index.header;
   if (from < 0 || to > nbytes || from >= to) throw new Error(`blosc: [${from}, ${to}) is outside the frame's ${nbytes} bytes`);
-  const first = Math.floor(from / blocksize);
-  const last = Math.floor((to - 1) / blocksize);
-  return { first, last, byteFrom: index.starts[first]!, byteTo: index.starts[last + 1]! };
+  return { first: Math.floor(from / blocksize), last: Math.floor((to - 1) / blocksize) };
 }
 
 function decodeBlock(h: BloscHeader, bytes: Uint8Array, offset: number, i: number): Uint8Array {
@@ -206,16 +212,15 @@ function checkFlags(h: BloscHeader): void {
 }
 
 /**
- * Blocks `first..last` of a frame, from `bytes` — the frame's compressed bytes starting at frame
- * offset `byteFrom`, as `blocksFor` gives them. Returns the decompressed bytes from the start of
- * block `first`.
+ * Blocks `first..last` of a frame, each from `compressed(i)` — block `i`'s bytes as `blockExtent`
+ * bounds them. Returns the decompressed bytes from the start of block `first`.
  */
-export function decodeBlocks(index: BloscIndex, bytes: Uint8Array, byteFrom: number, first: number, last: number): Uint8Array {
+export function decodeBlocks(index: BloscIndex, first: number, last: number, compressed: (i: number) => Uint8Array): Uint8Array {
   const h = index.header;
   checkFlags(h);
   const end = Math.min(h.nbytes, (last + 1) * h.blocksize);
   const out = new Uint8Array(end - first * h.blocksize);
-  for (let i = first; i <= last; i++) out.set(decodeBlock(h, bytes, index.starts[i]! - byteFrom, i), (i - first) * h.blocksize);
+  for (let i = first; i <= last; i++) out.set(decodeBlock(h, compressed(i), 0, i), (i - first) * h.blocksize);
   return out;
 }
 
@@ -228,5 +233,5 @@ export function bloscDecompress(frame: Uint8Array): Uint8Array {
     return frame.slice(HEADER_BYTES, HEADER_BYTES + h.nbytes);
   }
   const index = bloscIndex(frame);
-  return decodeBlocks(index, frame, 0, 0, index.starts.length - 2);
+  return decodeBlocks(index, 0, index.starts.length - 2, (i) => frame.subarray(index.starts[i]));
 }

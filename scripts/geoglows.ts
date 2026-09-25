@@ -45,7 +45,7 @@ import {
   type RiverSegment,
 } from "../src/lib/geo/geoglows.ts";
 import { loadSeries } from "../src/lib/features/series.ts";
-import { baseOf, bundleRefs, endpointsIn, isHtml, resolveRef, type EndpointHit } from "../src/lib/probe/portal.ts";
+import { baseOf, bundleRefs, endpointsIn, isHtml, keywordHits, resolveRef, type EndpointHit } from "../src/lib/probe/portal.ts";
 import { toCsv } from "../src/lib/store/csv.ts";
 import { roundTo } from "../src/lib/util/numbers.ts";
 import { nowUtc } from "../src/lib/util/dates.ts";
@@ -318,6 +318,18 @@ interface PortalProbe {
   tries: PortalTry[];
 }
 
+/** Words whose surroundings say how the app asks for return periods and hydropower plants. */
+const PORTAL_KEYWORDS = [
+  "return_period",
+  "returnPeriod",
+  "return-period",
+  "retorno",
+  "rperiod",
+  "hydropowers/",
+  "selectedHydropower=",
+  "comid=",
+];
+
 /** At most this many bundles are walked, so a page that names hundreds of chunks cannot run away. */
 const MAX_BUNDLES = 80;
 /** Bundles are archived with the page when all of them together are smaller than this, compressed or not. */
@@ -364,7 +376,10 @@ async function probePortal(tries: readonly string[]): Promise<PortalProbe> {
       files.push({ url, status: `no answer: ${String(error)}`, bytes: 0 });
     }
   }
-  const endpoints = [...bodies].flatMap(([url, text]) => endpointsIn(text, url.replace(/^.*\//, "")));
+  const endpoints = [...bodies].flatMap(([url, text]) => [
+    ...endpointsIn(text, url.replace(/^.*\//, "")),
+    ...keywordHits(text, url.replace(/^.*\//, ""), PORTAL_KEYWORDS),
+  ]);
 
   mkdirSync(`${DATA_RAW}/${dir}`, { recursive: true });
   const total = [...bodies.values()].reduce((a, t) => a + t.length, 0);
@@ -521,7 +536,7 @@ async function main(): Promise<void> {
   console.log(`${sites.length} pour points: ${sites.map((s) => s.site).join(", ")}`);
 
   const { values: args } = parseArgs({ args: process.argv.slice(2), options: { try: { type: "string", multiple: true, default: [] } } });
-  const tries = (args.try ?? []).flatMap((t) => t.split(/[\s,]+/)).filter((t) => /^https:\/\/inamhi\.geoglows\.org\//.test(t));
+  const tries = (args.try ?? []).flatMap((t) => t.split(/[\s,]+/)).filter((t) => /^https:\/\/(?:inamhi|services)\.geoglows\.org\//.test(t));
   const portal = probePortal(tries);
   const segments = await segmentsNear(sites);
   const matches = sites.map((site) => ({ site, match: matchRiver(site, segments) }));

@@ -34,7 +34,7 @@ on:
         default: all
       urls:
         description: >-
-          geoglows phase only: space-separated inamhi.geoglows.org URLs to request and archive,
+          geoglows phase only: space-separated inamhi.geoglows.org or services.geoglows.org URLs to request and archive,
           to follow up endpoints an earlier run found in the portal's bundles.
         required: false
         default: ""
@@ -132,7 +132,7 @@ jobs:
       - run: npm ci --ignore-scripts
       - name: Read the return periods
         # Passed through the environment, never interpolated into the script; the script also drops
-        # anything that is not an inamhi.geoglows.org URL.
+        # anything that is not an inamhi.geoglows.org or services.geoglows.org URL.
         env:
           TRY_URLS: ${{ inputs.urls }}
         run: npm run geoglows -- --try "$TRY_URLS" 2>&1 | tee "$RUNNER_TEMP/geoglows.log"

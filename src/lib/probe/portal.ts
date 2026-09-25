@@ -45,7 +45,35 @@ export function endpointsIn(text: string, file: string, contextChars = 160): End
     const end = Math.min(text.length, m.index + m[0].length + contextChars);
     seen.set(literal, { literal, context: text.slice(start, end).replace(/\s+/g, " "), file });
   }
+  // Paths built on the app's configured roots: `${xs.urlAPI}/hydroviewer/x?comid=${id}` or `xs.urlAPI+"/x"`.
+  const built = /(?:\$\{[\w$.]*?(url(?:API|Geoserver|Martin|Host))\}|[\w$.]*?(url(?:API|Geoserver|Martin|Host))\s*\+\s*["'`])([^"'`\s]*)/g;
+  for (const m of text.matchAll(built)) {
+    const literal = `\${${m[1] ?? m[2]}}${m[3]}`;
+    if (seen.has(literal)) continue;
+    const start = Math.max(0, m.index - contextChars);
+    const end = Math.min(text.length, m.index + m[0].length + contextChars);
+    seen.set(literal, { literal, context: text.slice(start, end).replace(/\s+/g, " "), file });
+  }
   return [...seen.values()];
+}
+
+/** Up to `limit` occurrences of each keyword, with the code around it: for what no URL literal names. */
+export function keywordHits(text: string, file: string, keywords: readonly string[], limit = 4, contextChars = 220): EndpointHit[] {
+  const hits: EndpointHit[] = [];
+  for (const keyword of keywords) {
+    let from = 0;
+    for (let n = 0; n < limit; n++) {
+      const at = text.indexOf(keyword, from);
+      if (at < 0) break;
+      hits.push({
+        literal: keyword,
+        context: text.slice(Math.max(0, at - contextChars), at + keyword.length + contextChars).replace(/\s+/g, " "),
+        file,
+      });
+      from = at + keyword.length;
+    }
+  }
+  return hits;
 }
 
 /**

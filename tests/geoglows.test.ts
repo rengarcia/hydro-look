@@ -10,7 +10,17 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { bloscDecompress, bloscHeader, lz4DecodeBlock, unshuffle } from "../src/lib/geo/blosc.ts";
+import {
+  blockExtent,
+  blocksFor,
+  bloscDecompress,
+  bloscHeader,
+  bloscIndex,
+  bloscIndexBytes,
+  decodeBlocks,
+  lz4DecodeBlock,
+  unshuffle,
+} from "../src/lib/geo/blosc.ts";
 import {
   annualMaxima,
   gumbelFactor,
@@ -22,6 +32,7 @@ import {
 import { returnPeriodsFor } from "../src/lib/publish/latest.ts";
 import { returnPeriodAgreement, returnPeriodReachedWords } from "../src/lib/site/story.ts";
 import type { DailySeries } from "../src/lib/features/series.ts";
+import { baseOf, bundleRefs, endpointsIn, isHtml, keywordHits, resolveRef } from "../src/lib/probe/portal.ts";
 import { FIXTURES } from "./helpers.ts";
 
 const frame = (name: string) => new Uint8Array(readFileSync(join(FIXTURES, "blosc", name)));
@@ -67,8 +78,36 @@ describe("bloscDecompress", () => {
     expect([...bloscDecompress(bytes)]).toEqual(payload);
   });
 
-  it("refuses bit-shuffle rather than returning bytes in the wrong order", () => {
-    expect(() => bloscDecompress(frame("lz4-bitshuffle-f8.blosc"))).toThrow(/bit-shuffle/);
+  it("decodes bit-shuffle, as GEOGLOWS' forecast chunks are written", () => {
+    const bytes = frame("lz4-bitshuffle-f8.blosc");
+    expect(bloscHeader(bytes).flags & 0x04).toBe(0x04);
+    const values = view(bloscDecompress(bytes), Float64Array);
+    for (const i of [0, 1, 255, 999]) expect(values[i]).toBe(Math.sin(i / 10) * 1000 + i);
+  });
+
+  it("refuses delta coding rather than returning bytes it cannot undo", () => {
+    const bytes = frame("zstd-shuffle-f8.blosc").slice();
+    bytes[2] = bytes[2]! | 0x08;
+    expect(() => bloscDecompress(bytes)).toThrow(/delta/);
+  });
+
+  it("reads a range of blocks on its own, each from its own extent, as range requests would fetch them", () => {
+    const bytes = frame("zstd-shuffle-f8.blosc");
+    const index = bloscIndex(bytes.subarray(0, bloscIndexBytes(bloscHeader(bytes))));
+    // Blocks are written as they finish, not in order: this frame holds block 2 before block 1.
+    expect(index.starts[2]).toBeLessThan(index.starts[1]!);
+    // Doubles 300..600 are bytes 2400..4800: blocks 1 and 2 of 2048 bytes.
+    const { first, last } = blocksFor(index, 2400, 4800);
+    expect([first, last]).toEqual([1, 2]);
+    const decoded = view(
+      decodeBlocks(index, first, last, (i) => {
+        const { from, to } = blockExtent(index, i);
+        return bytes.slice(from, to);
+      }),
+      Float64Array,
+    );
+    const offset = (2400 - first * 2048) / 8;
+    for (const i of [300, 450, 599]) expect(decoded[offset + i - 300]).toBe(Math.sin(i / 10) * 1000 + i);
   });
 
   it("refuses a truncated frame", () => {
@@ -214,5 +253,49 @@ describe("the page's words", () => {
   it("places today's flow below the 2-year flood or at the longest one it reaches", () => {
     expect(returnPeriodReachedWords(null, 615)).toBe("por debajo de la crecida de 2 años (615 m³/s)");
     expect(returnPeriodReachedWords(10, 615)).toBe("alcanza la crecida de 10 años");
+  });
+});
+
+describe("the portal walk", () => {
+  const page =
+    '<html><head><base href="/"><script src="main-AB12.js" type="module"></script><link rel="modulepreload" href="chunk-CD34.js"></head></html>';
+
+  it("resolves bundles against <base href>, not beside the page", () => {
+    const base = baseOf(page, "https://inamhi.geoglows.org/apps/hydroviewer-ecuador/");
+    expect(bundleRefs(page).map((r) => resolveRef(r, base))).toEqual([
+      "https://inamhi.geoglows.org/chunk-CD34.js",
+      "https://inamhi.geoglows.org/main-AB12.js",
+    ]);
+  });
+
+  it("finds lazy chunks named inside a bundle", () => {
+    expect(bundleRefs('x=()=>import("./chunk-EF56.js").then(m=>m.R)')).toEqual(["./chunk-EF56.js"]);
+  });
+
+  it("keeps hosts and API-looking paths with their context, and drops assets", () => {
+    const js = 'a.get("https://api.example.org/v1/x");b="/apps/hydroviewer-ecuador/get-return-periods/";c="/assets/logo.png";d="/a/b"';
+    expect(endpointsIn(js, "main.js").map((e) => e.literal)).toEqual([
+      "https://api.example.org/v1/x",
+      "/apps/hydroviewer-ecuador/get-return-periods/",
+    ]);
+  });
+
+  it("recognises the app's HTML shell answering a bundle request", () => {
+    expect(isHtml("<!doctype html>\n<html>")).toBe(true);
+    expect(isHtml("var a=1")).toBe(false);
+  });
+});
+
+describe("paths built on the app's configured roots", () => {
+  it('reads `${xs.urlAPI}/x` and `xs.urlAPI+"/x"` as endpoints', () => {
+    const js = 'fetch(`${xs.urlAPI}/hydroviewer/get-return-periods?comid=${t}`);g(xs.urlGeoserver+"/wfs?x=1")';
+    expect(endpointsIn(js, "main.js").map((e) => e.literal)).toEqual([
+      "${urlAPI}/hydroviewer/get-return-periods?comid=${t}",
+      "${urlGeoserver}/wfs?x=1",
+    ]);
+  });
+
+  it("finds keywords with their context", () => {
+    expect(keywordHits("a return_period b return_period", "m.js", ["return_period"], 1)).toHaveLength(1);
   });
 });
