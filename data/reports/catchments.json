@@ -1,6 +1,6 @@
 {
- "startedAt": "2026-09-23T04:21:25Z",
- "finishedAt": "2026-09-23T04:22:42Z",
+ "startedAt": "2026-09-25T03:18:37Z",
+ "finishedAt": "2026-09-25T03:19:49Z",
  "inamhi": "12 polygons, 2,408,810 bytes",
  "results": [
   {
@@ -21,7 +21,7 @@
     "Copernicus_DSM_COG_30_S03_00_W079_00_DEM \"75606582be76f58a68b981a9f9fbcf68\""
    ],
    "noDataShare": 0,
-   "seconds": 11,
+   "seconds": 10,
    "candidates": [
     {
      "role": "dam",
@@ -203,7 +203,7 @@
         "lon": -78.624828
        }
       ],
-      "source": "OSM way/311803060 \"Presa Mazar\" (42 nodes), api.openstreetmap.org 2026-09-23T04:21:28Z",
+      "source": "OSM way/311803060 \"Presa Mazar\" (42 nodes), api.openstreetmap.org 2026-09-25T03:18:39Z",
       "note": "resolved from OSM — 0.04 km from the recorded point"
      },
      "snapped": {
@@ -296,6 +296,126 @@
    "error": ""
   },
   {
+   "basin": "paute_amaluza",
+   "site": "amaluza",
+   "label": "Amaluza (Paute, below Mazar)",
+   "window": {
+    "south": -4,
+    "north": -2,
+    "west": -80,
+    "east": -78
+   },
+   "grids": 1,
+   "tiles": [
+    "Copernicus_DSM_COG_30_S04_00_W080_00_DEM \"eff780a179ff04863308a5db1eed2a14\"",
+    "Copernicus_DSM_COG_30_S04_00_W079_00_DEM \"161019aaa61926dea4bac1a90a9f692c\"",
+    "Copernicus_DSM_COG_30_S03_00_W080_00_DEM \"2a799e74ac887af287ceb00a9dbb020e\"",
+    "Copernicus_DSM_COG_30_S03_00_W079_00_DEM \"75606582be76f58a68b981a9f9fbcf68\""
+   ],
+   "noDataShare": 0,
+   "seconds": 3,
+   "candidates": [
+    {
+     "role": "inamhi station",
+     "evidence": "INAMHI Hydropower app's station point for Amaluza (services.geoglows.org/api/hydropowers/get-station, archived under data/raw/inamhi/hydroviewer-ecuador_2026-09-25/ by probe-basins run 36089243838). The same service's points for Mazar, Delsitanisagua, Minas San Francisco and Coca Codo Sinclair lie 0.2, 0.06, 0.09 and 0.33 km from the OSM dams used above, so it marks the dam; no OSM element for the Amaluza (Daniel Palacios) dam was confirmed. The catchment contains Mazar's: Amaluza's inflow is Mazar's release plus the basin between",
+     "point": {
+      "lat": -2.58698,
+      "lon": -78.56553,
+      "source": "point recorded in PLAN.md §2.4",
+      "note": "no OSM element to resolve"
+     },
+     "snapped": {
+      "lat": -2.590417,
+      "lon": -78.567917,
+      "movedKm": 0.465,
+      "accKm2": 5086,
+      "by": "radius, 0.5 km"
+     },
+     "stats": {
+      "areaKm2": 5086.002476628084,
+      "cells": 593060,
+      "centroid": {
+       "lat": -2.823229480267932,
+       "lon": -78.87756302123309
+      },
+      "representative": {
+       "lat": -2.823229480267932,
+       "lon": -78.87756302123309,
+       "isCentroid": true
+      },
+      "bbox": {
+       "north": -2.3025,
+       "south": -3.274166666666667,
+       "west": -79.36416666666666,
+       "east": -78.46083333333333
+      },
+      "touches": {
+       "north": false,
+       "south": false,
+       "west": false,
+       "east": false
+      },
+      "meanElevM": 3160.912664822828
+     },
+     "confluences": [],
+     "inamhi": [
+      {
+       "layer": "Paute_Molino",
+       "id": "hidroelectricasshape.9",
+       "aKm2": 5086.002476628084,
+       "bKm2": 5182.519980648008,
+       "bothKm2": 5065.791838712712,
+       "iou": 0.9736794406840765,
+       "aInB": 0.9960262233437269,
+       "bInA": 0.9774765669266748
+      },
+      {
+       "layer": "Sopladora",
+       "id": "hidroelectricasshape.11",
+       "aKm2": 5086.002476628084,
+       "bKm2": 5322.634507768951,
+       "bothKm2": 5066.683980572139,
+       "iou": 0.9484703397698069,
+       "aInB": 0.9962016345558776,
+       "bInA": 0.9519128118184285
+      },
+      {
+       "layer": "Mazar",
+       "id": "hidroelectricasshape.7",
+       "aKm2": 5086.002476628084,
+       "bKm2": 4040.996532256701,
+       "bothKm2": 4034.041272652447,
+       "iou": 0.7920822205048859,
+       "aInB": 0.7931654164916833,
+       "bInA": 0.9982788256439384
+      },
+      {
+       "layer": "Minas_San_fancisco",
+       "id": "hidroelectricasshape.8",
+       "aKm2": 5086.002476628084,
+       "bKm2": 3346.6104241517583,
+       "bothKm2": 2.957887310163714,
+       "iou": 0.0003508906717341729,
+       "aInB": 0.0005815740994535916,
+       "bInA": 0.0008838457230687163
+      },
+      {
+       "layer": "Hidroagoyan",
+       "id": "hidroelectricasshape.4",
+       "aKm2": 5086.002476628084,
+       "bKm2": 8232.664917592198,
+       "bothKm2": null,
+       "iou": null,
+       "aInB": null,
+       "bInA": null
+      }
+     ],
+     "error": ""
+    }
+   ],
+   "error": ""
+  },
+  {
    "basin": "coca",
    "site": "coca_codo_sinclair",
    "label": "Coca Codo Sinclair (Coca)",
@@ -313,7 +433,7 @@
     "Copernicus_DSM_COG_30_N00_00_W078_00_DEM \"056444a1a5277738e5e4a703f51c11e5\""
    ],
    "noDataShare": 0,
-   "seconds": 11,
+   "seconds": 9,
    "candidates": [
     {
      "role": "dam",
@@ -339,7 +459,7 @@
         "lon": -77.6837495
        }
       ],
-      "source": "OSM way/310742588 \"Coca Codo Sinclair\" (4 nodes), api.openstreetmap.org 2026-09-23T04:21:39Z",
+      "source": "OSM way/310742588 \"Coca Codo Sinclair\" (4 nodes), api.openstreetmap.org 2026-09-25T03:18:52Z",
       "note": "resolved from OSM — 0.1 km from the recorded point"
      },
      "snapped": {
@@ -449,7 +569,7 @@
      "point": {
       "lat": -1.3997132,
       "lon": -78.3743984,
-      "source": "OSM node/8432673468 \"Central hidroeléctrica Agoyán\" (1 node), api.openstreetmap.org 2026-09-23T04:21:50Z",
+      "source": "OSM node/8432673468 \"Central hidroeléctrica Agoyán\" (1 node), api.openstreetmap.org 2026-09-25T03:19:01Z",
       "note": "resolved from OSM — 0.37 km from the recorded point"
      },
      "snapped": {
@@ -691,7 +811,7 @@
     "Copernicus_DSM_COG_30_S01_00_W080_00_DEM \"b9de166ff3d6aaa448e18c541581529c\""
    ],
    "noDataShare": 0,
-   "seconds": 8,
+   "seconds": 9,
    "candidates": [
     {
      "role": "wikidata point",
@@ -771,7 +891,7 @@
     "Copernicus_DSM_COG_30_S03_00_W079_00_DEM \"75606582be76f58a68b981a9f9fbcf68\""
    ],
    "noDataShare": 0,
-   "seconds": 5,
+   "seconds": 4,
    "candidates": [
     {
      "role": "dam",
@@ -853,7 +973,7 @@
         "lon": -79.4812131
        }
       ],
-      "source": "OSM way/690695821 (17 nodes), api.openstreetmap.org 2026-09-23T04:22:27Z",
+      "source": "OSM way/690695821 (17 nodes), api.openstreetmap.org 2026-09-25T03:19:37Z",
       "note": "resolved from OSM"
      },
      "snapped": {
@@ -973,7 +1093,7 @@
     "Copernicus_DSM_COG_30_S04_00_W079_00_DEM \"161019aaa61926dea4bac1a90a9f692c\""
    ],
    "noDataShare": 0,
-   "seconds": 10,
+   "seconds": 8,
    "candidates": [
     {
      "role": "dam",
@@ -1035,7 +1155,7 @@
         "lon": -79.0168139
        }
       ],
-      "source": "OSM way/726604479 \"Delsitanisagua hidroelectrica\" (12 nodes), api.openstreetmap.org 2026-09-23T04:22:32Z",
+      "source": "OSM way/726604479 \"Delsitanisagua hidroelectrica\" (12 nodes), api.openstreetmap.org 2026-09-25T03:19:42Z",
       "note": "resolved from OSM"
      },
      "snapped": {
@@ -1212,7 +1332,7 @@
         "lon": -78.9857233
        }
       ],
-      "source": "OSM way/690695824 \"Central Hidroeléctrica Delsitanisagua\" (24 nodes), api.openstreetmap.org 2026-09-23T04:22:32Z",
+      "source": "OSM way/690695824 \"Central Hidroeléctrica Delsitanisagua\" (24 nodes), api.openstreetmap.org 2026-09-25T03:19:42Z",
       "note": "resolved from OSM — 0.13 km from the recorded point"
      },
      "snapped": {
