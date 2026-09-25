@@ -9,6 +9,13 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { cases, dailyMeans, eventTable, scoreByLead, scoreNamed, type RunsByOrigin } from "../src/lib/models/geoglows-forecast.ts";
 import { observedDaily, parseForecastCsv, plotMean } from "../src/lib/parse/inamhi-hydropower.ts";
+import {
+  anomalyForecast,
+  blockBootstrap,
+  forecastWindowMean,
+  originForIssue,
+  windowClimatology,
+} from "../src/lib/models/geoglows-inflow.ts";
 import { readChunk, readChunkRange, type ZarrArrayMeta, type ZarrSource } from "../src/lib/geo/zarr.ts";
 import type { DailySeries } from "../src/lib/features/series.ts";
 import { FIXTURES } from "./helpers.ts";
@@ -106,5 +113,50 @@ describe("readChunkRange", () => {
     const bytes = requests.slice(2).reduce((a, [f, t]) => a + (t - f), 0);
     expect(requests.slice(2)).toHaveLength(2);
     expect(bytes).toBeLessThan(frame.length / 2 + 200);
+  });
+});
+
+describe("the forecast as a covariate", () => {
+  it("averages a window of leads and refuses a gap", () => {
+    expect(forecastWindowMean([1, 2, 3, 4], 3)).toBe(2);
+    expect(forecastWindowMean([1, null, 3], 3)).toBeNull();
+    expect(forecastWindowMean([1, 2], 3)).toBeNull();
+  });
+
+  it("takes the model's own climatology for the same calendar window, from earlier years only", () => {
+    // Five years whose 10–12 January averages 10, 20, 30, 40, 50; the origin's own year is left out.
+    const series: DailySeries = new Map();
+    [2019, 2020, 2021, 2022, 2023, 2024].forEach((year, i) => {
+      for (const day of ["10", "11", "12"]) series.set(`${year}-01-${day}`, 10 * (i + 1));
+    });
+    expect(windowClimatology(series, "2024-01-09", 3, 2019)).toBe(30);
+    expect(windowClimatology(series, "2024-01-09", 3, 2019, 6)).toBeNull();
+  });
+
+  it("carries the forecast's change from usual onto the measured climatology, clamped", () => {
+    // The model forecasts twice its own usual: the measured usual doubles, whatever the model's volume.
+    expect(anomalyForecast(100, 600, 300)).toBe(200);
+    expect(anomalyForecast(100, 6000, 300)).toBe(300);
+    expect(anomalyForecast(100, 10, 0)).toBeNull();
+  });
+
+  it("puts a clear improvement's bootstrap interval wholly below zero, and noise across it", () => {
+    const better = blockBootstrap(
+      Array.from({ length: 100 }, (_, i) => -2 + Math.sin(i)),
+      5,
+    );
+    expect(better.hi).toBeLessThan(0);
+    const noise = blockBootstrap(
+      Array.from({ length: 100 }, (_, i) => Math.sin(i * 1.7) * 3),
+      5,
+    );
+    expect(noise.lo).toBeLessThan(0);
+    expect(noise.hi).toBeGreaterThan(0);
+    // Deterministic: the same differences give the same interval.
+    expect(blockBootstrap([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], 3)).toEqual(blockBootstrap([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], 3));
+  });
+
+  it("uses a forecast issued on day F at origin F − 1", () => {
+    expect(originForIssue("2026-09-24")).toBe("2026-09-23");
   });
 });
