@@ -116,7 +116,8 @@ async function main(): Promise<void> {
     const { scale, days } = scales.get(site)!;
     const cs = cases(runs.get(riverId)!, measured, scale);
     allCases[site] = cs;
-    const geoglowsTwoYear = Number(r["q2_m3s"]);
+    // The Hydroviewer's own threshold: INAMHI's fit, on the model's scale, like the raw forecast.
+    const geoglowsTwoYear = Number(r["q2_inamhi_m3s"]);
     const measuredTwoYear = measuredQ2(measured);
     results.push({
       site,
@@ -185,10 +186,10 @@ function report(startedAt: string, origins: IsoDate[], step: number, missing: Is
     "## Floods on the scored days",
     "",
     "Days whose measured inflow reached the site's measured 2-year flood, and how each method did at every lead together",
-    "(hits / misses / false alarms). The raw forecast is also counted against GEOGLOWS' own 2-year flow, which is what the",
-    "Hydroviewer colours by.",
+    "(hits / misses / false alarms). The last column counts the days the raw forecast reached INAMHI's 2-year flow — the",
+    "Hydroviewer's own threshold, on the model's scale — which is when the portal would have coloured the river.",
     "",
-    "| site | scale | measured 2 y | days reaching it | raw | scaled | relative | persistence | GEOGLOWS 2 y | raw ≥ GEOGLOWS 2 y |",
+    "| site | scale | measured 2 y | days reaching it | raw | scaled | relative | persistence | INAMHI 2 y | raw ≥ INAMHI 2 y |",
     "|---|---|---|---|---|---|---|---|---|---|",
   );
   for (const r of results) {
@@ -198,7 +199,7 @@ function report(startedAt: string, origins: IsoDate[], step: number, missing: Is
     const g = r.events.geoglows.byMethod.raw;
     lines.push(
       `| ${r.site} | ${fmt(r.scale, 2)} (${fmt(r.scaleDays)} days) | ${fmt(r.events.measuredTwoYear)} | ${e?.observedEvents ?? "—"} | ${cell("raw")} | ` +
-        `${cell("scaled")} | ${cell("relative")} | ${cell("persistence")} | ${fmt(r.events.geoglowsTwoYear)} | ${g.hits + g.falseAlarms} days |`,
+        `${cell("scaled")} | ${cell("relative")} | ${cell("persistence")} | ${fmt(r.events.geoglowsTwoYear)} | ${g.hits + g.falseAlarms} of ${r.scores[0]!.n * LEADS.length} |`,
     );
   }
   return lines.map((l) => l.replace(/\s+$/, "")).join("\n");
