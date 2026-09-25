@@ -1422,6 +1422,48 @@ which way the two thresholds disagree and how closely the model follows the rive
   from it would say nothing. Both scripts
   stay, so the question can be asked again when GEOGLOWS or INAMHI changes their method.
 
+**Using the forecasts to improve the models — built 2026-09-25.** Asked for by the owner: the
+point of the GEOGLOWS and INAMHI forecasts was never to publish them as they stand, which the
+backtests above refuse, but to make this repository's own forecasts better. A forecast that loses
+to persistence on its own can still carry information a model lacks, so each was tried as a
+*member* of the §5.3 inflow forecast, on the same origins and targets as the existing rungs
+(`npm run geoglows:experiment`, `data/reports/geoglows-experiment.md`), against a no-forecast
+control, with a moving-block bootstrap on the paired errors because overlapping windows make
+neighbouring origins far from independent.
+
+- **The control was the first finding.** The mean of the analogue and climatology rungs beats the
+  analogue alone at every plant and both horizons, over the whole 2018 → 2026 backtest and beyond
+  its interval (Mazar 7 d 37.3 → 33.6 m³/s, Coca Codo Sinclair 7 d 104.1 → 87.1, Agoyán 14 d
+  41.8 → 33.2): the analogue follows today's flow and overshoots as it fades, climatology ignores
+  it, and they err in opposite directions. It is now the published rung, `ensemble`
+  (`src/lib/models/inflow.ts`): published horizons went from 6 of 12 to 11 of 12, band coverage
+  76–84% against a nominal 80%.
+- **GEOGLOWS' forecast adds to it at three plants.** Used as an anomaly — forecast over the
+  model's own climatology for the same calendar window, applied to the measured climatology, so
+  the volume bias cancels — it improves the ensemble beyond the interval at Agoyán, Manduriacu
+  and Minas San Francisco at 7 and 10 days (270 origins from 2024-07), is neutral at Mazar,
+  Amaluza and Coca Codo Sinclair, and makes Delsitanisagua worse. It is now the ensemble's third
+  member at those three (`src/lib/features/geoglows.ts`), wherever the forecast reaches the
+  horizon (ten days: the 7-day forecasts). The daily model step fetches each 00 UTC issue's
+  high-resolution member for their rivers (`npm run geoglows:daily`, ~2 MB of range requests)
+  into `data/curated/geoglows_forecasts`, backfilled daily from 2024-07-01; the model climatology
+  is `data/reference/geoglows_simulated_climatology.csv`, fitted on 1940–2023 so no backtest origin
+  sees a later simulated year. On the weekly origins where it was a member it cut the ensemble's
+  7-day MAE from 35.7 to 32.6 m³/s at Agoyán, 40.4 to 34.5 at Manduriacu and 26.1 to 25.0 at Minas
+  San Francisco, and Manduriacu's 7-day forecast now ships too: all 12 plant-horizons publish.
+- **INAMHI's corrected forecast looks stronger, and is not used yet.** As a third member it beat
+  the control at Mazar, Amaluza, Agoyán and Minas San Francisco at 7 and 14 days (152 origins from
+  2025-05-29), by more than GEOGLOWS does. Three things hold it back: its history is 16 months;
+  its past forecasts are served now, and whether the correction applied to them used observations
+  from after their issue date cannot be told from here (INAMHI's own forecast lost to persistence
+  alone, which argues against a large leak, not against a small one); and its host answers only
+  GitHub's runners. The way to settle the second is to archive its forecast every day as issued
+  and compare it with what the same date returns months later; then, if they match, it can join
+  the ensemble at those four plants the way GEOGLOWS did.
+- **Mazar's level forecast was not changed.** GEOGLOWS added nothing to Mazar's inflow (neutral
+  against the control at 7 and 10 days), so feeding it into the water balance's first days
+  cannot help M3; INAMHI's could, and waits on the same check.
+
 **Candidate list, 2026-09-23:** `ENHANCEMENTS.md` ranks what to do next across the pipeline,
 the public data contract, the site and the models, with the measurement each item rests on
 (pack growth per run, shipped JavaScript, unused tables, unscored forecasts). It is the working

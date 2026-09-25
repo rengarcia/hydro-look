@@ -4,7 +4,8 @@
  * time the way the forecast store is read by range request.
  */
 
-import { readFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { cases, dailyMeans, eventTable, scoreByLead, scoreNamed, type RunsByOrigin } from "../src/lib/models/geoglows-forecast.ts";
@@ -18,6 +19,7 @@ import {
 } from "../src/lib/models/geoglows-inflow.ts";
 import { readChunk, readChunkRange, type ZarrArrayMeta, type ZarrSource } from "../src/lib/geo/zarr.ts";
 import type { DailySeries } from "../src/lib/features/series.ts";
+import { geoglowsMember, readGeoglowsForecasts, type GeoglowsForecasts, type SimulatedClimatology } from "../src/lib/features/geoglows.ts";
 import { FIXTURES } from "./helpers.ts";
 
 describe("dailyMeans", () => {
@@ -158,5 +160,40 @@ describe("the forecast as a covariate", () => {
 
   it("uses a forecast issued on day F at origin F − 1", () => {
     expect(originForIssue("2026-09-24")).toBe("2026-09-23");
+  });
+});
+
+describe("GEOGLOWS as an ensemble member", () => {
+  const forecasts: GeoglowsForecasts = new Map([["agoyan", new Map([["2026-09-24", [200, 200, 200, 200, 200, 200, 200, 210, 220, 230]]])]]);
+  const climatology: SimulatedClimatology = new Map([["agoyan", new Map([["09-23:7", 100]])]]);
+
+  it("is offered only at the plants where it earned it", () => {
+    expect(
+      geoglowsMember("mazar", new Map([["mazar", forecasts.get("agoyan")!]]), new Map([["mazar", climatology.get("agoyan")!]])),
+    ).toBeNull();
+    expect(geoglowsMember("agoyan", forecasts, climatology)).not.toBeNull();
+  });
+
+  it("uses the issue of the day after the origin, as an anomaly on the measured climatology", () => {
+    const member = geoglowsMember("agoyan", forecasts, climatology)!;
+    // The model forecasts twice its own usual for the week, so the measured usual doubles.
+    expect(member("2026-09-23", 7, 80)).toBe(160);
+    expect(member("2026-09-22", 7, 80)).toBeNull();
+  });
+
+  it("stops where the high-resolution member does", () => {
+    expect(geoglowsMember("agoyan", forecasts, climatology)!("2026-09-23", 14, 80)).toBeNull();
+  });
+
+  it("reads the curated table back into daily means by lead", () => {
+    const root = mkdtempSync(join(tmpdir(), "geoglows-"));
+    mkdirSync(join(root, "geoglows_forecasts"));
+    writeFileSync(
+      join(root, "geoglows_forecasts", "2026.csv"),
+      "issued,site,river_id,member,lead_days,q_m3s,store_key,etag,fetched_at\n" +
+        "2026-09-24,agoyan,621014469,high_res,2,12.5,s3://x/2026092400.zarr,e,2026-09-25T00:00:00Z\n" +
+        "2026-09-24,agoyan,621014469,high_res,1,10,s3://x/2026092400.zarr,e,2026-09-25T00:00:00Z\n",
+    );
+    expect(readGeoglowsForecasts(root).get("agoyan")!.get("2026-09-24")).toEqual([10, 12.5]);
   });
 });

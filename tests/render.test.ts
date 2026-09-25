@@ -304,9 +304,24 @@ describe("the additive blocks, rendered", () => {
   });
 
   it("on a plant's page, lists every inflow horizon with its backtest, and why the unpublished ones are not", () => {
-    const plant = liveForecast.inflow_forecasts!.plants.find(
-      (p) => p.horizons.some((h) => h.published) && p.horizons.some((h) => !h.published),
+    // Since the ensemble every horizon of every plant ships, so the withheld case is built from a
+    // real plant by withholding its last horizon, as the forecast script would with a losing backtest.
+    const live = liveForecast.inflow_forecasts!.plants.find(
+      (p) => p.horizons.length >= 2 && p.horizons.some((h) => h.with_river_forecast),
     )!;
+    const last = live.horizons.at(-1)!;
+    const plant = {
+      ...live,
+      horizons: [
+        ...live.horizons.slice(0, -1),
+        {
+          horizon_days: last.horizon_days,
+          published: false,
+          reason: "ensemble MAE 9.9 m3/s does not beat persistence (9.0)",
+          backtest: last.backtest,
+        },
+      ],
+    };
     const html = render(createElement(components.InflowForecastPanel, { plant, report: "data/reports/inflow.md", label: plant.site }));
     const text = textOf(html);
     for (const h of plant.horizons) {
@@ -314,6 +329,8 @@ describe("the additive blocks, rendered", () => {
       expect(text).toContain(inflowVerdict(h));
     }
     expect(text).toContain("no se publica");
+    // A published horizon that had GEOGLOWS among its members says so.
+    expect(text).toContain("Incluye el pronóstico de caudal de GEOGLOWS");
     expect(render(createElement(components.InflowForecastPanel, { plant: null, label: "x" }))).toBe("");
   });
 });

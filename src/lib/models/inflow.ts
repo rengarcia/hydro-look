@@ -82,11 +82,12 @@ export const INFLOW_MODELS: readonly InflowModelId[] = ["persistence", "climatol
 export const PUBLISHED_INFLOW_MODEL: InflowModelId = "ensemble";
 
 /**
- * A short-range river forecast's estimate of the window mean, already on the measured scale
- * (e.g. an anomaly on the measured climatology), for the origin it was issued after. Returns
- * null where the forecast does not reach the horizon or was not issued.
+ * A short-range river forecast's estimate of the window mean on the measured scale, for the
+ * origin it was issued after — given the climatology rung's value, so a forecast whose volume is
+ * wrong can be applied as an anomaly on it. Returns null where the forecast does not reach the
+ * horizon or was not issued.
  */
-export type InflowForecastMember = (origin: IsoDate, horizonDays: number) => number | null;
+export type InflowForecastMember = (origin: IsoDate, horizonDays: number, measuredClimatology: number) => number | null;
 
 /** Mean over `(start, start + days]`, or null if any day is missing. */
 export function windowMean(series: DailySeries, start: IsoDate, days: number): number | null {
@@ -150,7 +151,7 @@ export function predictInflow(
     const analogue = predictInflow("analogue", inflow, origin, horizonDays, options, precip);
     const climatology = predictInflow("climatology", inflow, origin, horizonDays, options, precip);
     if (!analogue || !climatology) return null;
-    const river = forecast ? forecast(origin, horizonDays) : null;
+    const river = forecast ? forecast(origin, horizonDays, climatology.p50) : null;
     const members = [analogue.p50, climatology.p50, ...(river !== null && Number.isFinite(river) ? [river] : [])];
     return {
       p50: members.reduce((a, b) => a + b, 0) / members.length,
@@ -251,6 +252,8 @@ export interface InflowBacktest {
   rainConditionedShare: number;
   /** Share of scored cases whose ensemble had a river forecast among its members. */
   forecastShare: number;
+  /** On those cases, per horizon: the ensemble's MAE with the forecast and without it. */
+  forecastEffect: { horizonDays: number; n: number; withMaeM3s: number; withoutMaeM3s: number }[];
   scores: InflowScore[];
   /** Residual quantiles (actual − p50) of the published rung per horizon, over every scored origin. */
   calibration: Map<number, { q10: number; q50: number; q90: number; n: number }>;
@@ -269,7 +272,16 @@ export function backtestInflow(
   precip: DailySeries | null = null,
   forecast: InflowForecastMember | null = null,
 ): InflowBacktest {
-  type Row = { origin: IsoDate; h: number; actual: number; p: Record<InflowModelId, number>; rain: boolean; withForecast: boolean };
+  type Row = {
+    origin: IsoDate;
+    h: number;
+    actual: number;
+    p: Record<InflowModelId, number>;
+    rain: boolean;
+    withForecast: boolean;
+    /** Where the forecast was a member: the same ensemble without it. */
+    withoutForecast: number | null;
+  };
   const rows: Row[] = [];
   const origins = inflowOrigins(inflow, options);
   const dates = [...inflow.keys()];
@@ -297,6 +309,7 @@ export function backtestInflow(
         },
         rain: predictions[2]!.rainConditioned,
         withForecast: predictions[3]!.withForecast ?? false,
+        withoutForecast: predictions[3]!.withForecast ? (predictions[2]!.p50 + predictions[1]!.p50) / 2 : null,
       });
     }
   }
@@ -371,6 +384,12 @@ export function backtestInflow(
     lastOrigin: rows.at(-1)?.origin ?? null,
     rainConditionedShare: rows.length === 0 ? 0 : rows.filter((r) => r.rain).length / rows.length,
     forecastShare: rows.length === 0 ? 0 : rows.filter((r) => r.withForecast).length / rows.length,
+    forecastEffect: options.horizonDays.flatMap((h) => {
+      const cases = rows.filter((r) => r.h === h && r.withForecast && r.withoutForecast !== null);
+      if (cases.length === 0) return [];
+      const mae = (f: (r: Row) => number) => mean(cases.map((r) => Math.abs(r.actual - f(r))))!;
+      return [{ horizonDays: h, n: cases.length, withMaeM3s: mae((r) => r.p.ensemble), withoutMaeM3s: mae((r) => r.withoutForecast!) }];
+    }),
     scores,
     calibration,
     decisions,

@@ -84,6 +84,25 @@ export function renderInflowReport(inputs: InflowReportInputs): string {
   );
   lines.push("");
 
+  const effects = inputs.backtests.filter((b) => b.forecastEffect.length > 0);
+  if (effects.length > 0) {
+    lines.push("## GEOGLOWS' forecast as a member");
+    lines.push("");
+    lines.push(
+      "At the plants where GEOGLOWS' forecast earned a place (Agoyán, Manduriacu, Minas San Francisco; " +
+        "`src/lib/features/geoglows.ts`), it is the ensemble's third member on every origin whose next day's issue is stored " +
+        "(from 2024-07-01) and whose horizon it reaches (ten days). On those cases the ensemble with and without it:",
+    );
+    lines.push("");
+    lines.push("| plant | horizon | cases | MAE with | MAE without |");
+    lines.push("|---|---:|---:|---:|---:|");
+    for (const b of effects) {
+      for (const e of b.forecastEffect)
+        lines.push(`| ${b.site} | ${e.horizonDays} d | ${e.n} | ${f(e.withMaeM3s)} | ${f(e.withoutMaeM3s)} |`);
+    }
+    lines.push("");
+  }
+
   lines.push("## Rain conditioning");
   lines.push("");
   for (const p of inputs.precip) {

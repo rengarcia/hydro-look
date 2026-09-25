@@ -20,6 +20,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import {
   ENSO_MONTHLY,
+  GEOGLOWS_FORECASTS,
   ADEQUACY_RUNS,
   ADEQUACY_VALUES,
   FORECAST_RUNS,
@@ -170,6 +171,7 @@ function main(): void {
   // a key it never runs at all, so a stale narrative must not turn the ingest's gate red. The
   // page shows the narrative's own date instead.
   const narrativeSnapshots = readTable(NARRATIVE_SNAPSHOTS.name);
+  const geoglowsForecasts = readTable(GEOGLOWS_FORECASTS.name);
 
   const thresholds = readReference("thresholds.csv");
   const findings: Finding[] = [];
@@ -188,6 +190,7 @@ function main(): void {
     [NARRATIVE_SNAPSHOTS as TableSpec<unknown>, narrativeSnapshots],
     [XM_EXCHANGE_DAILY as TableSpec<unknown>, xmExchange],
     [XM_SYSTEM_DAILY as TableSpec<unknown>, xmSystem],
+    [GEOGLOWS_FORECASTS as TableSpec<unknown>, geoglowsForecasts],
   ];
   for (const [spec, table] of tables) {
     findings.push(...checkTableShape(spec, table.rows, table.header));

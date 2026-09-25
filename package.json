@@ -26,6 +26,7 @@
     "geoglows": "tsx scripts/geoglows.ts",
     "geoglows:forecast": "tsx scripts/geoglows-forecast.ts",
     "geoglows:experiment": "tsx scripts/geoglows-experiment.ts",
+    "geoglows:daily": "tsx scripts/geoglows-daily.ts",
     "inamhi:hydropower": "tsx scripts/inamhi-hydropower.ts",
     "check": "tsx scripts/check.ts",
     "publish:api": "tsx scripts/publish.ts",

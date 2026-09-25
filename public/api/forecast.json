@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-25T05:50:07Z",
+  "generated_at": "2026-09-25T06:37:28Z",
   "data_date": "2026-09-23",
   "run_id": "2026-09-23-mazar-2-75aaeaf7",
   "origin_date": "2026-09-23",
@@ -677,23 +677,23 @@
           {
             "horizon_days": 7,
             "published": true,
-            "reason": "ensemble MAE 35.1 m3/s beats persistence 41.9 and climatology 40.9",
+            "reason": "ensemble MAE 34.0 m3/s beats persistence 41.9 and climatology 40.9",
             "backtest": {
               "model": "ensemble",
               "n": 356,
-              "mae_m3s": 35.05,
+              "mae_m3s": 34.04,
               "analogue_mae_m3s": 40.67,
               "persistence_mae_m3s": 41.91,
               "climatology_mae_m3s": 40.9,
-              "coverage_p10_p90": 0.7965
+              "coverage_p10_p90": 0.8169
             },
             "target_date": "2026-09-30",
-            "p10": 34.6,
-            "p50": 82.3,
-            "p90": 141.1,
+            "p10": 36,
+            "p50": 80.1,
+            "p90": 139.1,
             "ensemble_years": 10,
             "rain_conditioned": false,
-            "with_river_forecast": false
+            "with_river_forecast": true
           },
           {
             "horizon_days": 14,
@@ -728,17 +728,24 @@
         "horizons": [
           {
             "horizon_days": 7,
-            "published": false,
-            "reason": "ensemble MAE 44.9 m3/s does not beat persistence (44.0)",
+            "published": true,
+            "reason": "ensemble MAE 42.4 m3/s beats persistence 44.0 and climatology 57.0",
             "backtest": {
               "model": "ensemble",
               "n": 260,
-              "mae_m3s": 44.9,
+              "mae_m3s": 42.41,
               "analogue_mae_m3s": 50.84,
               "persistence_mae_m3s": 43.97,
               "climatology_mae_m3s": 57.04,
-              "coverage_p10_p90": 0.8024
-            }
+              "coverage_p10_p90": 0.8306
+            },
+            "target_date": "2026-09-30",
+            "p10": 51.2,
+            "p50": 93.7,
+            "p90": 183.3,
+            "ensemble_years": 7,
+            "rain_conditioned": false,
+            "with_river_forecast": true
           },
           {
             "horizon_days": 14,
@@ -774,23 +781,23 @@
           {
             "horizon_days": 7,
             "published": true,
-            "reason": "ensemble MAE 24.5 m3/s beats persistence 28.7 and climatology 30.2",
+            "reason": "ensemble MAE 24.0 m3/s beats persistence 28.7 and climatology 30.2",
             "backtest": {
               "model": "ensemble",
               "n": 256,
-              "mae_m3s": 24.53,
+              "mae_m3s": 24.01,
               "analogue_mae_m3s": 27.6,
               "persistence_mae_m3s": 28.71,
               "climatology_mae_m3s": 30.24,
-              "coverage_p10_p90": 0.7705
+              "coverage_p10_p90": 0.7787
             },
             "target_date": "2026-09-30",
             "p10": 0,
-            "p50": 17,
-            "p90": 60.4,
+            "p50": 14.3,
+            "p90": 65.9,
             "ensemble_years": 7,
             "rain_conditioned": false,
-            "with_river_forecast": false
+            "with_river_forecast": true
           },
           {
             "horizon_days": 14,
@@ -870,7 +877,7 @@
     ]
   },
   "scorecard": {
-    "generated_at": "2026-09-25T05:49:54Z",
+    "generated_at": "2026-09-25T06:37:15Z",
     "observed_through": "2026-09-23",
     "target": "level on the target day, m",
     "units": "m",

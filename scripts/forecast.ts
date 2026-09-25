@@ -33,6 +33,7 @@
  * without parsing the output.
  */
 
+import { geoglowsMember, readGeoglowsForecasts, readSimulatedClimatology } from "../src/lib/features/geoglows.ts";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { parseArgs } from "node:util";
@@ -323,17 +324,21 @@ function main(): void {
     const backtests = [];
     const entries = [];
     const precipUsed = [];
+    // GEOGLOWS' forecast is a third ensemble member at the plants where it earned it (features/geoglows.ts).
+    const geoglowsForecasts = readGeoglowsForecasts();
+    const simulatedClimatology = readSimulatedClimatology();
     for (const plant of INFLOW_PLANTS) {
       const plantInflow = series.get(plant, "caudal_m3s");
       if (plantInflow.size === 0) continue;
       const choice = selectPrecipBasin(era5, PLANT_PRECIP_BASIN[plant] ?? "", "");
       const plantPrecip = choice.preferred ? choice.series : null;
-      const backtest = backtestInflow(plant, plantInflow, undefined, plantPrecip);
+      const member = geoglowsMember(plant, geoglowsForecasts, simulatedClimatology);
+      const backtest = backtestInflow(plant, plantInflow, undefined, plantPrecip, member);
       backtests.push(backtest);
-      entries.push(inflowEntry(backtest, plantInflow, choice.preferred ? choice.basin : null, plantPrecip));
+      entries.push(inflowEntry(backtest, plantInflow, choice.preferred ? choice.basin : null, plantPrecip, undefined, member));
       precipUsed.push({ site: plant, basin: PLANT_PRECIP_BASIN[plant] ?? "—", used: choice.preferred, reason: choice.fallbackReason });
       console.log(
-        `inflow ${plant}: ${backtest.origins} origins; ` +
+        `inflow ${plant}: ${backtest.origins} origins${member ? `, GEOGLOWS a member in ${(backtest.forecastShare * 100).toFixed(0)}% of cases` : ""}; ` +
           backtest.decisions.map((d) => `${d.horizonDays}d ${d.ships ? "ships" : "no"}`).join(", "),
       );
     }

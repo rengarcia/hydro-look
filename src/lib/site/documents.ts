@@ -425,6 +425,8 @@ export interface InflowHorizon {
   p50?: number;
   p90?: number;
   ensemble_years?: number;
+  /** Whether GEOGLOWS' river forecast was one of the ensemble's members today. */
+  with_river_forecast?: boolean;
 }
 
 export interface InflowPlant {

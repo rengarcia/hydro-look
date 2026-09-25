@@ -28,6 +28,10 @@ source "$(dirname "$0")/push-loop.sh"
 # A modelling failure must not be papered over: leave the previous documents committed and
 # return non-zero so the step is visibly red, rather than pushing a half-written one.
 regenerate_models() {
+  # GEOGLOWS' river forecast for the inflow ensemble's member plants (src/lib/features/geoglows.ts).
+  # It is the one network read in this step; without it the ensemble keeps its two members today.
+  npm run geoglows:daily 2>&1 | tee -a "$LOG" || echo "GEOGLOWS fetch failed; the inflow ensemble runs without today's forecast."
+
   if ! npm run forecast 2>&1 | tee -a "$LOG"; then
     echo "Forecast failed; the previously committed forecast is left in place."
     return 1
@@ -64,5 +68,6 @@ regenerate_models() {
 }
 
 push_with_retry "$MESSAGE" regenerate_models \
+  data/curated/geoglows_forecasts \
   data/curated/forecast_runs data/curated/forecast_values data/curated/adequacy_runs \
   data/curated/adequacy_values data/reports public/api

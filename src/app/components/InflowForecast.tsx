@@ -88,6 +88,9 @@ export function InflowForecastPanel({ plant, report, label }: { plant: InflowPla
           <li key={h.horizon_days}>
             <strong>{h.horizon_days} días.</strong> {inflowVerdict(h)}
             {h.published && h.ensemble_years ? ` Rango calculado con las lluvias de ${h.ensemble_years} años pasados.` : ""}
+            {h.published && h.with_river_forecast
+              ? " Incluye el pronóstico de caudal de GEOGLOWS, el modelo que usa el INAMHI, corregido a lo que se mide aquí."
+              : ""}
           </li>
         ))}
       </ul>

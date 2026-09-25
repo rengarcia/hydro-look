@@ -208,8 +208,9 @@ jobs:
   geoglows-forecast:
     if: inputs.phases == 'geoglows-forecast'
     runs-on: ubuntu-latest
-    # ~270 origins × 7 rivers of range requests; about 50 minutes in the development sandbox.
-    timeout-minutes: 90
+    # ~270 origins × 7 rivers of range requests: 35–50 minutes in the development sandbox, and a
+    # runner took over 90 (run 36094849872 was cancelled at the limit), so it gets room.
+    timeout-minutes: 180
     permissions:
       contents: write
     steps:
