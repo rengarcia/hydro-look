@@ -74,6 +74,7 @@ function main(): void {
   const document = buildLatest({
     series: loadSeries(),
     thresholds: readReference("thresholds.csv") as unknown as ThresholdRow[],
+    geoglows: readReference("geoglows_return_periods.csv"),
     balance: readTable(NATIONAL_BALANCE_DAILY.name) as unknown as BalanceRow[],
     sites: reservoirSites(),
     generatedAt: nowUtc(),

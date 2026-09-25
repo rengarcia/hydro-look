@@ -11,6 +11,21 @@ name: Basin sources probe
 # It lives here rather than in a workflow of its own because a dispatch can only name a workflow
 # that already exists on the default branch. Neither job touches basins.csv; which of its rows
 # become `verified` is decided by reading data/reports/catchments.md, in PLAN.md.
+#
+# `phases: geoglows` runs a third job: `npm run geoglows` matches each dam's catchment to its
+# GEOGLOWS v2 river, reads the return periods INAMHI's portal colours rivers by from the public
+# `geoglows-v2` bucket, fits the same statistic on CELEC's record, asks the portal itself once
+# (the sandbox cannot), and commits data/reference/geoglows_return_periods.csv and
+# data/reports/return-periods.{md,json}. The store is revised about once a year (PLAN.md Phase 7).
+#
+# `phases: inamhi-hydropower` backtests INAMHI's own hydropower inflow forecasts, which only a
+# runner can reach: `npm run inamhi:hydropower` finds the first date they are served, asks every
+# third day's forecast of each plant since, scores it against CELEC's inflow and commits
+# data/reports/inamhi-hydropower.{md,json} and the answers under data/raw/inamhi/hydropower/.
+#
+# `phases: geoglows-forecast` backtests GEOGLOWS' own forecast archive (public S3) the same way:
+# `npm run geoglows:forecast -- --step 3`, about a gigabyte of range requests, and commits
+# data/reports/geoglows-forecast.{md,json}.
 # Dispatch-only now that it is on main: a dispatch names the ref it runs, so a probe under
 # development is run from its own branch without a push trigger pinned to a branch name that
 # stops existing the moment it merges.
@@ -22,15 +37,26 @@ on:
           Comma-separated phases, or "all". The open items are wikidata, jubones,
           delsitanisagua, official; the settled re-checks are hydrosheds, mirrors, arcgis,
           robots, overpass, contains. wikidata is added whenever a phase needs an anchor.
-          "catchments" alone runs the DEM delineation job instead, which commits its output.
+          "catchments" alone runs the DEM delineation job instead, which commits its output;
+          "geoglows" alone reads the GEOGLOWS return periods at the dams and commits them;
+          "inamhi-hydropower" alone backtests INAMHI's hydropower forecasts and commits the report;
+          "geoglows-forecast" alone backtests GEOGLOWS' archived forecasts and commits the report.
         required: false
         default: all
+      urls:
+        description: >-
+          geoglows phase only: space-separated inamhi.geoglows.org or services.geoglows.org URLs to request and archive,
+          to follow up endpoints an earlier run found in the portal's bundles.
+        required: false
+        default: ""
 
 permissions: {}
 
 jobs:
   probe:
-    if: inputs.phases != 'catchments'
+    if: >-
+      inputs.phases != 'catchments' && inputs.phases != 'geoglows' &&
+      inputs.phases != 'inamhi-hydropower' && inputs.phases != 'geoglows-forecast'
     runs-on: ubuntu-latest
     # Ten was not enough: run 35732611773 was killed at the limit mid-walk. Overpass is the
     # slow part and the least predictable, since a busy instance answers late or not at all.
@@ -96,6 +122,120 @@ jobs:
           git add data/reference/catchments.geojson data/reports/catchments.md data/reports/catchments.json data/raw/inamhi 2>/dev/null || true
           if git diff --cached --quiet; then echo "Nothing to commit."; exit 0; fi
           git commit -m "Catchments from the Copernicus DEM (run $RUN_ID)"
+          for attempt in 1 2 3 4; do
+            git pull --rebase origin "$BRANCH" && git push origin "HEAD:$BRANCH" && exit 0
+            sleep $((attempt * 5))
+          done
+          exit 1
+
+  geoglows:
+    if: inputs.phases == 'geoglows'
+    runs-on: ubuntu-latest
+    # Two Parquet tables read by column (~60 MB) and ~40 Zarr chunks; under two minutes in the sandbox.
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      # This job holds the push token, so no dependency's install script runs.
+      - run: npm ci --ignore-scripts
+      - name: Read the return periods
+        # Passed through the environment, never interpolated into the script; the script also drops
+        # anything that is not an inamhi.geoglows.org or services.geoglows.org URL.
+        env:
+          TRY_URLS: ${{ inputs.urls }}
+        run: npm run geoglows -- --try "$TRY_URLS" 2>&1 | tee "$RUNNER_TEMP/geoglows.log"
+      - name: Summarise
+        if: always()
+        run: cat data/reports/return-periods.md >> "$GITHUB_STEP_SUMMARY" || true
+      - name: Commit
+        # Only files this job writes and nothing else does, so a rebase onto a newer tip cannot conflict.
+        env:
+          BRANCH: ${{ github.ref_name }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/reference/geoglows_return_periods.csv data/reports/return-periods.md data/reports/return-periods.json data/raw/inamhi 2>/dev/null || true
+          if git diff --cached --quiet; then echo "Nothing to commit."; exit 0; fi
+          git commit -m "GEOGLOWS return periods at the dams (run $RUN_ID)"
+          for attempt in 1 2 3 4; do
+            git pull --rebase origin "$BRANCH" && git push origin "HEAD:$BRANCH" && exit 0
+            sleep $((attempt * 5))
+          done
+          exit 1
+
+  inamhi-hydropower:
+    if: inputs.phases == 'inamhi-hydropower'
+    runs-on: ubuntu-latest
+    # About 1,500 requests at one every half second, and the answers' own time.
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      # This job holds the push token, so no dependency's install script runs.
+      - run: npm ci --ignore-scripts
+      - name: Backtest
+        run: npm run inamhi:hydropower -- --earliest --step 3 2>&1 | tee "$RUNNER_TEMP/inamhi.log"
+      - name: Summarise
+        if: always()
+        run: cat data/reports/inamhi-hydropower.md >> "$GITHUB_STEP_SUMMARY" || true
+      - name: Commit
+        env:
+          BRANCH: ${{ github.ref_name }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/reports/inamhi-hydropower.md data/reports/inamhi-hydropower.json data/raw/inamhi/hydropower 2>/dev/null || true
+          if git diff --cached --quiet; then echo "Nothing to commit."; exit 0; fi
+          git commit -m "INAMHI hydropower forecast backtest (run $RUN_ID)"
+          for attempt in 1 2 3 4; do
+            git pull --rebase origin "$BRANCH" && git push origin "HEAD:$BRANCH" && exit 0
+            sleep $((attempt * 5))
+          done
+          exit 1
+
+  geoglows-forecast:
+    if: inputs.phases == 'geoglows-forecast'
+    runs-on: ubuntu-latest
+    # ~270 origins × 7 rivers of range requests: 35–50 minutes in the development sandbox, and a
+    # runner took over 90 (run 36094849872 was cancelled at the limit), so it gets room.
+    timeout-minutes: 180
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      # This job holds the push token, so no dependency's install script runs.
+      - run: npm ci --ignore-scripts
+      - name: Backtest
+        run: npm run geoglows:forecast -- --step 3 2>&1 | tee "$RUNNER_TEMP/geoglows-forecast.log"
+      - name: Summarise
+        if: always()
+        run: cat data/reports/geoglows-forecast.md >> "$GITHUB_STEP_SUMMARY" || true
+      - name: Commit
+        env:
+          BRANCH: ${{ github.ref_name }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/reports/geoglows-forecast.md data/reports/geoglows-forecast.json
+          if git diff --cached --quiet; then echo "Nothing to commit."; exit 0; fi
+          git commit -m "GEOGLOWS forecast backtest (run $RUN_ID)"
           for attempt in 1 2 3 4; do
             git pull --rebase origin "$BRANCH" && git push origin "HEAD:$BRANCH" && exit 0
             sleep $((attempt * 5))

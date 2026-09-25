@@ -403,7 +403,8 @@ export function dayScoreNote(
 /**
  * Why an inflow horizon is or is not published, in the page's words and from the backtest's own
  * numbers — the document's `reason` is written in English, for the report. A horizon ships only
- * when the analogue years beat both persistence and climatology; one that does not is named by
+ * when the ensemble (analogue years averaged with the calendar's usual) beats both persistence and
+ * climatology; one that does not is named by
  * what it lost to.
  */
 export function inflowVerdict(h: {
@@ -464,3 +465,60 @@ export function importDependence(sensitivity: {
     `dentro de ${worst.worst_tier_horizon_days} días. El resultado depende de cuánta energía llegue desde Colombia.`
   );
 }
+
+/**
+ * How far GEOGLOWS' 2-year flood is from the one fitted on CELEC's record, in words. Within 15%
+ * the two are said to agree: less than the spread a nine-year Gumbel fit has on its own.
+ */
+export const RETURN_PERIOD_AGREEMENT = 0.15;
+
+export function returnPeriodAgreement(modelled: number, measured: number): string {
+  const ratio = modelled / measured;
+  if (!Number.isFinite(ratio) || ratio <= 0) return "";
+  if (Math.abs(ratio - 1) <= RETURN_PERIOD_AGREEMENT) {
+    return `Para la crecida de 2 años, el modelo y el registro de CELEC casi coinciden (${num(modelled, 0)} frente a ${num(measured, 0)} m³/s).`;
+  }
+  const times = ratio >= 1 ? `${num(ratio, 1)} veces` : `${num((1 - ratio) * 100, 0)} % menos que`;
+  return ratio > 1
+    ? `Para la crecida de 2 años, el modelo da ${times} lo que da el registro de CELEC (${num(modelled, 0)} frente a ${num(measured, 0)} m³/s): ` +
+        "espera crecidas más grandes de las que se han medido aquí, así que con sus umbrales una crecida real parecería más pequeña."
+    : `Para la crecida de 2 años, el modelo da un ${times} el registro de CELEC (${num(modelled, 0)} frente a ${num(measured, 0)} m³/s): ` +
+        "espera crecidas más pequeñas de las que se han medido aquí, así que con sus umbrales una crecida real parecería más grande.";
+}
+
+/** Today's inflow against one source's return periods, as the end of a sentence. */
+export function returnPeriodReachedWords(reached: number | null, twoYear: number): string {
+  if (reached === null) return `por debajo de la crecida de 2 años (${num(twoYear, 0)} m³/s)`;
+  return `alcanza la crecida de ${reached} años`;
+}
+
+/**
+ * How closely GEOGLOWS' simulated flow follows the river CELEC measures, in words: its volume
+ * (mean simulated ÷ mean measured) and its timing (correlation of monthly means).
+ */
+export function modelFitWords(ratio: number, rMonthly: number | null): string {
+  const volume =
+    Math.abs(ratio - 1) <= RETURN_PERIOD_AGREEMENT
+      ? "un caudal medio parecido al que mide CELEC"
+      : ratio > 1
+        ? `en promedio ${num(ratio, 1)} veces el caudal que mide CELEC`
+        : `en promedio un ${num((1 - ratio) * 100, 0)} % menos del caudal que mide CELEC`;
+  if (rMonthly === null) return `Día a día, el modelo simula aquí ${volume}.`;
+  const timing =
+    rMonthly >= 0.8
+      ? "sus promedios mensuales siguen de cerca a los medidos"
+      : rMonthly >= 0.5
+        ? "sus promedios mensuales se parecen en parte a los medidos"
+        : "sus promedios mensuales se parecen poco a los medidos";
+  return `Día a día, el modelo simula aquí ${volume}, y ${timing} (correlación ${num(rMonthly, 2)}).`;
+}
+
+/**
+ * Reservoirs whose inflow a dam upstream decides in part. GEOGLOWS routes the river without
+ * modelling any reservoir's operation, so at these its flows are the river's, not what arrives.
+ */
+export const REGULATED_UPSTREAM: Record<string, string> = {
+  amaluza:
+    "Aquí el agua que llega depende también de lo que suelta Mazar, río arriba, y el modelo no simula cómo se opera esa presa: " +
+    "sus valores son los del río, no los del agua que Mazar deja pasar.",
+};

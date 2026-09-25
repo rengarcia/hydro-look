@@ -1,0 +1,4209 @@
+{
+ "startedAt": "2026-09-25T03:21:42Z",
+ "finishedAt": "2026-09-25T03:29:31Z",
+ "store": {
+  "url": "https://geoglows-v2.s3-us-west-2.amazonaws.com/retrospective/return-periods.zarr",
+  "title": "River Forecast System v2 Retrospective Simulation Return Periods",
+  "revision": 4,
+  "revisionDate": "2026-06-10",
+  "license": "CC-BY-NC-SA 4.0",
+  "etags": {
+   ".zmetadata": "\"e25f737af3b12acc6b285e36eac18f69\"",
+   "return_period/0": "\"884ece7412f43030ae96b79d44eb36a2\"",
+   "river_id/0": "\"fb1d4883fbc88316e3c816929e21a014\"",
+   "river_id/1": "\"86ea07bd6311b62a3f9a01ca5b80bfb2\"",
+   "river_id/2": "\"888e8c6287283920c26f1ccef56d0e66\"",
+   "river_id/3": "\"33d51c5a19fb9d3f4798fd20d0f9721c\"",
+   "river_id/4": "\"6f807d513c5e422d6119223f666e76ab\"",
+   "river_id/5": "\"a0d8da985334ddf7e94ca2d43d4ba203\"",
+   "river_id/6": "\"d08bd2bb7bfafa3b4a7b8fbde69c984c\"",
+   "river_id/7": "\"54890c0c12639f4ca1a23850b9a6416c\"",
+   "river_id/8": "\"c12d9e303f93ab28d1a0ef93e731dd88\"",
+   "river_id/9": "\"c2013bd01dad92c66c089c74eca7226b\"",
+   "river_id/10": "\"47a3ab9f5b2aa74aa4c8eb9d27a96550\"",
+   "river_id/11": "\"723abb9f61bcd479cfce7da149971379\"",
+   "river_id/12": "\"cff2fa5de36ffb4b6e12c1b109cc09c5\"",
+   "river_id/13": "\"744fe221be32caa9a974204307c7771f\"",
+   "river_id/14": "\"6109835ae4002754914fc2e38784f0d9\"",
+   "river_id/15": "\"4bb27a738b9b5e68f6792e57d97e828c\"",
+   "river_id/16": "\"b95d15fe99c0b394783a441a73003eb7\"",
+   "river_id/17": "\"24ced867fffc6f533f836381af39c83c\"",
+   "river_id/18": "\"135ee9529b7f017ea6e5cf25a723e64c\"",
+   "river_id/19": "\"e44cdbe46ca9fd1820a9ded943547d93\"",
+   "river_id/20": "\"9ef00e3f88798ffe94ec60935641aeaa\"",
+   "river_id/21": "\"8570e2e6b050f15884a802970db4f89f\"",
+   "river_id/22": "\"61c1b5e9adf09e23e4013c4d4ed72314\"",
+   "river_id/23": "\"eb4233fab985f4d5a2e892e3c1632bb3\"",
+   "river_id/24": "\"b3a3fa85c7954c72a1aa2969ebca56c3\"",
+   "river_id/25": "\"ee62a89b90ad03ccf2ed7aca6f49ca04\"",
+   "river_id/26": "\"8101aff6a71a27052c1eb1800a523afa\"",
+   "gumbel_daily/0.129": "\"823f367f08716e9b4f632787ac61fe25\"",
+   "gumbel_daily/0.128": "\"ef87cb2b7936caddde6d7b4b8d1fc0d0\"",
+   "gumbel_daily/0.143": "\"7f811eb10e441212bd220a96ab0270ec\"",
+   "gumbel_hourly/0.129": "\"b637e04cb55105f3c94e5557abf53d25\"",
+   "gumbel_hourly/0.128": "\"2fd7a50d58b097ef29a1b60b980efe7f\"",
+   "gumbel_hourly/0.143": "\"f24309bb600ee84e3549e3f894bbcd90\"",
+   "gumbel/0.129": "\"b637e04cb55105f3c94e5557abf53d25\"",
+   "gumbel/0.128": "\"2fd7a50d58b097ef29a1b60b980efe7f\"",
+   "gumbel/0.143": "\"f24309bb600ee84e3549e3f894bbcd90\"",
+   "max_simulated/129": "\"d7a136926e15397eabdd2406084dbbdc\"",
+   "max_simulated/128": "\"77fa80f8220c3096108e42484a29736d\"",
+   "max_simulated/143": "\"a4b0d866aa38c59103fe7429701078a4\""
+  }
+ },
+ "portal": {
+  "url": "https://inamhi.geoglows.org/apps/hydroviewer-ecuador/",
+  "status": "HTTP 200, 11 bundles reached, 12,253,992 characters in all",
+  "archived": "inamhi/hydroviewer-ecuador_2026-09-25/index.html.gz (bundles too large to archive)",
+  "files": [
+   {
+    "url": "https://inamhi.geoglows.org/apps/hydroviewer-ecuador/",
+    "status": "HTTP 200",
+    "bytes": 69343
+   },
+   {
+    "url": "https://inamhi.geoglows.org/chunk-CZCQDTLK.js",
+    "status": "HTTP 200",
+    "bytes": 160070
+   },
+   {
+    "url": "https://inamhi.geoglows.org/chunk-NPKXJC7B.js",
+    "status": "HTTP 200",
+    "bytes": 1596
+   },
+   {
+    "url": "https://inamhi.geoglows.org/chunk-XMJSESVI.js",
+    "status": "HTTP 200",
+    "bytes": 203113
+   },
+   {
+    "url": "https://inamhi.geoglows.org/main-WN7HSYMU.js",
+    "status": "HTTP 200",
+    "bytes": 7475613
+   },
+   {
+    "url": "https://inamhi.geoglows.org/polyfills-QL7OZAL3.js",
+    "status": "HTTP 200",
+    "bytes": 34037
+   },
+   {
+    "url": "https://inamhi.geoglows.org/scripts-YXDGOZI7.js",
+    "status": "HTTP 200",
+    "bytes": 3999175
+   },
+   {
+    "url": "https://inamhi.geoglows.org/chunk-767WP22Y.js",
+    "status": "HTTP 200",
+    "bytes": 158865
+   },
+   {
+    "url": "https://inamhi.geoglows.org/chunk-AOVMIQJQ.js",
+    "status": "HTTP 200",
+    "bytes": 63723
+   },
+   {
+    "url": "https://inamhi.geoglows.org/chunk-D2L6OL6N.js",
+    "status": "HTTP 200",
+    "bytes": 66079
+   },
+   {
+    "url": "https://inamhi.geoglows.org/chunk-K2TFF7JK.js",
+    "status": "HTTP 200",
+    "bytes": 22295
+   },
+   {
+    "url": "https://inamhi.geoglows.org/chunk-LFYYGJFO.js",
+    "status": "HTTP 200",
+    "bytes": 83
+   }
+  ],
+  "endpoints": [
+   {
+    "literal": "https://fonts.gstatic.com",
+    "context": "<!doctype html> <html lang=\"en\" data-critters-container> <head><link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin> <meta charset=\"utf-8\"> <title>INAMHI GEOGLOWS</title> <base href=\"/\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale",
+    "file": ""
+   },
+   {
+    "literal": "https://g.co/ng/security#xss",
+    "context": "===void 0||c.call(r,u),i.error(u)},()=>{var u,c;a&&((u=r.unsubscribe)===null||u===void 0||u.call(r)),(c=r.finalize)===null||c===void 0||c.call(r)}))}):H}var $a=\"https://g.co/ng/security#xss\",M=class extends Error{constructor(t,n){super(Ha(t,n)),this.code=t}};function Ha(e,t){return`${`NG0${Math.abs(e)}`}${t?\": \"+t:\"\"}`}function Xt(e){return{toStrin",
+    "file": "chunk-CZCQDTLK.js"
+   },
+   {
+    "literal": "http://www.w3.org/2000/svg",
+    "context": "t().responseType==\"string\"},go=function(e){var A=new Image,t=e.createElement(\"canvas\"),r=t.getContext(\"2d\");if(!r)return!1;A.src=\"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'></svg>\";try{r.drawImage(A,0,0),t.toDataURL()}catch{return!1}return!0},HB=function(e){return e[0]===0&&e[1]===255&&e[2]===0&&e[3]===255},wo=function(e){var A=e.",
+    "file": "chunk-XMJSESVI.js"
+   },
+   {
+    "literal": "https://maplibre.org/",
+    "context": "ation(O){return this.terrain?this.terrain.getElevationForLngLatZoom(e.Q.convert(O),this.transform.tileZoom):null}}let Ut={compact:!0,customAttribution:'<a href=\"https://maplibre.org/\" target=\"_blank\">MapLibre</a>'};class tn{constructor(O=Ut){this._toggleAttribution=()=>{this._container.classList.contains(\"maplibregl-compact\")&&(this._contain",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "http://www.w3.org/2000/svg",
+    "context": "),O&&O.element)this._element=O.element,this._offset=e.P.convert(O&&O.offset||[0,0]);else{this._defaultMarker=!0,this._element=a.create(\"div\");let te=a.createNS(\"http://www.w3.org/2000/svg\",\"svg\"),we=41,Le=27;te.setAttributeNS(null,\"display\",\"block\"),te.setAttributeNS(null,\"height\",`${we}px`),te.setAttributeNS(null,\"width\",`${Le}px`),te.setAttribu",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://plotly.com/",
+    "context": "0;g<d[m].length;g++)if(d[m][g].name!==p[m][g].name)return!1}return!0},o.getLogo=function(){var d=this.createGroup(),p=document.createElement(\"a\");return p.href=\"https://plotly.com/\",p.target=\"_blank\",p.setAttribute(\"data-title\",n._(this.graphInfo,\"Produced with Plotly.js\")+\" (v\"+c+\")\"),p.className=\"modebar-btn plotlyjsicon modebar-btn--log",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://github.com/d3/d3-format/tree/v1.4.5#d3-format",
+    "context": "t\";t.exports={INCREASING:{COLOR:\"#3D9970\",SYMBOL:\"\\u25B2\"},DECREASING:{COLOR:\"#FF4136\",SYMBOL:\"\\u25BC\"}}},26880:function(t){\"use strict\";t.exports={FORMAT_LINK:\"https://github.com/d3/d3-format/tree/v1.4.5#d3-format\",DATE_FORMAT_LINK:\"https://github.com/d3/d3-time-format/tree/v2.2.3#locale_format\"}},69104:function(t){\"use strict\";t.exports={COMPARISON_OPS:[\"=\",\"!=\",\"<\",\">=\"",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://github.com/d3/d3-time-format/tree/v2.2.3#locale_format",
+    "context": "LOR:\"#FF4136\",SYMBOL:\"\\u25BC\"}}},26880:function(t){\"use strict\";t.exports={FORMAT_LINK:\"https://github.com/d3/d3-format/tree/v1.4.5#d3-format\",DATE_FORMAT_LINK:\"https://github.com/d3/d3-time-format/tree/v2.2.3#locale_format\"}},69104:function(t){\"use strict\";t.exports={COMPARISON_OPS:[\"=\",\"!=\",\"<\",\">=\",\">\",\"<=\"],COMPARISON_OPS2:[\"=\",\"<\",\">=\",\">\",\"<=\"],INTERVAL_OPS:[\"[]\",\"()\",\"[)\",\"(",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "http://www.w3.org/2000/xmlns/",
+    "context": "dges\"],[\"image-rendering\",\"pixelated\"]],r.STYLE=r.CSS_DECLARATIONS.map(function(e){return e.join(\": \")+\"; \"}).join(\"\")},9616:function(t,r){\"use strict\";r.xmlns=\"http://www.w3.org/2000/xmlns/\",r.svg=\"http://www.w3.org/2000/svg\",r.xlink=\"http://www.w3.org/1999/xlink\",r.svgAttrs={xmlns:r.svg,\"xmlns:xlink\":r.xlink}},64884:function(t,r,e){\"use strict\";r.",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "http://www.w3.org/1999/xlink",
+    "context": "tion(e){return e.join(\": \")+\"; \"}).join(\"\")},9616:function(t,r){\"use strict\";r.xmlns=\"http://www.w3.org/2000/xmlns/\",r.svg=\"http://www.w3.org/2000/svg\",r.xlink=\"http://www.w3.org/1999/xlink\",r.svgAttrs={xmlns:r.svg,\"xmlns:xlink\":r.xlink}},64884:function(t,r,e){\"use strict\";r.version=e(25788).version,e(88324),e(79288);for(var u=e(24040),l=r.register",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://get.webgl.org",
+    "context": "%\",a.style.margin=\"-15% 0 0 -25%\",c.appendChild(a),n.container.appendChild(c),n.container.style.background=\"#FFFFFF\",n.container.onclick=function(){window.open(\"https://get.webgl.org\")},!1}},95376:function(t){\"use strict\";t.exports=function(r){return Object.keys(r).sort()}},63084:function(t,r,e){\"use strict\";var u=e(38248),l=e(38116).isArray",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://cdn.plot.ly/",
+    "context": ",dflt:!1},plotGlPixelRatio:{valType:\"number\",dflt:2,min:1,max:4},setBackground:{valType:\"any\",dflt:\"transparent\"},topojsonURL:{valType:\"string\",noBlank:!0,dflt:\"https://cdn.plot.ly/\"},mapboxAccessToken:{valType:\"string\",dflt:null},logging:{valType:\"integer\",min:0,max:2,dflt:1},notifyOnLogging:{valType:\"integer\",min:0,max:2,dflt:0},queueLeng",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://www.openstreetmap.org/copyright",
+    "context": "\",editType:\"layoutstyle\"},titlefont:u({editType:\"layoutstyle\"})}}},47552:function(t,r,e){\"use strict\";var u=e(95376),l=\"1.13.4\",n='\\xA9 <a target=\"_blank\" href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors',h=['\\xA9 <a target=\"_blank\" href=\"https://carto.com/\">Carto</a>',n].join(\" \"),c=['Map tiles by <a target=\"_blank\" href=\"https:/",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://carto.com/",
+    "context": "=e(95376),l=\"1.13.4\",n='\\xA9 <a target=\"_blank\" href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors',h=['\\xA9 <a target=\"_blank\" href=\"https://carto.com/\">Carto</a>',n].join(\" \"),c=['Map tiles by <a target=\"_blank\" href=\"https://stamen.com\">Stamen Design</a>','under <a target=\"_blank\" href=\"https://creativecommon",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://stamen.com",
+    "context": "pyright\">OpenStreetMap</a> contributors',h=['\\xA9 <a target=\"_blank\" href=\"https://carto.com/\">Carto</a>',n].join(\" \"),c=['Map tiles by <a target=\"_blank\" href=\"https://stamen.com\">Stamen Design</a>','under <a target=\"_blank\" href=\"https://creativecommons.org/licenses/by/3.0\">CC BY 3.0</a>',\"|\",'Data by <a target=\"_blank\" href=\"https://op",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://creativecommons.org/licenses/by/3.0",
+    "context": "ef=\"https://carto.com/\">Carto</a>',n].join(\" \"),c=['Map tiles by <a target=\"_blank\" href=\"https://stamen.com\">Stamen Design</a>','under <a target=\"_blank\" href=\"https://creativecommons.org/licenses/by/3.0\">CC BY 3.0</a>',\"|\",'Data by <a target=\"_blank\" href=\"https://openstreetmap.org\">OpenStreetMap</a> contributors','under <a target=\"_blank\" href=\"https://www.ope",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://openstreetmap.org",
+    "context": "stamen.com\">Stamen Design</a>','under <a target=\"_blank\" href=\"https://creativecommons.org/licenses/by/3.0\">CC BY 3.0</a>',\"|\",'Data by <a target=\"_blank\" href=\"https://openstreetmap.org\">OpenStreetMap</a> contributors','under <a target=\"_blank\" href=\"https://www.openstreetmap.org/copyright\">ODbL</a>'].join(\" \"),a={\"open-street-map\":{id:\"osm\",ve",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://fonts.openmaptiles.org/{fontstack}/{range}.pbf",
+    "context": "/b.tile.openstreetmap.org/{z}/{x}/{y}.png\"],tileSize:256}},layers:[{id:\"plotly-osm-tiles\",type:\"raster\",source:\"plotly-osm-tiles\",minzoom:0,maxzoom:22}],glyphs:\"https://fonts.openmaptiles.org/{fontstack}/{range}.pbf\"},\"white-bg\":{id:\"white-bg\",version:8,sources:{},layers:[{id:\"white-bg\",type:\"background\",paint:{\"background-color\":\"#FFFFFF\"},minzoom:0,maxzoom:22}],glyphs:\"ht",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://creativecommons.org/licenses/by-sa/3.0",
+    "context": "licenses/by/3.0\">CC BY 3.0</a>',\"|\",'Data by <a target=\"_blank\" href=\"https://openstreetmap.org\">OpenStreetMap</a> contributors','under <a target=\"_blank\" href=\"https://creativecommons.org/licenses/by-sa/3.0\">CC BY SA</a>'].join(\" \"),tiles:[\"https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg?api_key=\"],tileSize:256}},layers:[{id:\"plotly-stamen-wate",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "http://www.w3.org/1999/xhtml",
+    "context": "ngth;++Se<ze;)for(var Qe=this[Se],rt=-1,pt=Qe.length;++rt<pt;)(he=Qe[rt])&&(ye.push(ne=c(N.call(he,he.__data__,rt,Se))),ne.parentNode=he);return de(ye)};var _e=\"http://www.w3.org/1999/xhtml\",ke={svg:\"http://www.w3.org/2000/svg\",xhtml:_e,xlink:\"http://www.w3.org/1999/xlink\",xml:\"http://www.w3.org/XML/1998/namespace\",xmlns:\"http://www.w3.org/2000/xml",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "http://www.w3.org/XML/1998/namespace",
+    "context": "),ne.parentNode=he);return de(ye)};var _e=\"http://www.w3.org/1999/xhtml\",ke={svg:\"http://www.w3.org/2000/svg\",xhtml:_e,xlink:\"http://www.w3.org/1999/xlink\",xml:\"http://www.w3.org/XML/1998/namespace\",xmlns:\"http://www.w3.org/2000/xmlns/\"};function Ce(N,ne){return N=n.ns.qualify(N),ne==null?N.local?function(){this.removeAttributeNS(N.space,N.local)}:function",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://api.mapbox.com",
+    "context": "rn p.devicePixelRatio},get prefersReducedMotion(){return!!p.matchMedia&&(G==null&&(G=p.matchMedia(\"(prefers-reduced-motion: reduce)\")),G.matches)}},ee={API_URL:\"https://api.mapbox.com\",get EVENTS_URL(){return this.API_URL?this.API_URL.indexOf(\"https://api.mapbox.cn\")===0?\"https://events.mapbox.cn/events/v2\":this.API_URL.indexOf(\"https://api.m",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://api.mapbox.cn",
+    "context": "G=p.matchMedia(\"(prefers-reduced-motion: reduce)\")),G.matches)}},ee={API_URL:\"https://api.mapbox.com\",get EVENTS_URL(){return this.API_URL?this.API_URL.indexOf(\"https://api.mapbox.cn\")===0?\"https://events.mapbox.cn/events/v2\":this.API_URL.indexOf(\"https://api.mapbox.com\")===0?\"https://events.mapbox.com/events/v2\":null:null},FEEDBACK_URL:\"htt",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://events.mapbox.cn/events/v2",
+    "context": "ced-motion: reduce)\")),G.matches)}},ee={API_URL:\"https://api.mapbox.com\",get EVENTS_URL(){return this.API_URL?this.API_URL.indexOf(\"https://api.mapbox.cn\")===0?\"https://events.mapbox.cn/events/v2\":this.API_URL.indexOf(\"https://api.mapbox.com\")===0?\"https://events.mapbox.com/events/v2\":null:null},FEEDBACK_URL:\"https://apps.mapbox.com/feedback\",REQUIRE_ACC",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://events.mapbox.com/events/v2",
+    "context": "){return this.API_URL?this.API_URL.indexOf(\"https://api.mapbox.cn\")===0?\"https://events.mapbox.cn/events/v2\":this.API_URL.indexOf(\"https://api.mapbox.com\")===0?\"https://events.mapbox.com/events/v2\":null:null},FEEDBACK_URL:\"https://apps.mapbox.com/feedback\",REQUIRE_ACCESS_TOKEN:!0,ACCESS_TOKEN:null,MAX_PARALLEL_IMAGE_REQUESTS:16},re={supported:!1,testSuppo",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://apps.mapbox.com/feedback",
+    "context": ".cn\")===0?\"https://events.mapbox.cn/events/v2\":this.API_URL.indexOf(\"https://api.mapbox.com\")===0?\"https://events.mapbox.com/events/v2\":null:null},FEEDBACK_URL:\"https://apps.mapbox.com/feedback\",REQUIRE_ACCESS_TOKEN:!0,ACCESS_TOKEN:null,MAX_PARALLEL_IMAGE_REQUESTS:16},re={supported:!1,testSupport:function(R){!de&&H&&(pe?ve(R):Y=R)}},de=!1,pe=!1;functio",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://www.mapbox.com/",
+    "context": "s._map=X,this._container=c.create(\"div\",\"mapboxgl-ctrl\");var se=c.create(\"a\",\"mapboxgl-ctrl-logo\");return se.target=\"_blank\",se.rel=\"noopener nofollow\",se.href=\"https://www.mapbox.com/\",se.setAttribute(\"aria-label\",this._map._getUIString(\"LogoControl.Title\")),se.setAttribute(\"rel\",\"noopener nofollow\"),this._container.appendChild(se),this._cont",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://example.com",
+    "context": "UNSUBSCRIBE\"]},8725:(f,i,y)=>{var t;function r(){if(t!==void 0)return t;if(y.g.XMLHttpRequest){t=new y.g.XMLHttpRequest;try{t.open(\"GET\",y.g.XDomainRequest?\"/\":\"https://example.com\")}catch{t=null}}else t=null;return t}function e(l){var n=r();if(!n)return!1;try{return n.responseType=l,n.responseType===l}catch{}return!1}function u(l){return ",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "http://ngageoint.github.io/GeoPackage/docs/extensions/contents-id.html",
+    "context": "eleteByExtension(a.EXTENSION_NAME)},a.EXTENSION_NAME=\"nga_contents_id\",a.EXTENSION_AUTHOR=\"nga\",a.EXTENSION_NAME_NO_AUTHOR=\"contents_id\",a.EXTENSION_DEFINITION=\"http://ngageoint.github.io/GeoPackage/docs/extensions/contents-id.html\",a}(e.BaseExtension);i.ContentsIdExtension=h},5306:function(f,i,y){\"use strict\";var t,r=this&&this.__extends||(t=function(l,n){return t=Object.setPrototypeOf||{",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "http://www.geopackage.org/spec/#extension_crs_wkt",
+    "context": "eoPackage.name)}},n.EXTENSION_NAME=\"gpkg_crs_wkt\",n.EXTENSION_CRS_WKT_AUTHOR=\"gpkg\",n.EXTENSION_CRS_WKT_NAME_NO_AUTHOR=\"crs_wkt\",n.EXTENSION_CRS_WKT_DEFINITION=\"http://www.geopackage.org/spec/#extension_crs_wkt\",n}(y(8140).BaseExtension);i.CrsWktExtension=u},624:(f,i)=>{\"use strict\";Object.defineProperty(i,\"__esModule\",{value:!0}),i.Extension=void 0;var y=function(){fu",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "http://ngageoint.github.io/GeoPackage/docs/extensions/geometry-index.html",
+    "context": "XTENSION_NAME=h.Extension.buildExtensionName(m.EXTENSION_GEOMETRY_INDEX_AUTHOR,m.EXTENSION_GEOMETRY_INDEX_NAME_NO_AUTHOR),m.EXTENSION_GEOMETRY_INDEX_DEFINITION=\"http://ngageoint.github.io/GeoPackage/docs/extensions/geometry-index.html\",m}(n.BaseExtension);i.FeatureTableIndex=d},8021:(f,i)=>{\"use strict\";Object.defineProperty(i,\"__esModule\",{value:!0}),i.GeometryIndex=void 0;var y=function(){f",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "http://www.geopackage.org/spec/#extension_metadata",
+    "context": "kage.name)}},a.EXTENSION_NAME=\"gpkg_metadata\",a.EXTENSION_Metadata_AUTHOR=\"gpkg\",a.EXTENSION_Metadata_NAME_NO_AUTHOR=\"metadata\",a.EXTENSION_Metadata_DEFINITION=\"http://www.geopackage.org/spec/#extension_metadata\",a}(e.BaseExtension);i.MetadataExtension=h},6131:(f,i,y)=>{\"use strict\";var t=y(5108);Object.defineProperty(i,\"__esModule\",{value:!0}),i.NGAExtensions=void 0;va",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "http://www.geopackage.org/spec/#extension_rtree",
+    "context": "EXTENSION_NAME=\"gpkg_rtree_index\",c.EXTENSION_RTREE_INDEX_AUTHOR=\"gpkg\",c.EXTENSION_RTREE_INDEX_NAME_NO_AUTHOR=\"rtree_index\",c.EXTENSION_RTREE_INDEX_DEFINITION=\"http://www.geopackage.org/spec/#extension_rtree\",c}(e.Dao);i.RTreeIndexDao=n},7523:function(f,i,y){\"use strict\";var t,r=this&&this.__extends||(t=function(h,c){return t=Object.setPrototypeOf||{__proto__:[]}ins",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "http://ngageoint.github.io/GeoPackage/docs/extensions/tile-scaling.html",
+    "context": "eteByExtension(c.EXTENSION_NAME)},c.EXTENSION_NAME=\"nga_tile_scaling\",c.EXTENSION_AUTHOR=\"nga\",c.EXTENSION_NAME_NO_AUTHOR=\"tile_scaling\",c.EXTENSION_DEFINITION=\"http://ngageoint.github.io/GeoPackage/docs/extensions/tile-scaling.html\",c}(e.BaseExtension);i.TileScalingExtension=n},4301:(f,i,y)=>{\"use strict\";Object.defineProperty(i,\"__esModule\",{value:!0}),i.TileScaling=void 0;var t=y(2777),r",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "http://www.geopackage.org/spec/#extension_schema",
+    "context": "gpkg\",a.EXTENSION_SCHEMA_NAME_NO_AUTHOR=\"schema\",a.EXTENSION_NAME=a.EXTENSION_SCHEMA_AUTHOR+\"_\"+a.EXTENSION_SCHEMA_NAME_NO_AUTHOR,a.EXTENSION_SCHEMA_DEFINITION=\"http://www.geopackage.org/spec/#extension_schema\",a}(e.BaseExtension);i.SchemaExtension=h},612:(f,i)=>{\"use strict\";Object.defineProperty(i,\"__esModule\",{value:!0}),i.FeatureStyle=void 0;var y=function(){funct",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "http://ngageoint.github.io/GeoPackage/docs/extensions/feature-style.html",
+    "context": "yExtension(T.EXTENSION_NAME):0},T.EXTENSION_NAME=\"nga_feature_style\",T.EXTENSION_AUTHOR=\"nga\",T.EXTENSION_NAME_NO_AUTHOR=\"feature_style\",T.EXTENSION_DEFINITION=\"http://ngageoint.github.io/GeoPackage/docs/extensions/feature-style.html\",T.TABLE_MAPPING_STYLE=T.EXTENSION_AUTHOR+\"_style_\",T.TABLE_MAPPING_TABLE_STYLE=T.EXTENSION_AUTHOR+\"_style_default_\",T.TABLE_MAPPING_ICON=T.EXTENSION_AUTHOR+\"_i",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "http://www.geopackage.org/spec/#extension_webp",
+    "context": "INITION,u.Extension.READ_WRITE)},h.EXTENSION_NAME=\"gpkg_webp\",h.EXTENSION_WEBP_AUTHOR=\"gpkg\",h.EXTENSION_WEBP_NAME_NO_AUTHOR=\"webp\",h.EXTENSION_WEBP_DEFINITION=\"http://www.geopackage.org/spec/#extension_webp\",h}(e.BaseExtension);i.WebPExtension=l},812:(f,i,y)=>{\"use strict\";Object.defineProperty(i,\"__esModule\",{value:!0}),i.GeometryColumns=void 0;var t=y(9971),r=fun",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://leafletjs.com",
+    "context": "0h12v4H0z\"/><path fill=\"#FFD500\" d=\"M0 4h12v3H0z\"/><path fill=\"#E0BC00\" d=\"M0 7h12v1H0z\"/></svg>',Zo=Ia.extend({options:{position:\"bottomright\",prefix:'<a href=\"https://leafletjs.com\" title=\"A JavaScript library for interactive maps\">'+($t.inlineSvg?ms+\" \":\"\")+\"Leaflet</a>\"},initialize:function(me){o(this,me),this._attributions={}},onAdd:fun",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "http://www.w3.org/1998/MathML/",
+    "context": "xhtml:\"http://www.w3.org/1999/xhtml\",xlink:\"http://www.w3.org/1999/xlink\",xml:\"http://www.w3.org/XML/1998/namespace\",xmlns:\"http://www.w3.org/2000/xmlns/\",math:\"http://www.w3.org/1998/MathML/\"},CM=/%COMP%/g,r6=\"%COMP%\",tF=`_nghost-${r6}`,nF=`_ngcontent-${r6}`,rF=!0,iF=new Yo(\"\",{providedIn:\"root\",factory:()=>rF});function aF(f){return nF.replace(CM,f",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://github.com/jusethCS/inamhi-geoglows",
+    "context": "=window.scrollY>50}scrollToElement(){this.myScrollContainer.nativeElement.scrollIntoView({behavior:\"auto\",block:\"start\"})}githubRedirect(){window.location.href=\"https://github.com/jusethCS/inamhi-geoglows\"}};i.\\u0275fac=function(r){return new(r||i)},i.\\u0275cmp=ds({type:i,selectors:[[\"app-home\"]],viewQuery:function(r,e){if(r&1&&Xs(P9,5),r&2){let u;fs(u=ps())&&(e.",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://servicios.inamhi.gob.ec/",
+    "context": "s:51,vars:4,consts:[[1,\"header\"],[1,\"navbar\",\"navbar-expand-md\",\"navbar-dark\",\"bg-dark\",3,\"ngClass\"],[1,\"container\",\"d-flex\",\"justify-content-between\"],[\"href\",\"https://servicios.inamhi.gob.ec/\",1,\"navbar-brand\"],[\"src\",\"assets/img/inamhi-white-logo.png\",\"width\",\"125\",1,\"d-inline-block\",\"align-top\"],[\"type\",\"button\",\"data-bs-toggle\",\"collapse\",\"data-bs",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "/apps/hydroviewer",
+    "context": "e\",\"Met Data Explorer Ecuador\")(\"appUrl\",\"/apps/met-data-explorer\"),Lr(),Ki(\"imageUrl\",\"/assets/img/hydroviewer.png\")(\"appName\",\"Hydroviewer Ecuador\")(\"appUrl\",\"/apps/hydroviewer\"),Lr(),Ki(\"imageUrl\",\"/assets/img/hydropower-data-explorer.png\")(\"appName\",\"Hydropower Ecuador\")(\"hRef\",\"/apps/hydropower\"))},dependencies:[Sc,Pf,Tk],styles:[\".",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "/apps/hydropower",
+    "context": "ame\",\"Hydroviewer Ecuador\")(\"appUrl\",\"/apps/hydroviewer\"),Lr(),Ki(\"imageUrl\",\"/assets/img/hydropower-data-explorer.png\")(\"appName\",\"Hydropower Ecuador\")(\"hRef\",\"/apps/hydropower\"))},dependencies:[Sc,Pf,Tk],styles:[\".header[_ngcontent-%COMP%]{position:fixed!important;top:0;left:0;width:100vw;z-index:100}.custom-navbar[_ngcontent-%COMP%]{",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://cdnjs.cloudflare.com/ajax/libs/plotly.js/${f.plotlyVersion}/plotly.min.js",
+    "context": "version specific files, 'latest' as a version is not supported. Please specify a version or you can choose 'plotly' as a CDN provider.\");r=f.plotlyBundle==null?`https://cdnjs.cloudflare.com/ajax/libs/plotly.js/${f.plotlyVersion}/plotly.min.js`:`https://cdnjs.cloudflare.com/ajax/libs/plotly.js/${f.plotlyVersion}/plotly-${f.plotlyBundle}.min.js`;break;case\"custom\":if(!(y&&typeof y==\"string\"))throw new ",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://cdnjs.cloudflare.com/ajax/libs/plotly.js/${f.plotlyVersion}/plotly-${f.plotlyBundle}.min.js",
+    "context": "sion or you can choose 'plotly' as a CDN provider.\");r=f.plotlyBundle==null?`https://cdnjs.cloudflare.com/ajax/libs/plotly.js/${f.plotlyVersion}/plotly.min.js`:`https://cdnjs.cloudflare.com/ajax/libs/plotly.js/${f.plotlyVersion}/plotly-${f.plotlyBundle}.min.js`;break;case\"custom\":if(!(y&&typeof y==\"string\"))throw new Error(\"Invalid or missing CDN URL. Please provide a CDN URL in case of custom provider. Alternatively,",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://cdn.plot.ly/plotly-${f.plotlyVersion}.min.js",
+    "context": "L. Please provide a CDN URL in case of custom provider. Alternatively, you can choose from 'plotly' or 'cloudflare'.\");r=y;break;default:r=f.plotlyBundle==null?`https://cdn.plot.ly/plotly-${f.plotlyVersion}.min.js`:`https://cdn.plot.ly/plotly-${f.plotlyBundle}-${f.plotlyVersion}.min.js`;break}let e=document.createElement(\"script\");e.type=\"text/javascript\",e.src=r,e.onerro",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://cdn.plot.ly/plotly-${f.plotlyBundle}-${f.plotlyVersion}.min.js",
+    "context": " Alternatively, you can choose from 'plotly' or 'cloudflare'.\");r=y;break;default:r=f.plotlyBundle==null?`https://cdn.plot.ly/plotly-${f.plotlyVersion}.min.js`:`https://cdn.plot.ly/plotly-${f.plotlyBundle}-${f.plotlyVersion}.min.js`;break}let e=document.createElement(\"script\");e.type=\"text/javascript\",e.src=r,e.onerror=()=>console.error(`Error loading plotly.js library from ${r}`),document",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://services.geoglows.org/",
+    "context": ".\\u0275fac=function(i){return new(i||sm)(Ja(sh))};sm.\\u0275mod=Fs({type:sm});sm.\\u0275inj=Ns({providers:[sh],imports:[Sc,k3,k3]});var xs={production:!0,urlHost:\"https://services.geoglows.org/\",urlAPI:\"https://services.geoglows.org/api\",urlGeoserver:\"https://services.geoglows.org/geoserver\",urlMartin:\"https://services.geoglows.org/martin\"};var j3={};C",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://services.geoglows.org/api",
+    "context": "(Ja(sh))};sm.\\u0275mod=Fs({type:sm});sm.\\u0275inj=Ns({providers:[sh],imports:[Sc,k3,k3]});var xs={production:!0,urlHost:\"https://services.geoglows.org/\",urlAPI:\"https://services.geoglows.org/api\",urlGeoserver:\"https://services.geoglows.org/geoserver\",urlMartin:\"https://services.geoglows.org/martin\"};var j3={};CN(j3,{afterMain:()=>t8,afterRead:()=>JI,aft",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://services.geoglows.org/geoserver",
+    "context": "=Ns({providers:[sh],imports:[Sc,k3,k3]});var xs={production:!0,urlHost:\"https://services.geoglows.org/\",urlAPI:\"https://services.geoglows.org/api\",urlGeoserver:\"https://services.geoglows.org/geoserver\",urlMartin:\"https://services.geoglows.org/martin\"};var j3={};CN(j3,{afterMain:()=>t8,afterRead:()=>JI,afterWrite:()=>i8,applyStyles:()=>r1,arrow:()=>D3,auto:()=",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://services.geoglows.org/martin",
+    "context": "duction:!0,urlHost:\"https://services.geoglows.org/\",urlAPI:\"https://services.geoglows.org/api\",urlGeoserver:\"https://services.geoglows.org/geoserver\",urlMartin:\"https://services.geoglows.org/martin\"};var j3={};CN(j3,{afterMain:()=>t8,afterRead:()=>JI,afterWrite:()=>i8,applyStyles:()=>r1,arrow:()=>D3,auto:()=>Wb,basePlacements:()=>jm,beforeMain:()=>QI,befor",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://services.geoglows.org/api/hydroviewer/get-historical-csv?comid=${encodeURIComponent(String(this.comid))}",
+    "context": "s.map.addLayer({id:`${r}-layer`,type:\"line\",source:r,paint:{\"line-color\":\"#000000\",\"line-width\":3}})}donwloadHistorical(){return Bo(this,null,function*(){let t=`https://services.geoglows.org/api/hydroviewer/get-historical-csv?comid=${encodeURIComponent(String(this.comid))}`,r=yield fetch(t,{method:\"GET\",headers:{Accept:\"text/csv,application/octet-stream,*/*\"}});if(!r.ok)throw new Error(`HTTP ${r.status}: ${r.statusText}`);let e=yi",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://services.geoglows.org/api/hydroviewer/get-forecast-csv?comid=${encodeURIComponent(String(this.comid))}&date=${encodeURIComponent(l)}",
+    "context": "dateControlFloodGeoglows.value)),r=t.getUTCFullYear(),e=String(t.getUTCMonth()+1).padStart(2,\"0\"),u=String(t.getUTCDate()).padStart(2,\"0\"),l=`${r}-${e}-${u}`,n=`https://services.geoglows.org/api/hydroviewer/get-forecast-csv?comid=${encodeURIComponent(String(this.comid))}&date=${encodeURIComponent(l)}`,h=yield fetch(n,{method:\"GET\",headers:{Accept:\"text/csv,application/octet-stream,*/*\"}});if(!h.ok)throw new Error(`HTTP ${h.status}: ${h.statusText}`);let c=yi",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://services.geoglows.org/api/hydropowers/get-station?hydropower=${this.selectedHydropower}",
+    "context": "r(u).addTo(this.map2),this.hydropowerLayer3=this.makeHydroWfsLayer(u).addTo(this.map3),this.map1.fitBounds(this.hydropowerLayer1.getBounds());let l=yield fetch(`https://services.geoglows.org/api/hydropowers/get-station?hydropower=${this.selectedHydropower}`,{headers:{Accept:\"application/json\"}}),n;n=yield l.json(),this.hydropowerPoint1=this.makeHydroWfsPoint(n).addTo(this.map1),this.hydropowerPoint2=this.makeHydro",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://services.geoglows.org/api/met-data-explorer/donwload-geotiff?layer=${encodeURIComponent(t)}&datetime=${encodeURIComponent(e)}",
+    "context": "et t=this.activeLayerDownload,r=this.timeControl?.currentDateIndex??0,e=this.activeDatesDownload[r];console.log(`Downloading layer: ${t} datetime: ${e}`);let u=`https://services.geoglows.org/api/met-data-explorer/donwload-geotiff?layer=${encodeURIComponent(t)}&datetime=${encodeURIComponent(e)}`,l=yield fetch(u);if(!l.ok)throw new Error(`${l.status} ${l.statusText}`);let n=yield l.blob(),h=document.createElement(\"a\");h.href=URL.createObjectURL(n),h.dow",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://services.geoglows.org/api/met-data-explorer/get-meteo-warnings?no=${this.selectedMeteoWarning}",
+    "context": "lement(\"a\");h.href=URL.createObjectURL(n),h.download=`${t}_${e}.tif`,h.click(),URL.revokeObjectURL(h.href)}if(this.activeTypeDownload===\"meteo-warnings\"){let t=`https://services.geoglows.org/api/met-data-explorer/get-meteo-warnings?no=${this.selectedMeteoWarning}`,r=yield fetch(t,{method:\"GET\",headers:{Accept:\"application/geo+json, application/json\"}});if(!r.ok)throw new Error(`Error HTTP ${r.status}: ${r.statusText}`);l",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://services.geoglows.org/api/met-data-explorer/get-ffgs-data?date=${this.utilsApp.getDateRangeGeoglows(t)[0]}&hour=${this.selectedFFGSRun}",
+    "context": "document.body.appendChild(l),l.click(),l.remove(),URL.revokeObjectURL(l.href)}if(this.activeTypeDownload===\"ffgs\"){let t=this.dateControlFFGS.value??new Date,e=`https://services.geoglows.org/api/met-data-explorer/get-ffgs-data?date=${this.utilsApp.getDateRangeGeoglows(t)[0]}&hour=${this.selectedFFGSRun}`,u=yield fetch(e,{method:\"GET\",headers:{Accept:\"application/geo+json, application/json\"}});if(!u.ok)throw new Error(`Error HTTP ${u.status}: ${u.statusText}`);l",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://cdnjs.cloudflare.com/ajax/libs/pdfobject/2.1.1/pdfobject.min.js",
+    "context": ")))}return\"data:application/pdf;filename=\"+Wn.filename+\";base64,\"+br;case\"pdfobjectnewwindow\":if(Object.prototype.toString.call(el)===\"[object Window]\"){var Li=\"https://cdnjs.cloudflare.com/ajax/libs/pdfobject/2.1.1/pdfobject.min.js\",Ge=' integrity=\"sha512-4ze/a9/4jqu+tX9dfOqJYSvyYd5M6qum/3HpCLr+/Jqf0whc37VUbkpNGHR7/8pSnCFw47T1fmIpwBV7UySh3g==\" crossorigin=\"anonymous\"';Wn.pdfObjectUrl&&(Li=",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "context": "),this.internal.viewerpreferences.isSubscribed=!0),this.internal.viewerpreferences.configuration=y,this},function(f){var i=function(){var t='<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"><rdf:Description rdf:about=\"\" xmlns:jspdf=\"'+this.internal.__metadata__.namespaceuri+'\"><jspdf:metadata>',r=unescape(encodeURIComponent('<x:xmpmeta xmlns:x=\"ad",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "http://jspdf.default.namespaceuri/",
+    "context": "metadata_object_number+\" 0 R\")};f.addMetadata=function(t,r){return this.internal.__metadata__===void 0&&(this.internal.__metadata__={metadata:t,namespaceuri:r||\"http://jspdf.default.namespaceuri/\"},this.internal.events.subscribe(\"putCatalog\",y),this.internal.events.subscribe(\"postPutResources\",i)),this}}(ws.API),function(f){var i=f.API,y=i.pdfEscape16=fu",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://services.geoglows.org/api/hydromet-report-tool/get-hailstorm-plot",
+    "context": "nonymous\",u.onload=()=>r(u),u.onerror=l=>e(l),u.src=t})}constructor(t){this.http=t,this.stormImageUrl=null,this.stormTable=[],this.isExporting=!1,this.imageUrl=\"https://services.geoglows.org/api/hydromet-report-tool/get-hailstorm-plot\",this.tableUrl=\"https://services.geoglows.org/api/hydromet-report-tool/get-hailstorm-table\",this.emissionText=\"\",this.validityText=\"\",this.dias=[\"domingo\",\"lune",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://services.geoglows.org/api/hydromet-report-tool/get-hailstorm-table",
+    "context": "ormImageUrl=null,this.stormTable=[],this.isExporting=!1,this.imageUrl=\"https://services.geoglows.org/api/hydromet-report-tool/get-hailstorm-plot\",this.tableUrl=\"https://services.geoglows.org/api/hydromet-report-tool/get-hailstorm-table\",this.emissionText=\"\",this.validityText=\"\",this.dias=[\"domingo\",\"lunes\",\"martes\",\"mi\\xE9rcoles\",\"jueves\",\"viernes\",\"s\\xE1bado\"],this.meses=[\"enero\",\"febrero\",\"m",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://services.geoglows.org/api/hydromet-report-tool/get-humidity-plot",
+    "context": ",u.onerror=l=>e(l),u.src=t})}constructor(){this.isExporting=!1,this.emissionText=\"\",this.validityText=\"\",this.yearText=\"\",this.dayText=\"\",this.humidityImageUrl=\"https://services.geoglows.org/api/hydromet-report-tool/get-humidity-plot\",this.temperatureImageUrl=\"https://services.geoglows.org/api/hydromet-report-tool/get-temperature-plot\",this.windImageUrl=\"https://services.geoglows.org/api/hyd",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://services.geoglows.org/api/hydromet-report-tool/get-temperature-plot",
+    "context": "t=\"\",this.yearText=\"\",this.dayText=\"\",this.humidityImageUrl=\"https://services.geoglows.org/api/hydromet-report-tool/get-humidity-plot\",this.temperatureImageUrl=\"https://services.geoglows.org/api/hydromet-report-tool/get-temperature-plot\",this.windImageUrl=\"https://services.geoglows.org/api/hydromet-report-tool/get-wind-plot\",this.hainesImageUrl=\"https://services.geoglows.org/api/hydromet-report",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://services.geoglows.org/api/hydromet-report-tool/get-wind-plot",
+    "context": "ydromet-report-tool/get-humidity-plot\",this.temperatureImageUrl=\"https://services.geoglows.org/api/hydromet-report-tool/get-temperature-plot\",this.windImageUrl=\"https://services.geoglows.org/api/hydromet-report-tool/get-wind-plot\",this.hainesImageUrl=\"https://services.geoglows.org/api/hydromet-report-tool/get-haines-plot\",this.soilMoistureImageUrl=\"https://services.geoglows.org/api/hydro",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://services.geoglows.org/api/hydromet-report-tool/get-haines-plot",
+    "context": "org/api/hydromet-report-tool/get-temperature-plot\",this.windImageUrl=\"https://services.geoglows.org/api/hydromet-report-tool/get-wind-plot\",this.hainesImageUrl=\"https://services.geoglows.org/api/hydromet-report-tool/get-haines-plot\",this.soilMoistureImageUrl=\"https://services.geoglows.org/api/hydromet-report-tool/get-soil-moisture-plot\",this.noPrecImageUrl=\"https://services.geoglows.org/ap",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://services.geoglows.org/api/hydromet-report-tool/get-soil-moisture-plot",
+    "context": "/api/hydromet-report-tool/get-wind-plot\",this.hainesImageUrl=\"https://services.geoglows.org/api/hydromet-report-tool/get-haines-plot\",this.soilMoistureImageUrl=\"https://services.geoglows.org/api/hydromet-report-tool/get-soil-moisture-plot\",this.noPrecImageUrl=\"https://services.geoglows.org/api/hydromet-report-tool/get-noprec-plot\",this.pacum24ImageUrl=\"https://services.geoglows.org/api/hydromet-r",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://services.geoglows.org/api/hydromet-report-tool/get-noprec-plot",
+    "context": "omet-report-tool/get-haines-plot\",this.soilMoistureImageUrl=\"https://services.geoglows.org/api/hydromet-report-tool/get-soil-moisture-plot\",this.noPrecImageUrl=\"https://services.geoglows.org/api/hydromet-report-tool/get-noprec-plot\",this.pacum24ImageUrl=\"https://services.geoglows.org/api/hydromet-report-tool/get-pacum24-plot\",this.pacum72ImageUrl=\"https://services.geoglows.org/api/hydromet",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://services.geoglows.org/api/hydromet-report-tool/get-pacum24-plot",
+    "context": "/hydromet-report-tool/get-soil-moisture-plot\",this.noPrecImageUrl=\"https://services.geoglows.org/api/hydromet-report-tool/get-noprec-plot\",this.pacum24ImageUrl=\"https://services.geoglows.org/api/hydromet-report-tool/get-pacum24-plot\",this.pacum72ImageUrl=\"https://services.geoglows.org/api/hydromet-report-tool/get-pacum72-plot\",this.headerSrc=\"assets/img/report-header.png\",this.footerSrc=\"as",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://services.geoglows.org/api/hydromet-report-tool/get-pacum72-plot",
+    "context": "g/api/hydromet-report-tool/get-noprec-plot\",this.pacum24ImageUrl=\"https://services.geoglows.org/api/hydromet-report-tool/get-pacum24-plot\",this.pacum72ImageUrl=\"https://services.geoglows.org/api/hydromet-report-tool/get-pacum72-plot\",this.headerSrc=\"assets/img/report-header.png\",this.footerSrc=\"assets/img/report-footer.png\",this.soil_moisture_c_min=null,this.soil_moisture_c_max=null,this.so",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "https://services.geoglows.org/api/hydromet-report-tool",
+    "context": " ${n}:${h} horas`,this.validityText=`${r}, ${e} de ${u} de ${l}`,this.yearText=`${l}`,this.dayText=`${this.getDayOfYear(t)}`,this.loadStats()}loadStats(){let t=\"https://services.geoglows.org/api/hydromet-report-tool\";fetch(`${t}/get-soil-moisture-table`).then(r=>r.json()).then(r=>{for(let e of r.data)switch(e.region){case\"C\":this.soil_moisture_c_min=e.min_value,this.soil_mo",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "/apps/hydromet-report-tool",
+    "context": ",0,\"app-hotspot-report-editor\")(12,mre,2,0,\"div\"),An()()}r&2&&(Ki(\"imageUrl\",\"/assets/img/hydromet-report-tool.png\")(\"appName\",\"HYDROMET REPORT TOOL\")(\"appUrl\",\"/apps/hydromet-report-tool\"),Lr(3),Ki(\"expanded\",!0),Lr(4),_o(\"ngModel\",e.selectedReport),Lr(),Ki(\"ngForOf\",e.reports),Lr(2),cl(10,e.selectedReport==\"Reporte de tormentas severas\"?10:-1),",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlGeoserver}/ecuador/wms?service=WMS&version=1.3.0&request=GetMap&layers=ecuador:provincias&styles=&format=image/png&transparent=true&crs=EPSG:3857&width=256&height=256&bbox={bbox-epsg-3857}",
+    "context": "oom:0,maxzoom:22}),i.setLayoutProperty(\"osm_cities_layer\",\"visibility\",\"none\")}addProvinces(i){i.addSource(\"provincias-svg\",{type:\"raster\",tileSize:256,tiles:[`${xs.urlGeoserver}/ecuador/wms?service=WMS&version=1.3.0&request=GetMap&layers=ecuador:provincias&styles=&format=image/png&transparent=true&crs=EPSG:3857&width=256&height=256&bbox={bbox-epsg-3857}`]}),i.addLayer({id:\"provincias-svg-layer\",type:\"raster\",source:\"provincias-svg\",paint:{\"raster-opacity\":1}}),i.setLayoutProperty(\"provincias-svg-layer\",\"visibi",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlGeoserver}/ecuador/wms?service=WMS&version=1.1.0&request=GetMap&layers=ecuador:flood2&styles=&format=image/png&transparent=true&crs=EPSG:3857&width=256&height=256&bbox={bbox-epsg-3857}",
+    "context": "r-opacity\":1}}),i.setLayoutProperty(\"provincias-svg-layer\",\"visibility\",\"none\")}addFloodRiskSGR(i){i.addSource(\"flood-risk\",{type:\"raster\",tileSize:256,tiles:[`${xs.urlGeoserver}/ecuador/wms?service=WMS&version=1.1.0&request=GetMap&layers=ecuador:flood2&styles=&format=image/png&transparent=true&crs=EPSG:3857&width=256&height=256&bbox={bbox-epsg-3857}`]}),i.addLayer({id:\"flood-risk-layer\",type:\"raster\",source:\"flood-risk\",paint:{\"raster-opacity\":1}}),i.setLayoutProperty(\"flood-risk-layer\",\"visibility\",\"none\"",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlGeoserver}/ecuador/wms?service=WMS&version=1.1.0&request=GetMap&layers=ecuador:landslides&styles=&format=image/png&transparent=true&crs=EPSG:3857&width=256&height=256&bbox={bbox-epsg-3857}",
+    "context": "ayer\",\"visibility\",\"none\"),i.moveLayer(\"flood-risk-layer\",\"drainage\")}addLandSlidesRiskSGR(i){i.addSource(\"landslides-risk\",{type:\"raster\",tileSize:256,tiles:[`${xs.urlGeoserver}/ecuador/wms?service=WMS&version=1.1.0&request=GetMap&layers=ecuador:landslides&styles=&format=image/png&transparent=true&crs=EPSG:3857&width=256&height=256&bbox={bbox-epsg-3857}`]}),i.addLayer({id:\"landslides-risk-layer\",type:\"raster\",source:\"landslides-risk\",paint:{\"raster-opacity\":1}}),i.setLayoutProperty(\"landslides-risk-layer\",\"vis",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlGeoserver}/ecuador/wms?service=WMS&version=1.1.0&request=GetMap&layers=ecuador:drought&styles=&format=image/png&transparent=true&crs=EPSG:3857&width=256&height=256&bbox={bbox-epsg-3857}",
+    "context": "layer\",\"visibility\",\"none\"),i.moveLayer(\"landslides-risk-layer\",\"drainage\")}addDroughtRiskSGR(i){i.addSource(\"drought-risk\",{type:\"raster\",tileSize:256,tiles:[`${xs.urlGeoserver}/ecuador/wms?service=WMS&version=1.1.0&request=GetMap&layers=ecuador:drought&styles=&format=image/png&transparent=true&crs=EPSG:3857&width=256&height=256&bbox={bbox-epsg-3857}`]}),i.addLayer({id:\"drought-risk-layer\",type:\"raster\",source:\"drought-risk\",paint:{\"raster-opacity\":1}}),i.setLayoutProperty(\"drought-risk-layer\",\"visibility\",",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlGeoserver}/ecuador/wms?service=WMS&version=1.3.0&request=GetMap&layers=ecuador:${y}&styles=&format=image/png&transparent=true&crs=EPSG:3857&width=256&height=256&bbox={bbox-epsg-3857}",
+    "context": "\"drought-risk-layer\",\"visibility\",\"none\"),i.moveLayer(\"drought-risk-layer\",\"drainage\")}addGenericLayer(i,y,t){i.addSource(t,{type:\"raster\",tileSize:256,tiles:[`${xs.urlGeoserver}/ecuador/wms?service=WMS&version=1.3.0&request=GetMap&layers=ecuador:${y}&styles=&format=image/png&transparent=true&crs=EPSG:3857&width=256&height=256&bbox={bbox-epsg-3857}`]}),i.addLayer({id:`${t}-layer`,type:\"raster\",source:t,paint:{\"raster-opacity\":1}}),i.setLayoutProperty(`${t}-layer`,\"visibility\",\"none\")}addLocations(i){let y",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlMartin}/${y}/{z}/{x}/{y}",
+    "context": "\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\").replace(/'/g,\"&#39;\"),e=new Intl.NumberFormat(\"es-EC\");i.getSource(y)||i.addSource(y,{type:\"vector\",tiles:[`${xs.urlMartin}/${y}/{z}/{x}/{y}`]}),i.getLayer(t)||i.addLayer({id:t,type:\"circle\",source:y,\"source-layer\":\"poblacion\",paint:{\"circle-color\":\"#5d5c5cff\",\"circle-radius\":3,\"circle-opacity\":.9,\"",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlMartin}/geoglows_drainage_ecuador/{z}/{x}/{y}",
+    "context": "ows_drainage_ecuador\",t=\"drainage_ecuador\",r=\"drainage\";this.removeLayer(t,i),this.removeLayer(r,i),this.removeSource(y,i),i.addSource(y,{type:\"vector\",tiles:[`${xs.urlMartin}/geoglows_drainage_ecuador/{z}/{x}/{y}`]}),i.addLayer({id:r,type:\"line\",source:y,\"source-layer\":y,paint:{\"line-color\":\"#4794c9\",\"line-width\":[\"interpolate\",[\"linear\"],[\"get\",\"order\"],1,.25,2,.5,3,.7",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlMartin}/mvt_hydroviewer_warnings_points/{z}/{x}/{y}?datetime=${y}",
+    "context": "droviewer_warnings_points\",r=\"hydroviewer_warnings_points\",e=this.layerActive;this.removeLayer(e,i),this.removeSource(t,i),i.addSource(t,{type:\"vector\",tiles:[`${xs.urlMartin}/mvt_hydroviewer_warnings_points/{z}/{x}/{y}?datetime=${y}`]}),console.log(`${xs.urlMartin}/mvt_hydroviewer_warnings_points/{z}/{x}/{y}?datetime=${y}`),i.addLayer({id:e,type:\"symbol\",source:t,\"source-layer\":r,layout:{\"",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlMartin}/mvt_hydroviewer_warnings_basins/{z}/{x}/{y}?datetime=${y}",
+    "context": "droviewer_warnings_basins\",r=\"hydroviewer_warnings_basins\",e=this.layerActive;this.removeLayer(e,i),this.removeSource(t,i),i.addSource(t,{type:\"vector\",tiles:[`${xs.urlMartin}/mvt_hydroviewer_warnings_basins/{z}/{x}/{y}?datetime=${y}`]}),i.addLayer({id:e,type:\"fill\",source:t,\"source-layer\":r,paint:{\"fill-color\":[\"match\",[\"get\",\"wd01\"],\"R0\",\"rgba(0,0,0,0)\",\"R2\",\"#FEF001\",\"R5\",\"#FD9A01\",\"R10\"",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlMartin}/mvt_nalbantis_range/{z}/{x}/{y}?start_date=${y}&end_date=${t}",
+    "context": "lowDroughtIndex(i,y,t){let r=\"mvt_nalbantis\",e=\"nalbantis\",u=this.layerActive;this.removeLayer(u,i),this.removeSource(r,i),i.addSource(r,{type:\"vector\",tiles:[`${xs.urlMartin}/mvt_nalbantis_range/{z}/{x}/{y}?start_date=${y}&end_date=${t}`]}),i.addLayer({id:u,type:\"fill\",source:r,\"source-layer\":e,paint:{\"fill-color\":[\"interpolate\",[\"linear\"],[\"to-number\",[\"coalesce\",[\"get\",y],0]],-10,\"#730000\",-",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlMartin}/mvt_meteo_warnings/{z}/{x}/{y}?warning=${y}",
+    "context": "\",e=this.layerActiveOverlay1,u=this.layerActiveOverlay2;this.removeLayer(e,i),this.removeLayer(u,i),this.removeSource(t,i),i.addSource(t,{type:\"vector\",tiles:[`${xs.urlMartin}/mvt_meteo_warnings/{z}/{x}/{y}?warning=${y}`]}),console.log(`${xs.urlMartin}/mvt_meteo_warnings/{z}/{x}/{y}?warning=${y}`),i.addLayer({id:e,type:\"fill\",source:t,\"source-layer\":r,paint:{\"fill-color\":[\"mat",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlGeoserver}/satellite_based_precipitation/wms?service=WMS&version=1.1.0&request=GetMap&layers=satellite_based_precipitation:${y}_${t}h&styles=&format=image/png&transparent=true&time=${r}T00:00:00.000Z&srs=EPSG:3857&width=256&height=256&bbox={bbox-epsg-3857}",
+    "context": "let e=\"wms_pacum\",u=\"wms_pacum\",l=this.layerActiveOverlay1,n=this.layerActiveOverlay2;this.removeLayer(l,i),this.removeLayer(n,i),this.removeSource(e,i);let h=`${xs.urlGeoserver}/satellite_based_precipitation/wms?service=WMS&version=1.1.0&request=GetMap&layers=satellite_based_precipitation:${y}_${t}h&styles=&format=image/png&transparent=true&time=${r}T00:00:00.000Z&srs=EPSG:3857&width=256&height=256&bbox={bbox-epsg-3857}`;i.addSource(e,{type:\"raster\",tiles:[h],tileSize:256}),i.addLayer({id:l,type:\"raster\",source:e}),i.moveLayer(l,\"drainage\")}updateLayerVisibility(i,y,t){i.getLa",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlMartin}/mvt_ffgs/{z}/{x}/{y}?datetime=${y}",
+    "context": "#FFFFFF\"]}addFFGS(i,y,t){let r=\"mvt_ffgs\",e=\"ffgs\",u=this.layerActiveOverlay1;this.removeLayer(u,i),this.removeSource(r,i),i.addSource(r,{type:\"vector\",tiles:[`${xs.urlMartin}/mvt_ffgs/{z}/{x}/{y}?datetime=${y}`]}),console.log(t),i.addLayer({id:u,type:\"fill\",source:r,\"source-layer\":e,paint:{\"fill-color\":this.stylesFFGS(t),\"fill-opacity\":1,\"fill-outline-color\":this.sty",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlAPI}/hydroviewer/get-meteo-warnings",
+    "context": "r,end:e}=this.utilsApp.getPreviousMonthRange();this.dateRangeControlDrought=this.formBuilder.group({start:[r],end:[e]})}initializedMeteoWarningControl(){fetch(`${xs.urlAPI}/hydroviewer/get-meteo-warnings`).then(t=>t.text()).then(t=>{let r=t.replace(/NaN/g,\"null\");return JSON.parse(r)}).then(t=>{this.meteoWarningsMetaData=t.result,this.meteoWarningTypes=[...new ",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlAPI}/hydroviewer/get-plots?comid=${this.comid}&date=${this.rangeDateFloodGeoglows[0]}&width=${e}",
+    "context": "anelFloodGeoglows.setValue(this.dateControlFloodGeoglows.value),this.template.showDataModal(),setTimeout(()=>{let e=this.panelPlot.nativeElement.offsetWidth,u=`${xs.urlAPI}/hydroviewer/get-plots?comid=${this.comid}&date=${this.rangeDateFloodGeoglows[0]}&width=${e}`;console.log(u),fetch(u).then(l=>l.text()).then(l=>{let n=l.replace(/NaN/g,\"null\");return JSON.parse(n)}).then(l=>{this.historicalSimulationPlot=l.hs,this.dail",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlAPI}/hydroviewer/get-forecast-table?comid=${this.comid}&date=${this.rangeDateFloodGeoglows[0]}",
+    "context": ",this.dailyAveragePlot=l.dp,this.monthlyAveragePlot=l.mp,this.flowDurationCurve=l.fd,this.volumePlot=l.vp,this.forecastPlot=l.fp,this.isReadyDataPlot=!0,fetch(`${xs.urlAPI}/hydroviewer/get-forecast-table?comid=${this.comid}&date=${this.rangeDateFloodGeoglows[0]}`).then(n=>n.text()).then(n=>{this.renderer.setProperty(this.table.nativeElement,\"innerHTML\",n)})})},300)}})}resizeMap(){setTimeout(()=>{this.map.resize()},10)}",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlGeoserver}/ecuador/ows",
+    "context": "&&h.setView(l,n,{animate:!1})})})}),setTimeout(()=>{this.map1.invalidateSize(),this.map2.invalidateSize(),this.map3.invalidateSize()},10)}buildWfsUrl(t){let r=`${xs.urlGeoserver}/ecuador/ows`,e=new URLSearchParams({service:\"WFS\",version:\"2.0.0\",request:\"GetFeature\",typeNames:`ecuador:${t}`,outputFormat:\"application/json\",srsName:\"EPSG:4326\"});retur",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlGeoserver}/${t}/wms",
+    "context": "ateGOESLayer(){return Bo(this,null,function*(){let t=\"goes\",r=Array.from(new Set(this.goesData.filter(c=>c.Band===this.selectedGoesBand).map(c=>c.Code)))[0],e=`${xs.urlGeoserver}/${t}/wms`,u=yield this.geoserver.getAvailableDatesFromImageMosaic(e,r),l=this.utils.parseGOESDatetime(u),n=u.map(c=>this.geoserver.getWMSFromImageMosaic(e,`${t}:${r}`,c",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlGeoserver}/satellite_based_precipitation/wms",
+    "context": "te(n.getDate()-e+1);let h=n.getFullYear(),c=String(n.getMonth()+1).padStart(2,\"0\"),a=String(n.getDate()).padStart(2,\"0\"),s=`${h}-${c}-${a}`,o=bf.tileLayer.wms(`${xs.urlGeoserver}/satellite_based_precipitation/wms`,{layers:`satellite_based_precipitation:${r}_${t}h`,format:\"image/png\",transparent:!0,version:\"1.1.0\",styles:\"\",srs:\"EPSG:3857\",time:`${l}T00:00:00.000Z`});thi",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlGeoserver}/postgis/wms",
+    "context": "getDroughtIndex(){let t=new Date(this.dateControlDrought.value),r=t.getFullYear(),e=String(t.getMonth()+1).padStart(2,\"0\"),u=`${r}-${e}-01`,l=bf.tileLayer.wms(`${xs.urlGeoserver}/postgis/wms`,{layers:\"postgis:nalbantis\",format:\"image/png\",transparent:!0,version:\"1.1.0\",srs:\"EPSG:3857\",viewparams:`dts:${u}`});this.timeControl3?.destroy();let n=` ",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlAPI}/hydropowers/get-observed-data-plot?hydropower=${this.selectedHydropower}&width=${n}&height=${h}",
+    "context": "getDate()).padStart(2,\"0\"),l=`${r}-${e}-${u}`;setTimeout(()=>{let n=this.panelPlot.nativeElement.offsetWidth,h=this.panelPlot.nativeElement.offsetHeight-100,c=`${xs.urlAPI}/hydropowers/get-observed-data-plot?hydropower=${this.selectedHydropower}&width=${n}&height=${h}`;fetch(c).then(s=>s.text()).then(s=>{let o=s.replace(/NaN/g,\"null\");return JSON.parse(o)}).then(s=>{this.dailyAveragePlot=s.hs});let a=`${xs.urlAPI}/hydropower",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlAPI}/hydropowers/get-forecast-plot?hydropower=${this.selectedHydropower}&width=${n}&height=${h}&date=${l}",
+    "context": "&width=${n}&height=${h}`;fetch(c).then(s=>s.text()).then(s=>{let o=s.replace(/NaN/g,\"null\");return JSON.parse(o)}).then(s=>{this.dailyAveragePlot=s.hs});let a=`${xs.urlAPI}/hydropowers/get-forecast-plot?hydropower=${this.selectedHydropower}&width=${n}&height=${h}&date=${l}`;fetch(a).then(s=>s.text()).then(s=>{let o=s.replace(/NaN/g,\"null\");return JSON.parse(o)}).then(s=>{this.forecastPlot=s.fp,this.isReadyDataPlot=!0})},300)}getH",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlAPI}/hydropowers/get-forecast-csv?hydropower=${this.selectedHydropower}&date=${l}",
+    "context": "CSV(){let t=new Date,r=t.getFullYear(),e=String(t.getMonth()+1).padStart(2,\"0\"),u=String(t.getDate()).padStart(2,\"0\"),l=`${r}-${e}-${u}`;setTimeout(()=>{let n=`${xs.urlAPI}/hydropowers/get-forecast-csv?hydropower=${this.selectedHydropower}&date=${l}`;window.location.href=n},300)}playTimeControl(){this.isPlay?(this.timeControl1?.pause(),this.isPlay=!1):(this.timeControl1?.play(),this.isPlay=!0)}previousTime",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlGeoserver}/ecuador/wms?",
+    "context": "ument.createElement(\"img\");return l.className=\"inamhi-logo\",l.src=\"assets/img/inamhi-white-logo.png\",l},u.addTo(this.map),this.countriesLayer=ks.tileLayer.wms(`${xs.urlGeoserver}/ecuador/wms?`,{layers:\"ecuador:paises_sudamerica\",format:\"image/svg\",transparent:!0,version:\"1.1.0\",zIndex:1e3}),this.countriesLayer.addTo(this.map),this.provinceLayer=ks.t",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlGeoserver}/wrf/wms",
+    "context": "p.Tag)))[0],e=this.dateControlForecast.value??new Date,u=this.utilsApp.computeForecastDate(e,\"isoz\",this.selectedForecastTemporal),l=u.map(p=>ks.tileLayer.wms(`${xs.urlGeoserver}/wrf/wms`,{layers:`wrf:${t}`,format:\"image/png\",transparent:!0,version:\"1.1.0\",styles:\"\",srs:\"EPSG:3857\",time:`${p}`,dim_initd:`${u[0]}`})),n=this.utilsApp.computeForec",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlGeoserver}/${r}/wms",
+    "context": "sPlay;this.isPlay=!1;let r=\"goes\",e=this.goesData.filter(a=>a.Product===this.selectedGoesProduct&&a.Band===this.selectedGoesBand)[0].Code;console.log(e);let u=`${xs.urlGeoserver}/${r}/wms`,l=`${xs.urlGeoserver}/postgis/wms`,n=yield this.geoserver.getAvailableDatesFromImageMosaic(u,e),h=this.utilsApp.parseGOESDatetime(n),c=n.map(a=>this.geoserver",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlMartin}/mvt_meteo_warnings/{z}/{x}/{y}?warning=${this.selectedMeteoWarning}",
+    "context": "ectedMeteoWarning=this.meteoWarnings[this.meteoWarnings.length-1]}updateMeteoWarningLayer(){return Bo(this,null,function*(){let t=yield this.vg.getLeaflet(),r=`${xs.urlMartin}/mvt_meteo_warnings/{z}/{x}/{y}?warning=${this.selectedMeteoWarning}`,e=\"meteo_warnings\",u={Medio:\"#FFFF4D\",Alto:\"#FFC44E\",\"Muy Alto\":\"#EF4C4D\"},l={Crecida:\"#17249c\",Incendio:\"#9c1737\",\"Baja Temperatura\":\"#17249c\"},n=o=>{let d=o",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlMartin}/mvt_ffgs/{z}/{x}/{y}?datetime=${u}",
+    "context": "his.dateControlFFGS.value??new Date,e=this.utilsApp.getDateRangeGeoglows(r),u=`${e[0]} ${this.selectedFFGSRun}:00:00`,l=`${e[0]} ${this.selectedFFGSRun}:00`,n=`${xs.urlMartin}/mvt_ffgs/{z}/{x}/{y}?datetime=${u}`,h=\"ffgs\",c=\"\";this.selectedFFGSProduct===\"Humedad del suelo\"&&(c=` <b><i class=\"fa-regular fa-house-flood-water\"></i></b> <b>Flash Flood Guida",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlGeoserver}/ffgs/wms",
+    "context": "rsiann_no_precipitation\",format:\"image/png\",transparent:!0,version:\"1.1.0\",styles:\"\",srs:\"EPSG:3857\",time:`${r}`}))[0],this.soilMoistureLayer=ks.tileLayer.wms(`${xs.urlGeoserver}/ffgs/wms`,{layers:\"ffgs:soil_moisture\",format:\"image/png\",transparent:!0,version:\"1.1.0\"})}updatePacum24(){if(this.updateOverlayers(!this.isActivePacum24Layer,this.pacu",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlAPI}/met-data-explorer/goes-hotspots",
+    "context": "trol();h.innerHTML=l,this.soilMoistureLegend=n.addTo(this.map)}else this.soilMoistureLegend.remove()}autoUpdateFireGOES(){if(this.isActiveFireGOESLayer){let t=`${xs.urlAPI}/met-data-explorer/goes-hotspots`;fetch(t).then(l=>l.json()).then(l=>{this.fireGOESLayer=ks.geoJSON(l,{pointToLayer:(n,h)=>ks.marker(h,{icon:ks.icon({iconUrl:`assets/ico/M${n.properties.diff}.",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlAPI}/met-data-explorer/get-sngr-events",
+    "context": "nge.value.start),e=t(this.sngrEventDateRange.value.end),u=this.selectedSngrEvent,l=this.selectedSngrFilter===\"Fecha de actualizaci\\xF3n\"?\"update\":\"datetime\",n=`${xs.urlAPI}/met-data-explorer/get-sngr-events`;fetch(`${n}?start=${r}&end=${e}&event=${u}&filtertime=${l}`).then(h=>{if(!h.ok)throw new Error(`HTTP ${h.status} - ${h.statusText}`);return h.json()}).then(h=",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "retorno",
+    "context": "t\",11),xo(\"ngModelChange\",function(n){return wi(u),bo(e.isActiveFlood002,n)||(e.isActiveFlood002=n),Ti(n)}),ca(\"ngModelChange\",function(){return wi(u),Ti(e.updateFloodWarnings())}),An(),Rn(6,\"label\",12),Er(7,\"Periodo de retorno: 2 a\\xF1os\"),An()(),Rn(8,\"div\",10)(9,\"input\",13),xo(\"ngModelChange\",function(n){return wi(u),bo(e.isActiveFlood005,n)||(e.isActiveFlood005=n),Ti(n)}),ca(\"ngModelChange\",function(){return wi(u),Ti(e.updateFloodWarnings()",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "retorno",
+    "context": ",13),xo(\"ngModelChange\",function(n){return wi(u),bo(e.isActiveFlood005,n)||(e.isActiveFlood005=n),Ti(n)}),ca(\"ngModelChange\",function(){return wi(u),Ti(e.updateFloodWarnings())}),An(),Rn(10,\"label\",14),Er(11,\"Periodo de retorno: 5 a\\xF1os\"),An()(),Rn(12,\"div\",10)(13,\"input\",15),xo(\"ngModelChange\",function(n){return wi(u),bo(e.isActiveFlood010,n)||(e.isActiveFlood010=n),Ti(n)}),ca(\"ngModelChange\",function(){return wi(u),Ti(e.updateFloodWarnings",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "retorno",
+    "context": ",15),xo(\"ngModelChange\",function(n){return wi(u),bo(e.isActiveFlood010,n)||(e.isActiveFlood010=n),Ti(n)}),ca(\"ngModelChange\",function(){return wi(u),Ti(e.updateFloodWarnings())}),An(),Rn(14,\"label\",16),Er(15,\"Periodo de retorno: 10 a\\xF1os\"),An()(),Rn(16,\"div\",10)(17,\"input\",17),xo(\"ngModelChange\",function(n){return wi(u),bo(e.isActiveFlood025,n)||(e.isActiveFlood025=n),Ti(n)}),ca(\"ngModelChange\",function(){return wi(u),Ti(e.updateFloodWarning",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "retorno",
+    "context": ",17),xo(\"ngModelChange\",function(n){return wi(u),bo(e.isActiveFlood025,n)||(e.isActiveFlood025=n),Ti(n)}),ca(\"ngModelChange\",function(){return wi(u),Ti(e.updateFloodWarnings())}),An(),Rn(18,\"label\",18),Er(19,\"Periodo de retorno: 25 a\\xF1os\"),An()(),Rn(20,\"div\",10)(21,\"input\",19),xo(\"ngModelChange\",function(n){return wi(u),bo(e.isActiveFlood050,n)||(e.isActiveFlood050=n),Ti(n)}),ca(\"ngModelChange\",function(){return wi(u),Ti(e.updateFloodWarning",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "hydropowers/",
+    "context": "er2=this.makeHydroWfsLayer(u).addTo(this.map2),this.hydropowerLayer3=this.makeHydroWfsLayer(u).addTo(this.map3),this.map1.fitBounds(this.hydropowerLayer1.getBounds());let l=yield fetch(`https://services.geoglows.org/api/hydropowers/get-station?hydropower=${this.selectedHydropower}`,{headers:{Accept:\"application/json\"}}),n;n=yield l.json(),this.hydropowerPoint1=this.makeHydroWfsPoint(n).addTo(this.map1),this.hydropowerPoint2=this.makeHydroWfsPoint(n",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "hydropowers/",
+    "context": "ing(t.getMonth()+1).padStart(2,\"0\"),u=String(t.getDate()).padStart(2,\"0\"),l=`${r}-${e}-${u}`;setTimeout(()=>{let n=this.panelPlot.nativeElement.offsetWidth,h=this.panelPlot.nativeElement.offsetHeight-100,c=`${xs.urlAPI}/hydropowers/get-observed-data-plot?hydropower=${this.selectedHydropower}&width=${n}&height=${h}`;fetch(c).then(s=>s.text()).then(s=>{let o=s.replace(/NaN/g,\"null\");return JSON.parse(o)}).then(s=>{this.dailyAveragePlot=s.hs});let a=`",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "hydropowers/",
+    "context": "data-plot?hydropower=${this.selectedHydropower}&width=${n}&height=${h}`;fetch(c).then(s=>s.text()).then(s=>{let o=s.replace(/NaN/g,\"null\");return JSON.parse(o)}).then(s=>{this.dailyAveragePlot=s.hs});let a=`${xs.urlAPI}/hydropowers/get-forecast-plot?hydropower=${this.selectedHydropower}&width=${n}&height=${h}&date=${l}`;fetch(a).then(s=>s.text()).then(s=>{let o=s.replace(/NaN/g,\"null\");return JSON.parse(o)}).then(s=>{this.forecastPlot=s.fp,this.isR",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "hydropowers/",
+    "context": "p,this.isReadyDataPlot=!0})},300)}getHydrographCSV(){let t=new Date,r=t.getFullYear(),e=String(t.getMonth()+1).padStart(2,\"0\"),u=String(t.getDate()).padStart(2,\"0\"),l=`${r}-${e}-${u}`;setTimeout(()=>{let n=`${xs.urlAPI}/hydropowers/get-forecast-csv?hydropower=${this.selectedHydropower}&date=${l}`;window.location.href=n},300)}playTimeControl(){this.isPlay?(this.timeControl1?.pause(),this.isPlay=!1):(this.timeControl1?.play(),this.isPlay=!0)}previous",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "selectedHydropower=",
+    "context": "lot.layout)(\"useResizeHandler\",!0)}}function MJ(f,i){f&1&&Ni(0,\"app-loading\")}zm.plotlyjs=uJ;var kO=(()=>{let i=class i{constructor(){this.dataAppConfig=new YT,this.geoserver=new U1,this.utils=new hg,this.isPlay=!1,this.selectedHydropower=\"Agoy\\xE1n\",this.hydropowers=[\"Agoy\\xE1n\",\"Amaluza\",\"Coca Codo Sinclair\",\"Daule Peripa\",\"Delsitanisagua\",\"Mazar\",\"Minas San Francisco\",\"Pisayambo\"],this.goesData=this.dataAppConfig.goesData,this.goesProducts=this.dataApp",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "selectedHydropower=",
+    "context": "-template\",5,0)(2,\"div\",6)(3,\"app-dropdown\",7)(4,\"mat-form-field\",8)(5,\"mat-label\"),Er(6,\"Central Hidroel\\xE9ctrica:\"),An(),Rn(7,\"mat-select\",9),xo(\"ngModelChange\",function(n){return wi(u),bo(e.selectedHydropower,n)||(e.selectedHydropower=n),Ti(n)}),Mo(8,pJ,2,2,\"mat-option\",10),An()(),Rn(9,\"button\",11),ca(\"click\",function(){return wi(u),Ti(e.updateHydropower())}),Ni(10,\"i\",12),Er(11,\"Seleccionar \"),An(),Rn(12,\"button\",11),ca(\"click\",function(){return wi(u",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "comid=",
+    "context": ",this.dateControlFloodGeoglows=new Ku(new Date),this.dateControlPanelFloodGeoglows=new Ku(new Date),this.minDateFloodGeoglows=new Date(\"2025-01-01\"),this.maxDateFloodGeoglows=new Date,this.rangeDateFloodGeoglows=[],this.comid=\"\",this.latitude=\"\",this.longitude=\"\",this.river=\"\",this.province=\"\",this.canton=\"\",this.htmlContent=\"\",this.isReadyDataPlot=!1,this.wdKeys=[\"wd01\",\"wd02\",\"wd03\",\"wd04\",\"wd05\",\"wd06\",\"wd07\",\"wd08\",\"wd09\",\"wd10\",\"wd11\",\"w",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "comid=",
+    "context": "his.rangeDateFloodGeoglows[0],this.rangeDateFloodGeoglows[this.activeDateIndex]),this.map.on(\"click\",\"drainage_ecuador\",t=>{if(this.isReadyDataPlot=!1,t.features&&t.features.length>0){let r=t.features[0].properties;this.comid=r.comid,this.latitude=r.latitude,this.longitude=r.longitude,this.river=r.river,this.province=r.province,this.canton=r.canton,this.dateControlPanelFloodGeoglows.setValue(this.dateControlFloodGeoglows.value),this.template.",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "comid=",
+    "context": ".canton,this.dateControlPanelFloodGeoglows.setValue(this.dateControlFloodGeoglows.value),this.template.showDataModal(),setTimeout(()=>{let e=this.panelPlot.nativeElement.offsetWidth,u=`${xs.urlAPI}/hydroviewer/get-plots?comid=${this.comid}&date=${this.rangeDateFloodGeoglows[0]}&width=${e}`;console.log(u),fetch(u).then(l=>l.text()).then(l=>{let n=l.replace(/NaN/g,\"null\");return JSON.parse(n)}).then(l=>{this.historicalSimulationPlot=l.hs,this.d",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "comid=",
+    "context": "ulationPlot=l.hs,this.dailyAveragePlot=l.dp,this.monthlyAveragePlot=l.mp,this.flowDurationCurve=l.fd,this.volumePlot=l.vp,this.forecastPlot=l.fp,this.isReadyDataPlot=!0,fetch(`${xs.urlAPI}/hydroviewer/get-forecast-table?comid=${this.comid}&date=${this.rangeDateFloodGeoglows[0]}`).then(n=>n.text()).then(n=>{this.renderer.setProperty(this.table.nativeElement,\"innerHTML\",n)})})},300)}})}resizeMap(){setTimeout(()=>{this.map.resize()},10)}updateFl",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "http://www.w3.org/2000/svg",
+    "context": ".createIcon(s||T.question)),r.setAttribute(\"data-gravity\",i.gravity||\"n\"),r},t.createIcon=function(i){var n,r=k(i.height)?Number(i.height):i.ascent-i.descent,a=\"http://www.w3.org/2000/svg\";if(i.path){(n=document.createElementNS(a,\"svg\")).setAttribute(\"viewBox\",[0,0,i.width,r].join(\" \")),n.setAttribute(\"class\",\"icon\");var u=document.createElementN",
+    "file": "scripts-YXDGOZI7.js"
+   },
+   {
+    "literal": "https://plotly.com/",
+    "context": "0;a<i[r].length;a++)if(i[r][a].name!==n[r][a].name)return!1}return!0},t.getLogo=function(){var i=this.createGroup(),n=document.createElement(\"a\");return n.href=\"https://plotly.com/\",n.target=\"_blank\",n.setAttribute(\"data-title\",o._(this.graphInfo,\"Produced with Plotly.js\")+\" (v\"+b+\")\"),n.className=\"modebar-btn plotlyjsicon modebar-btn--log",
+    "file": "scripts-YXDGOZI7.js"
+   },
+   {
+    "literal": "https://github.com/d3/d3-format/tree/v1.4.5#d3-format",
+    "context": "ee.exports={INCREASING:{COLOR:\"#3D9970\",SYMBOL:\"\\u25B2\"},DECREASING:{COLOR:\"#FF4136\",SYMBOL:\"\\u25BC\"}}},26880:function(ee){\"use strict\";ee.exports={FORMAT_LINK:\"https://github.com/d3/d3-format/tree/v1.4.5#d3-format\",DATE_FORMAT_LINK:\"https://github.com/d3/d3-time-format/tree/v2.2.3#locale_format\"}},69104:function(ee){\"use strict\";ee.exports={COMPARISON_OPS:[\"=\",\"!=\",\"<\",\">",
+    "file": "scripts-YXDGOZI7.js"
+   },
+   {
+    "literal": "https://github.com/d3/d3-time-format/tree/v2.2.3#locale_format",
+    "context": "R:\"#FF4136\",SYMBOL:\"\\u25BC\"}}},26880:function(ee){\"use strict\";ee.exports={FORMAT_LINK:\"https://github.com/d3/d3-format/tree/v1.4.5#d3-format\",DATE_FORMAT_LINK:\"https://github.com/d3/d3-time-format/tree/v2.2.3#locale_format\"}},69104:function(ee){\"use strict\";ee.exports={COMPARISON_OPS:[\"=\",\"!=\",\"<\",\">=\",\">\",\"<=\"],COMPARISON_OPS2:[\"=\",\"<\",\">=\",\">\",\"<=\"],INTERVAL_OPS:[\"[]\",\"()\",\"[)\",",
+    "file": "scripts-YXDGOZI7.js"
+   },
+   {
+    "literal": "http://www.w3.org/2000/xmlns/",
+    "context": "ges\"],[\"image-rendering\",\"pixelated\"]],z.STYLE=z.CSS_DECLARATIONS.map(function(e){return e.join(\": \")+\"; \"}).join(\"\")},9616:function(ee,z){\"use strict\";z.xmlns=\"http://www.w3.org/2000/xmlns/\",z.svg=\"http://www.w3.org/2000/svg\",z.xlink=\"http://www.w3.org/1999/xlink\",z.svgAttrs={xmlns:z.svg,\"xmlns:xlink\":z.xlink}},64884:function(ee,z,e){\"use strict\";z",
+    "file": "scripts-YXDGOZI7.js"
+   },
+   {
+    "literal": "http://www.w3.org/1999/xlink",
+    "context": "ion(e){return e.join(\": \")+\"; \"}).join(\"\")},9616:function(ee,z){\"use strict\";z.xmlns=\"http://www.w3.org/2000/xmlns/\",z.svg=\"http://www.w3.org/2000/svg\",z.xlink=\"http://www.w3.org/1999/xlink\",z.svgAttrs={xmlns:z.svg,\"xmlns:xlink\":z.xlink}},64884:function(ee,z,e){\"use strict\";z.version=e(25788).version,e(88324),e(79288);for(var M=e(24040),k=z.registe",
+    "file": "scripts-YXDGOZI7.js"
+   },
+   {
+    "literal": "https://get.webgl.org",
+    "context": "%\",p.style.margin=\"-15% 0 0 -25%\",b.appendChild(p),o.container.appendChild(b),o.container.style.background=\"#FFFFFF\",o.container.onclick=function(){window.open(\"https://get.webgl.org\")},!1}},95376:function(ee){\"use strict\";ee.exports=function(z){return Object.keys(z).sort()}},63084:function(ee,z,e){\"use strict\";var M=e(38248),k=e(38116).isAr",
+    "file": "scripts-YXDGOZI7.js"
+   },
+   {
+    "literal": "https://cdn.plot.ly/",
+    "context": ",dflt:!1},plotGlPixelRatio:{valType:\"number\",dflt:2,min:1,max:4},setBackground:{valType:\"any\",dflt:\"transparent\"},topojsonURL:{valType:\"string\",noBlank:!0,dflt:\"https://cdn.plot.ly/\"},mapboxAccessToken:{valType:\"string\",dflt:null},logging:{valType:\"integer\",min:0,max:2,dflt:1},notifyOnLogging:{valType:\"integer\",min:0,max:2,dflt:0},queueLeng",
+    "file": "scripts-YXDGOZI7.js"
+   },
+   {
+    "literal": "https://www.openstreetmap.org/copyright",
+    "context": ",editType:\"layoutstyle\"},titlefont:M({editType:\"layoutstyle\"})}}},47552:function(ee,z,e){\"use strict\";var M=e(95376),k=\"1.13.4\",o='\\xA9 <a target=\"_blank\" href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors',T=['\\xA9 <a target=\"_blank\" href=\"https://carto.com/\">Carto</a>',o].join(\" \"),b=['Map tiles by <a target=\"_blank\" href=\"https:/",
+    "file": "scripts-YXDGOZI7.js"
+   },
+   {
+    "literal": "https://carto.com/",
+    "context": "=e(95376),k=\"1.13.4\",o='\\xA9 <a target=\"_blank\" href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors',T=['\\xA9 <a target=\"_blank\" href=\"https://carto.com/\">Carto</a>',o].join(\" \"),b=['Map tiles by <a target=\"_blank\" href=\"https://stamen.com\">Stamen Design</a>','under <a target=\"_blank\" href=\"https://creativecommon",
+    "file": "scripts-YXDGOZI7.js"
+   },
+   {
+    "literal": "https://stamen.com",
+    "context": "pyright\">OpenStreetMap</a> contributors',T=['\\xA9 <a target=\"_blank\" href=\"https://carto.com/\">Carto</a>',o].join(\" \"),b=['Map tiles by <a target=\"_blank\" href=\"https://stamen.com\">Stamen Design</a>','under <a target=\"_blank\" href=\"https://creativecommons.org/licenses/by/3.0\">CC BY 3.0</a>',\"|\",'Data by <a target=\"_blank\" href=\"https://op",
+    "file": "scripts-YXDGOZI7.js"
+   },
+   {
+    "literal": "https://creativecommons.org/licenses/by/3.0",
+    "context": "ef=\"https://carto.com/\">Carto</a>',o].join(\" \"),b=['Map tiles by <a target=\"_blank\" href=\"https://stamen.com\">Stamen Design</a>','under <a target=\"_blank\" href=\"https://creativecommons.org/licenses/by/3.0\">CC BY 3.0</a>',\"|\",'Data by <a target=\"_blank\" href=\"https://openstreetmap.org\">OpenStreetMap</a> contributors','under <a target=\"_blank\" href=\"https://www.ope",
+    "file": "scripts-YXDGOZI7.js"
+   },
+   {
+    "literal": "https://openstreetmap.org",
+    "context": "stamen.com\">Stamen Design</a>','under <a target=\"_blank\" href=\"https://creativecommons.org/licenses/by/3.0\">CC BY 3.0</a>',\"|\",'Data by <a target=\"_blank\" href=\"https://openstreetmap.org\">OpenStreetMap</a> contributors','under <a target=\"_blank\" href=\"https://www.openstreetmap.org/copyright\">ODbL</a>'].join(\" \"),p={\"open-street-map\":{id:\"osm\",ve",
+    "file": "scripts-YXDGOZI7.js"
+   },
+   {
+    "literal": "https://fonts.openmaptiles.org/{fontstack}/{range}.pbf",
+    "context": "/b.tile.openstreetmap.org/{z}/{x}/{y}.png\"],tileSize:256}},layers:[{id:\"plotly-osm-tiles\",type:\"raster\",source:\"plotly-osm-tiles\",minzoom:0,maxzoom:22}],glyphs:\"https://fonts.openmaptiles.org/{fontstack}/{range}.pbf\"},\"white-bg\":{id:\"white-bg\",version:8,sources:{},layers:[{id:\"white-bg\",type:\"background\",paint:{\"background-color\":\"#FFFFFF\"},minzoom:0,maxzoom:22}],glyphs:\"ht",
+    "file": "scripts-YXDGOZI7.js"
+   },
+   {
+    "literal": "https://creativecommons.org/licenses/by-sa/3.0",
+    "context": "licenses/by/3.0\">CC BY 3.0</a>',\"|\",'Data by <a target=\"_blank\" href=\"https://openstreetmap.org\">OpenStreetMap</a> contributors','under <a target=\"_blank\" href=\"https://creativecommons.org/licenses/by-sa/3.0\">CC BY SA</a>'].join(\" \"),tiles:[\"https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg?api_key=\"],tileSize:256}},layers:[{id:\"plotly-stamen-wate",
+    "file": "scripts-YXDGOZI7.js"
+   },
+   {
+    "literal": "http://www.w3.org/1999/xhtml",
+    "context": "his.length;++le<me;)for(var Le=this[le],Ie=-1,Ve=Le.length;++Ie<Ve;)(J=Le[Ie])&&(ne.push(q=b(L.call(J,J.__data__,Ie,le))),q.parentNode=J);return re(ne)};var ge=\"http://www.w3.org/1999/xhtml\",pe={svg:\"http://www.w3.org/2000/svg\",xhtml:ge,xlink:\"http://www.w3.org/1999/xlink\",xml:\"http://www.w3.org/XML/1998/namespace\",xmlns:\"http://www.w3.org/2000/xml",
+    "file": "scripts-YXDGOZI7.js"
+   },
+   {
+    "literal": "http://www.w3.org/XML/1998/namespace",
+    "context": "))),q.parentNode=J);return re(ne)};var ge=\"http://www.w3.org/1999/xhtml\",pe={svg:\"http://www.w3.org/2000/svg\",xhtml:ge,xlink:\"http://www.w3.org/1999/xlink\",xml:\"http://www.w3.org/XML/1998/namespace\",xmlns:\"http://www.w3.org/2000/xmlns/\"};function he(L,q){return L=o.ns.qualify(L),q==null?L.local?function(){this.removeAttributeNS(L.space,L.local)}:function()",
+    "file": "scripts-YXDGOZI7.js"
+   },
+   {
+    "literal": "https://api.mapbox.com",
+    "context": "urn n.devicePixelRatio},get prefersReducedMotion(){return!!n.matchMedia&&(F==null&&(F=n.matchMedia(\"(prefers-reduced-motion: reduce)\")),F.matches)}},Q={API_URL:\"https://api.mapbox.com\",get EVENTS_URL(){return this.API_URL?this.API_URL.indexOf(\"https://api.mapbox.cn\")===0?\"https://events.mapbox.cn/events/v2\":this.API_URL.indexOf(\"https://api.m",
+    "file": "scripts-YXDGOZI7.js"
+   },
+   {
+    "literal": "https://api.mapbox.cn",
+    "context": "(F=n.matchMedia(\"(prefers-reduced-motion: reduce)\")),F.matches)}},Q={API_URL:\"https://api.mapbox.com\",get EVENTS_URL(){return this.API_URL?this.API_URL.indexOf(\"https://api.mapbox.cn\")===0?\"https://events.mapbox.cn/events/v2\":this.API_URL.indexOf(\"https://api.mapbox.com\")===0?\"https://events.mapbox.com/events/v2\":null:null},FEEDBACK_URL:\"htt",
+    "file": "scripts-YXDGOZI7.js"
+   },
+   {
+    "literal": "https://events.mapbox.cn/events/v2",
+    "context": "uced-motion: reduce)\")),F.matches)}},Q={API_URL:\"https://api.mapbox.com\",get EVENTS_URL(){return this.API_URL?this.API_URL.indexOf(\"https://api.mapbox.cn\")===0?\"https://events.mapbox.cn/events/v2\":this.API_URL.indexOf(\"https://api.mapbox.com\")===0?\"https://events.mapbox.com/events/v2\":null:null},FEEDBACK_URL:\"https://apps.mapbox.com/feedback\",REQUIRE_ACC",
+    "file": "scripts-YXDGOZI7.js"
+   },
+   {
+    "literal": "https://events.mapbox.com/events/v2",
+    "context": "){return this.API_URL?this.API_URL.indexOf(\"https://api.mapbox.cn\")===0?\"https://events.mapbox.cn/events/v2\":this.API_URL.indexOf(\"https://api.mapbox.com\")===0?\"https://events.mapbox.com/events/v2\":null:null},FEEDBACK_URL:\"https://apps.mapbox.com/feedback\",REQUIRE_ACCESS_TOKEN:!0,ACCESS_TOKEN:null,MAX_PARALLEL_IMAGE_REQUESTS:16},X={supported:!1,testSuppor",
+    "file": "scripts-YXDGOZI7.js"
+   },
+   {
+    "literal": "https://apps.mapbox.com/feedback",
+    "context": ".cn\")===0?\"https://events.mapbox.cn/events/v2\":this.API_URL.indexOf(\"https://api.mapbox.com\")===0?\"https://events.mapbox.com/events/v2\":null:null},FEEDBACK_URL:\"https://apps.mapbox.com/feedback\",REQUIRE_ACCESS_TOKEN:!0,ACCESS_TOKEN:null,MAX_PARALLEL_IMAGE_REQUESTS:16},X={supported:!1,testSupport:function(A){!re&&V&&(oe?ae(A):U=A)}},re=!1,oe=!1;function",
+    "file": "scripts-YXDGOZI7.js"
+   },
+   {
+    "literal": "https://www.mapbox.com/",
+    "context": "{this._map=B,this._container=b.create(\"div\",\"mapboxgl-ctrl\");var G=b.create(\"a\",\"mapboxgl-ctrl-logo\");return G.target=\"_blank\",G.rel=\"noopener nofollow\",G.href=\"https://www.mapbox.com/\",G.setAttribute(\"aria-label\",this._map._getUIString(\"LogoControl.Title\")),G.setAttribute(\"rel\",\"noopener nofollow\"),this._container.appendChild(G),this._contain",
+    "file": "scripts-YXDGOZI7.js"
+   },
+   {
+    "literal": "https://github.com/zloirock/core-js/blob/v3.47.0/LICENSE",
+    "context": "versions=[])).push({version:\"3.47.0\",mode:ad?\"pure\":\"global\",copyright:\"\\xA9 2014-2025 Denis Pushkarev (zloirock.ru), 2025 CoreJS Company (core-js.io)\",license:\"https://github.com/zloirock/core-js/blob/v3.47.0/LICENSE\",source:\"https://github.com/zloirock/core-js\"})});var vt=d((uS,Lo)=>{\"use strict\";var Do=ft();Lo.exports=function(i,e){return Do[i]||(Do[i]=e||{})}});var Er=d((",
+    "file": "chunk-767WP22Y.js"
+   },
+   {
+    "literal": "https://github.com/zloirock/core-js",
+    "context": "ight:\"\\xA9 2014-2025 Denis Pushkarev (zloirock.ru), 2025 CoreJS Company (core-js.io)\",license:\"https://github.com/zloirock/core-js/blob/v3.47.0/LICENSE\",source:\"https://github.com/zloirock/core-js\"})});var vt=d((uS,Lo)=>{\"use strict\";var Do=ft();Lo.exports=function(i,e){return Do[i]||(Do[i]=e||{})}});var Er=d((lS,ko)=>{\"use strict\";var od=le(),ud=Object;k",
+    "file": "chunk-767WP22Y.js"
+   },
+   {
+    "literal": "http://www.w3.org/1998/Math/MathML",
+    "context": "ource\",\"image\",\"track\"]),Re=null,Ke=r({},[\"alt\",\"class\",\"for\",\"id\",\"label\",\"name\",\"pattern\",\"placeholder\",\"role\",\"summary\",\"title\",\"value\",\"style\",\"xmlns\"]),ae=\"http://www.w3.org/1998/Math/MathML\",re=\"http://www.w3.org/2000/svg\",N=\"http://www.w3.org/1999/xhtml\",z=N,Oe=!1,ye=null,Ut=r({},[ae,re,N],Ne),se=r({},[\"mi\",\"mo\",\"mn\",\"ms\",\"mtext\"]),le=r({},[\"annot",
+    "file": "chunk-K2TFF7JK.js"
+   },
+   {
+    "literal": "http://www.w3.org/2000/svg",
+    "context": ",[\"alt\",\"class\",\"for\",\"id\",\"label\",\"name\",\"pattern\",\"placeholder\",\"role\",\"summary\",\"title\",\"value\",\"style\",\"xmlns\"]),ae=\"http://www.w3.org/1998/Math/MathML\",re=\"http://www.w3.org/2000/svg\",N=\"http://www.w3.org/1999/xhtml\",z=N,Oe=!1,ye=null,Ut=r({},[ae,re,N],Ne),se=r({},[\"mi\",\"mo\",\"mn\",\"ms\",\"mtext\"]),le=r({},[\"annotation-xml\"]),Ft=r({},[\"title\",\"s",
+    "file": "chunk-K2TFF7JK.js"
+   },
+   {
+    "literal": "http://www.w3.org/1999/xhtml",
+    "context": "el\",\"name\",\"pattern\",\"placeholder\",\"role\",\"summary\",\"title\",\"value\",\"style\",\"xmlns\"]),ae=\"http://www.w3.org/1998/Math/MathML\",re=\"http://www.w3.org/2000/svg\",N=\"http://www.w3.org/1999/xhtml\",z=N,Oe=!1,ye=null,Ut=r({},[ae,re,N],Ne),se=r({},[\"mi\",\"mo\",\"mn\",\"ms\",\"mtext\"]),le=r({},[\"annotation-xml\"]),Ft=r({},[\"title\",\"style\",\"font\",\"a\",\"script\"]),$=nul",
+    "file": "chunk-K2TFF7JK.js"
+   }
+  ],
+  "tries": [
+   {
+    "url": "https://services.geoglows.org/api/hydroviewer/get-plots?comid=620988388&date=2026-09-24&width=1000",
+    "status": "HTTP 200",
+    "contentType": "application/json",
+    "bytes": 1893421,
+    "archived": "inamhi/hydroviewer-ecuador_2026-09-25/try-f57f7d40af43.gz",
+    "head": "{\"hs\": {\"data\": [{\"name\": \"Historical Simulation\", \"x\": [\"1980-01-01T00:00:00\", \"1980-01-02T00:00:00\", \"1980-01-03T00:00:00\", \"1980-01-04T00:00:00\", \"1980-01-05T00:00:00\", \"1980-01-06T00:00:00\", \"1980-01-07T00:00:00\", \"1980-01-08T00:00:00\", \"1980-01-09T00:00:00\", \"1980-01-10T00:00:00\", \"1980-01-11T00:00:00\", \"1980-01-12T00:00:00\", \"1980-01-13T00:00:00\", \"1980-01-14T00:00:00\", \"1980-01-15T00:00:00\", \"1980-01-16T00:00:00\", \"1980-01-17T00:00:00\", \"1980-01-18T00:00:00\", \"1980-01-19T00:00:00\", \"1980-01-20T00:00:00\", \"1980-01-21T00:00:00\", \"1980-01-22T00:00:00\", \"1980-01-23T00:00:00\", \"1980-01-24T00:00:00\", \"1980-01-25T00:00:00\", \"1980-01-26T00:00:00\", \"1980-01-27T00:00:00\", \"1980-01-28T00:00:00\", \"1980-01-29T00:00:00\", \"1980-01-30T00:00:00\", \"1980-01-31T00:00:00\", \"1980-02-01T00:00:00\", \"1980-02-02T00:00:00\", \"1980-02-03T00:00:00\", \"1980-02-04T00:00:00\", \"1980-02-05T00:00:00\", \"1980-02-06T00:00:00\", \"1980-02-07T00:00:00\", \"1980-02-08T00:00:00\", \"1980-02-09T00:00:00\", \"1980-02-10T00:00:00\", \"1980-02-11T00:00:00\", \"1980-02-12T00:00:00\", \"1980-02-13T00:00:00\", \"1980-02-14T00:00:00\", \"1980-02-15T00:00:00\", \"1980-02-16T00:00:00\", \"1980-02-17T00:00:00\", \"1980-02-18T00:00:00\", \"1980-02-19T00:00:00\", \"1980-02-20T00:00:00\", \"1980-02-21T00:00:00\", \"1980-02-22T00:00:00\", \"1980-02-23T00:00:00\", \"1980-02-24T00:00:00\", \"1980-02-25T00:00:00\", \"1980-02-26T00:00:00\", \"1980-02-27T00:00:00\", \"1980-02-28T00:00:00\", \"1980-02-29T00:00:00\", \"1980-03-01T00:00:00\", \"1980-03-02T00:00:00\", \"1980-03-03T00:00",
+    "portalReturnPeriods": {
+     "riverId": 620988388,
+     "values": [
+      {
+       "years": 2,
+       "m3s": 599.6
+      },
+      {
+       "years": 5,
+       "m3s": 731.5
+      },
+      {
+       "years": 10,
+       "m3s": 818.8
+      },
+      {
+       "years": 25,
+       "m3s": 929.2
+      },
+      {
+       "years": 50,
+       "m3s": 1011.1
+      },
+      {
+       "years": 100,
+       "m3s": 1092.4
+      }
+     ]
+    }
+   },
+   {
+    "url": "https://services.geoglows.org/api/hydroviewer/get-plots?comid=620955363&date=2026-09-24&width=1000",
+    "status": "HTTP 200",
+    "contentType": "application/json",
+    "bytes": 1894709,
+    "archived": "inamhi/hydroviewer-ecuador_2026-09-25/try-dd9877dba856.gz",
+    "head": "{\"hs\": {\"data\": [{\"name\": \"Historical Simulation\", \"x\": [\"1980-01-01T00:00:00\", \"1980-01-02T00:00:00\", \"1980-01-03T00:00:00\", \"1980-01-04T00:00:00\", \"1980-01-05T00:00:00\", \"1980-01-06T00:00:00\", \"1980-01-07T00:00:00\", \"1980-01-08T00:00:00\", \"1980-01-09T00:00:00\", \"1980-01-10T00:00:00\", \"1980-01-11T00:00:00\", \"1980-01-12T00:00:00\", \"1980-01-13T00:00:00\", \"1980-01-14T00:00:00\", \"1980-01-15T00:00:00\", \"1980-01-16T00:00:00\", \"1980-01-17T00:00:00\", \"1980-01-18T00:00:00\", \"1980-01-19T00:00:00\", \"1980-01-20T00:00:00\", \"1980-01-21T00:00:00\", \"1980-01-22T00:00:00\", \"1980-01-23T00:00:00\", \"1980-01-24T00:00:00\", \"1980-01-25T00:00:00\", \"1980-01-26T00:00:00\", \"1980-01-27T00:00:00\", \"1980-01-28T00:00:00\", \"1980-01-29T00:00:00\", \"1980-01-30T00:00:00\", \"1980-01-31T00:00:00\", \"1980-02-01T00:00:00\", \"1980-02-02T00:00:00\", \"1980-02-03T00:00:00\", \"1980-02-04T00:00:00\", \"1980-02-05T00:00:00\", \"1980-02-06T00:00:00\", \"1980-02-07T00:00:00\", \"1980-02-08T00:00:00\", \"1980-02-09T00:00:00\", \"1980-02-10T00:00:00\", \"1980-02-11T00:00:00\", \"1980-02-12T00:00:00\", \"1980-02-13T00:00:00\", \"1980-02-14T00:00:00\", \"1980-02-15T00:00:00\", \"1980-02-16T00:00:00\", \"1980-02-17T00:00:00\", \"1980-02-18T00:00:00\", \"1980-02-19T00:00:00\", \"1980-02-20T00:00:00\", \"1980-02-21T00:00:00\", \"1980-02-22T00:00:00\", \"1980-02-23T00:00:00\", \"1980-02-24T00:00:00\", \"1980-02-25T00:00:00\", \"1980-02-26T00:00:00\", \"1980-02-27T00:00:00\", \"1980-02-28T00:00:00\", \"1980-02-29T00:00:00\", \"1980-03-01T00:00:00\", \"1980-03-02T00:00:00\", \"1980-03-03T00:00",
+    "portalReturnPeriods": {
+     "riverId": 620955363,
+     "values": [
+      {
+       "years": 2,
+       "m3s": 670.1
+      },
+      {
+       "years": 5,
+       "m3s": 812.1
+      },
+      {
+       "years": 10,
+       "m3s": 906.2
+      },
+      {
+       "years": 25,
+       "m3s": 1025
+      },
+      {
+       "years": 50,
+       "m3s": 1113.2
+      },
+      {
+       "years": 100,
+       "m3s": 1200.7
+      }
+     ]
+    }
+   },
+   {
+    "url": "https://services.geoglows.org/api/hydroviewer/get-plots?comid=620922213&date=2026-09-24&width=1000",
+    "status": "HTTP 200",
+    "contentType": "application/json",
+    "bytes": 1904635,
+    "archived": "inamhi/hydroviewer-ecuador_2026-09-25/try-ad3a4737275d.gz",
+    "head": "{\"hs\": {\"data\": [{\"name\": \"Historical Simulation\", \"x\": [\"1980-01-01T00:00:00\", \"1980-01-02T00:00:00\", \"1980-01-03T00:00:00\", \"1980-01-04T00:00:00\", \"1980-01-05T00:00:00\", \"1980-01-06T00:00:00\", \"1980-01-07T00:00:00\", \"1980-01-08T00:00:00\", \"1980-01-09T00:00:00\", \"1980-01-10T00:00:00\", \"1980-01-11T00:00:00\", \"1980-01-12T00:00:00\", \"1980-01-13T00:00:00\", \"1980-01-14T00:00:00\", \"1980-01-15T00:00:00\", \"1980-01-16T00:00:00\", \"1980-01-17T00:00:00\", \"1980-01-18T00:00:00\", \"1980-01-19T00:00:00\", \"1980-01-20T00:00:00\", \"1980-01-21T00:00:00\", \"1980-01-22T00:00:00\", \"1980-01-23T00:00:00\", \"1980-01-24T00:00:00\", \"1980-01-25T00:00:00\", \"1980-01-26T00:00:00\", \"1980-01-27T00:00:00\", \"1980-01-28T00:00:00\", \"1980-01-29T00:00:00\", \"1980-01-30T00:00:00\", \"1980-01-31T00:00:00\", \"1980-02-01T00:00:00\", \"1980-02-02T00:00:00\", \"1980-02-03T00:00:00\", \"1980-02-04T00:00:00\", \"1980-02-05T00:00:00\", \"1980-02-06T00:00:00\", \"1980-02-07T00:00:00\", \"1980-02-08T00:00:00\", \"1980-02-09T00:00:00\", \"1980-02-10T00:00:00\", \"1980-02-11T00:00:00\", \"1980-02-12T00:00:00\", \"1980-02-13T00:00:00\", \"1980-02-14T00:00:00\", \"1980-02-15T00:00:00\", \"1980-02-16T00:00:00\", \"1980-02-17T00:00:00\", \"1980-02-18T00:00:00\", \"1980-02-19T00:00:00\", \"1980-02-20T00:00:00\", \"1980-02-21T00:00:00\", \"1980-02-22T00:00:00\", \"1980-02-23T00:00:00\", \"1980-02-24T00:00:00\", \"1980-02-25T00:00:00\", \"1980-02-26T00:00:00\", \"1980-02-27T00:00:00\", \"1980-02-28T00:00:00\", \"1980-02-29T00:00:00\", \"1980-03-01T00:00:00\", \"1980-03-02T00:00:00\", \"1980-03-03T00:00",
+    "portalReturnPeriods": {
+     "riverId": 620922213,
+     "values": [
+      {
+       "years": 2,
+       "m3s": 1230
+      },
+      {
+       "years": 5,
+       "m3s": 1500.2
+      },
+      {
+       "years": 10,
+       "m3s": 1679.1
+      },
+      {
+       "years": 25,
+       "m3s": 1905.1
+      },
+      {
+       "years": 50,
+       "m3s": 2072.8
+      },
+      {
+       "years": 100,
+       "m3s": 2239.2
+      }
+     ]
+    }
+   },
+   {
+    "url": "https://services.geoglows.org/api/hydroviewer/get-plots?comid=621014469&date=2026-09-24&width=1000",
+    "status": "HTTP 200",
+    "contentType": "application/json",
+    "bytes": 1905901,
+    "archived": "inamhi/hydroviewer-ecuador_2026-09-25/try-a117a30b7375.gz",
+    "head": "{\"hs\": {\"data\": [{\"name\": \"Historical Simulation\", \"x\": [\"1980-01-01T00:00:00\", \"1980-01-02T00:00:00\", \"1980-01-03T00:00:00\", \"1980-01-04T00:00:00\", \"1980-01-05T00:00:00\", \"1980-01-06T00:00:00\", \"1980-01-07T00:00:00\", \"1980-01-08T00:00:00\", \"1980-01-09T00:00:00\", \"1980-01-10T00:00:00\", \"1980-01-11T00:00:00\", \"1980-01-12T00:00:00\", \"1980-01-13T00:00:00\", \"1980-01-14T00:00:00\", \"1980-01-15T00:00:00\", \"1980-01-16T00:00:00\", \"1980-01-17T00:00:00\", \"1980-01-18T00:00:00\", \"1980-01-19T00:00:00\", \"1980-01-20T00:00:00\", \"1980-01-21T00:00:00\", \"1980-01-22T00:00:00\", \"1980-01-23T00:00:00\", \"1980-01-24T00:00:00\", \"1980-01-25T00:00:00\", \"1980-01-26T00:00:00\", \"1980-01-27T00:00:00\", \"1980-01-28T00:00:00\", \"1980-01-29T00:00:00\", \"1980-01-30T00:00:00\", \"1980-01-31T00:00:00\", \"1980-02-01T00:00:00\", \"1980-02-02T00:00:00\", \"1980-02-03T00:00:00\", \"1980-02-04T00:00:00\", \"1980-02-05T00:00:00\", \"1980-02-06T00:00:00\", \"1980-02-07T00:00:00\", \"1980-02-08T00:00:00\", \"1980-02-09T00:00:00\", \"1980-02-10T00:00:00\", \"1980-02-11T00:00:00\", \"1980-02-12T00:00:00\", \"1980-02-13T00:00:00\", \"1980-02-14T00:00:00\", \"1980-02-15T00:00:00\", \"1980-02-16T00:00:00\", \"1980-02-17T00:00:00\", \"1980-02-18T00:00:00\", \"1980-02-19T00:00:00\", \"1980-02-20T00:00:00\", \"1980-02-21T00:00:00\", \"1980-02-22T00:00:00\", \"1980-02-23T00:00:00\", \"1980-02-24T00:00:00\", \"1980-02-25T00:00:00\", \"1980-02-26T00:00:00\", \"1980-02-27T00:00:00\", \"1980-02-28T00:00:00\", \"1980-02-29T00:00:00\", \"1980-03-01T00:00:00\", \"1980-03-02T00:00:00\", \"1980-03-03T00:00",
+    "portalReturnPeriods": {
+     "riverId": 621014469,
+     "values": [
+      {
+       "years": 2,
+       "m3s": 1008.6
+      },
+      {
+       "years": 5,
+       "m3s": 1211.2
+      },
+      {
+       "years": 10,
+       "m3s": 1345.3
+      },
+      {
+       "years": 25,
+       "m3s": 1514.7
+      },
+      {
+       "years": 50,
+       "m3s": 1640.4
+      },
+      {
+       "years": 100,
+       "m3s": 1765.2
+      }
+     ]
+    }
+   },
+   {
+    "url": "https://services.geoglows.org/api/hydroviewer/get-plots?comid=670078161&date=2026-09-24&width=1000",
+    "status": "HTTP 200",
+    "contentType": "application/json",
+    "bytes": 1903306,
+    "archived": "inamhi/hydroviewer-ecuador_2026-09-25/try-281dfe3e0452.gz",
+    "head": "{\"hs\": {\"data\": [{\"name\": \"Historical Simulation\", \"x\": [\"1980-01-01T00:00:00\", \"1980-01-02T00:00:00\", \"1980-01-03T00:00:00\", \"1980-01-04T00:00:00\", \"1980-01-05T00:00:00\", \"1980-01-06T00:00:00\", \"1980-01-07T00:00:00\", \"1980-01-08T00:00:00\", \"1980-01-09T00:00:00\", \"1980-01-10T00:00:00\", \"1980-01-11T00:00:00\", \"1980-01-12T00:00:00\", \"1980-01-13T00:00:00\", \"1980-01-14T00:00:00\", \"1980-01-15T00:00:00\", \"1980-01-16T00:00:00\", \"1980-01-17T00:00:00\", \"1980-01-18T00:00:00\", \"1980-01-19T00:00:00\", \"1980-01-20T00:00:00\", \"1980-01-21T00:00:00\", \"1980-01-22T00:00:00\", \"1980-01-23T00:00:00\", \"1980-01-24T00:00:00\", \"1980-01-25T00:00:00\", \"1980-01-26T00:00:00\", \"1980-01-27T00:00:00\", \"1980-01-28T00:00:00\", \"1980-01-29T00:00:00\", \"1980-01-30T00:00:00\", \"1980-01-31T00:00:00\", \"1980-02-01T00:00:00\", \"1980-02-02T00:00:00\", \"1980-02-03T00:00:00\", \"1980-02-04T00:00:00\", \"1980-02-05T00:00:00\", \"1980-02-06T00:00:00\", \"1980-02-07T00:00:00\", \"1980-02-08T00:00:00\", \"1980-02-09T00:00:00\", \"1980-02-10T00:00:00\", \"1980-02-11T00:00:00\", \"1980-02-12T00:00:00\", \"1980-02-13T00:00:00\", \"1980-02-14T00:00:00\", \"1980-02-15T00:00:00\", \"1980-02-16T00:00:00\", \"1980-02-17T00:00:00\", \"1980-02-18T00:00:00\", \"1980-02-19T00:00:00\", \"1980-02-20T00:00:00\", \"1980-02-21T00:00:00\", \"1980-02-22T00:00:00\", \"1980-02-23T00:00:00\", \"1980-02-24T00:00:00\", \"1980-02-25T00:00:00\", \"1980-02-26T00:00:00\", \"1980-02-27T00:00:00\", \"1980-02-28T00:00:00\", \"1980-02-29T00:00:00\", \"1980-03-01T00:00:00\", \"1980-03-02T00:00:00\", \"1980-03-03T00:00",
+    "portalReturnPeriods": {
+     "riverId": 670078161,
+     "values": [
+      {
+       "years": 2,
+       "m3s": 1624.1
+      },
+      {
+       "years": 5,
+       "m3s": 1845.8
+      },
+      {
+       "years": 10,
+       "m3s": 1992.6
+      },
+      {
+       "years": 25,
+       "m3s": 2178
+      },
+      {
+       "years": 50,
+       "m3s": 2315.6
+      },
+      {
+       "years": 100,
+       "m3s": 2452.2
+      }
+     ]
+    }
+   },
+   {
+    "url": "https://services.geoglows.org/api/hydroviewer/get-plots?comid=670095610&date=2026-09-24&width=1000",
+    "status": "HTTP 200",
+    "contentType": "application/json",
+    "bytes": 1890995,
+    "archived": "inamhi/hydroviewer-ecuador_2026-09-25/try-5790e327c649.gz",
+    "head": "{\"hs\": {\"data\": [{\"name\": \"Historical Simulation\", \"x\": [\"1980-01-01T00:00:00\", \"1980-01-02T00:00:00\", \"1980-01-03T00:00:00\", \"1980-01-04T00:00:00\", \"1980-01-05T00:00:00\", \"1980-01-06T00:00:00\", \"1980-01-07T00:00:00\", \"1980-01-08T00:00:00\", \"1980-01-09T00:00:00\", \"1980-01-10T00:00:00\", \"1980-01-11T00:00:00\", \"1980-01-12T00:00:00\", \"1980-01-13T00:00:00\", \"1980-01-14T00:00:00\", \"1980-01-15T00:00:00\", \"1980-01-16T00:00:00\", \"1980-01-17T00:00:00\", \"1980-01-18T00:00:00\", \"1980-01-19T00:00:00\", \"1980-01-20T00:00:00\", \"1980-01-21T00:00:00\", \"1980-01-22T00:00:00\", \"1980-01-23T00:00:00\", \"1980-01-24T00:00:00\", \"1980-01-25T00:00:00\", \"1980-01-26T00:00:00\", \"1980-01-27T00:00:00\", \"1980-01-28T00:00:00\", \"1980-01-29T00:00:00\", \"1980-01-30T00:00:00\", \"1980-01-31T00:00:00\", \"1980-02-01T00:00:00\", \"1980-02-02T00:00:00\", \"1980-02-03T00:00:00\", \"1980-02-04T00:00:00\", \"1980-02-05T00:00:00\", \"1980-02-06T00:00:00\", \"1980-02-07T00:00:00\", \"1980-02-08T00:00:00\", \"1980-02-09T00:00:00\", \"1980-02-10T00:00:00\", \"1980-02-11T00:00:00\", \"1980-02-12T00:00:00\", \"1980-02-13T00:00:00\", \"1980-02-14T00:00:00\", \"1980-02-15T00:00:00\", \"1980-02-16T00:00:00\", \"1980-02-17T00:00:00\", \"1980-02-18T00:00:00\", \"1980-02-19T00:00:00\", \"1980-02-20T00:00:00\", \"1980-02-21T00:00:00\", \"1980-02-22T00:00:00\", \"1980-02-23T00:00:00\", \"1980-02-24T00:00:00\", \"1980-02-25T00:00:00\", \"1980-02-26T00:00:00\", \"1980-02-27T00:00:00\", \"1980-02-28T00:00:00\", \"1980-02-29T00:00:00\", \"1980-03-01T00:00:00\", \"1980-03-02T00:00:00\", \"1980-03-03T00:00",
+    "portalReturnPeriods": {
+     "riverId": 670095610,
+     "values": [
+      {
+       "years": 2,
+       "m3s": 1704.4
+      },
+      {
+       "years": 5,
+       "m3s": 2260
+      },
+      {
+       "years": 10,
+       "m3s": 2628
+      },
+      {
+       "years": 25,
+       "m3s": 3092.8
+      },
+      {
+       "years": 50,
+       "m3s": 3437.7
+      },
+      {
+       "years": 100,
+       "m3s": 3780
+      }
+     ]
+    }
+   },
+   {
+    "url": "https://services.geoglows.org/api/hydroviewer/get-plots?comid=670027091&date=2026-09-24&width=1000",
+    "status": "HTTP 200",
+    "contentType": "application/json",
+    "bytes": 1887238,
+    "archived": "inamhi/hydroviewer-ecuador_2026-09-25/try-3f0b443d45b1.gz",
+    "head": "{\"hs\": {\"data\": [{\"name\": \"Historical Simulation\", \"x\": [\"1980-01-01T00:00:00\", \"1980-01-02T00:00:00\", \"1980-01-03T00:00:00\", \"1980-01-04T00:00:00\", \"1980-01-05T00:00:00\", \"1980-01-06T00:00:00\", \"1980-01-07T00:00:00\", \"1980-01-08T00:00:00\", \"1980-01-09T00:00:00\", \"1980-01-10T00:00:00\", \"1980-01-11T00:00:00\", \"1980-01-12T00:00:00\", \"1980-01-13T00:00:00\", \"1980-01-14T00:00:00\", \"1980-01-15T00:00:00\", \"1980-01-16T00:00:00\", \"1980-01-17T00:00:00\", \"1980-01-18T00:00:00\", \"1980-01-19T00:00:00\", \"1980-01-20T00:00:00\", \"1980-01-21T00:00:00\", \"1980-01-22T00:00:00\", \"1980-01-23T00:00:00\", \"1980-01-24T00:00:00\", \"1980-01-25T00:00:00\", \"1980-01-26T00:00:00\", \"1980-01-27T00:00:00\", \"1980-01-28T00:00:00\", \"1980-01-29T00:00:00\", \"1980-01-30T00:00:00\", \"1980-01-31T00:00:00\", \"1980-02-01T00:00:00\", \"1980-02-02T00:00:00\", \"1980-02-03T00:00:00\", \"1980-02-04T00:00:00\", \"1980-02-05T00:00:00\", \"1980-02-06T00:00:00\", \"1980-02-07T00:00:00\", \"1980-02-08T00:00:00\", \"1980-02-09T00:00:00\", \"1980-02-10T00:00:00\", \"1980-02-11T00:00:00\", \"1980-02-12T00:00:00\", \"1980-02-13T00:00:00\", \"1980-02-14T00:00:00\", \"1980-02-15T00:00:00\", \"1980-02-16T00:00:00\", \"1980-02-17T00:00:00\", \"1980-02-18T00:00:00\", \"1980-02-19T00:00:00\", \"1980-02-20T00:00:00\", \"1980-02-21T00:00:00\", \"1980-02-22T00:00:00\", \"1980-02-23T00:00:00\", \"1980-02-24T00:00:00\", \"1980-02-25T00:00:00\", \"1980-02-26T00:00:00\", \"1980-02-27T00:00:00\", \"1980-02-28T00:00:00\", \"1980-02-29T00:00:00\", \"1980-03-01T00:00:00\", \"1980-03-02T00:00:00\", \"1980-03-03T00:00",
+    "portalReturnPeriods": {
+     "riverId": 670027091,
+     "values": [
+      {
+       "years": 2,
+       "m3s": 694.3
+      },
+      {
+       "years": 5,
+       "m3s": 880.2
+      },
+      {
+       "years": 10,
+       "m3s": 1003.3
+      },
+      {
+       "years": 25,
+       "m3s": 1158.8
+      },
+      {
+       "years": 50,
+       "m3s": 1274.1
+      },
+      {
+       "years": 100,
+       "m3s": 1388.6
+      }
+     ]
+    }
+   },
+   {
+    "url": "https://services.geoglows.org/api/hydroviewer/get-plots?comid=620922413&date=2026-09-24&width=1000",
+    "status": "HTTP 200",
+    "contentType": "application/json",
+    "bytes": 1864724,
+    "archived": "inamhi/hydroviewer-ecuador_2026-09-25/try-188f7dbadea8.gz",
+    "head": "{\"hs\": {\"data\": [{\"name\": \"Historical Simulation\", \"x\": [\"1980-01-01T00:00:00\", \"1980-01-02T00:00:00\", \"1980-01-03T00:00:00\", \"1980-01-04T00:00:00\", \"1980-01-05T00:00:00\", \"1980-01-06T00:00:00\", \"1980-01-07T00:00:00\", \"1980-01-08T00:00:00\", \"1980-01-09T00:00:00\", \"1980-01-10T00:00:00\", \"1980-01-11T00:00:00\", \"1980-01-12T00:00:00\", \"1980-01-13T00:00:00\", \"1980-01-14T00:00:00\", \"1980-01-15T00:00:00\", \"1980-01-16T00:00:00\", \"1980-01-17T00:00:00\", \"1980-01-18T00:00:00\", \"1980-01-19T00:00:00\", \"1980-01-20T00:00:00\", \"1980-01-21T00:00:00\", \"1980-01-22T00:00:00\", \"1980-01-23T00:00:00\", \"1980-01-24T00:00:00\", \"1980-01-25T00:00:00\", \"1980-01-26T00:00:00\", \"1980-01-27T00:00:00\", \"1980-01-28T00:00:00\", \"1980-01-29T00:00:00\", \"1980-01-30T00:00:00\", \"1980-01-31T00:00:00\", \"1980-02-01T00:00:00\", \"1980-02-02T00:00:00\", \"1980-02-03T00:00:00\", \"1980-02-04T00:00:00\", \"1980-02-05T00:00:00\", \"1980-02-06T00:00:00\", \"1980-02-07T00:00:00\", \"1980-02-08T00:00:00\", \"1980-02-09T00:00:00\", \"1980-02-10T00:00:00\", \"1980-02-11T00:00:00\", \"1980-02-12T00:00:00\", \"1980-02-13T00:00:00\", \"1980-02-14T00:00:00\", \"1980-02-15T00:00:00\", \"1980-02-16T00:00:00\", \"1980-02-17T00:00:00\", \"1980-02-18T00:00:00\", \"1980-02-19T00:00:00\", \"1980-02-20T00:00:00\", \"1980-02-21T00:00:00\", \"1980-02-22T00:00:00\", \"1980-02-23T00:00:00\", \"1980-02-24T00:00:00\", \"1980-02-25T00:00:00\", \"1980-02-26T00:00:00\", \"1980-02-27T00:00:00\", \"1980-02-28T00:00:00\", \"1980-02-29T00:00:00\", \"1980-03-01T00:00:00\", \"1980-03-02T00:00:00\", \"1980-03-03T00:00",
+    "portalReturnPeriods": {
+     "riverId": 620922413,
+     "values": [
+      {
+       "years": 2,
+       "m3s": 200
+      },
+      {
+       "years": 5,
+       "m3s": 272.7
+      },
+      {
+       "years": 10,
+       "m3s": 320.8
+      },
+      {
+       "years": 25,
+       "m3s": 381.5
+      },
+      {
+       "years": 50,
+       "m3s": 426.6
+      },
+      {
+       "years": 100,
+       "m3s": 471.4
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "rule": "segments whose point lies within half their length + 2 km of the pour point; closest downstream drainage area to the delineated catchment, within ±10%",
+ "results": [
+  {
+   "site": {
+    "site": "mazar",
+    "basin": "paute",
+    "label": "Mazar (Paute)",
+    "lat": -2.59375,
+    "lon": -78.619583,
+    "areaKm2": 4418.056244111172
+   },
+   "chosen": {
+    "segment": {
+     "riverId": 620988388,
+     "downstreamId": 620989764,
+     "vpu": 605,
+     "lat": -2.5888888888903896,
+     "lon": -78.61255555555536,
+     "upstreamKm2": 4357.187072,
+     "downstreamKm2": 4359.003136,
+     "lengthKm": 1.3322849566761819
+    },
+    "distanceKm": 0.95,
+    "areaDiffPct": -1.34
+   },
+   "candidates": [
+    {
+     "segment": {
+      "riverId": 620988388,
+      "downstreamId": 620989764,
+      "vpu": 605,
+      "lat": -2.5888888888903896,
+      "lon": -78.61255555555536,
+      "upstreamKm2": 4357.187072,
+      "downstreamKm2": 4359.003136,
+      "lengthKm": 1.3322849566761819
+     },
+     "distanceKm": 0.95,
+     "areaDiffPct": -1.34
+    },
+    {
+     "segment": {
+      "riverId": 620967750,
+      "downstreamId": 620988388,
+      "vpu": 605,
+      "lat": -2.5933333333348347,
+      "lon": -78.62177777777758,
+      "upstreamKm2": 4178.220288,
+      "downstreamKm2": 4192.773888,
+      "lengthKm": 4.123337495563773
+     },
+     "distanceKm": 0.25,
+     "areaDiffPct": -5.1
+    },
+    {
+     "segment": {
+      "riverId": 620885190,
+      "downstreamId": 620967750,
+      "vpu": 605,
+      "lat": -2.62522222222373,
+      "lon": -78.61866666666647,
+      "upstreamKm2": 156.567952,
+      "downstreamKm2": 166.783776,
+      "lengthKm": 5.796327905513555
+     },
+     "distanceKm": 3.5,
+     "areaDiffPct": -96.22
+    },
+    {
+     "segment": {
+      "riverId": 620786115,
+      "downstreamId": 620988388,
+      "vpu": 605,
+      "lat": -2.5933333333348347,
+      "lon": -78.62177777777758,
+      "upstreamKm2": 150.384368,
+      "downstreamKm2": 164.4072,
+      "lengthKm": 5.748331100927338
+     },
+     "distanceKm": 0.25,
+     "areaDiffPct": -96.28
+    },
+    {
+     "segment": {
+      "riverId": 620714565,
+      "downstreamId": 620883814,
+      "vpu": 605,
+      "lat": -2.631222222223731,
+      "lon": -78.67011111111093,
+      "upstreamKm2": 43.322336,
+      "downstreamKm2": 84.255424,
+      "lengthKm": 11.573122705544487
+     },
+     "distanceKm": 6.99,
+     "areaDiffPct": -98.09
+    }
+   ],
+   "geoglows": {
+    "inamhi": [
+     {
+      "years": 2,
+      "m3s": 599.5
+     },
+     {
+      "years": 5,
+      "m3s": 731.5
+     },
+     {
+      "years": 10,
+      "m3s": 818.8
+     },
+     {
+      "years": 25,
+      "m3s": 929.2
+     },
+     {
+      "years": 50,
+      "m3s": 1011.1
+     },
+     {
+      "years": 100,
+      "m3s": 1092.3
+     }
+    ],
+    "daily": [
+     {
+      "years": 2,
+      "m3s": 614.8
+     },
+     {
+      "years": 5,
+      "m3s": 808.6
+     },
+     {
+      "years": 10,
+      "m3s": 936.9
+     },
+     {
+      "years": 25,
+      "m3s": 1099
+     },
+     {
+      "years": 50,
+      "m3s": 1219.3
+     },
+     {
+      "years": 100,
+      "m3s": 1338.7
+     }
+    ],
+    "hourly": [
+     {
+      "years": 2,
+      "m3s": 693.2
+     },
+     {
+      "years": 5,
+      "m3s": 919.4
+     },
+     {
+      "years": 10,
+      "m3s": 1069.2
+     },
+     {
+      "years": 25,
+      "m3s": 1258.4
+     },
+     {
+      "years": 50,
+      "m3s": 1398.8
+     },
+     {
+      "years": 100,
+      "m3s": 1538.2
+     }
+    ],
+    "maxSimulated": 1937.2
+   },
+   "observed": {
+    "maxima": [
+     {
+      "year": 2011,
+      "m3s": 678.78,
+      "date": "2011-07-11",
+      "days": 365
+     },
+     {
+      "year": 2012,
+      "m3s": 570.26,
+      "date": "2012-06-25",
+      "days": 366
+     },
+     {
+      "year": 2013,
+      "m3s": 448.19,
+      "date": "2013-06-10",
+      "days": 361
+     },
+     {
+      "year": 2014,
+      "m3s": 443,
+      "date": "2014-10-12",
+      "days": 365
+     },
+     {
+      "year": 2015,
+      "m3s": 654,
+      "date": "2015-06-25",
+      "days": 365
+     },
+     {
+      "year": 2016,
+      "m3s": 635,
+      "date": "2016-06-20",
+      "days": 366
+     },
+     {
+      "year": 2017,
+      "m3s": 677,
+      "date": "2017-07-25",
+      "days": 365
+     },
+     {
+      "year": 2018,
+      "m3s": 617,
+      "date": "2018-05-24",
+      "days": 365
+     },
+     {
+      "year": 2019,
+      "m3s": 600,
+      "date": "2019-06-05",
+      "days": 365
+     },
+     {
+      "year": 2020,
+      "m3s": 840,
+      "date": "2020-05-02",
+      "days": 366
+     },
+     {
+      "year": 2021,
+      "m3s": 777,
+      "date": "2021-07-19",
+      "days": 365
+     },
+     {
+      "year": 2022,
+      "m3s": 867,
+      "date": "2022-07-03",
+      "days": 365
+     },
+     {
+      "year": 2023,
+      "m3s": 323,
+      "date": "2023-06-15",
+      "days": 365
+     },
+     {
+      "year": 2024,
+      "m3s": 267,
+      "date": "2024-06-16",
+      "days": 366
+     },
+     {
+      "year": 2025,
+      "m3s": 783,
+      "date": "2025-05-12",
+      "days": 365
+     }
+    ],
+    "fit": [
+     {
+      "years": 2,
+      "m3s": 582.7
+     },
+     {
+      "years": 5,
+      "m3s": 740.2
+     },
+     {
+      "years": 10,
+      "m3s": 844.4
+     },
+     {
+      "years": 25,
+      "m3s": 976.1
+     },
+     {
+      "years": 50,
+      "m3s": 1073.8
+     },
+     {
+      "years": 100,
+      "m3s": 1170.8
+     }
+    ]
+   },
+   "agreement": {
+    "days": 6060,
+    "first": "2010-02-10",
+    "last": "2026-09-19",
+    "measuredMean": 85.35726343316834,
+    "simulatedMean": 166.74243595576522,
+    "ratio": 1.9534651094609954,
+    "r": 0.23294937336833055,
+    "rMonthly": 0.28631565066028225,
+    "months": 198,
+    "kge": -0.2971056410170796,
+    "quantiles": [
+     {
+      "percentile": 10,
+      "measured": 23,
+      "simulated": 54.65489883422852,
+      "ratio": 2.3762999493142836
+     },
+     {
+      "percentile": 50,
+      "measured": 61,
+      "simulated": 135.8499984741211,
+      "ratio": 2.2270491553134604
+     },
+     {
+      "percentile": 90,
+      "measured": 173.43570000000003,
+      "simulated": 323.4770050048828,
+      "ratio": 1.8651119983076307
+     },
+     {
+      "percentile": 99,
+      "measured": 433.8199999999997,
+      "simulated": 558.9509240722656,
+      "ratio": 1.2884397309304918
+     },
+     {
+      "percentile": 99.9,
+      "measured": 678.6702750000012,
+      "simulated": 756.0365682373201,
+      "ratio": 1.1139968790254131
+     }
+    ],
+    "annual": [
+     {
+      "year": 2011,
+      "measured": 678.775,
+      "measuredDate": "2011-07-11",
+      "simulated": 513.35498046875,
+      "simulatedDate": "2011-04-08"
+     },
+     {
+      "year": 2012,
+      "measured": 570.259,
+      "measuredDate": "2012-06-25",
+      "simulated": 836.052001953125,
+      "simulatedDate": "2012-02-19"
+     },
+     {
+      "year": 2013,
+      "measured": 448.185,
+      "measuredDate": "2013-06-10",
+      "simulated": 673.1119995117188,
+      "simulatedDate": "2013-02-04"
+     },
+     {
+      "year": 2014,
+      "measured": 443,
+      "measuredDate": "2014-10-12",
+      "simulated": 554.4669799804688,
+      "simulatedDate": "2014-05-13"
+     },
+     {
+      "year": 2015,
+      "measured": 654,
+      "measuredDate": "2015-06-25",
+      "simulated": 559.052978515625,
+      "simulatedDate": "2015-03-21"
+     },
+     {
+      "year": 2016,
+      "measured": 635,
+      "measuredDate": "2016-06-20",
+      "simulated": 493.38800048828125,
+      "simulatedDate": "2016-04-06"
+     },
+     {
+      "year": 2017,
+      "measured": 677,
+      "measuredDate": "2017-07-25",
+      "simulated": 709.14599609375,
+      "simulatedDate": "2017-02-24"
+     },
+     {
+      "year": 2018,
+      "measured": 617,
+      "measuredDate": "2018-05-24",
+      "simulated": 684.4719848632812,
+      "simulatedDate": "2018-02-21"
+     },
+     {
+      "year": 2019,
+      "measured": 600,
+      "measuredDate": "2019-06-05",
+      "simulated": 716.3400268554688,
+      "simulatedDate": "2019-03-24"
+     },
+     {
+      "year": 2020,
+      "measured": 840,
+      "measuredDate": "2020-05-02",
+      "simulated": 582.5050048828125,
+      "simulatedDate": "2020-02-26"
+     },
+     {
+      "year": 2021,
+      "measured": 777,
+      "measuredDate": "2021-07-19",
+      "simulated": 999.8300170898438,
+      "simulatedDate": "2021-12-14"
+     },
+     {
+      "year": 2022,
+      "measured": 867,
+      "measuredDate": "2022-07-03",
+      "simulated": 859.4749755859375,
+      "simulatedDate": "2022-04-21"
+     },
+     {
+      "year": 2023,
+      "measured": 323,
+      "measuredDate": "2023-06-15",
+      "simulated": 803.1699829101562,
+      "simulatedDate": "2023-03-12"
+     },
+     {
+      "year": 2024,
+      "measured": 267,
+      "measuredDate": "2024-06-16",
+      "simulated": 770.0750122070312,
+      "simulatedDate": "2024-01-05"
+     },
+     {
+      "year": 2025,
+      "measured": 783,
+      "measuredDate": "2025-05-12",
+      "simulated": 721.6708984375,
+      "simulatedDate": "2025-03-08"
+     }
+    ],
+    "simulatedSameYears": [
+     {
+      "years": 2,
+      "m3s": 675.0286208669052
+     },
+     {
+      "years": 5,
+      "m3s": 800.789341391334
+     },
+     {
+      "years": 10,
+      "m3s": 884.0538811798682
+     },
+     {
+      "years": 25,
+      "m3s": 989.2588479326969
+     },
+     {
+      "years": 50,
+      "m3s": 1067.3059021829517
+     },
+     {
+      "years": 100,
+      "m3s": 1144.776669235734
+     }
+    ]
+   }
+  },
+  {
+   "site": {
+    "site": "amaluza",
+    "basin": "paute_amaluza",
+    "label": "Amaluza (Paute, below Mazar)",
+    "lat": -2.590417,
+    "lon": -78.567917,
+    "areaKm2": 5086.002476628084
+   },
+   "chosen": {
+    "segment": {
+     "riverId": 620955363,
+     "downstreamId": 620976006,
+     "vpu": 605,
+     "lat": -2.626777777779286,
+     "lon": -78.53288888888868,
+     "upstreamKm2": 5006.53056,
+     "downstreamKm2": 5045.788672,
+     "lengthKm": 10.732454633370148
+    },
+    "distanceKm": 5.61,
+    "areaDiffPct": -0.79
+   },
+   "candidates": [
+    {
+     "segment": {
+      "riverId": 620955363,
+      "downstreamId": 620976006,
+      "vpu": 605,
+      "lat": -2.626777777779286,
+      "lon": -78.53288888888868,
+      "upstreamKm2": 5006.53056,
+      "downstreamKm2": 5045.788672,
+      "lengthKm": 10.732454633370148
+     },
+     "distanceKm": 5.61,
+     "areaDiffPct": -0.79
+    },
+    {
+     "segment": {
+      "riverId": 620989764,
+      "downstreamId": 620959490,
+      "vpu": 605,
+      "lat": -2.5571111111126053,
+      "lon": -78.568222222222,
+      "upstreamKm2": 4383.812096,
+      "downstreamKm2": 4405.09696,
+      "lengthKm": 6.918409148536516
+     },
+     "distanceKm": 3.7,
+     "areaDiffPct": -13.39
+    },
+    {
+     "segment": {
+      "riverId": 620883808,
+      "downstreamId": 620960866,
+      "vpu": 605,
+      "lat": -2.555666666668161,
+      "lon": -78.55966666666646,
+      "upstreamKm2": 410.827776,
+      "downstreamKm2": 424.471968,
+      "lengthKm": 6.098703017132908
+     },
+     "distanceKm": 3.97,
+     "areaDiffPct": -91.65
+    }
+   ],
+   "geoglows": {
+    "inamhi": [
+     {
+      "years": 2,
+      "m3s": 670.1
+     },
+     {
+      "years": 5,
+      "m3s": 812.1
+     },
+     {
+      "years": 10,
+      "m3s": 906.2
+     },
+     {
+      "years": 25,
+      "m3s": 1025
+     },
+     {
+      "years": 50,
+      "m3s": 1113.2
+     },
+     {
+      "years": 100,
+      "m3s": 1200.7
+     }
+    ],
+    "daily": [
+     {
+      "years": 2,
+      "m3s": 688.8
+     },
+     {
+      "years": 5,
+      "m3s": 887.3
+     },
+     {
+      "years": 10,
+      "m3s": 1018.6
+     },
+     {
+      "years": 25,
+      "m3s": 1184.6
+     },
+     {
+      "years": 50,
+      "m3s": 1307.8
+     },
+     {
+      "years": 100,
+      "m3s": 1430
+     }
+    ],
+    "hourly": [
+     {
+      "years": 2,
+      "m3s": 763.2
+     },
+     {
+      "years": 5,
+      "m3s": 1003.9
+     },
+     {
+      "years": 10,
+      "m3s": 1163.2
+     },
+     {
+      "years": 25,
+      "m3s": 1364.6
+     },
+     {
+      "years": 50,
+      "m3s": 1514
+     },
+     {
+      "years": 100,
+      "m3s": 1662.2
+     }
+    ],
+    "maxSimulated": 2058.1
+   },
+   "observed": {
+    "maxima": [
+     {
+      "year": 2015,
+      "m3s": 962,
+      "date": "2015-06-25",
+      "days": 365
+     },
+     {
+      "year": 2016,
+      "m3s": 853,
+      "date": "2016-06-20",
+      "days": 366
+     },
+     {
+      "year": 2017,
+      "m3s": 834,
+      "date": "2017-07-26",
+      "days": 365
+     },
+     {
+      "year": 2018,
+      "m3s": 722,
+      "date": "2018-05-24",
+      "days": 365
+     },
+     {
+      "year": 2019,
+      "m3s": 782,
+      "date": "2019-06-05",
+      "days": 365
+     },
+     {
+      "year": 2020,
+      "m3s": 889,
+      "date": "2020-05-02",
+      "days": 366
+     },
+     {
+      "year": 2021,
+      "m3s": 1038,
+      "date": "2021-07-19",
+      "days": 365
+     },
+     {
+      "year": 2022,
+      "m3s": 1133,
+      "date": "2022-07-03",
+      "days": 365
+     },
+     {
+      "year": 2023,
+      "m3s": 393,
+      "date": "2023-07-21",
+      "days": 365
+     },
+     {
+      "year": 2024,
+      "m3s": 247,
+      "date": "2024-01-17",
+      "days": 366
+     },
+     {
+      "year": 2025,
+      "m3s": 1014,
+      "date": "2025-05-12",
+      "days": 365
+     }
+    ],
+    "fit": [
+     {
+      "years": 2,
+      "m3s": 761.7
+     },
+     {
+      "years": 5,
+      "m3s": 1000.3
+     },
+     {
+      "years": 10,
+      "m3s": 1158.3
+     },
+     {
+      "years": 25,
+      "m3s": 1357.9
+     },
+     {
+      "years": 50,
+      "m3s": 1506
+     },
+     {
+      "years": 100,
+      "m3s": 1652.9
+     }
+    ]
+   },
+   "agreement": {
+    "days": 4383,
+    "first": "2014-09-20",
+    "last": "2026-09-19",
+    "measuredMean": 136.76745876865166,
+    "simulatedMean": 204.66539584287574,
+    "ratio": 1.4964480417017656,
+    "r": 0.13425558678673846,
+    "rMonthly": 0.12167601591546184,
+    "months": 143,
+    "kge": -0.08284260939276789,
+    "quantiles": [
+     {
+      "percentile": 10,
+      "measured": 46,
+      "simulated": 65.72980041503907,
+      "ratio": 1.4289087046747624
+     },
+     {
+      "percentile": 50,
+      "measured": 126,
+      "simulated": 169.08200073242188,
+      "ratio": 1.341920640733507
+     },
+     {
+      "percentile": 90,
+      "measured": 214,
+      "simulated": 395.1257934570314,
+      "ratio": 1.8463822124160347
+     },
+     {
+      "percentile": 99,
+      "measured": 570.3600000000006,
+      "simulated": 676.7298693847658,
+      "ratio": 1.1864960189788294
+     },
+     {
+      "percentile": 99.9,
+      "measured": 968.1800000000039,
+      "simulated": 826.9933959960991,
+      "ratio": 0.8541731868000741
+     }
+    ],
+    "annual": [
+     {
+      "year": 2015,
+      "measured": 962,
+      "measuredDate": "2015-06-25",
+      "simulated": 741.4249877929688,
+      "simulatedDate": "2015-03-21"
+     },
+     {
+      "year": 2016,
+      "measured": 853,
+      "measuredDate": "2016-06-20",
+      "simulated": 583.4829711914062,
+      "simulatedDate": "2016-03-09"
+     },
+     {
+      "year": 2017,
+      "measured": 834,
+      "measuredDate": "2017-07-26",
+      "simulated": 721.5289916992188,
+      "simulatedDate": "2017-02-24"
+     },
+     {
+      "year": 2018,
+      "measured": 722,
+      "measuredDate": "2018-05-24",
+      "simulated": 779.7730102539062,
+      "simulatedDate": "2018-02-21"
+     },
+     {
+      "year": 2019,
+      "measured": 782,
+      "measuredDate": "2019-06-05",
+      "simulated": 781.0269775390625,
+      "simulatedDate": "2019-03-24"
+     },
+     {
+      "year": 2020,
+      "measured": 889,
+      "measuredDate": "2020-05-02",
+      "simulated": 618.5999755859375,
+      "simulatedDate": "2020-04-17"
+     },
+     {
+      "year": 2021,
+      "measured": 1038,
+      "measuredDate": "2021-07-19",
+      "simulated": 1042.8599853515625,
+      "simulatedDate": "2021-12-14"
+     },
+     {
+      "year": 2022,
+      "measured": 1133,
+      "measuredDate": "2022-07-03",
+      "simulated": 972.6300048828125,
+      "simulatedDate": "2022-04-21"
+     },
+     {
+      "year": 2023,
+      "measured": 393,
+      "measuredDate": "2023-07-21",
+      "simulated": 936.2559814453125,
+      "simulatedDate": "2023-03-12"
+     },
+     {
+      "year": 2024,
+      "measured": 247,
+      "measuredDate": "2024-01-17",
+      "simulated": 818.5969848632812,
+      "simulatedDate": "2024-01-05"
+     },
+     {
+      "year": 2025,
+      "measured": 1014,
+      "measuredDate": "2025-05-12",
+      "simulated": 832.1834106445312,
+      "simulatedDate": "2025-03-08"
+     }
+    ],
+    "simulatedSameYears": [
+     {
+      "years": 2,
+      "m3s": 779.4150001239791
+     },
+     {
+      "years": 5,
+      "m3s": 904.0176257427568
+     },
+     {
+      "years": 10,
+      "m3s": 986.5154059345871
+     },
+     {
+      "years": 25,
+      "m3s": 1090.7515699043402
+     },
+     {
+      "years": 50,
+      "m3s": 1168.0799109065206
+     },
+     {
+      "years": 100,
+      "m3s": 1244.8372715770352
+     }
+    ]
+   }
+  },
+  {
+   "site": {
+    "site": "coca_codo_sinclair",
+    "basin": "coca",
+    "label": "Coca Codo Sinclair (Coca)",
+    "lat": -0.195417,
+    "lon": -77.684583,
+    "areaKm2": 3727.2950827659292
+   },
+   "chosen": {
+    "segment": {
+     "riverId": 620922213,
+     "downstreamId": 620882307,
+     "vpu": 605,
+     "lat": -0.16533333333437294,
+     "lon": -77.64899999999962,
+     "upstreamKm2": 3677.135872,
+     "downstreamKm2": 3697.172224,
+     "lengthKm": 8.25963162548939
+    },
+    "distanceKm": 5.18,
+    "areaDiffPct": -0.81
+   },
+   "candidates": [
+    {
+     "segment": {
+      "riverId": 620922213,
+      "downstreamId": 620882307,
+      "vpu": 605,
+      "lat": -0.16533333333437294,
+      "lon": -77.64899999999962,
+      "upstreamKm2": 3677.135872,
+      "downstreamKm2": 3697.172224,
+      "lengthKm": 8.25963162548939
+     },
+     "distanceKm": 5.18,
+     "areaDiffPct": -0.81
+    },
+    {
+     "segment": {
+      "riverId": 620905703,
+      "downstreamId": 620922213,
+      "vpu": 605,
+      "lat": -0.20666666666771416,
+      "lon": -77.68455555555518,
+      "upstreamKm2": 2720.086016,
+      "downstreamKm2": 2751.670272,
+      "lengthKm": 8.164557224464788
+     },
+     "distanceKm": 1.25,
+     "areaDiffPct": -26.18
+    },
+    {
+     "segment": {
+      "riverId": 620908457,
+      "downstreamId": 620905703,
+      "vpu": 605,
+      "lat": -0.24155555555660957,
+      "lon": -77.69522222222184,
+      "upstreamKm2": 2551.881984,
+      "downstreamKm2": 2579.859712,
+      "lengthKm": 12.073834558368281
+     },
+     "distanceKm": 5.27,
+     "areaDiffPct": -30.78
+    },
+    {
+     "segment": {
+      "riverId": 620863044,
+      "downstreamId": 620922213,
+      "vpu": 605,
+      "lat": -0.20666666666771416,
+      "lon": -77.68455555555518,
+      "upstreamKm2": 922.186688,
+      "downstreamKm2": 925.465792,
+      "lengthKm": 3.4055966944076745
+     },
+     "distanceKm": 1.25,
+     "areaDiffPct": -75.17
+    },
+    {
+     "segment": {
+      "riverId": 620861668,
+      "downstreamId": 620863044,
+      "vpu": 605,
+      "lat": -0.1925555555566003,
+      "lon": -77.70333333333296,
+      "upstreamKm2": 914.15296,
+      "downstreamKm2": 914.684032,
+      "lengthKm": 0.9979225951513577
+     },
+     "distanceKm": 2.11,
+     "areaDiffPct": -75.46
+    }
+   ],
+   "geoglows": {
+    "inamhi": [
+     {
+      "years": 2,
+      "m3s": 1230
+     },
+     {
+      "years": 5,
+      "m3s": 1500.2
+     },
+     {
+      "years": 10,
+      "m3s": 1679.1
+     },
+     {
+      "years": 25,
+      "m3s": 1905.1
+     },
+     {
+      "years": 50,
+      "m3s": 2072.8
+     },
+     {
+      "years": 100,
+      "m3s": 2239.2
+     }
+    ],
+    "daily": [
+     {
+      "years": 2,
+      "m3s": 1225.4
+     },
+     {
+      "years": 5,
+      "m3s": 1486.8
+     },
+     {
+      "years": 10,
+      "m3s": 1659.9
+     },
+     {
+      "years": 25,
+      "m3s": 1878.5
+     },
+     {
+      "years": 50,
+      "m3s": 2040.8
+     },
+     {
+      "years": 100,
+      "m3s": 2201.8
+     }
+    ],
+    "hourly": [
+     {
+      "years": 2,
+      "m3s": 1357.7
+     },
+     {
+      "years": 5,
+      "m3s": 1637.6
+     },
+     {
+      "years": 10,
+      "m3s": 1822.9
+     },
+     {
+      "years": 25,
+      "m3s": 2057
+     },
+     {
+      "years": 50,
+      "m3s": 2230.7
+     },
+     {
+      "years": 100,
+      "m3s": 2403.1
+     }
+    ],
+    "maxSimulated": 2104.7
+   },
+   "observed": {
+    "maxima": [
+     {
+      "year": 2017,
+      "m3s": 1034,
+      "date": "2017-11-20",
+      "days": 363
+     },
+     {
+      "year": 2018,
+      "m3s": 831,
+      "date": "2018-05-24",
+      "days": 360
+     },
+     {
+      "year": 2019,
+      "m3s": 1400,
+      "date": "2019-07-14",
+      "days": 363
+     },
+     {
+      "year": 2020,
+      "m3s": 1188,
+      "date": "2020-05-16",
+      "days": 366
+     },
+     {
+      "year": 2021,
+      "m3s": 1846,
+      "date": "2021-05-15",
+      "days": 364
+     },
+     {
+      "year": 2022,
+      "m3s": 1250,
+      "date": "2022-07-03",
+      "days": 365
+     },
+     {
+      "year": 2023,
+      "m3s": 1069,
+      "date": "2023-07-17",
+      "days": 363
+     },
+     {
+      "year": 2024,
+      "m3s": 1456,
+      "date": "2024-05-20",
+      "days": 366
+     },
+     {
+      "year": 2025,
+      "m3s": 1933,
+      "date": "2025-07-02",
+      "days": 364
+     }
+    ],
+    "fit": [
+     {
+      "years": 2,
+      "m3s": 1273.7
+     },
+     {
+      "years": 5,
+      "m3s": 1598.7
+     },
+     {
+      "years": 10,
+      "m3s": 1813.8
+     },
+     {
+      "years": 25,
+      "m3s": 2085.7
+     },
+     {
+      "years": 50,
+      "m3s": 2287.4
+     },
+     {
+      "years": 100,
+      "m3s": 2487.6
+     }
+    ]
+   },
+   "agreement": {
+    "days": 3717,
+    "first": "2016-06-21",
+    "last": "2026-09-19",
+    "measuredMean": 306.2088135593221,
+    "simulatedMean": 317.89796605801627,
+    "ratio": 1.0381737950740912,
+    "r": 0.18300734837628213,
+    "rMonthly": 0.2717407923572511,
+    "months": 122,
+    "kge": 0.1800727285221133,
+    "quantiles": [
+     {
+      "percentile": 10,
+      "measured": 142,
+      "simulated": 149.62140197753905,
+      "ratio": 1.0536718449122469
+     },
+     {
+      "percentile": 50,
+      "measured": 246,
+      "simulated": 275.1260070800781,
+      "ratio": 1.1183984027645453
+     },
+     {
+      "percentile": 90,
+      "measured": 553.4000000000001,
+      "simulated": 525.12919921875,
+      "ratio": 0.9489143462572279
+     },
+     {
+      "percentile": 99,
+      "measured": 1024.8400000000001,
+      "simulated": 1043.7994482421889,
+      "ratio": 1.018499910466208
+     },
+     {
+      "percentile": 99.9,
+      "measured": 1493.7720000000745,
+      "simulated": 1502.8729189453209,
+      "ratio": 1.0060925756710166
+     }
+    ],
+    "annual": [
+     {
+      "year": 2017,
+      "measured": 1034,
+      "measuredDate": "2017-11-20",
+      "simulated": 1285.7900390625,
+      "simulatedDate": "2017-03-21"
+     },
+     {
+      "year": 2018,
+      "measured": 831,
+      "measuredDate": "2018-05-24",
+      "simulated": 1295.25,
+      "simulatedDate": "2018-05-26"
+     },
+     {
+      "year": 2019,
+      "measured": 1400,
+      "measuredDate": "2019-07-14",
+      "simulated": 1744.5360107421875,
+      "simulatedDate": "2019-06-22"
+     },
+     {
+      "year": 2020,
+      "measured": 1188,
+      "measuredDate": "2020-05-16",
+      "simulated": 1133.06005859375,
+      "simulatedDate": "2020-03-23"
+     },
+     {
+      "year": 2021,
+      "measured": 1846,
+      "measuredDate": "2021-05-15",
+      "simulated": 1440.800048828125,
+      "simulatedDate": "2021-11-20"
+     },
+     {
+      "year": 2022,
+      "measured": 1250,
+      "measuredDate": "2022-07-03",
+      "simulated": 1532.3790283203125,
+      "simulatedDate": "2022-03-09"
+     },
+     {
+      "year": 2023,
+      "measured": 1069,
+      "measuredDate": "2023-07-17",
+      "simulated": 1471.7530517578125,
+      "simulatedDate": "2023-04-09"
+     },
+     {
+      "year": 2024,
+      "measured": 1456,
+      "measuredDate": "2024-05-20",
+      "simulated": 1078.6650390625,
+      "simulatedDate": "2024-05-06"
+     },
+     {
+      "year": 2025,
+      "measured": 1933,
+      "measuredDate": "2025-07-02",
+      "simulated": 1498.6771240234375,
+      "simulatedDate": "2025-03-16"
+     }
+    ],
+    "simulatedSameYears": [
+     {
+      "years": 2,
+      "m3s": 1352.41839740014
+     },
+     {
+      "years": 5,
+      "m3s": 1537.1932468029684
+     },
+     {
+      "years": 10,
+      "m3s": 1659.530274897791
+     },
+     {
+      "years": 25,
+      "m3s": 1814.1034342047737
+     },
+     {
+      "years": 50,
+      "m3s": 1928.7746338869028
+     },
+     {
+      "years": 100,
+      "m3s": 2042.599119430613
+     }
+    ]
+   }
+  },
+  {
+   "site": {
+    "site": "agoyan",
+    "basin": "pastaza",
+    "label": "Agoyán (Pastaza)",
+    "lat": -1.402083,
+    "lon": -78.37125,
+    "areaKm2": 8242.401273676123
+   },
+   "chosen": {
+    "segment": {
+     "riverId": 621014469,
+     "downstreamId": 621015845,
+     "vpu": 605,
+     "lat": -1.399888888890163,
+     "lon": -78.35111111111085,
+     "upstreamKm2": 8144.265728,
+     "downstreamKm2": 8148.897792,
+     "lengthKm": 2.240225437193363
+    },
+    "distanceKm": 2.25,
+    "areaDiffPct": -1.13
+   },
+   "candidates": [
+    {
+     "segment": {
+      "riverId": 621014469,
+      "downstreamId": 621015845,
+      "vpu": 605,
+      "lat": -1.399888888890163,
+      "lon": -78.35111111111085,
+      "upstreamKm2": 8144.265728,
+      "downstreamKm2": 8148.897792,
+      "lengthKm": 2.240225437193363
+     },
+     "distanceKm": 2.25,
+     "areaDiffPct": -1.13
+    },
+    {
+     "segment": {
+      "riverId": 620964932,
+      "downstreamId": 621014469,
+      "vpu": 605,
+      "lat": -1.4011111111123862,
+      "lon": -78.36833333333308,
+      "upstreamKm2": 8128.36352,
+      "downstreamKm2": 8137.069056,
+      "lengthKm": 3.0404253993994264
+     },
+     "distanceKm": 0.34,
+     "areaDiffPct": -1.28
+    },
+    {
+     "segment": {
+      "riverId": 620963556,
+      "downstreamId": 620964932,
+      "vpu": 605,
+      "lat": -1.3932222222234953,
+      "lon": -78.39088888888864,
+      "upstreamKm2": 7906.377728,
+      "downstreamKm2": 7908.0576,
+      "lengthKm": 1.028709969539199
+     },
+     "distanceKm": 2.4,
+     "areaDiffPct": -4.06
+    },
+    {
+     "segment": {
+      "riverId": 620962180,
+      "downstreamId": 620963556,
+      "vpu": 605,
+      "lat": -1.392333333334606,
+      "lon": -78.39922222222198,
+      "upstreamKm2": 7842.52672,
+      "downstreamKm2": 7850.008576,
+      "lengthKm": 2.801508052741011
+     },
+     "distanceKm": 3.29,
+     "areaDiffPct": -4.76
+    },
+    {
+     "segment": {
+      "riverId": 620864482,
+      "downstreamId": 620964932,
+      "vpu": 605,
+      "lat": -1.3932222222234953,
+      "lon": -78.39088888888864,
+      "upstreamKm2": 206.604368,
+      "downstreamKm2": 220.302672,
+      "lengthKm": 6.729376645489047
+     },
+     "distanceKm": 2.4,
+     "areaDiffPct": -97.33
+    },
+    {
+     "segment": {
+      "riverId": 620640198,
+      "downstreamId": 620963556,
+      "vpu": 605,
+      "lat": -1.392333333334606,
+      "lon": -78.39922222222198,
+      "upstreamKm2": 45.434808,
+      "downstreamKm2": 56.368108,
+      "lengthKm": 4.551638317309956
+     },
+     "distanceKm": 3.29,
+     "areaDiffPct": -99.32
+    }
+   ],
+   "geoglows": {
+    "inamhi": [
+     {
+      "years": 2,
+      "m3s": 1008.6
+     },
+     {
+      "years": 5,
+      "m3s": 1211.1
+     },
+     {
+      "years": 10,
+      "m3s": 1345.2
+     },
+     {
+      "years": 25,
+      "m3s": 1514.7
+     },
+     {
+      "years": 50,
+      "m3s": 1640.4
+     },
+     {
+      "years": 100,
+      "m3s": 1765.2
+     }
+    ],
+    "daily": [
+     {
+      "years": 2,
+      "m3s": 998.3
+     },
+     {
+      "years": 5,
+      "m3s": 1261
+     },
+     {
+      "years": 10,
+      "m3s": 1435
+     },
+     {
+      "years": 25,
+      "m3s": 1654.8
+     },
+     {
+      "years": 50,
+      "m3s": 1817.9
+     },
+     {
+      "years": 100,
+      "m3s": 1979.7
+     }
+    ],
+    "hourly": [
+     {
+      "years": 2,
+      "m3s": 1086.6
+     },
+     {
+      "years": 5,
+      "m3s": 1372.3
+     },
+     {
+      "years": 10,
+      "m3s": 1561.5
+     },
+     {
+      "years": 25,
+      "m3s": 1800.5
+     },
+     {
+      "years": 50,
+      "m3s": 1977.8
+     },
+     {
+      "years": 100,
+      "m3s": 2153.8
+     }
+    ],
+    "maxSimulated": 2387.8
+   },
+   "observed": {
+    "maxima": [
+     {
+      "year": 2017,
+      "m3s": 680,
+      "date": "2017-07-26",
+      "days": 365
+     },
+     {
+      "year": 2018,
+      "m3s": 750,
+      "date": "2018-01-20",
+      "days": 360
+     },
+     {
+      "year": 2019,
+      "m3s": 750,
+      "date": "2019-06-21",
+      "days": 361
+     },
+     {
+      "year": 2020,
+      "m3s": 1000,
+      "date": "2020-06-21",
+      "days": 366
+     },
+     {
+      "year": 2021,
+      "m3s": 780,
+      "date": "2021-07-19",
+      "days": 365
+     },
+     {
+      "year": 2022,
+      "m3s": 968,
+      "date": "2022-07-03",
+      "days": 364
+     },
+     {
+      "year": 2023,
+      "m3s": 500,
+      "date": "2023-05-28",
+      "days": 364
+     },
+     {
+      "year": 2024,
+      "m3s": 900,
+      "date": "2024-06-16",
+      "days": 366
+     },
+     {
+      "year": 2025,
+      "m3s": 1065,
+      "date": "2025-07-02",
+      "days": 365
+     }
+    ],
+    "fit": [
+     {
+      "years": 2,
+      "m3s": 792.2
+     },
+     {
+      "years": 5,
+      "m3s": 949.7
+     },
+     {
+      "years": 10,
+      "m3s": 1053.9
+     },
+     {
+      "years": 25,
+      "m3s": 1185.7
+     },
+     {
+      "years": 50,
+      "m3s": 1283.5
+     },
+     {
+      "years": 100,
+      "m3s": 1380.5
+     }
+    ]
+   },
+   "agreement": {
+    "days": 3714,
+    "first": "2016-07-06",
+    "last": "2026-09-19",
+    "measuredMean": 127.40683898761444,
+    "simulatedMean": 347.5486835414001,
+    "ratio": 2.7278652096155236,
+    "r": 0.1582377272745302,
+    "rMonthly": 0.14372492306277615,
+    "months": 122,
+    "kge": -1.3141265830650566,
+    "quantiles": [
+     {
+      "percentile": 10,
+      "measured": 60,
+      "simulated": 139.29380645751954,
+      "ratio": 2.3215634409586587
+     },
+     {
+      "percentile": 50,
+      "measured": 105,
+      "simulated": 304.10301208496094,
+      "ratio": 2.8962191627139138
+     },
+     {
+      "percentile": 90,
+      "measured": 214,
+      "simulated": 614.3741943359375,
+      "ratio": 2.8709074501679326
+     },
+     {
+      "percentile": 99,
+      "measured": 490,
+      "simulated": 1026.5009460449216,
+      "ratio": 2.094899889887595
+     },
+     {
+      "percentile": 99.9,
+      "measured": 864.3500000000131,
+      "simulated": 1364.8440145263864,
+      "ratio": 1.5790409145905777
+     }
+    ],
+    "annual": [
+     {
+      "year": 2017,
+      "measured": 680,
+      "measuredDate": "2017-07-26",
+      "simulated": 1343.7449951171875,
+      "simulatedDate": "2017-03-28"
+     },
+     {
+      "year": 2018,
+      "measured": 750,
+      "measuredDate": "2018-01-20",
+      "simulated": 958.9840087890625,
+      "simulatedDate": "2018-11-21"
+     },
+     {
+      "year": 2019,
+      "measured": 750,
+      "measuredDate": "2019-06-21",
+      "simulated": 1572.425048828125,
+      "simulatedDate": "2019-03-24"
+     },
+     {
+      "year": 2020,
+      "measured": 1000,
+      "measuredDate": "2020-06-21",
+      "simulated": 1082.0699462890625,
+      "simulatedDate": "2020-04-19"
+     },
+     {
+      "year": 2021,
+      "measured": 780,
+      "measuredDate": "2021-07-19",
+      "simulated": 972.9310302734375,
+      "simulatedDate": "2021-03-07"
+     },
+     {
+      "year": 2022,
+      "measured": 968,
+      "measuredDate": "2022-07-03",
+      "simulated": 1193.81201171875,
+      "simulatedDate": "2022-03-23"
+     },
+     {
+      "year": 2023,
+      "measured": 500,
+      "measuredDate": "2023-05-28",
+      "simulated": 1152.8310546875,
+      "simulatedDate": "2023-04-28"
+     },
+     {
+      "year": 2024,
+      "measured": 900,
+      "measuredDate": "2024-06-16",
+      "simulated": 790.8170166015625,
+      "simulatedDate": "2024-04-23"
+     },
+     {
+      "year": 2025,
+      "measured": 1065,
+      "measuredDate": "2025-07-02",
+      "simulated": 1460.4892578125,
+      "simulatedDate": "2025-03-07"
+     }
+    ],
+    "simulatedSameYears": [
+     {
+      "years": 2,
+      "m3s": 1128.2180723489096
+     },
+     {
+      "years": 5,
+      "m3s": 1351.8413532821003
+     },
+     {
+      "years": 10,
+      "m3s": 1499.8994233635876
+     },
+     {
+      "years": 25,
+      "m3s": 1686.9711874058817
+     },
+     {
+      "years": 50,
+      "m3s": 1825.7517085879504
+     },
+     {
+      "years": 100,
+      "m3s": 1963.507496186105
+     }
+    ]
+   }
+  },
+  {
+   "site": {
+    "site": "manduriacu",
+    "basin": "guayllabamba",
+    "label": "Manduriacu (Guayllabamba)",
+    "lat": 0.214583,
+    "lon": -78.91625,
+    "areaKm2": 6969.337545983613
+   },
+   "chosen": {
+    "segment": {
+     "riverId": 670078161,
+     "downstreamId": 670094546,
+     "vpu": 614,
+     "lat": 0.20399999999974483,
+     "lon": -78.94788888888853,
+     "upstreamKm2": 7006.097408,
+     "downstreamKm2": 7012.378112,
+     "lengthKm": 4.129600699003996
+    },
+    "distanceKm": 3.71,
+    "areaDiffPct": 0.62
+   },
+   "candidates": [
+    {
+     "segment": {
+      "riverId": 670078161,
+      "downstreamId": 670094546,
+      "vpu": 614,
+      "lat": 0.20399999999974483,
+      "lon": -78.94788888888853,
+      "upstreamKm2": 7006.097408,
+      "downstreamKm2": 7012.378112,
+      "lengthKm": 4.129600699003996
+     },
+     "distanceKm": 3.71,
+     "areaDiffPct": 0.62
+    },
+    {
+     "segment": {
+      "riverId": 670077137,
+      "downstreamId": 670078161,
+      "vpu": 614,
+      "lat": 0.2205555555553005,
+      "lon": -78.92222222222186,
+      "upstreamKm2": 6893.310464,
+      "downstreamKm2": 6897.460736,
+      "lengthKm": 3.8987727544842237
+     },
+     "distanceKm": 0.94,
+     "areaDiffPct": -1.03
+    },
+    {
+     "segment": {
+      "riverId": 670076113,
+      "downstreamId": 670077137,
+      "vpu": 614,
+      "lat": 0.21844444444418976,
+      "lon": -78.89444444444408,
+      "upstreamKm2": 6857.918976,
+      "downstreamKm2": 6858.645504,
+      "lengthKm": 1.0212365167424062
+     },
+     "distanceKm": 2.46,
+     "areaDiffPct": -1.59
+    },
+    {
+     "segment": {
+      "riverId": 670091472,
+      "downstreamId": 670076113,
+      "vpu": 614,
+      "lat": 0.22111111111085613,
+      "lon": -78.88699999999963,
+      "upstreamKm2": 6840.8576,
+      "downstreamKm2": 6849.240576,
+      "lengthKm": 3.7142563951140173
+     },
+     "distanceKm": 3.33,
+     "areaDiffPct": -1.72
+    },
+    {
+     "segment": {
+      "riverId": 670063829,
+      "downstreamId": 670088402,
+      "vpu": 614,
+      "lat": 0.19377777777752314,
+      "lon": -78.93844444444409,
+      "upstreamKm2": 253.295872,
+      "downstreamKm2": 273.801088,
+      "lengthKm": 12.00362394602975
+     },
+     "distanceKm": 3.38,
+     "areaDiffPct": -96.07
+    },
+    {
+     "segment": {
+      "riverId": 670061777,
+      "downstreamId": 670078161,
+      "vpu": 614,
+      "lat": 0.2205555555553005,
+      "lon": -78.92222222222186,
+      "upstreamKm2": 107.422248,
+      "downstreamKm2": 108.636232,
+      "lengthKm": 0.6743327536203502
+     },
+     "distanceKm": 0.94,
+     "areaDiffPct": -98.44
+    },
+    {
+     "segment": {
+      "riverId": 670044365,
+      "downstreamId": 670061777,
+      "vpu": 614,
+      "lat": 0.22399999999974618,
+      "lon": -78.92044444444409,
+      "upstreamKm2": 10.650445,
+      "downstreamKm2": 95.802344,
+      "lengthKm": 17.73777360133064
+     },
+     "distanceKm": 1.15,
+     "areaDiffPct": -98.63
+    },
+    {
+     "segment": {
+      "riverId": 670076114,
+      "downstreamId": 670077138,
+      "vpu": 614,
+      "lat": 0.19199999999974438,
+      "lon": -78.92311111111074,
+      "upstreamKm2": 72.489352,
+      "downstreamKm2": 75.889056,
+      "lengthKm": 2.5632712835516216
+     },
+     "distanceKm": 2.62,
+     "areaDiffPct": -98.91
+    }
+   ],
+   "geoglows": {
+    "inamhi": [
+     {
+      "years": 2,
+      "m3s": 1624.1
+     },
+     {
+      "years": 5,
+      "m3s": 1845.8
+     },
+     {
+      "years": 10,
+      "m3s": 1992.6
+     },
+     {
+      "years": 25,
+      "m3s": 2178
+     },
+     {
+      "years": 50,
+      "m3s": 2315.6
+     },
+     {
+      "years": 100,
+      "m3s": 2452.1
+     }
+    ],
+    "daily": [
+     {
+      "years": 2,
+      "m3s": 1582.7
+     },
+     {
+      "years": 5,
+      "m3s": 1890.4
+     },
+     {
+      "years": 10,
+      "m3s": 2094.1
+     },
+     {
+      "years": 25,
+      "m3s": 2351.5
+     },
+     {
+      "years": 50,
+      "m3s": 2542.5
+     },
+     {
+      "years": 100,
+      "m3s": 2732
+     }
+    ],
+    "hourly": [
+     {
+      "years": 2,
+      "m3s": 1796
+     },
+     {
+      "years": 5,
+      "m3s": 2177.6
+     },
+     {
+      "years": 10,
+      "m3s": 2430.2
+     },
+     {
+      "years": 25,
+      "m3s": 2749.5
+     },
+     {
+      "years": 50,
+      "m3s": 2986.3
+     },
+     {
+      "years": 100,
+      "m3s": 3221.4
+     }
+    ],
+    "maxSimulated": 3338.1
+   },
+   "observed": {
+    "maxima": [
+     {
+      "year": 2018,
+      "m3s": 834,
+      "date": "2018-04-01",
+      "days": 357
+     },
+     {
+      "year": 2019,
+      "m3s": 680.59,
+      "date": "2019-12-12",
+      "days": 355
+     },
+     {
+      "year": 2020,
+      "m3s": 650.11,
+      "date": "2020-04-17",
+      "days": 366
+     },
+     {
+      "year": 2021,
+      "m3s": 639.97,
+      "date": "2021-05-08",
+      "days": 365
+     },
+     {
+      "year": 2022,
+      "m3s": 643.76,
+      "date": "2022-02-06",
+      "days": 364
+     },
+     {
+      "year": 2023,
+      "m3s": 691.29,
+      "date": "2023-12-28",
+      "days": 363
+     },
+     {
+      "year": 2024,
+      "m3s": 721.59,
+      "date": "2024-04-02",
+      "days": 364
+     },
+     {
+      "year": 2025,
+      "m3s": 653.86,
+      "date": "2025-03-18",
+      "days": 362
+     }
+    ],
+    "fit": [
+     {
+      "years": 2,
+      "m3s": 678.8
+     },
+     {
+      "years": 5,
+      "m3s": 736
+     },
+     {
+      "years": 10,
+      "m3s": 773.9
+     },
+     {
+      "years": 25,
+      "m3s": 821.8
+     },
+     {
+      "years": 50,
+      "m3s": 857.3
+     },
+     {
+      "years": 100,
+      "m3s": 892.5
+     }
+    ]
+   },
+   "agreement": {
+    "days": 3305,
+    "first": "2017-08-01",
+    "last": "2026-09-19",
+    "measuredMean": 186.86189246111945,
+    "simulatedMean": 531.1053972068244,
+    "ratio": 2.842234926617432,
+    "r": 0.6730157934587582,
+    "rMonthly": 0.8749912325033257,
+    "months": 109,
+    "kge": -1.2178031668606506,
+    "quantiles": [
+     {
+      "percentile": 10,
+      "measured": 70.4966664,
+      "simulated": 258.7657897949219,
+      "ratio": 3.6706102998782635
+     },
+     {
+      "percentile": 50,
+      "measured": 159.084722,
+      "simulated": 476.51800537109375,
+      "ratio": 2.9953725246544654
+     },
+     {
+      "percentile": 90,
+      "measured": 357.0129044,
+      "simulated": 878.6457641601562,
+      "ratio": 2.4611036557258856
+     },
+     {
+      "percentile": 99,
+      "measured": 563.16716668,
+      "simulated": 1347.342041015625,
+      "ratio": 2.3924371318706594
+     },
+     {
+      "percentile": 99.9,
+      "measured": 672.4649659680098,
+      "simulated": 1837.4741230469128,
+      "ratio": 2.7324458760492876
+     }
+    ],
+    "annual": [
+     {
+      "year": 2018,
+      "measured": 834.003438,
+      "measuredDate": "2018-04-01",
+      "simulated": 1581.614013671875,
+      "simulatedDate": "2018-01-19"
+     },
+     {
+      "year": 2019,
+      "measured": 680.591086,
+      "measuredDate": "2019-12-12",
+      "simulated": 1765.8800048828125,
+      "simulatedDate": "2019-03-20"
+     },
+     {
+      "year": 2020,
+      "measured": 650.113968,
+      "measuredDate": "2020-04-17",
+      "simulated": 1708.0679931640625,
+      "simulatedDate": "2020-02-21"
+     },
+     {
+      "year": 2021,
+      "measured": 639.972387,
+      "measuredDate": "2021-05-08",
+      "simulated": 2000.1619873046875,
+      "simulatedDate": "2021-04-22"
+     },
+     {
+      "year": 2022,
+      "measured": 643.76154,
+      "measuredDate": "2022-02-06",
+      "simulated": 1341.7099609375,
+      "simulatedDate": "2022-03-22"
+     },
+     {
+      "year": 2023,
+      "measured": 691.292308,
+      "measuredDate": "2023-12-28",
+      "simulated": 1693.657958984375,
+      "simulatedDate": "2023-12-29"
+     },
+     {
+      "year": 2024,
+      "measured": 721.588196,
+      "measuredDate": "2024-04-02",
+      "simulated": 1676.0460205078125,
+      "simulatedDate": "2024-04-03"
+     },
+     {
+      "year": 2025,
+      "measured": 653.860428,
+      "measuredDate": "2025-03-18",
+      "simulated": 1933.1917724609375,
+      "simulatedDate": "2025-04-09"
+     }
+    ],
+    "simulatedSameYears": [
+     {
+      "years": 2,
+      "m3s": 1679.0668453629935
+     },
+     {
+      "years": 5,
+      "m3s": 1859.134530513314
+     },
+     {
+      "years": 10,
+      "m3s": 1978.3550062891006
+     },
+     {
+      "years": 25,
+      "m3s": 2128.990393479161
+     },
+     {
+      "years": 50,
+      "m3s": 2240.7403288567575
+     },
+     {
+      "years": 100,
+      "m3s": 2351.6651202530065
+     }
+    ]
+   }
+  },
+  {
+   "site": {
+    "site": "marcel_laniado",
+    "basin": "daule",
+    "label": "Marcel Laniado (Daule)",
+    "lat": -0.93875,
+    "lon": -79.762083,
+    "areaKm2": 4196.721192443178
+   },
+   "chosen": {
+    "segment": {
+     "riverId": 670095610,
+     "downstreamId": 670095612,
+     "vpu": 614,
+     "lat": -0.9552222222225097,
+     "lon": -79.773333333333,
+     "upstreamKm2": 4153.231616,
+     "downstreamKm2": 4164.936704,
+     "lengthKm": 8.335918375383974
+    },
+    "distanceKm": 2.22,
+    "areaDiffPct": -0.76
+   },
+   "candidates": [
+    {
+     "segment": {
+      "riverId": 670095610,
+      "downstreamId": 670095612,
+      "vpu": 614,
+      "lat": -0.9552222222225097,
+      "lon": -79.773333333333,
+      "upstreamKm2": 4153.231616,
+      "downstreamKm2": 4164.936704,
+      "lengthKm": 8.335918375383974
+     },
+     "distanceKm": 2.22,
+     "areaDiffPct": -0.76
+    },
+    {
+     "segment": {
+      "riverId": 670094586,
+      "downstreamId": 670095610,
+      "vpu": 614,
+      "lat": -0.9058888888891747,
+      "lon": -79.74022222222189,
+      "upstreamKm2": 3763.096064,
+      "downstreamKm2": 3775.124992,
+      "lengthKm": 5.420621855022834
+     },
+     "distanceKm": 4.39,
+     "areaDiffPct": -10.05
+    },
+    {
+     "segment": {
+      "riverId": 670079224,
+      "downstreamId": 670086394,
+      "vpu": 614,
+      "lat": -0.8906666666669523,
+      "lon": -79.7544444444441,
+      "upstreamKm2": 263.955872,
+      "downstreamKm2": 276.965056,
+      "lengthKm": 7.523989359273305
+     },
+     "distanceKm": 5.41,
+     "areaDiffPct": -93.4
+    },
+    {
+     "segment": {
+      "riverId": 670054653,
+      "downstreamId": 670077181,
+      "vpu": 614,
+      "lat": -0.986888888889176,
+      "lon": -79.79899999999967,
+      "upstreamKm2": 35.96826,
+      "downstreamKm2": 52.390028,
+      "lengthKm": 10.866248068752888
+     },
+     "distanceKm": 6.75,
+     "areaDiffPct": -98.75
+    },
+    {
+     "segment": {
+      "riverId": 670042364,
+      "downstreamId": 670095612,
+      "vpu": 614,
+      "lat": -0.9552222222225097,
+      "lon": -79.773333333333,
+      "upstreamKm2": 12.0230535,
+      "downstreamKm2": 21.26468,
+      "lengthKm": 1.8985800567180753
+     },
+     "distanceKm": 2.22,
+     "areaDiffPct": -99.49
+    }
+   ],
+   "geoglows": {
+    "inamhi": [
+     {
+      "years": 2,
+      "m3s": 1704.3
+     },
+     {
+      "years": 5,
+      "m3s": 2260
+     },
+     {
+      "years": 10,
+      "m3s": 2627.9
+     },
+     {
+      "years": 25,
+      "m3s": 3092.8
+     },
+     {
+      "years": 50,
+      "m3s": 3437.7
+     },
+     {
+      "years": 100,
+      "m3s": 3780
+     }
+    ],
+    "daily": [
+     {
+      "years": 2,
+      "m3s": 1558.1
+     },
+     {
+      "years": 5,
+      "m3s": 2305.5
+     },
+     {
+      "years": 10,
+      "m3s": 2800.3
+     },
+     {
+      "years": 25,
+      "m3s": 3425.6
+     },
+     {
+      "years": 50,
+      "m3s": 3889.4
+     },
+     {
+      "years": 100,
+      "m3s": 4349.8
+     }
+    ],
+    "hourly": [
+     {
+      "years": 2,
+      "m3s": 1738
+     },
+     {
+      "years": 5,
+      "m3s": 2552.8
+     },
+     {
+      "years": 10,
+      "m3s": 3092.3
+     },
+     {
+      "years": 25,
+      "m3s": 3774
+     },
+     {
+      "years": 50,
+      "m3s": 4279.7
+     },
+     {
+      "years": 100,
+      "m3s": 4781.7
+     }
+    ],
+    "maxSimulated": 4615.9
+   },
+   "observed": null,
+   "agreement": null
+  },
+  {
+   "site": {
+    "site": "minas_san_francisco",
+    "basin": "jubones",
+    "label": "Minas San Francisco (Jubones)",
+    "lat": -3.315417,
+    "lon": -79.482917,
+    "areaKm2": 3344.594273266352
+   },
+   "chosen": {
+    "segment": {
+     "riverId": 670027091,
+     "downstreamId": 670028115,
+     "vpu": 614,
+     "lat": -3.3107777777781298,
+     "lon": -79.51188888888854,
+     "upstreamKm2": 3318.731264,
+     "downstreamKm2": 3332.91136,
+     "lengthKm": 4.164640099672053
+    },
+    "distanceKm": 3.26,
+    "areaDiffPct": -0.35
+   },
+   "candidates": [
+    {
+     "segment": {
+      "riverId": 670027091,
+      "downstreamId": 670028115,
+      "vpu": 614,
+      "lat": -3.3107777777781298,
+      "lon": -79.51188888888854,
+      "upstreamKm2": 3318.731264,
+      "downstreamKm2": 3332.91136,
+      "lengthKm": 4.164640099672053
+     },
+     "distanceKm": 3.26,
+     "areaDiffPct": -0.35
+    },
+    {
+     "segment": {
+      "riverId": 670026067,
+      "downstreamId": 670027091,
+      "vpu": 614,
+      "lat": -3.3176666666670194,
+      "lon": -79.47988888888854,
+      "upstreamKm2": 2954.6624,
+      "downstreamKm2": 2959.020544,
+      "lengthKm": 2.2142636240331246
+     },
+     "distanceKm": 0.42,
+     "areaDiffPct": -11.53
+    },
+    {
+     "segment": {
+      "riverId": 670049620,
+      "downstreamId": 670025043,
+      "vpu": 614,
+      "lat": -3.3302222222225755,
+      "lon": -79.46155555555521,
+      "upstreamKm2": 2803.277568,
+      "downstreamKm2": 2822.183424,
+      "lengthKm": 6.986049251026914
+     },
+     "distanceKm": 2.89,
+     "areaDiffPct": -15.62
+    },
+    {
+     "segment": {
+      "riverId": 670022995,
+      "downstreamId": 670027091,
+      "vpu": 614,
+      "lat": -3.3176666666670194,
+      "lon": -79.47988888888854,
+      "upstreamKm2": 357.252672,
+      "downstreamKm2": 359.70896,
+      "lengthKm": 1.6543144169640178
+     },
+     "distanceKm": 0.42,
+     "areaDiffPct": -89.25
+    },
+    {
+     "segment": {
+      "riverId": 670038354,
+      "downstreamId": 670022995,
+      "vpu": 614,
+      "lat": -3.3091111111114646,
+      "lon": -79.46999999999966,
+      "upstreamKm2": 345.088256,
+      "downstreamKm2": 348.343296,
+      "lengthKm": 1.7665727629075512
+     },
+     "distanceKm": 1.6,
+     "areaDiffPct": -89.58
+    },
+    {
+     "segment": {
+      "riverId": 670027089,
+      "downstreamId": 670038354,
+      "vpu": 614,
+      "lat": -3.3016666666670194,
+      "lon": -79.45911111111076,
+      "upstreamKm2": 307.956,
+      "downstreamKm2": 333.19488,
+      "lengthKm": 8.217799641003152
+     },
+     "distanceKm": 3.05,
+     "areaDiffPct": -90.04
+    },
+    {
+     "segment": {
+      "riverId": 670037333,
+      "downstreamId": 670025043,
+      "vpu": 614,
+      "lat": -3.3302222222225755,
+      "lon": -79.46155555555521,
+      "upstreamKm2": 115.855464,
+      "downstreamKm2": 126.322136,
+      "lengthKm": 4.722290787725114
+     },
+     "distanceKm": 2.89,
+     "areaDiffPct": -96.22
+    }
+   ],
+   "geoglows": {
+    "inamhi": [
+     {
+      "years": 2,
+      "m3s": 694.3
+     },
+     {
+      "years": 5,
+      "m3s": 880.2
+     },
+     {
+      "years": 10,
+      "m3s": 1003.3
+     },
+     {
+      "years": 25,
+      "m3s": 1158.8
+     },
+     {
+      "years": 50,
+      "m3s": 1274.1
+     },
+     {
+      "years": 100,
+      "m3s": 1388.6
+     }
+    ],
+    "daily": [
+     {
+      "years": 2,
+      "m3s": 697.6
+     },
+     {
+      "years": 5,
+      "m3s": 940.5
+     },
+     {
+      "years": 10,
+      "m3s": 1101.3
+     },
+     {
+      "years": 25,
+      "m3s": 1304.5
+     },
+     {
+      "years": 50,
+      "m3s": 1455.2
+     },
+     {
+      "years": 100,
+      "m3s": 1604.9
+     }
+    ],
+    "hourly": [
+     {
+      "years": 2,
+      "m3s": 915.4
+     },
+     {
+      "years": 5,
+      "m3s": 1232.4
+     },
+     {
+      "years": 10,
+      "m3s": 1442.3
+     },
+     {
+      "years": 25,
+      "m3s": 1707.5
+     },
+     {
+      "years": 50,
+      "m3s": 1904.2
+     },
+     {
+      "years": 100,
+      "m3s": 2099.5
+     }
+    ],
+    "maxSimulated": 2412.6
+   },
+   "observed": {
+    "maxima": [
+     {
+      "year": 2019,
+      "m3s": 426,
+      "date": "2019-04-03",
+      "days": 365
+     },
+     {
+      "year": 2020,
+      "m3s": 456,
+      "date": "2020-05-02",
+      "days": 366
+     },
+     {
+      "year": 2021,
+      "m3s": 669,
+      "date": "2021-03-11",
+      "days": 365
+     },
+     {
+      "year": 2022,
+      "m3s": 485,
+      "date": "2022-03-05",
+      "days": 365
+     },
+     {
+      "year": 2023,
+      "m3s": 386,
+      "date": "2023-12-28",
+      "days": 365
+     },
+     {
+      "year": 2024,
+      "m3s": 149,
+      "date": "2024-06-16",
+      "days": 366
+     },
+     {
+      "year": 2025,
+      "m3s": 543,
+      "date": "2025-04-11",
+      "days": 365
+     }
+    ],
+    "fit": [
+     {
+      "years": 2,
+      "m3s": 418.6
+     },
+     {
+      "years": 5,
+      "m3s": 559.7
+     },
+     {
+      "years": 10,
+      "m3s": 653.1
+     },
+     {
+      "years": 25,
+      "m3s": 771.2
+     },
+     {
+      "years": 50,
+      "m3s": 858.8
+     },
+     {
+      "years": 100,
+      "m3s": 945.7
+     }
+    ]
+   },
+   "agreement": {
+    "days": 2901,
+    "first": "2018-10-11",
+    "last": "2026-09-19",
+    "measuredMean": 52.398313048948594,
+    "simulatedMean": 144.949142397539,
+    "ratio": 2.7662940648896996,
+    "r": 0.5256863397271914,
+    "rMonthly": 0.7551401984599021,
+    "months": 95,
+    "kge": -1.0146671226193429,
+    "quantiles": [
+     {
+      "percentile": 10,
+      "measured": 10,
+      "simulated": 37.60200119018555,
+      "ratio": 3.7602001190185548
+     },
+     {
+      "percentile": 50,
+      "measured": 31,
+      "simulated": 106.97100067138672,
+      "ratio": 3.4506774410124748
+     },
+     {
+      "percentile": 90,
+      "measured": 117,
+      "simulated": 309.64898681640625,
+      "ratio": 2.646572536892361
+     },
+     {
+      "percentile": 99,
+      "measured": 342,
+      "simulated": 598.8270263671875,
+      "ratio": 1.7509562174479167
+     },
+     {
+      "percentile": 99.9,
+      "measured": 544.3000000000047,
+      "simulated": 843.6584350585994,
+      "ratio": 1.5499879387444278
+     }
+    ],
+    "annual": [
+     {
+      "year": 2019,
+      "measured": 426,
+      "measuredDate": "2019-04-03",
+      "simulated": 548.593017578125,
+      "simulatedDate": "2019-04-04"
+     },
+     {
+      "year": 2020,
+      "measured": 456,
+      "measuredDate": "2020-05-02",
+      "simulated": 732.6649780273438,
+      "simulatedDate": "2020-01-26"
+     },
+     {
+      "year": 2021,
+      "measured": 669,
+      "measuredDate": "2021-03-11",
+      "simulated": 865.6619873046875,
+      "simulatedDate": "2021-03-17"
+     },
+     {
+      "year": 2022,
+      "measured": 485,
+      "measuredDate": "2022-03-05",
+      "simulated": 1069.376953125,
+      "simulatedDate": "2022-04-02"
+     },
+     {
+      "year": 2023,
+      "measured": 386,
+      "measuredDate": "2023-12-28",
+      "simulated": 764.9819946289062,
+      "simulatedDate": "2023-02-23"
+     },
+     {
+      "year": 2024,
+      "measured": 149,
+      "measuredDate": "2024-06-16",
+      "simulated": 445.135986328125,
+      "simulatedDate": "2024-12-29"
+     },
+     {
+      "year": 2025,
+      "measured": 543,
+      "measuredDate": "2025-04-11",
+      "simulated": 842.1074829101562,
+      "simulatedDate": "2025-01-22"
+     }
+    ],
+    "simulatedSameYears": [
+     {
+      "years": 2,
+      "m3s": 718.5895232321185
+     },
+     {
+      "years": 5,
+      "m3s": 901.7888328742549
+     },
+     {
+      "years": 10,
+      "m3s": 1023.0827165552616
+     },
+     {
+      "years": 25,
+      "m3s": 1176.3378601300656
+     },
+     {
+      "years": 50,
+      "m3s": 1290.0312804494224
+     },
+     {
+      "years": 100,
+      "m3s": 1402.8852063996924
+     }
+    ]
+   }
+  },
+  {
+   "site": {
+    "site": "delsitanisagua",
+    "basin": "zamora",
+    "label": "Delsitanisagua (Zamora)",
+    "lat": -3.98125,
+    "lon": -79.017083,
+    "areaKm2": 1137.0021619731033
+   },
+   "chosen": {
+    "segment": {
+     "riverId": 620922413,
+     "downstreamId": 620930672,
+     "vpu": 605,
+     "lat": -4.01877777777955,
+     "lon": -79.0182222222221,
+     "upstreamKm2": 1115.134848,
+     "downstreamKm2": 1149.122816,
+     "lengthKm": 6.989191176930091
+    },
+    "distanceKm": 4.17,
+    "areaDiffPct": 1.07
+   },
+   "candidates": [
+    {
+     "segment": {
+      "riverId": 620922413,
+      "downstreamId": 620930672,
+      "vpu": 605,
+      "lat": -4.01877777777955,
+      "lon": -79.0182222222221,
+      "upstreamKm2": 1115.134848,
+      "downstreamKm2": 1149.122816,
+      "lengthKm": 6.989191176930091
+     },
+     "distanceKm": 4.17,
+     "areaDiffPct": 1.07
+    },
+    {
+     "segment": {
+      "riverId": 620921037,
+      "downstreamId": 620922413,
+      "vpu": 605,
+      "lat": -3.9628888888906504,
+      "lon": -79.01677777777765,
+      "upstreamKm2": 1072.293824,
+      "downstreamKm2": 1073.124928,
+      "lengthKm": 1.1284717447832657
+     },
+     "distanceKm": 2.04,
+     "areaDiffPct": -5.62
+    },
+    {
+     "segment": {
+      "riverId": 620919661,
+      "downstreamId": 620921037,
+      "vpu": 605,
+      "lat": -3.95700000000176,
+      "lon": -79.02333333333321,
+      "upstreamKm2": 1025.894144,
+      "downstreamKm2": 1031.149376,
+      "lengthKm": 3.129970004116038
+     },
+     "distanceKm": 2.78,
+     "areaDiffPct": -9.31
+    },
+    {
+     "segment": {
+      "riverId": 620616942,
+      "downstreamId": 620919661,
+      "vpu": 605,
+      "lat": -3.9502222222239824,
+      "lon": -79.04777777777765,
+      "upstreamKm2": 59.465928,
+      "downstreamKm2": 83.4004,
+      "lengthKm": 7.259784167526697
+     },
+     "distanceKm": 4.85,
+     "areaDiffPct": -92.66
+    },
+    {
+     "segment": {
+      "riverId": 620593549,
+      "downstreamId": 620922413,
+      "vpu": 605,
+      "lat": -3.9628888888906504,
+      "lon": -79.01677777777765,
+      "upstreamKm2": 10.6294085,
+      "downstreamKm2": 42.009592,
+      "lengthKm": 0.41841367744723373
+     },
+     "distanceKm": 2.04,
+     "areaDiffPct": -96.31
+    },
+    {
+     "segment": {
+      "riverId": 620630700,
+      "downstreamId": 620921037,
+      "vpu": 605,
+      "lat": -3.95700000000176,
+      "lon": -79.02333333333321,
+      "upstreamKm2": 11.8398505,
+      "downstreamKm2": 41.143572,
+      "lengthKm": 3.516049852438458
+     },
+     "distanceKm": 2.78,
+     "areaDiffPct": -96.38
+    }
+   ],
+   "geoglows": {
+    "inamhi": [
+     {
+      "years": 2,
+      "m3s": 200
+     },
+     {
+      "years": 5,
+      "m3s": 272.7
+     },
+     {
+      "years": 10,
+      "m3s": 320.8
+     },
+     {
+      "years": 25,
+      "m3s": 381.5
+     },
+     {
+      "years": 50,
+      "m3s": 426.6
+     },
+     {
+      "years": 100,
+      "m3s": 471.4
+     }
+    ],
+    "daily": [
+     {
+      "years": 2,
+      "m3s": 184.3
+     },
+     {
+      "years": 5,
+      "m3s": 253.1
+     },
+     {
+      "years": 10,
+      "m3s": 298.7
+     },
+     {
+      "years": 25,
+      "m3s": 356.2
+     },
+     {
+      "years": 50,
+      "m3s": 398.9
+     },
+     {
+      "years": 100,
+      "m3s": 441.3
+     }
+    ],
+    "hourly": [
+     {
+      "years": 2,
+      "m3s": 239
+     },
+     {
+      "years": 5,
+      "m3s": 328.3
+     },
+     {
+      "years": 10,
+      "m3s": 387.3
+     },
+     {
+      "years": 25,
+      "m3s": 462
+     },
+     {
+      "years": 50,
+      "m3s": 517.4
+     },
+     {
+      "years": 100,
+      "m3s": 572.3
+     }
+    ],
+    "maxSimulated": 641.4
+   },
+   "observed": {
+    "maxima": [
+     {
+      "year": 2019,
+      "m3s": 279,
+      "date": "2019-07-27",
+      "days": 365
+     },
+     {
+      "year": 2020,
+      "m3s": 187,
+      "date": "2020-09-23",
+      "days": 366
+     },
+     {
+      "year": 2021,
+      "m3s": 177,
+      "date": "2021-07-19",
+      "days": 365
+     },
+     {
+      "year": 2022,
+      "m3s": 249,
+      "date": "2022-07-03",
+      "days": 365
+     },
+     {
+      "year": 2023,
+      "m3s": 246,
+      "date": "2023-06-01",
+      "days": 365
+     },
+     {
+      "year": 2024,
+      "m3s": 141,
+      "date": "2024-06-12",
+      "days": 366
+     },
+     {
+      "year": 2025,
+      "m3s": 812,
+      "date": "2025-07-02",
+      "days": 365
+     }
+    ],
+    "fit": [
+     {
+      "years": 2,
+      "m3s": 260.7
+     },
+     {
+      "years": 5,
+      "m3s": 465.2
+     },
+     {
+      "years": 10,
+      "m3s": 600.6
+     },
+     {
+      "years": 25,
+      "m3s": 771.7
+     },
+     {
+      "years": 50,
+      "m3s": 898.6
+     },
+     {
+      "years": 100,
+      "m3s": 1024.5
+     }
+    ]
+   },
+   "agreement": {
+    "days": 2942,
+    "first": "2018-08-31",
+    "last": "2026-09-19",
+    "measuredMean": 47.44323589394969,
+    "simulatedMean": 35.686258291768674,
+    "ratio": 0.7521885389845351,
+    "r": 0.22465253895332107,
+    "rMonthly": 0.31080662551683735,
+    "months": 96,
+    "kge": 0.18173097919394388,
+    "quantiles": [
+     {
+      "percentile": 10,
+      "measured": 23,
+      "simulated": 9.065100288391115,
+      "ratio": 0.39413479514743976
+     },
+     {
+      "percentile": 50,
+      "measured": 39,
+      "simulated": 25.677000045776367,
+      "ratio": 0.6583846165583684
+     },
+     {
+      "percentile": 90,
+      "measured": 80,
+      "simulated": 75.13170242309572,
+      "ratio": 0.9391462802886965
+     },
+     {
+      "percentile": 99,
+      "measured": 175.59000000000015,
+      "simulated": 146.7640452575684,
+      "ratio": 0.8358337334561665
+     },
+     {
+      "percentile": 99.9,
+      "measured": 383.0240000000267,
+      "simulated": 290.62441711428045,
+      "ratio": 0.7587629420460863
+     }
+    ],
+    "annual": [
+     {
+      "year": 2019,
+      "measured": 279,
+      "measuredDate": "2019-07-27",
+      "simulated": 283.8290100097656,
+      "simulatedDate": "2019-03-23"
+     },
+     {
+      "year": 2020,
+      "measured": 187,
+      "measuredDate": "2020-09-23",
+      "simulated": 150.57000732421875,
+      "simulatedDate": "2020-01-26"
+     },
+     {
+      "year": 2021,
+      "measured": 177,
+      "measuredDate": "2021-07-19",
+      "simulated": 202.93099975585938,
+      "simulatedDate": "2021-01-19"
+     },
+     {
+      "year": 2022,
+      "measured": 249,
+      "measuredDate": "2022-07-03",
+      "simulated": 433.39599609375,
+      "simulatedDate": "2022-03-15"
+     },
+     {
+      "year": 2023,
+      "measured": 246,
+      "measuredDate": "2023-06-01",
+      "simulated": 247.1719970703125,
+      "simulatedDate": "2023-04-07"
+     },
+     {
+      "year": 2024,
+      "measured": 141,
+      "measuredDate": "2024-06-12",
+      "simulated": 102.84200286865234,
+      "simulatedDate": "2024-02-26"
+     },
+     {
+      "year": 2025,
+      "measured": 812,
+      "measuredDate": "2025-07-02",
+      "simulated": 399.0054016113281,
+      "simulatedDate": "2025-03-03"
+     }
+    ],
+    "simulatedSameYears": [
+     {
+      "years": 2,
+      "m3s": 239.83724776699023
+     },
+     {
+      "years": 5,
+      "m3s": 348.10250652020227
+     },
+     {
+      "years": 10,
+      "m3s": 419.7835282858314
+     },
+     {
+      "years": 25,
+      "m3s": 510.3526893094085
+     },
+     {
+      "years": 50,
+      "m3s": 577.5420667882729
+     },
+     {
+      "years": 100,
+      "m3s": 644.2353284506062
+     }
+    ]
+   }
+  }
+ ]
+}

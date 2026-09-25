@@ -1,0 +1,95 @@
+/**
+ * Reading an Angular single-page app for the endpoints it calls.
+ *
+ * INAMHI's Hydroviewer (`inamhi.geoglows.org/apps/hydroviewer-ecuador/`) is a shell page whose
+ * HTML holds nothing but `<script>` tags; the URLs it fetches its rivers, forecasts and return
+ * periods from are string literals inside the bundles, and the lazy routes are more bundles named
+ * inside those. The development sandbox cannot open the host, so `scripts/geoglows.ts` walks the
+ * bundles from a runner and records every URL-like literal with the code around it. These are the
+ * pure parts, tested on strings.
+ */
+
+/** Bundles a page or a bundle refers to: `src="x.js"`, `href="x.js"`, `import("./x.js")`, `"chunk-X.js"`. */
+export function bundleRefs(text: string): string[] {
+  const refs = new Set<string>();
+  for (const m of text.matchAll(/(?:src|href)=["']([^"']+\.m?js)["']/g)) refs.add(m[1]!);
+  for (const m of text.matchAll(/["'`](\.?\/?(?:[\w-]+\/)*(?:chunk|main|polyfills|scripts)-[\w-]+\.m?js)["'`]/g)) refs.add(m[1]!);
+  return [...refs].sort();
+}
+
+export interface EndpointHit {
+  /** The literal as written: an absolute URL, or a path such as `/apps/x/get-data/`. */
+  literal: string;
+  /** Up to `contextChars` either side of it, whitespace collapsed. */
+  context: string;
+  file: string;
+}
+
+/** What makes a literal worth reading: a host, an API-looking path, or a hydrology word. */
+export const ENDPOINT_PATTERN =
+  /return|retorno|periodo|period|api|rest|geoserver|forecast|pronostico|comid|river|rivid|reach|hydro|tethys|\.json|wms|wfs/i;
+
+/**
+ * URL-like string literals in a bundle: absolute `http(s)://` URLs, and paths with at least two
+ * segments that look like routes rather than asset names. Deduplicated by literal.
+ */
+export function endpointsIn(text: string, file: string, contextChars = 160): EndpointHit[] {
+  const seen = new Map<string, EndpointHit>();
+  const re = /["'`]((?:https?:)?\/\/[^"'`\s<>]{3,}|\/[\w.-]+\/[^"'`\s<>]*)["'`]/g;
+  for (const m of text.matchAll(re)) {
+    const literal = m[1]!;
+    if (seen.has(literal)) continue;
+    if (/\.(?:css|woff2?|ttf|png|svg|jpe?g|gif|ico)(?:[?#]|$)/i.test(literal)) continue;
+    if (!/^(?:https?:)?\/\//.test(literal) && !ENDPOINT_PATTERN.test(literal)) continue;
+    const start = Math.max(0, m.index - contextChars);
+    const end = Math.min(text.length, m.index + m[0].length + contextChars);
+    seen.set(literal, { literal, context: text.slice(start, end).replace(/\s+/g, " "), file });
+  }
+  // Paths built on the app's configured roots: `${xs.urlAPI}/hydroviewer/x?comid=${id}` or `xs.urlAPI+"/x"`.
+  const built = /(?:\$\{[\w$.]*?(url(?:API|Geoserver|Martin|Host))\}|[\w$.]*?(url(?:API|Geoserver|Martin|Host))\s*\+\s*["'`])([^"'`\s]*)/g;
+  for (const m of text.matchAll(built)) {
+    const literal = `\${${m[1] ?? m[2]}}${m[3]}`;
+    if (seen.has(literal)) continue;
+    const start = Math.max(0, m.index - contextChars);
+    const end = Math.min(text.length, m.index + m[0].length + contextChars);
+    seen.set(literal, { literal, context: text.slice(start, end).replace(/\s+/g, " "), file });
+  }
+  return [...seen.values()];
+}
+
+/** Up to `limit` occurrences of each keyword, with the code around it: for what no URL literal names. */
+export function keywordHits(text: string, file: string, keywords: readonly string[], limit = 4, contextChars = 220): EndpointHit[] {
+  const hits: EndpointHit[] = [];
+  for (const keyword of keywords) {
+    let from = 0;
+    for (let n = 0; n < limit; n++) {
+      const at = text.indexOf(keyword, from);
+      if (at < 0) break;
+      hits.push({
+        literal: keyword,
+        context: text.slice(Math.max(0, at - contextChars), at + keyword.length + contextChars).replace(/\s+/g, " "),
+        file,
+      });
+      from = at + keyword.length;
+    }
+  }
+  return hits;
+}
+
+/**
+ * The URL a page's relative references resolve against: its `<base href>` if it has one, made
+ * absolute against the page. Angular pages carry `<base href="/">`, so the bundles of
+ * `/apps/hydroviewer-ecuador/` live at the site root, not beside the page.
+ */
+export function baseOf(html: string, pageUrl: string): string {
+  const m = /<base\s+href=["']([^"']*)["']/i.exec(html);
+  return m ? new URL(m[1]!, pageUrl).toString() : pageUrl;
+}
+
+/** A single-page app answers any path with its shell; a `.js` request that comes back as HTML is not a bundle. */
+export const isHtml = (text: string): boolean => /^\s*<(?:!doctype html|html)/i.test(text);
+
+/** A bundle reference made absolute against the URL of the page or bundle that named it. */
+export function resolveRef(ref: string, base: string): string {
+  return new URL(ref, base).toString();
+}

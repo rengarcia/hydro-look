@@ -18,10 +18,17 @@
  *   to the years whose 16 days of rain before the origin (read with ERA5's five-day latency)
  *   were nearest today's; until then it is unconditioned, and every row says which.
  *
- * The published band is the analogue median widened by its own out-of-sample residual
+ * - **ensemble** (published since 2026-09-25): the mean of the analogue and climatology rungs,
+ *   and of a short-range river forecast's anomaly where one is supplied (`InflowForecastMember`).
+ *   The two rungs err differently — the analogue follows today's flow and overshoots when the
+ *   state fades, the climatology ignores it — and their average beat the analogue alone at every
+ *   plant and both horizons over 2018 → 2026 (`data/reports/geoglows-experiment.md`, PLAN.md
+ *   Phase 7), beyond a block-bootstrap interval.
+ *
+ * The published band is the ensemble median widened by its own out-of-sample residual
  * quantiles at that horizon, calibrated on strictly earlier origins — the rule every level
  * forecast in this repository follows. A plant's inflow is published only at a horizon where the
- * analogue rung beats *both* persistence and climatology on MAE; everywhere else the negative is
+ * ensemble beats *both* persistence and climatology on MAE; everywhere else the negative is
  * recorded in `data/reports/inflow.md` and the plant is listed as not published, with the reason.
  */
 
@@ -68,8 +75,19 @@ export const DEFAULT_INFLOW: InflowOptions = {
   rainKeepShare: 0.5,
 };
 
-export type InflowModelId = "persistence" | "climatology" | "analogue";
-export const INFLOW_MODELS: readonly InflowModelId[] = ["persistence", "climatology", "analogue"];
+export type InflowModelId = "persistence" | "climatology" | "analogue" | "ensemble";
+export const INFLOW_MODELS: readonly InflowModelId[] = ["persistence", "climatology", "analogue", "ensemble"];
+
+/** The rung `forecast.json` publishes, and whose residuals calibrate its band. */
+export const PUBLISHED_INFLOW_MODEL: InflowModelId = "ensemble";
+
+/**
+ * A short-range river forecast's estimate of the window mean on the measured scale, for the
+ * origin it was issued after — given the climatology rung's value, so a forecast whose volume is
+ * wrong can be applied as an anomaly on it. Returns null where the forecast does not reach the
+ * horizon or was not issued.
+ */
+export type InflowForecastMember = (origin: IsoDate, horizonDays: number, measuredClimatology: number) => number | null;
 
 /** Mean over `(start, start + days]`, or null if any day is missing. */
 export function windowMean(series: DailySeries, start: IsoDate, days: number): number | null {
@@ -96,6 +114,8 @@ export interface InflowPrediction {
   /** Earlier years behind it. */
   years: number;
   rainConditioned: boolean;
+  /** For the ensemble: whether a river forecast was one of its members. */
+  withForecast?: boolean;
 }
 
 interface Earlier {
@@ -125,7 +145,22 @@ export function predictInflow(
   horizonDays: number,
   options: InflowOptions = DEFAULT_INFLOW,
   precip: DailySeries | null = null,
+  forecast: InflowForecastMember | null = null,
 ): InflowPrediction | null {
+  if (model === "ensemble") {
+    const analogue = predictInflow("analogue", inflow, origin, horizonDays, options, precip);
+    const climatology = predictInflow("climatology", inflow, origin, horizonDays, options, precip);
+    if (!analogue || !climatology) return null;
+    const river = forecast ? forecast(origin, horizonDays, climatology.p50) : null;
+    const members = [analogue.p50, climatology.p50, ...(river !== null && Number.isFinite(river) ? [river] : [])];
+    return {
+      p50: members.reduce((a, b) => a + b, 0) / members.length,
+      members: analogue.members,
+      years: analogue.years,
+      rainConditioned: analogue.rainConditioned,
+      withForecast: members.length === 3,
+    };
+  }
   if (model === "persistence") {
     const today = inflow.get(origin);
     return today === undefined ? null : { p50: today, members: [], years: 0, rainConditioned: false };
@@ -215,10 +250,14 @@ export interface InflowBacktest {
   firstOrigin: IsoDate | null;
   lastOrigin: IsoDate | null;
   rainConditionedShare: number;
+  /** Share of scored cases whose ensemble had a river forecast among its members. */
+  forecastShare: number;
+  /** On those cases, per horizon: the ensemble's MAE with the forecast and without it. */
+  forecastEffect: { horizonDays: number; n: number; withMaeM3s: number; withoutMaeM3s: number }[];
   scores: InflowScore[];
-  /** Residual quantiles (actual − p50) of the analogue rung per horizon, over every scored origin. */
+  /** Residual quantiles (actual − p50) of the published rung per horizon, over every scored origin. */
   calibration: Map<number, { q10: number; q50: number; q90: number; n: number }>;
-  /** Per horizon: does the analogue rung beat both baselines on MAE? */
+  /** Per horizon: does the published rung beat both baselines on MAE? */
   decisions: { horizonDays: number; ships: boolean; reason: string }[];
 }
 
@@ -231,8 +270,18 @@ export function backtestInflow(
   inflow: DailySeries,
   options: InflowOptions = DEFAULT_INFLOW,
   precip: DailySeries | null = null,
+  forecast: InflowForecastMember | null = null,
 ): InflowBacktest {
-  type Row = { origin: IsoDate; h: number; actual: number; p: Record<InflowModelId, number>; rain: boolean };
+  type Row = {
+    origin: IsoDate;
+    h: number;
+    actual: number;
+    p: Record<InflowModelId, number>;
+    rain: boolean;
+    withForecast: boolean;
+    /** Where the forecast was a member: the same ensemble without it. */
+    withoutForecast: number | null;
+  };
   const rows: Row[] = [];
   const origins = inflowOrigins(inflow, options);
   const dates = [...inflow.keys()];
@@ -246,14 +295,21 @@ export function backtestInflow(
     for (const h of options.horizonDays) {
       const actual = windowMean(inflow, origin, h);
       if (actual === null) continue;
-      const predictions = INFLOW_MODELS.map((m) => predictInflow(m, cut, origin, h, options, cutPrecip));
+      const predictions = INFLOW_MODELS.map((m) => predictInflow(m, cut, origin, h, options, cutPrecip, forecast));
       if (predictions.some((p) => p === null)) continue;
       rows.push({
         origin,
         h,
         actual,
-        p: { persistence: predictions[0]!.p50, climatology: predictions[1]!.p50, analogue: predictions[2]!.p50 },
+        p: {
+          persistence: predictions[0]!.p50,
+          climatology: predictions[1]!.p50,
+          analogue: predictions[2]!.p50,
+          ensemble: predictions[3]!.p50,
+        },
         rain: predictions[2]!.rainConditioned,
+        withForecast: predictions[3]!.withForecast ?? false,
+        withoutForecast: predictions[3]!.withForecast ? (predictions[2]!.p50 + predictions[1]!.p50) / 2 : null,
       });
     }
   }
@@ -278,7 +334,7 @@ export function backtestInflow(
         }
         residuals.push(row.actual - p50);
       }
-      if (model === "analogue" && residuals.length > 0) {
+      if (model === PUBLISHED_INFLOW_MODEL && residuals.length > 0) {
         calibration.set(h, {
           q10: quantile(residuals, 0.1)!,
           q50: quantile(residuals, 0.5)!,
@@ -307,7 +363,7 @@ export function backtestInflow(
       });
     }
     const mae = (m: InflowModelId) => scores.find((s) => s.model === m && s.horizonDays === h)?.maeM3s ?? Number.NaN;
-    const [a, p, c] = [mae("analogue"), mae("persistence"), mae("climatology")];
+    const [a, p, c] = [mae(PUBLISHED_INFLOW_MODEL), mae("persistence"), mae("climatology")];
     const enough = atH.length >= options.minCalibrationOrigins * 2;
     const ships = enough && a < p && a < c;
     decisions.push({
@@ -316,8 +372,8 @@ export function backtestInflow(
       reason: !enough
         ? `only ${atH.length} scored origins`
         : ships
-          ? `analogue MAE ${a.toFixed(1)} m3/s beats persistence ${p.toFixed(1)} and climatology ${c.toFixed(1)}`
-          : `analogue MAE ${a.toFixed(1)} m3/s does not beat ${a >= p ? `persistence (${p.toFixed(1)})` : ""}${a >= p && a >= c ? " or " : ""}${a >= c ? `climatology (${c.toFixed(1)})` : ""}`,
+          ? `${PUBLISHED_INFLOW_MODEL} MAE ${a.toFixed(1)} m3/s beats persistence ${p.toFixed(1)} and climatology ${c.toFixed(1)}`
+          : `${PUBLISHED_INFLOW_MODEL} MAE ${a.toFixed(1)} m3/s does not beat ${a >= p ? `persistence (${p.toFixed(1)})` : ""}${a >= p && a >= c ? " or " : ""}${a >= c ? `climatology (${c.toFixed(1)})` : ""}`,
     });
   }
 
@@ -327,6 +383,13 @@ export function backtestInflow(
     firstOrigin: rows[0]?.origin ?? null,
     lastOrigin: rows.at(-1)?.origin ?? null,
     rainConditionedShare: rows.length === 0 ? 0 : rows.filter((r) => r.rain).length / rows.length,
+    forecastShare: rows.length === 0 ? 0 : rows.filter((r) => r.withForecast).length / rows.length,
+    forecastEffect: options.horizonDays.flatMap((h) => {
+      const cases = rows.filter((r) => r.h === h && r.withForecast && r.withoutForecast !== null);
+      if (cases.length === 0) return [];
+      const mae = (f: (r: Row) => number) => mean(cases.map((r) => Math.abs(r.actual - f(r))))!;
+      return [{ horizonDays: h, n: cases.length, withMaeM3s: mae((r) => r.p.ensemble), withoutMaeM3s: mae((r) => r.withoutForecast!) }];
+    }),
     scores,
     calibration,
     decisions,
@@ -340,6 +403,7 @@ export function inflowEntry(
   precipBasin: string | null,
   precip: DailySeries | null,
   options: InflowOptions = DEFAULT_INFLOW,
+  forecast: InflowForecastMember | null = null,
 ): Record<string, unknown> {
   const origin = [...inflow.keys()].at(-1) ?? null;
   const horizons = options.horizonDays.map((h) => {
@@ -350,15 +414,17 @@ export function inflowEntry(
       published: false as boolean,
       reason: decision.reason,
       backtest: {
-        n: score("analogue")?.n ?? 0,
-        mae_m3s: roundOrNull(score("analogue")?.maeM3s, 2),
+        model: PUBLISHED_INFLOW_MODEL,
+        n: score(PUBLISHED_INFLOW_MODEL)?.n ?? 0,
+        mae_m3s: roundOrNull(score(PUBLISHED_INFLOW_MODEL)?.maeM3s, 2),
+        analogue_mae_m3s: roundOrNull(score("analogue")?.maeM3s, 2),
         persistence_mae_m3s: roundOrNull(score("persistence")?.maeM3s, 2),
         climatology_mae_m3s: roundOrNull(score("climatology")?.maeM3s, 2),
-        coverage_p10_p90: roundOrNull(score("analogue")?.coverageP10P90, 4),
+        coverage_p10_p90: roundOrNull(score(PUBLISHED_INFLOW_MODEL)?.coverageP10P90, 4),
       },
     };
     if (!decision.ships || origin === null) return base;
-    const live = predictInflow("analogue", inflow, origin, h, options, precip);
+    const live = predictInflow(PUBLISHED_INFLOW_MODEL, inflow, origin, h, options, precip, forecast);
     const cal = backtest.calibration.get(h);
     if (!live || !cal) return { ...base, reason: `${decision.reason}; no forecast at the live origin` };
     return {
@@ -370,6 +436,7 @@ export function inflowEntry(
       p90: roundTo(Math.max(live.p50 + cal.q90, live.p50), 1),
       ensemble_years: live.years,
       rain_conditioned: live.rainConditioned,
+      with_river_forecast: live.withForecast ?? false,
     };
   });
   return {

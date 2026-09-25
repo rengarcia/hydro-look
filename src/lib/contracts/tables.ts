@@ -93,6 +93,25 @@ export const weatherRow = z
   );
 export type WeatherRow = z.infer<typeof weatherRow>;
 
+/**
+ * GEOGLOWS v2 river forecasts at a dam's river: the daily mean of one member at one lead, per
+ * 00 UTC issue. The store is a public, write-once object per issue, so provenance is its key and
+ * ETag rather than an archived copy (a chunk is 15 MB; the half megabyte read from it is kept as
+ * the numbers themselves). Written by `npm run geoglows:daily`; read by the inflow ensemble.
+ */
+export const geoglowsForecastRow = z.object({
+  issued: isoDate,
+  site: siteId,
+  river_id: z.number().int().positive(),
+  member: z.enum(["high_res"]),
+  lead_days: z.number().int().min(1).max(15),
+  q_m3s: z.number().finite().nonnegative(),
+  store_key: z.string().min(1),
+  etag: z.string(),
+  fetched_at: isoTimestamp,
+});
+export type GeoglowsForecastRow = z.infer<typeof geoglowsForecastRow>;
+
 export const ensoRow = z.object({
   month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/),
   oni: z.number().finite().min(-5).max(5),
@@ -259,6 +278,14 @@ export const WEATHER_DAILY: TableSpec<WeatherRow> = {
   key: ["date", "basin", "latitude", "longitude", "kind", "issued_at"],
   partitionBy: "date",
   schema: weatherRow,
+};
+
+export const GEOGLOWS_FORECASTS: TableSpec<GeoglowsForecastRow> = {
+  name: "geoglows_forecasts",
+  columns: ["issued", "site", "river_id", "member", "lead_days", "q_m3s", "store_key", "etag", "fetched_at"],
+  key: ["issued", "site", "member", "lead_days"],
+  partitionBy: "issued",
+  schema: geoglowsForecastRow,
 };
 
 export const ENSO_MONTHLY: TableSpec<EnsoRow> = {

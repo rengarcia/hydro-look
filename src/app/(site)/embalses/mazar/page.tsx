@@ -18,6 +18,7 @@ import { Crumbs, MAIN_ID } from "../../../components/Chrome.tsx";
 import { Table } from "../../../components/DataTable.tsx";
 import { InflowPanel } from "../../../components/ReservoirParts.tsx";
 import { FloorsPanel, RecordSection, ReservoirHero } from "../../../components/ReservoirPage.tsx";
+import { ReturnPeriodsSection } from "../../../components/ReturnPeriods.tsx";
 import { apiDocument, latest } from "../../../../lib/site/data.ts";
 import type { CrossingThreshold, ForecastDocument } from "../../../../lib/site/documents.ts";
 import { dateWithYear, longDate, num } from "../../../../lib/site/format.ts";
@@ -60,6 +61,7 @@ export default function MazarPage() {
           <FloorsPanel reservoir={mazar} />
         </section>
       ) : null}
+      {mazar ? <ReturnPeriodsSection reservoir={mazar} /> : null}
       <div className="shell footer-bar flush">
         <a href="/" className="btn btn-ghost">
           ← Volver al inicio
