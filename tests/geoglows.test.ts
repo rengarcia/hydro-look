@@ -23,6 +23,9 @@ import {
 } from "../src/lib/geo/blosc.ts";
 import {
   annualMaxima,
+  compareFlows,
+  inamhiReturnPeriods,
+  portalReturnPeriods,
   gumbelFactor,
   gumbelReturnPeriods,
   matchRiver,
@@ -215,8 +218,12 @@ describe("returnPeriodsFor", () => {
     river_id: "620988388",
     area_diff_pct: "-1.34",
     store_revision_date: "2026-06-10",
+    sim_days: "3000",
+    sim_ratio: "1.95",
+    sim_r_monthly: "0.29",
     ...Object.fromEntries(
       [2, 5, 10, 25, 50, 100].flatMap((y) => [
+        [`q${y}_inamhi_m3s`, String(y * 50)],
         [`q${y}_m3s`, String(y * 100)],
         [`q${y}_hourly_m3s`, String(y * 110)],
       ]),
@@ -227,7 +234,10 @@ describe("returnPeriodsFor", () => {
     // Six complete years, maxima 300..800.
     const inflow = daily("2018-01-01", 6 * 365 + 1, (i) => (i % 365 === 100 ? 300 + Math.floor(i / 365) * 100 : 40));
     const rp = returnPeriodsFor(inflow, 520, row);
-    expect(rp.geoglows).toMatchObject({ river_id: 620988388, area_diff_pct: -1.34, reached_years: 5 });
+    // Read against INAMHI's thresholds (50 m³/s per year of return period), not the store's (100): 520 reaches 10 years.
+    expect(rp.geoglows).toMatchObject({ river_id: 620988388, area_diff_pct: -1.34, reached_years: 10 });
+    expect(rp.geoglows?.inamhi[1]).toEqual({ years: 5, m3s: 250 });
+    expect(rp.geoglows?.simulated_vs_measured).toEqual({ days: 3000, ratio: 1.95, r_monthly: 0.29 });
     expect(rp.geoglows?.hourly[0]).toEqual({ years: 2, m3s: 220 });
     expect(rp.measured).toMatchObject({ years: 6, first_year: 2018, last_year: 2023, record_m3s: 800 });
     expect(rp.measured?.reached_years).toBe(2);
@@ -297,5 +307,44 @@ describe("paths built on the app's configured roots", () => {
 
   it("finds keywords with their context", () => {
     expect(keywordHits("a return_period b return_period", "m.js", ["return_period"], 1)).toHaveLength(1);
+  });
+});
+
+describe("INAMHI's return periods", () => {
+  it("fit the simulation from 1980 only, every year counted however short", () => {
+    // 1979 has the biggest flood and is left out; 2026 has 10 days and is kept.
+    const sim = daily("1979-01-01", 365 * 47 + 12 + 10, (i) => (i === 100 ? 5000 : i % 365 === 200 ? 100 + (i % 7) * 10 : 20));
+    const fit = inamhiReturnPeriods(sim);
+    const maxima = annualMaxima(new Map([...sim].filter(([d]) => d >= "1980-01-01")), 1).map((m) => m.m3s);
+    expect(maxima).toHaveLength(47);
+    expect(fit).toEqual(gumbelReturnPeriods(maxima));
+  });
+
+  it("reads the thresholds off a Hydroviewer chart's trace names", () => {
+    expect(portalReturnPeriods(["Historical Simulation", "Periodos de retorno", "5 años: 731.5", "2 años: 599.6"])).toEqual([
+      { years: 2, m3s: 599.6 },
+      { years: 5, m3s: 731.5 },
+    ]);
+  });
+});
+
+describe("compareFlows", () => {
+  it("reads a model that is the measured river doubled as a flat 2× at every percentile, whatever its timing", () => {
+    const measured = daily("2015-01-01", 6 * 365, (i) => 50 + 40 * Math.sin(i / 20) + (i % 365 === 60 ? 400 : 0));
+    // The same distribution doubled, but shifted by 90 days: the timing is wrong, the shape is right.
+    const simulated: DailySeries = new Map([...measured].map(([d], i, all) => [d, 2 * all[(i + 90) % all.length]![1]]));
+    const a = compareFlows(measured, simulated)!;
+    expect(a.ratio).toBeCloseTo(2, 5);
+    for (const q of a.quantiles) expect(q.ratio).toBeCloseTo(2, 1);
+    expect(a.r).toBeLessThan(0.5);
+    expect(a.annual).toHaveLength(6);
+  });
+
+  it("shows a reading that saturates as a ratio that climbs at the top", () => {
+    const simulated = daily("2015-01-01", 6 * 365, (i) => 50 + 40 * Math.sin(i / 20) + (i % 97 === 0 ? 600 : 0));
+    const measured: DailySeries = new Map([...simulated].map(([d, v]) => [d, Math.min(v, 120)]));
+    const a = compareFlows(measured, simulated)!;
+    expect(a.quantiles.find((q) => q.percentile === 50)!.ratio).toBeCloseTo(1, 5);
+    expect(a.quantiles.find((q) => q.percentile === 99.9)!.ratio).toBeGreaterThan(4);
   });
 });

@@ -490,3 +490,24 @@ export function returnPeriodReachedWords(reached: number | null, twoYear: number
   if (reached === null) return `por debajo de la crecida de 2 años (${num(twoYear, 0)} m³/s)`;
   return `alcanza la crecida de ${reached} años`;
 }
+
+/**
+ * How closely GEOGLOWS' simulated flow follows the river CELEC measures, in words: its volume
+ * (mean simulated ÷ mean measured) and its timing (correlation of monthly means).
+ */
+export function modelFitWords(ratio: number, rMonthly: number | null): string {
+  const volume =
+    Math.abs(ratio - 1) <= RETURN_PERIOD_AGREEMENT
+      ? "un caudal medio parecido al que mide CELEC"
+      : ratio > 1
+        ? `en promedio ${num(ratio, 1)} veces el caudal que mide CELEC`
+        : `en promedio un ${num((1 - ratio) * 100, 0)} % menos del caudal que mide CELEC`;
+  if (rMonthly === null) return `Día a día, el modelo simula aquí ${volume}.`;
+  const timing =
+    rMonthly >= 0.8
+      ? "sus promedios mensuales siguen de cerca a los medidos"
+      : rMonthly >= 0.5
+        ? "sus promedios mensuales se parecen en parte a los medidos"
+        : "sus promedios mensuales se parecen poco a los medidos";
+  return `Día a día, el modelo simula aquí ${volume}, y ${timing} (correlación ${num(rMonthly, 2)}).`;
+}

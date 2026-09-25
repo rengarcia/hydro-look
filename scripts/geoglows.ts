@@ -41,6 +41,10 @@ import {
   compareFlows,
   FLOW_PERCENTILES,
   gumbelReturnPeriods,
+  INAMHI_FIRST_YEAR,
+  inamhiReturnPeriods,
+  portalReturnPeriods,
+  roundTable,
   type FlowAgreement,
   matchRiver,
   RETURN_PERIODS,
@@ -51,6 +55,7 @@ import {
   type RiverSegment,
 } from "../src/lib/geo/geoglows.ts";
 import { loadSeries } from "../src/lib/features/series.ts";
+import { parsePlotTraces } from "../src/lib/parse/inamhi-hydropower.ts";
 import { baseOf, bundleRefs, endpointsIn, isHtml, keywordHits, resolveRef, type EndpointHit } from "../src/lib/probe/portal.ts";
 import { toCsv } from "../src/lib/store/csv.ts";
 import { roundTo } from "../src/lib/util/numbers.ts";
@@ -239,6 +244,8 @@ interface PortalTry {
   archived: string | null;
   /** The start of the answer, for reading in the report. */
   head: string;
+  /** For a Hydroviewer `get-plots` answer: the river and the return periods the portal draws for it. */
+  portalReturnPeriods?: { riverId: number; values: ReturnPeriodValue[] };
 }
 
 interface PortalProbe {
@@ -273,6 +280,18 @@ const MAX_ARCHIVE_BYTES = 12_000_000;
 async function getText(url: string): Promise<{ status: number; text: string; contentType: string }> {
   const response = await fetch(url, { signal: AbortSignal.timeout(120_000), headers: { "user-agent": USER_AGENT } });
   return { status: response.status, text: await response.text(), contentType: response.headers.get("content-type") ?? "" };
+}
+
+/** A Hydroviewer chart's return periods, when the answer is one. */
+function portalCheck(url: string, text: string): Pick<PortalTry, "portalReturnPeriods"> {
+  const comid = /\/hydroviewer\/get-plots\?comid=(\d+)/.exec(url)?.[1];
+  if (!comid) return {};
+  try {
+    const values = portalReturnPeriods([...parsePlotTraces(text, "hs").keys()]);
+    return values.length ? { portalReturnPeriods: { riverId: Number(comid), values } } : {};
+  } catch {
+    return {};
+  }
 }
 
 async function probePortal(tries: readonly string[]): Promise<PortalProbe> {
@@ -338,6 +357,7 @@ async function probePortal(tries: readonly string[]): Promise<PortalProbe> {
         bytes: got.text.length,
         archived,
         head: got.text.slice(0, 1500),
+        ...portalCheck(url, got.text),
       });
     } catch (error) {
       tried.push({ url, status: `no answer: ${String(error)}`, contentType: "", bytes: 0, archived: null, head: "" });
@@ -360,7 +380,13 @@ async function probePortal(tries: readonly string[]): Promise<PortalProbe> {
 interface SiteResult {
   site: Site;
   match: RiverMatch;
-  geoglows: { daily: ReturnPeriodValue[]; hourly: ReturnPeriodValue[]; maxSimulated: number } | null;
+  geoglows: {
+    /** What INAMHI's Hydroviewer draws: the 1980 → simulation's annual maxima, fitted the same way. */
+    inamhi: ReturnPeriodValue[];
+    daily: ReturnPeriodValue[];
+    hourly: ReturnPeriodValue[];
+    maxSimulated: number;
+  } | null;
   observed: { maxima: AnnualMaximum[]; fit: ReturnPeriodValue[] | null } | null;
   /** The model's simulated daily flow against CELEC's measured inflow, on the days both have. */
   agreement: FlowAgreement | null;
@@ -403,15 +429,24 @@ function report(startedAt: string, store: StoreRead, portal: PortalProbe, result
   }
   push(
     "",
-    "## GEOGLOWS against the measured record",
+    "## INAMHI's return periods against the measured record",
     "",
-    "Daily-fit return-period flows, m³/s. **Measured** is the same method-of-moments Gumbel on the annual maxima of CELEC's",
-    `daily inflow, over calendar years with at least 330 readings; it needs ${MIN_OBSERVED_YEARS} such years.`,
+    "Return-period flows, m³/s. **INAMHI** is what the Hydroviewer draws: a method-of-moments Gumbel on the annual maxima of",
+    `GEOGLOWS' daily simulation from ${INAMHI_FIRST_YEAR}, every calendar year counted, the current one included. It is not the store's`,
+    "fit: **GEOGLOWS daily** and **hourly** are the store's own, on the simulation from 1940. **Portal** is the Hydroviewer's",
+    "chart for the river, where this run asked for it. **Measured** is the same Gumbel on the annual maxima of CELEC's daily",
+    `inflow, over calendar years with at least 330 readings; it needs ${MIN_OBSERVED_YEARS} such years.`,
     "",
     `| site | source | ${store.periods.map((p) => `${p} y`).join(" | ")} | years |`,
     `|---|---|${store.periods.map(() => "---").join("|")}|---|`,
   );
   for (const r of results) {
+    if (r.geoglows)
+      push(
+        `| ${r.site.site} | **INAMHI** (GEOGLOWS, ${INAMHI_FIRST_YEAR} →) | ${r.geoglows.inamhi.map((v) => fmt(v.m3s, 1)).join(" | ")} | ${INAMHI_FIRST_YEAR} → |`,
+      );
+    const portalValues = portal.tries.find((t) => t.portalReturnPeriods?.riverId === r.match.chosen?.segment.riverId)?.portalReturnPeriods;
+    if (portalValues) push(`| ${r.site.site} | portal, as drawn | ${portalValues.values.map((v) => fmt(v.m3s, 1)).join(" | ")} | |`);
     if (r.geoglows) push(`| ${r.site.site} | GEOGLOWS daily | ${r.geoglows.daily.map((v) => fmt(v.m3s)).join(" | ")} | 1940 → |`);
     if (r.geoglows)
       push(`| ${r.site.site} | GEOGLOWS hourly (Hydroviewer) | ${r.geoglows.hourly.map((v) => fmt(v.m3s)).join(" | ")} | 1940 → |`);
@@ -420,7 +455,7 @@ function report(startedAt: string, store: StoreRead, portal: PortalProbe, result
       `| ${r.site.site} | measured (CELEC) | ${fit ? fit.map((v) => fmt(v.m3s)).join(" | ") : store.periods.map(() => "—").join(" | ")} | ${r.observed?.maxima.length ?? 0} |`,
     );
     if (r.geoglows && fit) {
-      push(`| ${r.site.site} | GEOGLOWS ÷ measured | ${r.geoglows.daily.map((v, i) => `${fmt(v.m3s / fit[i]!.m3s, 2)}×`).join(" | ")} | |`);
+      push(`| ${r.site.site} | INAMHI ÷ measured | ${r.geoglows.inamhi.map((v, i) => `${fmt(v.m3s / fit[i]!.m3s, 2)}×`).join(" | ")} | |`);
     }
   }
   push(
@@ -533,7 +568,12 @@ async function main(): Promise<void> {
       match,
       agreement: sim && inflow.size > 0 ? compareFlows(inflow, sim, MIN_OBSERVED_YEARS) : null,
       geoglows: v
-        ? { daily: table(v["gumbel_daily"]), hourly: table(v["gumbel_hourly"]), maxSimulated: round(v["max_simulated"]![0]!, 1) }
+        ? {
+            inamhi: roundTable(inamhiReturnPeriods(sim!)),
+            daily: table(v["gumbel_daily"]),
+            hourly: table(v["gumbel_hourly"]),
+            maxSimulated: round(v["max_simulated"]![0]!, 1),
+          }
         : null,
       observed:
         inflow.size > 0
@@ -566,6 +606,7 @@ async function main(): Promise<void> {
     "upstream_km2",
     "downstream_km2",
     "area_diff_pct",
+    ...RETURN_PERIODS.map((p) => `q${p}_inamhi_m3s`),
     ...RETURN_PERIODS.map((p) => `q${p}_m3s`),
     ...RETURN_PERIODS.map((p) => `q${p}_hourly_m3s`),
     "max_simulated_m3s",
@@ -598,6 +639,7 @@ async function main(): Promise<void> {
         upstream_km2: round(c.segment.upstreamKm2, 1),
         downstream_km2: round(c.segment.downstreamKm2, 1),
         area_diff_pct: c.areaDiffPct,
+        ...Object.fromEntries(r.geoglows.inamhi.map((v) => [`q${v.years}_inamhi_m3s`, v.m3s])),
         ...Object.fromEntries(r.geoglows.daily.map((v) => [`q${v.years}_m3s`, v.m3s])),
         ...Object.fromEntries(r.geoglows.hourly.map((v) => [`q${v.years}_hourly_m3s`, v.m3s])),
         max_simulated_m3s: r.geoglows.maxSimulated,

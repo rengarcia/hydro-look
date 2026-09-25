@@ -302,17 +302,23 @@
                       "object",
                       "null"
                     ],
-                    "description": "GEOGLOWS River Forecast System v2 retrospective return periods at the river matched to this dam (data/reference/geoglows_return_periods.csv). Null where no river matched or `npm run geoglows` has not run. CC BY-NC-SA 4.0.",
+                    "description": "The return periods INAMHI's Hydroviewer (inamhi.geoglows.org) draws for the GEOGLOWS v2 river matched to this dam, beside the GEOGLOWS store's own fits (data/reference/geoglows_return_periods.csv). Null where no river matched or `npm run geoglows` has not run. CC BY-NC-SA 4.0.",
                     "properties": {
                       "river_id": {
                         "type": "integer",
                         "description": "GEOGLOWS v2 / TDX-Hydro river id (LINKNO)."
                       },
+                      "inamhi": {
+                        "$ref": "#/$defs/return_period_table",
+                        "description": "What INAMHI's Hydroviewer draws: a method-of-moments Gumbel on the annual maxima of GEOGLOWS' daily simulation from 1980, every calendar year counted. `reached_years` is read against these."
+                      },
                       "daily": {
-                        "$ref": "#/$defs/return_period_table"
+                        "$ref": "#/$defs/return_period_table",
+                        "description": "The GEOGLOWS store's own fit on the daily simulation from 1940."
                       },
                       "hourly": {
-                        "$ref": "#/$defs/return_period_table"
+                        "$ref": "#/$defs/return_period_table",
+                        "description": "The GEOGLOWS store's fit on hourly flow from 1940."
                       },
                       "area_diff_pct": {
                         "type": "number",
@@ -326,16 +332,44 @@
                           "integer",
                           "null"
                         ],
-                        "description": "Against `daily`: the longest return period whose flow today's inflow reaches; null below the 2-year flow."
+                        "description": "Against `inamhi`: the longest return period whose flow today's inflow reaches; null below the 2-year flow."
+                      },
+                      "simulated_vs_measured": {
+                        "type": [
+                          "object",
+                          "null"
+                        ],
+                        "description": "GEOGLOWS' simulated daily flow against CELEC's measured inflow on the days both have: mean simulated ÷ mean measured, and the correlation of monthly means.",
+                        "properties": {
+                          "days": {
+                            "type": "integer"
+                          },
+                          "ratio": {
+                            "type": "number"
+                          },
+                          "r_monthly": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "days",
+                          "ratio",
+                          "r_monthly"
+                        ]
                       }
                     },
                     "required": [
                       "river_id",
+                      "inamhi",
                       "daily",
                       "hourly",
                       "area_diff_pct",
                       "store_revision_date",
-                      "reached_years"
+                      "reached_years",
+                      "simulated_vs_measured"
                     ]
                   },
                   "measured": {

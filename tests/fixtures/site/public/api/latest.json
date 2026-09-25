@@ -83,6 +83,32 @@
         "return_periods": {
           "geoglows": {
             "river_id": 620988388,
+            "inamhi": [
+              {
+                "years": 2,
+                "m3s": 599.5
+              },
+              {
+                "years": 5,
+                "m3s": 731.5
+              },
+              {
+                "years": 10,
+                "m3s": 818.8
+              },
+              {
+                "years": 25,
+                "m3s": 929.2
+              },
+              {
+                "years": 50,
+                "m3s": 1011.1
+              },
+              {
+                "years": 100,
+                "m3s": 1092.3
+              }
+            ],
             "daily": [
               {
                 "years": 2,
@@ -137,7 +163,12 @@
             ],
             "area_diff_pct": -1.34,
             "store_revision_date": "2026-06-10",
-            "reached_years": null
+            "reached_years": null,
+            "simulated_vs_measured": {
+              "days": 6060,
+              "ratio": 1.953,
+              "r_monthly": 0.286
+            }
           },
           "measured": {
             "years": 15,
@@ -420,6 +451,32 @@
         "return_periods": {
           "geoglows": {
             "river_id": 670027091,
+            "inamhi": [
+              {
+                "years": 2,
+                "m3s": 694.3
+              },
+              {
+                "years": 5,
+                "m3s": 880.2
+              },
+              {
+                "years": 10,
+                "m3s": 1003.3
+              },
+              {
+                "years": 25,
+                "m3s": 1158.8
+              },
+              {
+                "years": 50,
+                "m3s": 1274.1
+              },
+              {
+                "years": 100,
+                "m3s": 1388.6
+              }
+            ],
             "daily": [
               {
                 "years": 2,
@@ -474,7 +531,12 @@
             ],
             "area_diff_pct": -0.35,
             "store_revision_date": "2026-06-10",
-            "reached_years": null
+            "reached_years": null,
+            "simulated_vs_measured": {
+              "days": 2901,
+              "ratio": 2.766,
+              "r_monthly": 0.755
+            }
           },
           "measured": {
             "years": 7,
@@ -569,6 +631,32 @@
         "return_periods": {
           "geoglows": {
             "river_id": 620922413,
+            "inamhi": [
+              {
+                "years": 2,
+                "m3s": 200
+              },
+              {
+                "years": 5,
+                "m3s": 272.7
+              },
+              {
+                "years": 10,
+                "m3s": 320.8
+              },
+              {
+                "years": 25,
+                "m3s": 381.5
+              },
+              {
+                "years": 50,
+                "m3s": 426.6
+              },
+              {
+                "years": 100,
+                "m3s": 471.4
+              }
+            ],
             "daily": [
               {
                 "years": 2,
@@ -623,7 +711,12 @@
             ],
             "area_diff_pct": 1.07,
             "store_revision_date": "2026-06-10",
-            "reached_years": null
+            "reached_years": null,
+            "simulated_vs_measured": {
+              "days": 2942,
+              "ratio": 0.752,
+              "r_monthly": 0.311
+            }
           },
           "measured": {
             "years": 7,
@@ -706,6 +799,32 @@
         "return_periods": {
           "geoglows": {
             "river_id": 621014469,
+            "inamhi": [
+              {
+                "years": 2,
+                "m3s": 1008.6
+              },
+              {
+                "years": 5,
+                "m3s": 1211.1
+              },
+              {
+                "years": 10,
+                "m3s": 1345.2
+              },
+              {
+                "years": 25,
+                "m3s": 1514.7
+              },
+              {
+                "years": 50,
+                "m3s": 1640.4
+              },
+              {
+                "years": 100,
+                "m3s": 1765.2
+              }
+            ],
             "daily": [
               {
                 "years": 2,
@@ -760,7 +879,12 @@
             ],
             "area_diff_pct": -1.13,
             "store_revision_date": "2026-06-10",
-            "reached_years": null
+            "reached_years": null,
+            "simulated_vs_measured": {
+              "days": 3714,
+              "ratio": 2.728,
+              "r_monthly": 0.144
+            }
           },
           "measured": {
             "years": 9,
@@ -843,6 +967,32 @@
         "return_periods": {
           "geoglows": {
             "river_id": 670078161,
+            "inamhi": [
+              {
+                "years": 2,
+                "m3s": 1624.1
+              },
+              {
+                "years": 5,
+                "m3s": 1845.8
+              },
+              {
+                "years": 10,
+                "m3s": 1992.6
+              },
+              {
+                "years": 25,
+                "m3s": 2178
+              },
+              {
+                "years": 50,
+                "m3s": 2315.6
+              },
+              {
+                "years": 100,
+                "m3s": 2452.1
+              }
+            ],
             "daily": [
               {
                 "years": 2,
@@ -897,7 +1047,12 @@
             ],
             "area_diff_pct": 0.62,
             "store_revision_date": "2026-06-10",
-            "reached_years": null
+            "reached_years": null,
+            "simulated_vs_measured": {
+              "days": 3305,
+              "ratio": 2.842,
+              "r_monthly": 0.875
+            }
           },
           "measured": {
             "years": 8,
@@ -980,6 +1135,32 @@
         "return_periods": {
           "geoglows": {
             "river_id": 620922213,
+            "inamhi": [
+              {
+                "years": 2,
+                "m3s": 1230
+              },
+              {
+                "years": 5,
+                "m3s": 1500.2
+              },
+              {
+                "years": 10,
+                "m3s": 1679.1
+              },
+              {
+                "years": 25,
+                "m3s": 1905.1
+              },
+              {
+                "years": 50,
+                "m3s": 2072.8
+              },
+              {
+                "years": 100,
+                "m3s": 2239.2
+              }
+            ],
             "daily": [
               {
                 "years": 2,
@@ -1034,7 +1215,12 @@
             ],
             "area_diff_pct": -0.81,
             "store_revision_date": "2026-06-10",
-            "reached_years": null
+            "reached_years": null,
+            "simulated_vs_measured": {
+              "days": 3717,
+              "ratio": 1.038,
+              "r_monthly": 0.272
+            }
           },
           "measured": {
             "years": 9,

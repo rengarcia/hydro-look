@@ -61,7 +61,7 @@ import { DATA_RAW, repoPath } from "../src/lib/util/paths.ts";
 
 interface Candidate {
   /** What this point is: the one the catchment is defined at, or an alternative to compare it with. */
-  role: "dam" | "intake lead" | "powerhouse" | "wikidata point";
+  role: "dam" | "intake lead" | "powerhouse" | "wikidata point" | "inamhi station";
   osm?: `${"node" | "way"}/${number}`;
   /** Used when there is no OSM element, or the OSM API does not answer; labelled either way. */
   recorded?: LatLon;
@@ -94,6 +94,23 @@ const BASINS: Basin[] = [
         osm: "way/311803060",
         recorded: { lat: -2.5953091, lon: -78.6218378 },
         evidence: "OSM 'Presa Mazar', waterway=dam, wikidata=Q1751861 — the same QID as Wikidata's point, 0.04 km and 0 m from it (§2.4)",
+      },
+    ],
+  },
+  {
+    basin: "paute_amaluza",
+    site: "amaluza",
+    label: "Amaluza (Paute, below Mazar)",
+    candidates: [
+      {
+        role: "inamhi station",
+        recorded: { lat: -2.58698, lon: -78.56553 },
+        evidence:
+          "INAMHI Hydropower app's station point for Amaluza (services.geoglows.org/api/hydropowers/get-station, archived under " +
+          "data/raw/inamhi/hydroviewer-ecuador_2026-09-25/ by probe-basins run 36089243838). The same service's points for Mazar, " +
+          "Delsitanisagua, Minas San Francisco and Coca Codo Sinclair lie 0.2, 0.06, 0.09 and 0.33 km from the OSM dams used above, " +
+          "so it marks the dam; no OSM element for the Amaluza (Daniel Palacios) dam was confirmed. The catchment contains Mazar's: " +
+          "Amaluza's inflow is Mazar's release plus the basin between",
       },
     ],
   },

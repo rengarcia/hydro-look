@@ -298,3 +298,34 @@ export function compareFlows(measured: DailySeries, simulated: DailySeries, minY
     simulatedSameYears: annual.length >= minYears ? gumbelReturnPeriods(annual.map((a) => a.simulated)) : null,
   };
 }
+
+// ------------------------------------------------------------------------------------------
+// The return periods INAMHI's Hydroviewer draws
+// ------------------------------------------------------------------------------------------
+
+/** INAMHI's Hydroviewer fits on the simulation from this year on (its historical series starts here). */
+export const INAMHI_FIRST_YEAR = 1980;
+
+/**
+ * The return periods INAMHI's Hydroviewer draws for a river: not the GEOGLOWS store's 1940 → fit,
+ * but the same method-of-moments Gumbel on the annual maxima of the daily simulation from 1980,
+ * every calendar year counted, the current one included however far it has run. Reproduced for
+ * Mazar's river to 0.1 m³/s against the portal's own chart (PLAN.md Phase 7).
+ */
+export function inamhiReturnPeriods(simulated: DailySeries, periods: readonly number[] = RETURN_PERIODS): ReturnPeriodValue[] {
+  const fromFirstYear: DailySeries = new Map([...simulated].filter(([d]) => Number(d.slice(0, 4)) >= INAMHI_FIRST_YEAR));
+  return gumbelReturnPeriods(
+    annualMaxima(fromFirstYear, 1).map((m) => m.m3s),
+    periods,
+  );
+}
+
+/** The thresholds in a Hydroviewer `get-plots` answer: traces named "2 años: 599.6". */
+export function portalReturnPeriods(traceNames: readonly string[]): ReturnPeriodValue[] {
+  const out: ReturnPeriodValue[] = [];
+  for (const name of traceNames) {
+    const m = /^(\d+) años: ([\d.]+)$/.exec(name.trim());
+    if (m) out.push({ years: Number(m[1]), m3s: Number(m[2]) });
+  }
+  return out.sort((a, b) => a.years - b.years);
+}
