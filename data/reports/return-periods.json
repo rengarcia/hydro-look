@@ -1,6 +1,6 @@
 {
- "startedAt": "2026-09-25T02:48:31Z",
- "finishedAt": "2026-09-25T02:48:54Z",
+ "startedAt": "2026-09-25T02:51:51Z",
+ "finishedAt": "2026-09-25T02:52:15Z",
  "store": {
   "url": "https://geoglows-v2.s3-us-west-2.amazonaws.com/retrospective/return-periods.zarr",
   "title": "River Forecast System v2 Retrospective Simulation Return Periods",
@@ -478,6 +478,231 @@
     "file": "main-WN7HSYMU.js"
    },
    {
+    "literal": "${urlGeoserver}/ecuador/wms?service=WMS&version=1.3.0&request=GetMap&layers=ecuador:provincias&styles=&format=image/png&transparent=true&crs=EPSG:3857&width=256&height=256&bbox={bbox-epsg-3857}",
+    "context": "oom:0,maxzoom:22}),i.setLayoutProperty(\"osm_cities_layer\",\"visibility\",\"none\")}addProvinces(i){i.addSource(\"provincias-svg\",{type:\"raster\",tileSize:256,tiles:[`${xs.urlGeoserver}/ecuador/wms?service=WMS&version=1.3.0&request=GetMap&layers=ecuador:provincias&styles=&format=image/png&transparent=true&crs=EPSG:3857&width=256&height=256&bbox={bbox-epsg-3857}`]}),i.addLayer({id:\"provincias-svg-layer\",type:\"raster\",source:\"provincias-svg\",paint:{\"raster-opacity\":1}}),i.setLayoutProperty(\"provincias-svg-layer\",\"visibi",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlGeoserver}/ecuador/wms?service=WMS&version=1.1.0&request=GetMap&layers=ecuador:flood2&styles=&format=image/png&transparent=true&crs=EPSG:3857&width=256&height=256&bbox={bbox-epsg-3857}",
+    "context": "r-opacity\":1}}),i.setLayoutProperty(\"provincias-svg-layer\",\"visibility\",\"none\")}addFloodRiskSGR(i){i.addSource(\"flood-risk\",{type:\"raster\",tileSize:256,tiles:[`${xs.urlGeoserver}/ecuador/wms?service=WMS&version=1.1.0&request=GetMap&layers=ecuador:flood2&styles=&format=image/png&transparent=true&crs=EPSG:3857&width=256&height=256&bbox={bbox-epsg-3857}`]}),i.addLayer({id:\"flood-risk-layer\",type:\"raster\",source:\"flood-risk\",paint:{\"raster-opacity\":1}}),i.setLayoutProperty(\"flood-risk-layer\",\"visibility\",\"none\"",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlGeoserver}/ecuador/wms?service=WMS&version=1.1.0&request=GetMap&layers=ecuador:landslides&styles=&format=image/png&transparent=true&crs=EPSG:3857&width=256&height=256&bbox={bbox-epsg-3857}",
+    "context": "ayer\",\"visibility\",\"none\"),i.moveLayer(\"flood-risk-layer\",\"drainage\")}addLandSlidesRiskSGR(i){i.addSource(\"landslides-risk\",{type:\"raster\",tileSize:256,tiles:[`${xs.urlGeoserver}/ecuador/wms?service=WMS&version=1.1.0&request=GetMap&layers=ecuador:landslides&styles=&format=image/png&transparent=true&crs=EPSG:3857&width=256&height=256&bbox={bbox-epsg-3857}`]}),i.addLayer({id:\"landslides-risk-layer\",type:\"raster\",source:\"landslides-risk\",paint:{\"raster-opacity\":1}}),i.setLayoutProperty(\"landslides-risk-layer\",\"vis",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlGeoserver}/ecuador/wms?service=WMS&version=1.1.0&request=GetMap&layers=ecuador:drought&styles=&format=image/png&transparent=true&crs=EPSG:3857&width=256&height=256&bbox={bbox-epsg-3857}",
+    "context": "layer\",\"visibility\",\"none\"),i.moveLayer(\"landslides-risk-layer\",\"drainage\")}addDroughtRiskSGR(i){i.addSource(\"drought-risk\",{type:\"raster\",tileSize:256,tiles:[`${xs.urlGeoserver}/ecuador/wms?service=WMS&version=1.1.0&request=GetMap&layers=ecuador:drought&styles=&format=image/png&transparent=true&crs=EPSG:3857&width=256&height=256&bbox={bbox-epsg-3857}`]}),i.addLayer({id:\"drought-risk-layer\",type:\"raster\",source:\"drought-risk\",paint:{\"raster-opacity\":1}}),i.setLayoutProperty(\"drought-risk-layer\",\"visibility\",",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlGeoserver}/ecuador/wms?service=WMS&version=1.3.0&request=GetMap&layers=ecuador:${y}&styles=&format=image/png&transparent=true&crs=EPSG:3857&width=256&height=256&bbox={bbox-epsg-3857}",
+    "context": "\"drought-risk-layer\",\"visibility\",\"none\"),i.moveLayer(\"drought-risk-layer\",\"drainage\")}addGenericLayer(i,y,t){i.addSource(t,{type:\"raster\",tileSize:256,tiles:[`${xs.urlGeoserver}/ecuador/wms?service=WMS&version=1.3.0&request=GetMap&layers=ecuador:${y}&styles=&format=image/png&transparent=true&crs=EPSG:3857&width=256&height=256&bbox={bbox-epsg-3857}`]}),i.addLayer({id:`${t}-layer`,type:\"raster\",source:t,paint:{\"raster-opacity\":1}}),i.setLayoutProperty(`${t}-layer`,\"visibility\",\"none\")}addLocations(i){let y",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlMartin}/${y}/{z}/{x}/{y}",
+    "context": "\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\").replace(/'/g,\"&#39;\"),e=new Intl.NumberFormat(\"es-EC\");i.getSource(y)||i.addSource(y,{type:\"vector\",tiles:[`${xs.urlMartin}/${y}/{z}/{x}/{y}`]}),i.getLayer(t)||i.addLayer({id:t,type:\"circle\",source:y,\"source-layer\":\"poblacion\",paint:{\"circle-color\":\"#5d5c5cff\",\"circle-radius\":3,\"circle-opacity\":.9,\"",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlMartin}/geoglows_drainage_ecuador/{z}/{x}/{y}",
+    "context": "ows_drainage_ecuador\",t=\"drainage_ecuador\",r=\"drainage\";this.removeLayer(t,i),this.removeLayer(r,i),this.removeSource(y,i),i.addSource(y,{type:\"vector\",tiles:[`${xs.urlMartin}/geoglows_drainage_ecuador/{z}/{x}/{y}`]}),i.addLayer({id:r,type:\"line\",source:y,\"source-layer\":y,paint:{\"line-color\":\"#4794c9\",\"line-width\":[\"interpolate\",[\"linear\"],[\"get\",\"order\"],1,.25,2,.5,3,.7",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlMartin}/mvt_hydroviewer_warnings_points/{z}/{x}/{y}?datetime=${y}",
+    "context": "droviewer_warnings_points\",r=\"hydroviewer_warnings_points\",e=this.layerActive;this.removeLayer(e,i),this.removeSource(t,i),i.addSource(t,{type:\"vector\",tiles:[`${xs.urlMartin}/mvt_hydroviewer_warnings_points/{z}/{x}/{y}?datetime=${y}`]}),console.log(`${xs.urlMartin}/mvt_hydroviewer_warnings_points/{z}/{x}/{y}?datetime=${y}`),i.addLayer({id:e,type:\"symbol\",source:t,\"source-layer\":r,layout:{\"",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlMartin}/mvt_hydroviewer_warnings_basins/{z}/{x}/{y}?datetime=${y}",
+    "context": "droviewer_warnings_basins\",r=\"hydroviewer_warnings_basins\",e=this.layerActive;this.removeLayer(e,i),this.removeSource(t,i),i.addSource(t,{type:\"vector\",tiles:[`${xs.urlMartin}/mvt_hydroviewer_warnings_basins/{z}/{x}/{y}?datetime=${y}`]}),i.addLayer({id:e,type:\"fill\",source:t,\"source-layer\":r,paint:{\"fill-color\":[\"match\",[\"get\",\"wd01\"],\"R0\",\"rgba(0,0,0,0)\",\"R2\",\"#FEF001\",\"R5\",\"#FD9A01\",\"R10\"",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlMartin}/mvt_nalbantis_range/{z}/{x}/{y}?start_date=${y}&end_date=${t}",
+    "context": "lowDroughtIndex(i,y,t){let r=\"mvt_nalbantis\",e=\"nalbantis\",u=this.layerActive;this.removeLayer(u,i),this.removeSource(r,i),i.addSource(r,{type:\"vector\",tiles:[`${xs.urlMartin}/mvt_nalbantis_range/{z}/{x}/{y}?start_date=${y}&end_date=${t}`]}),i.addLayer({id:u,type:\"fill\",source:r,\"source-layer\":e,paint:{\"fill-color\":[\"interpolate\",[\"linear\"],[\"to-number\",[\"coalesce\",[\"get\",y],0]],-10,\"#730000\",-",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlMartin}/mvt_meteo_warnings/{z}/{x}/{y}?warning=${y}",
+    "context": "\",e=this.layerActiveOverlay1,u=this.layerActiveOverlay2;this.removeLayer(e,i),this.removeLayer(u,i),this.removeSource(t,i),i.addSource(t,{type:\"vector\",tiles:[`${xs.urlMartin}/mvt_meteo_warnings/{z}/{x}/{y}?warning=${y}`]}),console.log(`${xs.urlMartin}/mvt_meteo_warnings/{z}/{x}/{y}?warning=${y}`),i.addLayer({id:e,type:\"fill\",source:t,\"source-layer\":r,paint:{\"fill-color\":[\"mat",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlGeoserver}/satellite_based_precipitation/wms?service=WMS&version=1.1.0&request=GetMap&layers=satellite_based_precipitation:${y}_${t}h&styles=&format=image/png&transparent=true&time=${r}T00:00:00.000Z&srs=EPSG:3857&width=256&height=256&bbox={bbox-epsg-3857}",
+    "context": "let e=\"wms_pacum\",u=\"wms_pacum\",l=this.layerActiveOverlay1,n=this.layerActiveOverlay2;this.removeLayer(l,i),this.removeLayer(n,i),this.removeSource(e,i);let h=`${xs.urlGeoserver}/satellite_based_precipitation/wms?service=WMS&version=1.1.0&request=GetMap&layers=satellite_based_precipitation:${y}_${t}h&styles=&format=image/png&transparent=true&time=${r}T00:00:00.000Z&srs=EPSG:3857&width=256&height=256&bbox={bbox-epsg-3857}`;i.addSource(e,{type:\"raster\",tiles:[h],tileSize:256}),i.addLayer({id:l,type:\"raster\",source:e}),i.moveLayer(l,\"drainage\")}updateLayerVisibility(i,y,t){i.getLa",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlMartin}/mvt_ffgs/{z}/{x}/{y}?datetime=${y}",
+    "context": "#FFFFFF\"]}addFFGS(i,y,t){let r=\"mvt_ffgs\",e=\"ffgs\",u=this.layerActiveOverlay1;this.removeLayer(u,i),this.removeSource(r,i),i.addSource(r,{type:\"vector\",tiles:[`${xs.urlMartin}/mvt_ffgs/{z}/{x}/{y}?datetime=${y}`]}),console.log(t),i.addLayer({id:u,type:\"fill\",source:r,\"source-layer\":e,paint:{\"fill-color\":this.stylesFFGS(t),\"fill-opacity\":1,\"fill-outline-color\":this.sty",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlAPI}/hydroviewer/get-meteo-warnings",
+    "context": "r,end:e}=this.utilsApp.getPreviousMonthRange();this.dateRangeControlDrought=this.formBuilder.group({start:[r],end:[e]})}initializedMeteoWarningControl(){fetch(`${xs.urlAPI}/hydroviewer/get-meteo-warnings`).then(t=>t.text()).then(t=>{let r=t.replace(/NaN/g,\"null\");return JSON.parse(r)}).then(t=>{this.meteoWarningsMetaData=t.result,this.meteoWarningTypes=[...new ",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlAPI}/hydroviewer/get-plots?comid=${this.comid}&date=${this.rangeDateFloodGeoglows[0]}&width=${e}",
+    "context": "anelFloodGeoglows.setValue(this.dateControlFloodGeoglows.value),this.template.showDataModal(),setTimeout(()=>{let e=this.panelPlot.nativeElement.offsetWidth,u=`${xs.urlAPI}/hydroviewer/get-plots?comid=${this.comid}&date=${this.rangeDateFloodGeoglows[0]}&width=${e}`;console.log(u),fetch(u).then(l=>l.text()).then(l=>{let n=l.replace(/NaN/g,\"null\");return JSON.parse(n)}).then(l=>{this.historicalSimulationPlot=l.hs,this.dail",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlAPI}/hydroviewer/get-forecast-table?comid=${this.comid}&date=${this.rangeDateFloodGeoglows[0]}",
+    "context": ",this.dailyAveragePlot=l.dp,this.monthlyAveragePlot=l.mp,this.flowDurationCurve=l.fd,this.volumePlot=l.vp,this.forecastPlot=l.fp,this.isReadyDataPlot=!0,fetch(`${xs.urlAPI}/hydroviewer/get-forecast-table?comid=${this.comid}&date=${this.rangeDateFloodGeoglows[0]}`).then(n=>n.text()).then(n=>{this.renderer.setProperty(this.table.nativeElement,\"innerHTML\",n)})})},300)}})}resizeMap(){setTimeout(()=>{this.map.resize()},10)}",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlGeoserver}/ecuador/ows",
+    "context": "&&h.setView(l,n,{animate:!1})})})}),setTimeout(()=>{this.map1.invalidateSize(),this.map2.invalidateSize(),this.map3.invalidateSize()},10)}buildWfsUrl(t){let r=`${xs.urlGeoserver}/ecuador/ows`,e=new URLSearchParams({service:\"WFS\",version:\"2.0.0\",request:\"GetFeature\",typeNames:`ecuador:${t}`,outputFormat:\"application/json\",srsName:\"EPSG:4326\"});retur",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlGeoserver}/${t}/wms",
+    "context": "ateGOESLayer(){return Bo(this,null,function*(){let t=\"goes\",r=Array.from(new Set(this.goesData.filter(c=>c.Band===this.selectedGoesBand).map(c=>c.Code)))[0],e=`${xs.urlGeoserver}/${t}/wms`,u=yield this.geoserver.getAvailableDatesFromImageMosaic(e,r),l=this.utils.parseGOESDatetime(u),n=u.map(c=>this.geoserver.getWMSFromImageMosaic(e,`${t}:${r}`,c",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlGeoserver}/satellite_based_precipitation/wms",
+    "context": "te(n.getDate()-e+1);let h=n.getFullYear(),c=String(n.getMonth()+1).padStart(2,\"0\"),a=String(n.getDate()).padStart(2,\"0\"),s=`${h}-${c}-${a}`,o=bf.tileLayer.wms(`${xs.urlGeoserver}/satellite_based_precipitation/wms`,{layers:`satellite_based_precipitation:${r}_${t}h`,format:\"image/png\",transparent:!0,version:\"1.1.0\",styles:\"\",srs:\"EPSG:3857\",time:`${l}T00:00:00.000Z`});thi",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlGeoserver}/postgis/wms",
+    "context": "getDroughtIndex(){let t=new Date(this.dateControlDrought.value),r=t.getFullYear(),e=String(t.getMonth()+1).padStart(2,\"0\"),u=`${r}-${e}-01`,l=bf.tileLayer.wms(`${xs.urlGeoserver}/postgis/wms`,{layers:\"postgis:nalbantis\",format:\"image/png\",transparent:!0,version:\"1.1.0\",srs:\"EPSG:3857\",viewparams:`dts:${u}`});this.timeControl3?.destroy();let n=` ",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlAPI}/hydropowers/get-observed-data-plot?hydropower=${this.selectedHydropower}&width=${n}&height=${h}",
+    "context": "getDate()).padStart(2,\"0\"),l=`${r}-${e}-${u}`;setTimeout(()=>{let n=this.panelPlot.nativeElement.offsetWidth,h=this.panelPlot.nativeElement.offsetHeight-100,c=`${xs.urlAPI}/hydropowers/get-observed-data-plot?hydropower=${this.selectedHydropower}&width=${n}&height=${h}`;fetch(c).then(s=>s.text()).then(s=>{let o=s.replace(/NaN/g,\"null\");return JSON.parse(o)}).then(s=>{this.dailyAveragePlot=s.hs});let a=`${xs.urlAPI}/hydropower",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlAPI}/hydropowers/get-forecast-plot?hydropower=${this.selectedHydropower}&width=${n}&height=${h}&date=${l}",
+    "context": "&width=${n}&height=${h}`;fetch(c).then(s=>s.text()).then(s=>{let o=s.replace(/NaN/g,\"null\");return JSON.parse(o)}).then(s=>{this.dailyAveragePlot=s.hs});let a=`${xs.urlAPI}/hydropowers/get-forecast-plot?hydropower=${this.selectedHydropower}&width=${n}&height=${h}&date=${l}`;fetch(a).then(s=>s.text()).then(s=>{let o=s.replace(/NaN/g,\"null\");return JSON.parse(o)}).then(s=>{this.forecastPlot=s.fp,this.isReadyDataPlot=!0})},300)}getH",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlAPI}/hydropowers/get-forecast-csv?hydropower=${this.selectedHydropower}&date=${l}",
+    "context": "CSV(){let t=new Date,r=t.getFullYear(),e=String(t.getMonth()+1).padStart(2,\"0\"),u=String(t.getDate()).padStart(2,\"0\"),l=`${r}-${e}-${u}`;setTimeout(()=>{let n=`${xs.urlAPI}/hydropowers/get-forecast-csv?hydropower=${this.selectedHydropower}&date=${l}`;window.location.href=n},300)}playTimeControl(){this.isPlay?(this.timeControl1?.pause(),this.isPlay=!1):(this.timeControl1?.play(),this.isPlay=!0)}previousTime",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlGeoserver}/ecuador/wms?",
+    "context": "ument.createElement(\"img\");return l.className=\"inamhi-logo\",l.src=\"assets/img/inamhi-white-logo.png\",l},u.addTo(this.map),this.countriesLayer=ks.tileLayer.wms(`${xs.urlGeoserver}/ecuador/wms?`,{layers:\"ecuador:paises_sudamerica\",format:\"image/svg\",transparent:!0,version:\"1.1.0\",zIndex:1e3}),this.countriesLayer.addTo(this.map),this.provinceLayer=ks.t",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlGeoserver}/wrf/wms",
+    "context": "p.Tag)))[0],e=this.dateControlForecast.value??new Date,u=this.utilsApp.computeForecastDate(e,\"isoz\",this.selectedForecastTemporal),l=u.map(p=>ks.tileLayer.wms(`${xs.urlGeoserver}/wrf/wms`,{layers:`wrf:${t}`,format:\"image/png\",transparent:!0,version:\"1.1.0\",styles:\"\",srs:\"EPSG:3857\",time:`${p}`,dim_initd:`${u[0]}`})),n=this.utilsApp.computeForec",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlGeoserver}/${r}/wms",
+    "context": "sPlay;this.isPlay=!1;let r=\"goes\",e=this.goesData.filter(a=>a.Product===this.selectedGoesProduct&&a.Band===this.selectedGoesBand)[0].Code;console.log(e);let u=`${xs.urlGeoserver}/${r}/wms`,l=`${xs.urlGeoserver}/postgis/wms`,n=yield this.geoserver.getAvailableDatesFromImageMosaic(u,e),h=this.utilsApp.parseGOESDatetime(n),c=n.map(a=>this.geoserver",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlMartin}/mvt_meteo_warnings/{z}/{x}/{y}?warning=${this.selectedMeteoWarning}",
+    "context": "ectedMeteoWarning=this.meteoWarnings[this.meteoWarnings.length-1]}updateMeteoWarningLayer(){return Bo(this,null,function*(){let t=yield this.vg.getLeaflet(),r=`${xs.urlMartin}/mvt_meteo_warnings/{z}/{x}/{y}?warning=${this.selectedMeteoWarning}`,e=\"meteo_warnings\",u={Medio:\"#FFFF4D\",Alto:\"#FFC44E\",\"Muy Alto\":\"#EF4C4D\"},l={Crecida:\"#17249c\",Incendio:\"#9c1737\",\"Baja Temperatura\":\"#17249c\"},n=o=>{let d=o",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlMartin}/mvt_ffgs/{z}/{x}/{y}?datetime=${u}",
+    "context": "his.dateControlFFGS.value??new Date,e=this.utilsApp.getDateRangeGeoglows(r),u=`${e[0]} ${this.selectedFFGSRun}:00:00`,l=`${e[0]} ${this.selectedFFGSRun}:00`,n=`${xs.urlMartin}/mvt_ffgs/{z}/{x}/{y}?datetime=${u}`,h=\"ffgs\",c=\"\";this.selectedFFGSProduct===\"Humedad del suelo\"&&(c=` <b><i class=\"fa-regular fa-house-flood-water\"></i></b> <b>Flash Flood Guida",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlGeoserver}/ffgs/wms",
+    "context": "rsiann_no_precipitation\",format:\"image/png\",transparent:!0,version:\"1.1.0\",styles:\"\",srs:\"EPSG:3857\",time:`${r}`}))[0],this.soilMoistureLayer=ks.tileLayer.wms(`${xs.urlGeoserver}/ffgs/wms`,{layers:\"ffgs:soil_moisture\",format:\"image/png\",transparent:!0,version:\"1.1.0\"})}updatePacum24(){if(this.updateOverlayers(!this.isActivePacum24Layer,this.pacu",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlAPI}/met-data-explorer/goes-hotspots",
+    "context": "trol();h.innerHTML=l,this.soilMoistureLegend=n.addTo(this.map)}else this.soilMoistureLegend.remove()}autoUpdateFireGOES(){if(this.isActiveFireGOESLayer){let t=`${xs.urlAPI}/met-data-explorer/goes-hotspots`;fetch(t).then(l=>l.json()).then(l=>{this.fireGOESLayer=ks.geoJSON(l,{pointToLayer:(n,h)=>ks.marker(h,{icon:ks.icon({iconUrl:`assets/ico/M${n.properties.diff}.",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "${urlAPI}/met-data-explorer/get-sngr-events",
+    "context": "nge.value.start),e=t(this.sngrEventDateRange.value.end),u=this.selectedSngrEvent,l=this.selectedSngrFilter===\"Fecha de actualizaci\\xF3n\"?\"update\":\"datetime\",n=`${xs.urlAPI}/met-data-explorer/get-sngr-events`;fetch(`${n}?start=${r}&end=${e}&event=${u}&filtertime=${l}`).then(h=>{if(!h.ok)throw new Error(`HTTP ${h.status} - ${h.statusText}`);return h.json()}).then(h=",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "retorno",
+    "context": "t\",11),xo(\"ngModelChange\",function(n){return wi(u),bo(e.isActiveFlood002,n)||(e.isActiveFlood002=n),Ti(n)}),ca(\"ngModelChange\",function(){return wi(u),Ti(e.updateFloodWarnings())}),An(),Rn(6,\"label\",12),Er(7,\"Periodo de retorno: 2 a\\xF1os\"),An()(),Rn(8,\"div\",10)(9,\"input\",13),xo(\"ngModelChange\",function(n){return wi(u),bo(e.isActiveFlood005,n)||(e.isActiveFlood005=n),Ti(n)}),ca(\"ngModelChange\",function(){return wi(u),Ti(e.updateFloodWarnings()",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "retorno",
+    "context": ",13),xo(\"ngModelChange\",function(n){return wi(u),bo(e.isActiveFlood005,n)||(e.isActiveFlood005=n),Ti(n)}),ca(\"ngModelChange\",function(){return wi(u),Ti(e.updateFloodWarnings())}),An(),Rn(10,\"label\",14),Er(11,\"Periodo de retorno: 5 a\\xF1os\"),An()(),Rn(12,\"div\",10)(13,\"input\",15),xo(\"ngModelChange\",function(n){return wi(u),bo(e.isActiveFlood010,n)||(e.isActiveFlood010=n),Ti(n)}),ca(\"ngModelChange\",function(){return wi(u),Ti(e.updateFloodWarnings",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "retorno",
+    "context": ",15),xo(\"ngModelChange\",function(n){return wi(u),bo(e.isActiveFlood010,n)||(e.isActiveFlood010=n),Ti(n)}),ca(\"ngModelChange\",function(){return wi(u),Ti(e.updateFloodWarnings())}),An(),Rn(14,\"label\",16),Er(15,\"Periodo de retorno: 10 a\\xF1os\"),An()(),Rn(16,\"div\",10)(17,\"input\",17),xo(\"ngModelChange\",function(n){return wi(u),bo(e.isActiveFlood025,n)||(e.isActiveFlood025=n),Ti(n)}),ca(\"ngModelChange\",function(){return wi(u),Ti(e.updateFloodWarning",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "retorno",
+    "context": ",17),xo(\"ngModelChange\",function(n){return wi(u),bo(e.isActiveFlood025,n)||(e.isActiveFlood025=n),Ti(n)}),ca(\"ngModelChange\",function(){return wi(u),Ti(e.updateFloodWarnings())}),An(),Rn(18,\"label\",18),Er(19,\"Periodo de retorno: 25 a\\xF1os\"),An()(),Rn(20,\"div\",10)(21,\"input\",19),xo(\"ngModelChange\",function(n){return wi(u),bo(e.isActiveFlood050,n)||(e.isActiveFlood050=n),Ti(n)}),ca(\"ngModelChange\",function(){return wi(u),Ti(e.updateFloodWarning",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "hydropowers/",
+    "context": "er2=this.makeHydroWfsLayer(u).addTo(this.map2),this.hydropowerLayer3=this.makeHydroWfsLayer(u).addTo(this.map3),this.map1.fitBounds(this.hydropowerLayer1.getBounds());let l=yield fetch(`https://services.geoglows.org/api/hydropowers/get-station?hydropower=${this.selectedHydropower}`,{headers:{Accept:\"application/json\"}}),n;n=yield l.json(),this.hydropowerPoint1=this.makeHydroWfsPoint(n).addTo(this.map1),this.hydropowerPoint2=this.makeHydroWfsPoint(n",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "hydropowers/",
+    "context": "ing(t.getMonth()+1).padStart(2,\"0\"),u=String(t.getDate()).padStart(2,\"0\"),l=`${r}-${e}-${u}`;setTimeout(()=>{let n=this.panelPlot.nativeElement.offsetWidth,h=this.panelPlot.nativeElement.offsetHeight-100,c=`${xs.urlAPI}/hydropowers/get-observed-data-plot?hydropower=${this.selectedHydropower}&width=${n}&height=${h}`;fetch(c).then(s=>s.text()).then(s=>{let o=s.replace(/NaN/g,\"null\");return JSON.parse(o)}).then(s=>{this.dailyAveragePlot=s.hs});let a=`",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "hydropowers/",
+    "context": "data-plot?hydropower=${this.selectedHydropower}&width=${n}&height=${h}`;fetch(c).then(s=>s.text()).then(s=>{let o=s.replace(/NaN/g,\"null\");return JSON.parse(o)}).then(s=>{this.dailyAveragePlot=s.hs});let a=`${xs.urlAPI}/hydropowers/get-forecast-plot?hydropower=${this.selectedHydropower}&width=${n}&height=${h}&date=${l}`;fetch(a).then(s=>s.text()).then(s=>{let o=s.replace(/NaN/g,\"null\");return JSON.parse(o)}).then(s=>{this.forecastPlot=s.fp,this.isR",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "hydropowers/",
+    "context": "p,this.isReadyDataPlot=!0})},300)}getHydrographCSV(){let t=new Date,r=t.getFullYear(),e=String(t.getMonth()+1).padStart(2,\"0\"),u=String(t.getDate()).padStart(2,\"0\"),l=`${r}-${e}-${u}`;setTimeout(()=>{let n=`${xs.urlAPI}/hydropowers/get-forecast-csv?hydropower=${this.selectedHydropower}&date=${l}`;window.location.href=n},300)}playTimeControl(){this.isPlay?(this.timeControl1?.pause(),this.isPlay=!1):(this.timeControl1?.play(),this.isPlay=!0)}previous",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "selectedHydropower=",
+    "context": "lot.layout)(\"useResizeHandler\",!0)}}function MJ(f,i){f&1&&Ni(0,\"app-loading\")}zm.plotlyjs=uJ;var kO=(()=>{let i=class i{constructor(){this.dataAppConfig=new YT,this.geoserver=new U1,this.utils=new hg,this.isPlay=!1,this.selectedHydropower=\"Agoy\\xE1n\",this.hydropowers=[\"Agoy\\xE1n\",\"Amaluza\",\"Coca Codo Sinclair\",\"Daule Peripa\",\"Delsitanisagua\",\"Mazar\",\"Minas San Francisco\",\"Pisayambo\"],this.goesData=this.dataAppConfig.goesData,this.goesProducts=this.dataApp",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "selectedHydropower=",
+    "context": "-template\",5,0)(2,\"div\",6)(3,\"app-dropdown\",7)(4,\"mat-form-field\",8)(5,\"mat-label\"),Er(6,\"Central Hidroel\\xE9ctrica:\"),An(),Rn(7,\"mat-select\",9),xo(\"ngModelChange\",function(n){return wi(u),bo(e.selectedHydropower,n)||(e.selectedHydropower=n),Ti(n)}),Mo(8,pJ,2,2,\"mat-option\",10),An()(),Rn(9,\"button\",11),ca(\"click\",function(){return wi(u),Ti(e.updateHydropower())}),Ni(10,\"i\",12),Er(11,\"Seleccionar \"),An(),Rn(12,\"button\",11),ca(\"click\",function(){return wi(u",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "comid=",
+    "context": ",this.dateControlFloodGeoglows=new Ku(new Date),this.dateControlPanelFloodGeoglows=new Ku(new Date),this.minDateFloodGeoglows=new Date(\"2025-01-01\"),this.maxDateFloodGeoglows=new Date,this.rangeDateFloodGeoglows=[],this.comid=\"\",this.latitude=\"\",this.longitude=\"\",this.river=\"\",this.province=\"\",this.canton=\"\",this.htmlContent=\"\",this.isReadyDataPlot=!1,this.wdKeys=[\"wd01\",\"wd02\",\"wd03\",\"wd04\",\"wd05\",\"wd06\",\"wd07\",\"wd08\",\"wd09\",\"wd10\",\"wd11\",\"w",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "comid=",
+    "context": "his.rangeDateFloodGeoglows[0],this.rangeDateFloodGeoglows[this.activeDateIndex]),this.map.on(\"click\",\"drainage_ecuador\",t=>{if(this.isReadyDataPlot=!1,t.features&&t.features.length>0){let r=t.features[0].properties;this.comid=r.comid,this.latitude=r.latitude,this.longitude=r.longitude,this.river=r.river,this.province=r.province,this.canton=r.canton,this.dateControlPanelFloodGeoglows.setValue(this.dateControlFloodGeoglows.value),this.template.",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "comid=",
+    "context": ".canton,this.dateControlPanelFloodGeoglows.setValue(this.dateControlFloodGeoglows.value),this.template.showDataModal(),setTimeout(()=>{let e=this.panelPlot.nativeElement.offsetWidth,u=`${xs.urlAPI}/hydroviewer/get-plots?comid=${this.comid}&date=${this.rangeDateFloodGeoglows[0]}&width=${e}`;console.log(u),fetch(u).then(l=>l.text()).then(l=>{let n=l.replace(/NaN/g,\"null\");return JSON.parse(n)}).then(l=>{this.historicalSimulationPlot=l.hs,this.d",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
+    "literal": "comid=",
+    "context": "ulationPlot=l.hs,this.dailyAveragePlot=l.dp,this.monthlyAveragePlot=l.mp,this.flowDurationCurve=l.fd,this.volumePlot=l.vp,this.forecastPlot=l.fp,this.isReadyDataPlot=!0,fetch(`${xs.urlAPI}/hydroviewer/get-forecast-table?comid=${this.comid}&date=${this.rangeDateFloodGeoglows[0]}`).then(n=>n.text()).then(n=>{this.renderer.setProperty(this.table.nativeElement,\"innerHTML\",n)})})},300)}})}resizeMap(){setTimeout(()=>{this.map.resize()},10)}updateFl",
+    "file": "main-WN7HSYMU.js"
+   },
+   {
     "literal": "http://www.w3.org/2000/svg",
     "context": ".createIcon(s||T.question)),r.setAttribute(\"data-gravity\",i.gravity||\"n\"),r},t.createIcon=function(i){var n,r=k(i.height)?Number(i.height):i.ascent-i.descent,a=\"http://www.w3.org/2000/svg\";if(i.path){(n=document.createElementNS(a,\"svg\")).setAttribute(\"viewBox\",[0,0,i.width,r].join(\" \")),n.setAttribute(\"class\",\"icon\");var u=document.createElementN",
     "file": "scripts-YXDGOZI7.js"
@@ -618,7 +843,32 @@
     "file": "chunk-K2TFF7JK.js"
    }
   ],
-  "tries": []
+  "tries": [
+   {
+    "url": "https://services.geoglows.org/api/hydroviewer/get-forecast-csv?comid=620988388&date=2026-09-24",
+    "status": "HTTP 200",
+    "contentType": "text/csv",
+    "bytes": 13273,
+    "archived": "inamhi/hydroviewer-ecuador_2026-09-25/try-1.gz",
+    "head": "datetime,flow_max,flow_75,flow_avg,flow_25,flow_min,high_res\n2026-09-24 00:00:00,29.411,29.411,29.411,29.411,29.411,29.939\n2026-09-24 01:00:00,,,,,,29.682\n2026-09-24 02:00:00,,,,,,30.007\n2026-09-24 03:00:00,31.076,30.0205,29.903,29.8375,29.642,30.2\n2026-09-24 04:00:00,,,,,,30.564\n2026-09-24 05:00:00,,,,,,30.827\n2026-09-24 06:00:00,31.541,30.201,30.014,29.88,29.504,30.841\n2026-09-24 07:00:00,,,,,,30.886\n2026-09-24 08:00:00,,,,,,31.119\n2026-09-24 09:00:00,32.312,29.880499999999998,29.591,29.301000000000002,28.595,31.333\n2026-09-24 10:00:00,,,,,,31.301\n2026-09-24 11:00:00,,,,,,31.017\n2026-09-24 12:00:00,33.377,30.395000000000003,30.018,29.6055,28.529,30.791\n2026-09-24 13:00:00,,,,,,30.749\n2026-09-24 14:00:00,,,,,,30.82\n2026-09-24 15:00:00,33.429,30.6005,30.075,29.6785,28.284,30.944\n2026-09-24 16:00:00,,,,,,31.049\n2026-09-24 17:00:00,,,,,,31.095\n2026-09-24 18:00:00,34.28,31.158,30.368,29.87,28.209,31.141\n2026-09-24 19:00:00,,,,,,31.184\n2026-09-24 20:00:00,,,,,,31.286\n2026-09-24 21:00:00,34.647,31.9485,30.994,30.3555,28.611,31.384\n2026-09-24 22:00:00,,,,,,31.208\n2026-09-24 23:00:00,,,,,,30.993\n2026-09-25 00:00:00,37.407,32.565,31.221,30.587,28.473,30.874\n2026-09-25 01:00:00,,,,,,30.751\n2026-09-25 02:00:00,,,,,,30.831\n2026-09-25 03:00:00,40.281,33.2975,31.718,30.9925,28.771,31.174\n2026-09-25 04:00:00,,,,,,31.487\n2026-09-25 05:00:00,,,,,,31.7\n2026-09-25 06:00:00,41.807,34.234,32.142,31.066000000000003,28.848,31.792\n2026-09-25 07:00:00,,,,,,31.701\n2026-09-25 08:00:00,,,,,,31.558\n2026"
+   },
+   {
+    "url": "https://services.geoglows.org/api/hydroviewer/get-historical-csv?comid=620988388",
+    "status": "HTTP 200",
+    "contentType": "text/csv",
+    "bytes": 315168,
+    "archived": "inamhi/hydroviewer-ecuador_2026-09-25/try-2.gz",
+    "head": "datetime,value\n1980-01-01,93.497\n1980-01-02,72.376\n1980-01-03,81.222\n1980-01-04,98.655\n1980-01-05,71.908\n1980-01-06,56.408\n1980-01-07,48.07\n1980-01-08,52.494\n1980-01-09,53.227\n1980-01-10,46.691\n1980-01-11,44.96\n1980-01-12,67.063\n1980-01-13,111.977\n1980-01-14,116.036\n1980-01-15,114.055\n1980-01-16,144.495\n1980-01-17,166.825\n1980-01-18,198.865\n1980-01-19,182.438\n1980-01-20,228.891\n1980-01-21,266.588\n1980-01-22,147.022\n1980-01-23,92.109\n1980-01-24,68.033\n1980-01-25,61.99\n1980-01-26,64.337\n1980-01-27,70.417\n1980-01-28,77.43\n1980-01-29,77.062\n1980-01-30,116.67\n1980-01-31,235.047\n1980-02-01,304.405\n1980-02-02,262.569\n1980-02-03,202.683\n1980-02-04,173.049\n1980-02-05,174.832\n1980-02-06,197.832\n1980-02-07,233.698\n1980-02-08,291.713\n1980-02-09,360.503\n1980-02-10,302.69\n1980-02-11,286.026\n1980-02-12,298.636\n1980-02-13,201.666\n1980-02-14,139.453\n1980-02-15,129.769\n1980-02-16,136.166\n1980-02-17,174.539\n1980-02-18,339.479\n1980-02-19,347.904\n1980-02-20,346.837\n1980-02-21,316.136\n1980-02-22,334.728\n1980-02-23,277.525\n1980-02-24,239.395\n1980-02-25,226.235\n1980-02-26,240.183\n1980-02-27,190.571\n1980-02-28,200.372\n1980-02-29,191.246\n1980-03-01,168.583\n1980-03-02,181.877\n1980-03-03,217.298\n1980-03-04,403.836\n1980-03-05,566.924\n1980-03-06,335.35\n1980-03-07,290.163\n1980-03-08,257.253\n1980-03-09,203.552\n1980-03-10,168.54\n1980-03-11,170.404\n1980-03-12,160.625\n1980-03-13,148.477\n1980-03-14,141.746\n1980-03-15,135.726\n1980-03-16,150.97\n1980-03-17,148.277\n1980-03-18,155.346\n1980-03-19,193.998\n1980-03-20,2"
+   },
+   {
+    "url": "https://services.geoglows.org/api/hydropowers/get-station?hydropower=Mazar",
+    "status": "HTTP 200",
+    "contentType": "application/json",
+    "bytes": 321,
+    "archived": "inamhi/hydroviewer-ecuador_2026-09-25/try-3.gz",
+    "head": "{\"type\": \"FeatureCollection\", \"features\": [{\"id\": \"0\", \"type\": \"Feature\", \"properties\": {\"hydropower\": \"Mazar\", \"latitude\": -2.5972, \"longitude\": -78.6221}, \"geometry\": {\"type\": \"Point\", \"coordinates\": [-78.6221, -2.5972]}, \"bbox\": [-78.6221, -2.5972, -78.6221, -2.5972]}], \"bbox\": [-78.6221, -2.5972, -78.6221, -2.5972]}"
+   }
+  ]
  },
  "rule": "segments whose point lies within half their length + 2 km of the pour point; closest downstream drainage area to the delineated catchment, within ±10%",
  "results": [
