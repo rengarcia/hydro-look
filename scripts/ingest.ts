@@ -279,9 +279,9 @@ async function main(): Promise<void> {
         outer: for (const date of eachDay(from, to)) {
           for (const report of DAILY_REPORTS) {
             // Ask by the date the endpoint answers to, but skip by the date the answer is
-            // stored under: repDiaNivQIng returns the previous day's reading, so a run that
-            // checked the requested date would find nothing stored and re-fetch the whole
-            // range on every dispatch.
+            // stored under: repDiaNivQIng and repDiaPotQTurb return the previous day's
+            // reading, so a run that checked the requested date would find nothing stored and
+            // re-fetch the whole range on every dispatch.
             const stored = addDays(date, DATA_DATE_OFFSET_DAYS[report.source] ?? 0);
             if (present.has(`${stored}|${report.source}`)) continue;
             const call = {

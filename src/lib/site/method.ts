@@ -21,10 +21,12 @@ export const METHOD_NOTES: readonly MethodNote[] = [
       "como `nivel_pct_banda`.",
   },
   {
-    title: "Un reporte de CELEC trae los datos del día anterior",
+    title: "Dos reportes de CELEC traen los datos del día anterior",
     body:
       "Si al reporte `repDiaNivQIng` se le piden los datos de un día, entrega los del día anterior con la fecha cambiada; " +
-      "lo comprobamos en 113 días seguidos. Por eso cada dato se guarda con el día al que de verdad corresponde.",
+      "lo comprobamos en 113 días seguidos. `repDiaPotQTurb` hace lo mismo: publica el caudal turbinado de Molino con " +
+      "las mismas cifras que `repDiaNivQIng` da como caudal de entrada a Sopladora, en los 116 días revisados. Por eso " +
+      "cada dato se guarda con el día al que de verdad corresponde.",
   },
   {
     title: "El caudal es el agua que entra al embalse",

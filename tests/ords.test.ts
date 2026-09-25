@@ -14,6 +14,7 @@ import {
   parseRepDiaVolAlm,
 } from "../src/lib/parse/ords.ts";
 import type { Observation } from "../src/lib/parse/types.ts";
+import { addDays } from "../src/lib/util/dates.ts";
 import { fixture } from "./helpers.ts";
 
 const ords = (name: string) => fixture("celec_ords", name);
@@ -94,8 +95,28 @@ describe("the one-day reports", () => {
 
   it("reads power, turbined flow and units online", () => {
     const result = parseRepDiaPotQTurb(ords("ords_rep_repDiaPotQTurb.txt"));
-    expect(find(result.observations, "2026-09-20", "minas_san_francisco", "potencia_mw")?.value).toBe(202.28);
-    expect(find(result.observations, "2026-09-20", "minas_san_francisco", "unidades_linea")?.value).toBe(3);
+    // Stamped 2026-09-20 and stored on 2026-09-19, like repDiaNivQIng. See DATA_DATE_OFFSET_DAYS.
+    expect(find(result.observations, "2026-09-19", "minas_san_francisco", "potencia_mw")?.value).toBe(202.28);
+    expect(find(result.observations, "2026-09-19", "minas_san_francisco", "unidades_linea")?.value).toBe(3);
+    expect(find(result.observations, "2026-09-20", "minas_san_francisco", "potencia_mw")).toBeUndefined();
+  });
+
+  /**
+   * Why repDiaPotQTurb has to be dated like repDiaNivQIng: Molino's tailrace is Sopladora's
+   * intake, and the two reports publish that one flow twice, to the digit, whenever they are
+   * asked for the same date (stored, like every value, to six decimals). The same reading must
+   * land on the same day in both.
+   */
+  it.each([
+    ["15-06-2016", "2016-06-14", 153.078865],
+    ["15-06-2019", "2019-06-14", 97.624395],
+    ["15-01-2022", "2022-01-14", 52.486308],
+    ["15-10-2024", "2024-10-14", 0],
+  ])("dates Molino's turbined flow of %s on the day Sopladora's inflow lands, %s", (stamp, date, value) => {
+    const inflow = parseRepDiaNivQIng(ords(`ords_hist_repDiaNivQIng_${stamp}.txt`));
+    const turbined = parseRepDiaPotQTurb(ords(`ords_hist_repDiaPotQTurb_${stamp}.txt`));
+    expect(find(inflow.observations, date, "sopladora", "caudal_m3s")?.value).toBe(value);
+    expect(find(turbined.observations, date, "molino", "q_turbinado_m3s")?.value).toBe(value);
   });
 
   it("dates produced energy from the row and the plan from the requested day", () => {
@@ -113,6 +134,26 @@ describe("the one-day reports", () => {
     const result = parseRepDiaRegAyer(ords("ords_rep_repDiaRegAyer.txt"));
     expect(find(result.observations, "2026-09-20", "molino", "energia_anual_acum_gwh")?.value).toBe(4062);
     expect(find(result.observations, "2026-09-20", "sopladora", "volumen_vertido_hm3")?.value).toBe(0.187129);
+  });
+
+  /**
+   * Despite the "Ayer", repDiaRegAyer is dated as stamped: its plant factor is repDiaEner12m's
+   * energy for the stamped day over a fixed capacity, and a day either side is nowhere near.
+   */
+  it.each([
+    ["ords_hist_repDiaRegAyer_15-01-2022.txt", "ords_hist_repDiaEner12m_2022-03.txt", "2022-01-15"],
+    ["ords_hist_repDiaRegAyer_15-10-2024.txt", "ords_hist_repDiaEner12m_2025-03.txt", "2024-10-15"],
+  ])("dates %s's plant factor on the day of the energy it was computed from", (regFixture, enerFixture, date) => {
+    const capacityMw = { mazar: 170, minas_san_francisco: 270, sopladora: 486.9, molino: 1096.8 };
+    const factors = parseRepDiaRegAyer(ords(regFixture)).observations;
+    const energy = parseRepDiaEner12m(ords(enerFixture)).observations;
+    for (const [site, capacity] of Object.entries(capacityMw)) {
+      const factor = find(factors, date, site, "factor_planta_pct")!.value / 100;
+      const implied = (day: string) => find(energy, day, site, "produccion_mwh")!.value / factor / 24;
+      expect(Math.abs(implied(date) / capacity - 1)).toBeLessThan(0.001);
+      expect(Math.abs(implied(addDays(date, -1)) / capacity - 1)).toBeGreaterThan(0.05);
+      expect(Math.abs(implied(addDays(date, 1)) / capacity - 1)).toBeGreaterThan(0.05);
+    }
   });
 });
 

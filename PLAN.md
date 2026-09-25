@@ -652,6 +652,18 @@ their own `fecha` in the archive. The family does not share the habit: `repDiaVo
 `repDiaRegAyer` publish nothing a second source covers, so they are untested and assumed correct.
 `DATA_DATE_OFFSET_DAYS` in `src/lib/registry.ts` is where that list lives.
 
+*Settled 2026-09-25: both were testable after all, and one assumption was wrong.* `repDiaPotQTurb`
+is a day late too. Its Molino `q_turbinado` is `repDiaNivQIng`'s Sopladora `q_ingresado` to every
+published decimal when both are asked for the same date (116 of 116 archived days and all five
+Phase 0 captures). Molino's tailrace feeds Sopladora's intake, so it is one reading and cannot
+belong to two days. Correlation with the plants' own `repDiaEner12m` generation agrees, peaking a
+day before the stamp (Molino 0.826 at D−1 against 0.635 at D). Hourly `{code}EnerDia` shows why
+the correlation stops near 0.8: the report is a snapshot at its stamped midnight, not a daily
+figure, which also explains the ~1,000 MWh miss above. Its 1,392 stored rows were rebuilt from
+the archive under D−1 by `scripts/redate.ts`. `repDiaRegAyer` is dated correctly: its plant
+factor is `repDiaEner12m`'s energy for the stamped day over a fixed capacity on 458 of 458
+plant-days, and on the 2022 and 2024 captures.
+
 Acceptance: daily level and inflow for the three plants; a documented semantics note per variable.
 Both met.
 

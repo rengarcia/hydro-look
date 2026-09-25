@@ -189,14 +189,40 @@ export function siteFromLabel(label: string): SiteId {
  * agree; `repDiaNivQIng` is the one out of step, so its rows are stored under the day they
  * describe and the raw response keeps its own `fecha` in the archive.
  *
+ * `repDiaPotQTurb` has the same habit, and it is tied to this one number for number. Molino's
+ * tailrace feeds Sopladora's intake chamber directly, and the two reports publish that one
+ * flow twice: asked for the same `fecha`, `repDiaNivQIng`'s Sopladora `q_ingresado` is
+ * `repDiaPotQTurb`'s Molino `q_turbinado` to every published decimal, on all 116 archived
+ * requests (2026-06-01 → 2026-09-24) and on every Phase 0 fixture (2016 to 2026). One
+ * reading from one instant cannot belong to two different days, so once `repDiaNivQIng` was
+ * shifted, leaving this one alone stored the same number under D−1 for Sopladora and D for
+ * Molino. The plants' own generation agrees independently. Against `repDiaEner12m` (energy
+ * on day D + lag), turbined flow stored as published correlates at lag −1 / 0 / +1 with
+ * Molino 0.826 / 0.635 / 0.270, Sopladora 0.777 / 0.625 / 0.288 and Mazar 0.588 / 0.458 / 0.137.
+ * Minas San Francisco, at 0.726 / 0.760 / 0.389, does not separate the days; that is expected,
+ * not a counterexample. The report is not a daily figure at all: `potencia` × 24 misses daily
+ * energy by ~1,000 MWh, and against `{code}EnerDia`'s hours (2026-09-20 → 23) it sits between
+ * the last hour of D−1 and the first hour of D. Molino 778.7 MW against 779.2 and 635.0,
+ * Sopladora 448.9 against 451.2 and 368.3. So it is a snapshot taken at the midnight in its
+ * own stamp. A snapshot at midnight describes a day only as much as that day's generation
+ * holds steady up to midnight. That is why every r stays near 0.8 rather than 1, and it
+ * explains Minas San Francisco: with the smallest reservoir, its output swings from hour to
+ * hour, so its midnight value is no closer to one side of the boundary than the other.
+ *
  * The family does not share the habit, which is why this is a list and not a rule:
  * `repDiaVolAlm` (level, 112/112 at offset 0) and `repDiaEnerAyerHoy` (energy against
- * `repDiaEner12m`, 112/112) are dated correctly despite the "Ayer" in that one's name.
- * `repDiaPotQTurb` and `repDiaRegAyer` publish nothing a second source covers, so they are
- * untested and assumed correct — stated here so the assumption is visible.
+ * `repDiaEner12m`, 112/112) are dated correctly despite the "Ayer" in that one's name, and so
+ * is `repDiaRegAyer`. Its `Factor de Planta (%)` is `repDiaEner12m`'s energy for the stamped
+ * day over a fixed capacity (Mazar 170.00, Minas San Francisco 270.00, Sopladora 486.90,
+ * Molino 1096.78 MW) to within 0.1% on 458 of 458 plant-days at offset 0, against 1–3 per
+ * plant at ±1. Its year-to-date energy is published in whole GWh, too coarse to date anything.
+ *
+ * Changing an entry here changes how new rows are dated, not the rows already stored:
+ * `scripts/redate.ts` rebuilds a source's stored rows from the raw archive.
  */
 export const DATA_DATE_OFFSET_DAYS: Record<string, number> = {
   "ords:repDiaNivQIng": -1,
+  "ords:repDiaPotQTurb": -1,
 };
 
 /** `repDiaRegAyer` reports four plants as columns rather than rows. */
