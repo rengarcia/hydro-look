@@ -107,12 +107,12 @@ async function main(): Promise<void> {
     firstServed = await earliest("Mazar", "2024-10-01", "2025-10-01");
     console.log(`first date served: ${firstServed}`);
   }
-  const from = (firstServed ?? values.from);
+  const from = firstServed ?? values.from;
   const lastObserved = plants
     .map(([, site]) => [...series.get(site, "caudal_m3s").keys()].at(-1)!)
     .sort()
     .at(-1)!;
-  const to = (values.to) ?? lastObserved;
+  const to = values.to ?? lastObserved;
   const origins: IsoDate[] = [];
   for (let d = from; d <= to; d = addDays(d, Number(values.step))) origins.push(d);
   console.log(`${plants.length} plants × ${origins.length} origins (${from} → ${to})`);
