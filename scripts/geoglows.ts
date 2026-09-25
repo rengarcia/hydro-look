@@ -27,6 +27,7 @@
  */
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { parseArgs } from "node:util";
 import { gzipSync } from "node:zlib";
 import { asyncBufferFromUrl, cachedAsyncBuffer, parquetMetadataAsync, parquetRead } from "hyparquet";
 import { fetch } from "undici";
@@ -44,6 +45,7 @@ import {
   type RiverSegment,
 } from "../src/lib/geo/geoglows.ts";
 import { loadSeries } from "../src/lib/features/series.ts";
+import { bundleRefs, endpointsIn, resolveRef, type EndpointHit } from "../src/lib/probe/portal.ts";
 import { toCsv } from "../src/lib/store/csv.ts";
 import { roundTo } from "../src/lib/util/numbers.ts";
 import { nowUtc } from "../src/lib/util/dates.ts";
@@ -288,34 +290,114 @@ async function readStore(riverIds: readonly number[]): Promise<StoreRead> {
 // The portal
 // ---------------------------------------------------------------------------------------------
 
+interface PortalFile {
+  url: string;
+  status: string;
+  bytes: number;
+}
+
+interface PortalTry {
+  url: string;
+  status: string;
+  contentType: string;
+  bytes: number;
+  archived: string | null;
+  /** The start of the answer, for reading in the report. */
+  head: string;
+}
+
 interface PortalProbe {
   url: string;
   status: string;
   archived: string | null;
-  /** Paths and URLs in the page that mention return periods or an API, for the next step. */
-  endpoints: string[];
+  /** The page and every bundle reached from it. */
+  files: PortalFile[];
+  /** URL-like literals in them that look like endpoints, with the code around each. */
+  endpoints: EndpointHit[];
+  /** URLs asked for by `--try`, to follow up what an earlier run found. */
+  tries: PortalTry[];
 }
 
-async function probePortal(): Promise<PortalProbe> {
+/** At most this many bundles are walked, so a page that names hundreds of chunks cannot run away. */
+const MAX_BUNDLES = 80;
+/** Bundles are archived with the page when all of them together are smaller than this, compressed or not. */
+const MAX_ARCHIVE_BYTES = 12_000_000;
+
+async function getText(url: string): Promise<{ status: number; text: string; contentType: string }> {
+  const response = await fetch(url, { signal: AbortSignal.timeout(30_000), headers: { "user-agent": USER_AGENT } });
+  return { status: response.status, text: await response.text(), contentType: response.headers.get("content-type") ?? "" };
+}
+
+async function probePortal(tries: readonly string[]): Promise<PortalProbe> {
+  const date = nowUtc().slice(0, 10);
+  const dir = `inamhi/hydroviewer-ecuador_${date}`;
+  const empty = { archived: null, files: [], endpoints: [], tries: [] };
+  let page: Awaited<ReturnType<typeof getText>>;
   try {
-    const response = await fetch(PORTAL, { signal: AbortSignal.timeout(30_000), headers: { "user-agent": USER_AGENT } });
-    const text = await response.text();
-    if (!response.ok) return { url: PORTAL, status: `HTTP ${response.status}`, archived: null, endpoints: [] };
-    const date = nowUtc().slice(0, 10);
-    const archived = `inamhi/hydroviewer-ecuador_${date}.html.gz`;
-    mkdirSync(`${DATA_RAW}/inamhi`, { recursive: true });
-    writeFileSync(`${DATA_RAW}/${archived}`, gzipSync(text));
-    const endpoints = [
-      ...new Set(
-        [...text.matchAll(/["'`]((?:https?:\/\/[^"'`\s]+|\/[^"'`\s]*))["'`]/g)]
-          .map((m) => m[1]!)
-          .filter((u) => /return|retorno|periods|api|rest|geoserver|forecast/i.test(u)),
-      ),
-    ].sort();
-    return { url: PORTAL, status: `HTTP ${response.status}, ${text.length.toLocaleString("en")} characters`, archived, endpoints };
+    page = await getText(PORTAL);
   } catch (error) {
-    return { url: PORTAL, status: `no answer: ${String(error)}`, archived: null, endpoints: [] };
+    return { url: PORTAL, status: `no answer: ${String(error)}`, ...empty };
   }
+  if (page.status !== 200) return { url: PORTAL, status: `HTTP ${page.status}`, ...empty };
+
+  const files: PortalFile[] = [{ url: PORTAL, status: "HTTP 200", bytes: page.text.length }];
+  const bodies = new Map<string, string>([[PORTAL, page.text]]);
+  const queue = bundleRefs(page.text).map((ref) => resolveRef(ref, PORTAL));
+  const queued = new Set(queue);
+  while (queue.length > 0 && files.length <= MAX_BUNDLES) {
+    const url = queue.shift()!;
+    try {
+      const got = await getText(url);
+      files.push({ url, status: `HTTP ${got.status}`, bytes: got.text.length });
+      if (got.status !== 200) continue;
+      bodies.set(url, got.text);
+      for (const ref of bundleRefs(got.text)) {
+        const next = resolveRef(ref, url);
+        if (!queued.has(next) && new URL(next).host === new URL(PORTAL).host) {
+          queued.add(next);
+          queue.push(next);
+        }
+      }
+    } catch (error) {
+      files.push({ url, status: `no answer: ${String(error)}`, bytes: 0 });
+    }
+  }
+  const endpoints = [...bodies].flatMap(([url, text]) => endpointsIn(text, url.replace(/^.*\//, "")));
+
+  mkdirSync(`${DATA_RAW}/${dir}`, { recursive: true });
+  const total = [...bodies.values()].reduce((a, t) => a + t.length, 0);
+  for (const [url, text] of bodies) {
+    if (url !== PORTAL && total > MAX_ARCHIVE_BYTES) continue;
+    const name = url === PORTAL ? "index.html" : url.replace(/^.*\//, "");
+    writeFileSync(`${DATA_RAW}/${dir}/${name}.gz`, gzipSync(text));
+  }
+
+  const tried: PortalTry[] = [];
+  for (const [i, url] of tries.entries()) {
+    try {
+      const got = await getText(url);
+      const archived = `${dir}/try-${i + 1}.gz`;
+      writeFileSync(`${DATA_RAW}/${archived}`, gzipSync(`${url}\n\n${got.text}`));
+      tried.push({
+        url,
+        status: `HTTP ${got.status}`,
+        contentType: got.contentType,
+        bytes: got.text.length,
+        archived,
+        head: got.text.slice(0, 1500),
+      });
+    } catch (error) {
+      tried.push({ url, status: `no answer: ${String(error)}`, contentType: "", bytes: 0, archived: null, head: "" });
+    }
+  }
+  return {
+    url: PORTAL,
+    status: `HTTP 200, ${files.length - 1} bundles reached, ${total.toLocaleString("en")} characters in all`,
+    archived: total > MAX_ARCHIVE_BYTES ? `${dir}/index.html.gz (bundles too large to archive)` : `${dir}/`,
+    files,
+    endpoints,
+    tries: tried,
+  };
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -396,11 +478,28 @@ function report(startedAt: string, store: StoreRead, portal: PortalProbe, result
     "",
     "## INAMHI's portal",
     "",
-    `\`${portal.url}\`: ${portal.status}.${portal.archived ? ` Archived as \`data/raw/${portal.archived}\`.` : ""}`,
-    portal.endpoints.length > 0
-      ? `Paths in the page that mention return periods or an API: ${portal.endpoints.map((e) => `\`${e}\``).join(", ")}.`
-      : "No endpoint was read from it on this run.",
+    `\`${portal.url}\`: ${portal.status}.${portal.archived ? ` Archived under \`data/raw/${portal.archived}\`.` : ""}`,
     "",
+    ...(portal.endpoints.length > 0
+      ? [
+          "URL-like literals in the page and its bundles (hosts, API-looking paths, hydrology words), with the code around each:",
+          "",
+          ...portal.endpoints.map((e) => `- \`${e.literal}\` (${e.file}): \`${e.context.replaceAll("`", "'")}\``),
+          "",
+        ]
+      : ["No endpoint was read from it on this run.", ""]),
+    ...(portal.tries.length > 0
+      ? [
+          "Asked with `--try`:",
+          "",
+          ...portal.tries.map(
+            (t) =>
+              `- \`${t.url}\`: ${t.status}, ${t.contentType || "no content type"}, ${t.bytes.toLocaleString("en")} characters` +
+              `${t.archived ? ` (\`data/raw/${t.archived}\`)` : ""}: \`${t.head.slice(0, 300).replace(/\s+/g, " ").replaceAll("`", "'")}\``,
+          ),
+          "",
+        ]
+      : []),
     "## Store chunks read",
     "",
     ...Object.entries(store.etags).map(([k, e]) => `- \`${k}\` ${e}`),
@@ -416,7 +515,9 @@ async function main(): Promise<void> {
   if (sites.length === 0) throw new Error("no pour points in data/reports/catchments.json: run npm run catchments first");
   console.log(`${sites.length} pour points: ${sites.map((s) => s.site).join(", ")}`);
 
-  const portal = probePortal();
+  const { values: args } = parseArgs({ args: process.argv.slice(2), options: { try: { type: "string", multiple: true, default: [] } } });
+  const tries = (args.try ?? []).flatMap((t) => t.split(/[\s,]+/)).filter((t) => /^https:\/\/inamhi\.geoglows\.org\//.test(t));
+  const portal = probePortal(tries);
   const segments = await segmentsNear(sites);
   const matches = sites.map((site) => ({ site, match: matchRiver(site, segments) }));
   for (const { site, match } of matches) {

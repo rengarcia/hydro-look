@@ -32,6 +32,12 @@ on:
           "geoglows" alone reads the GEOGLOWS return periods at the dams and commits them.
         required: false
         default: all
+      urls:
+        description: >-
+          geoglows phase only: space-separated inamhi.geoglows.org URLs to request and archive,
+          to follow up endpoints an earlier run found in the portal's bundles.
+        required: false
+        default: ""
 
 permissions: {}
 
@@ -125,7 +131,11 @@ jobs:
       # This job holds the push token, so no dependency's install script runs.
       - run: npm ci --ignore-scripts
       - name: Read the return periods
-        run: npm run geoglows 2>&1 | tee "$RUNNER_TEMP/geoglows.log"
+        # Passed through the environment, never interpolated into the script; the script also drops
+        # anything that is not an inamhi.geoglows.org URL.
+        env:
+          TRY_URLS: ${{ inputs.urls }}
+        run: npm run geoglows -- --try "$TRY_URLS" 2>&1 | tee "$RUNNER_TEMP/geoglows.log"
       - name: Summarise
         if: always()
         run: cat data/reports/return-periods.md >> "$GITHUB_STEP_SUMMARY" || true
