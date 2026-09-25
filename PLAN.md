@@ -264,8 +264,8 @@ above and is handled the same way.
 
 ### 2.7 Ruled out
 
-SIMEM (credentials), Electricity Maps (no Ecuador parser), INAMHI (no API for its station network —
-but see §2.8 for the model its forecast portal runs on), web.archive.org Save Page Now
+SIMEM (credentials), Electricity Maps (no Ecuador parser), INAMHI's station network (no API — but
+its forecast portal has one, §2.8), web.archive.org Save Page Now
 (401 anonymous), the ORDS metadata catalog (401) and module root (404).
 
 ### 2.8 Streamflow return periods: INAMHI–GEOGLOWS — verified 2026-09-25
@@ -290,10 +290,33 @@ Gumbel type I distribution by the method of moments. GEOGLOWS publishes them in 
   `tables/v2-model-table.parquet` (downstream id, upstream and downstream drainage area in m²,
   length). Ecuador's dams fall in VPUs 605 (Amazon slope) and 614 (Pacific).
 
-Whether the portal shows exactly these values, or INAMHI's own (bias-corrected against its
-stations, as its "Historical validation tool" suggests is possible), cannot be read from here.
-`npm run geoglows` asks the portal once per run and archives the page when it answers, so a
-runner settles it (§6 Phase 7).
+**What the portal is, read from a runner on 2026-09-25** (`data/reports/return-periods.md`,
+answers under `data/raw/inamhi/hydroviewer-ecuador_2026-09-25/`). The page is an Angular shell
+with `<base href="/">`; its bundles name one backend, `services.geoglows.org` (`/api`,
+`/geoserver`, `/martin`), which also refuses the sandbox. Walking the bundles for URL literals
+and `${urlAPI}/…` templates found the calls, and asking them settled what INAMHI publishes:
+
+- **The Hydroviewer uses GEOGLOWS v2 unchanged.** Its river ids are TDX-Hydro's (`comid` =
+  `river_id`); `hydroviewer/get-forecast-csv` for Mazar's river returns the same numbers as the
+  `geoglows-v2-forecasts` store; `get-historical-csv` is the retrospective simulation from 1980,
+  identical to `daily.zarr` on 16,437 of 16,437 days (largest difference 0.00003 m³/s).
+- **Its return periods are its own fit, not the store's.** `hydroviewer/get-plots` draws, for
+  Mazar's river, 599.6 / 731.5 / 818.8 / 929.2 / 1,011.1 / 1,092.4 m³/s at 2–100 years, where the
+  store has 614.8 / … (daily, 1940 →) and 693.2 / … (hourly). They are the same method-of-moments
+  Gumbel on the annual maxima of the daily simulation **from 1980**, every calendar year counted,
+  the current partial one included: computed that way, all eight rivers match the portal's charts
+  to within 0.1 m³/s at every return period. These are what the site publishes as INAMHI's.
+- **INAMHI's Hydropower app is its own product.** `hydropowers/get-forecast-csv` serves, for
+  eight plants (Agoyán, Amaluza, Coca Codo Sinclair, Daule Peripa, Delsitanisagua, Mazar, Minas
+  San Francisco, Pisayambo), the GEOGLOWS ensemble and high-resolution forecast **corrected to the
+  plant's measured inflow** — Mazar's starts at 54.8 m³/s where the raw forecast for its river
+  starts at 29.4 — and `get-forecast-plot` draws it pinned to the last observation (Mazar's line
+  starts at 50.26, CELEC's reading for the day before). `get-observed-data-plot` is each plant's
+  daily inflow history, labelled "Historical Simulation" but tracking CELEC's inflow (r 0.85–0.90,
+  means within 1% at five plants). Past forecasts are served back to 2025 at least
+  (`get-forecast-csv` for 2024-10-01 answers a server error), which is what makes a backtest of
+  INAMHI's own forecast possible (§6 Phase 7). `get-station` places each plant at its dam, within
+  0.06–0.33 km of the OSM dams `npm run catchments` uses.
 
 ## 3. Reference data to encode (`data/reference/`)
 
@@ -350,9 +373,10 @@ checked against INAMHI — see §6 Phase 4. Areas are in each row's notes and in
 bundle line). Grows in Phase 3.
 
 **`geoglows_return_periods.csv`** — one row per dam: the GEOGLOWS v2 river matched to its
-catchment (river id, VPU, both delineations' areas and their difference), the daily-fit and
-hourly-fit return-period flows at 2–100 years, the largest simulated flow, and the store's
-revision and licence. Written by `npm run geoglows` (§6 Phase 7), not by hand.
+catchment (river id, VPU, both delineations' areas and their difference), the return-period flows
+at 2–100 years INAMHI's Hydroviewer draws (`q*_inamhi_m3s`) beside the store's daily and hourly
+fits, the largest simulated flow, how the simulation compares with CELEC's inflow (`sim_*`), and
+the store's revision and licence. Written by `npm run geoglows` (§6 Phase 7), not by hand.
 
 ---
 
@@ -1327,34 +1351,74 @@ flood is.
    years with ≥ 330 readings, the same method-of-moments Gumbel, fitted only with ≥ 5 years.
    The daily-fit GEOGLOWS values are the ones compared, because CELEC's inflow is a daily mean;
    the hourly ones (the Hydroviewer's) are kept alongside.
-4. **Publish both, choose neither.** `latest.json` carries `inflow.return_periods` per reservoir
+4. **Publish both, choose neither.** (INAMHI's own thresholds replaced the store's in the
+   published column once a runner could read the portal; see the open items below.)
+   `latest.json` carries `inflow.return_periods` per reservoir
    (`geoglows` and `measured`, each with the longest return period today's inflow reaches), its
    schema documents it, and each reservoir page has a panel with both columns and a sentence on
    how far apart they are.
 5. **Re-run on a revision, not daily.** The store is revised about once a year; the
    `geoglows` phase of `probe-basins.yml` re-runs it from a runner and commits the outputs.
 
-*What it found* (`data/reports/return-periods.md`). The model and the record agree at the two
-dams with the longest or largest records: **Mazar** 2-year flood 615 m³/s against
-583 measured (1.06×; 15 years), **Coca Codo Sinclair** 1,225 against 1,274 (0.96×; 9 years).
-They do not agree elsewhere: **Agoyán** 1.26×, **Minas San Francisco** 1.67×, **Manduriacu**
-2.33×, **Delsitanisagua** 0.71×. So at four dams the model's thresholds, applied to CELEC's
-inflow, would misstate how rare a flood is, and the page says which way. Two of those gaps
-may be on the measured side rather than the model's: Manduriacu's annual maxima are 640–834 m³/s
-in all eight years — flat, like a ceiling — and Agoyán's are round numbers (750, 750, 1,000).
-Whether the historian's inflow saturates at high flow is not established.
+*What it found* (`data/reports/return-periods.md`). INAMHI's 2-year flood agrees with the one
+fitted on CELEC's record at **Mazar** (599.5 against 582.7 m³/s, 1.03×; 15 years) and **Coca Codo
+Sinclair** (1,230 against 1,274, 0.97×; 9 years), and not at the other five: **Amaluza** 0.88×,
+**Agoyán** 1.27×, **Minas San Francisco** 1.66×, **Manduriacu** 2.39×, **Delsitanisagua** 0.77×.
+Even the two agreements are partly luck: day by day, the model follows the measured rivers poorly.
+On the days both have, its mean flow is 1.95× the measured at Mazar and 2.7–2.8× at Agoyán,
+Manduriacu and Minas San Francisco, and its monthly means correlate with CELEC's at r = 0.12–0.31
+on the Amazon slope (Mazar, Amaluza, Coca Codo Sinclair, Agoyán, Delsitanisagua) and 0.76–0.88
+on the Pacific (Minas San Francisco, Manduriacu). It simulated 2023 and 2024 peaks of 803 and
+770 m³/s at Mazar in the two years Mazar's real peak was 323 and 267. The page says, per dam,
+which way the two thresholds disagree and how closely the model follows the river.
 
-*Open:*
+*The open items, addressed 2026-09-25:*
 
-- **The portal itself.** A runner's request to `inamhi.geoglows.org` settles whether INAMHI shows
-  GEOGLOWS' values unchanged (compare the archived page's endpoints with §2.8) or its own; if
-  its own, the loader reads them and they replace, not join, the `geoglows` column.
-- **Amaluza and Sopladora** have inflow but no delineated pour point, so no river; Amaluza's
-  record already gives a measured fit (11 years). Both need a `catchments.ts` entry first.
-- **Forecast flow against the thresholds** — what the Hydroviewer actually colours — needs
-  GEOGLOWS' forecast service (`geoglows.ecmwf.int`), which the sandbox cannot reach either. It
-  is the natural next step, and it would first need a backtest against CELEC inflow like §5.3's.
-- **Manduriacu's and Agoyán's high-flow readings**, above.
+- **The portal itself — settled** (§2.8). The Hydroviewer shows GEOGLOWS v2 unchanged but draws
+  its own return periods (the 1980 → simulation's annual maxima); this repository now computes
+  those, checks them against the portal's charts for all eight rivers (within 0.1 m³/s), and
+  publishes them as `return_periods.geoglows.inamhi`, the column the page shows and
+  `reached_years` is read against. The store's 1940 fits stay in the CSV and the document.
+- **Amaluza — delineated and matched.** INAMHI's station point for it is the pour point (its
+  points for four other plants lie 0.06–0.33 km from the OSM dams); the catchment is 5,086 km²,
+  97% IoU with INAMHI's own `Paute_Molino` polygon, and matches river 620955363 at −0.8%. Its
+  inflow is partly Mazar's release, which the model does not simulate, and the page says so.
+- **Sopladora — has no river.** Its published inflow equals Molino's turbined flow to six
+  decimals on all 116 shared days, one day apart; Sopladora takes Molino's tailrace. A flood
+  return period means nothing there, so it is excluded (`NO_RIVER_INFLOW` in `latest.ts`). The
+  day apart is its own finding: turbined flow (`repDiaPotQTurb`) correlates best with the
+  correctly dated energy of the *previous* day at Molino (r 0.83 against 0.64), Sopladora and
+  Mazar, so that endpoint looks one day late like `repDiaNivQIng`. `DATA_DATE_OFFSET_DAYS` lists
+  it as untested; re-dating it is left as its own change.
+- **Manduriacu's and Agoyán's high flows — no ceiling.** Comparing each series' own percentiles
+  with the model's (timing-free), a saturating reading would show a ratio climbing at the top;
+  at Manduriacu it is flat (3.0× at the median, 2.7× at p99.9) and at Agoyán it falls (2.9× →
+  1.6×). Manduriacu's peaks simply vary little from year to year, as the model's do. Agoyán's
+  high flows are real but rounded: every reading in its top 5% is a whole number and 63% are
+  multiples of 10.
+- **Forecast flow against the thresholds — backtested, and not published.** Two forecasts were
+  scored against CELEC's inflow, each against persistence (the last measured day):
+  - *GEOGLOWS' own* (`npm run geoglows:forecast`, `data/reports/geoglows-forecast.md`): every
+    third day's high-resolution member since 2024-07-01, read from the public forecast archive by
+    range request. Worse than persistence at one day everywhere; a little better from three to
+    ten days at Mazar, Coca Codo Sinclair and Delsitanisagua raw, and at Minas San Francisco once
+    scaled by the retrospective's volume bias (skill 0.03–0.23); much worse at Agoyán and
+    Manduriacu raw. Of the days whose measured inflow reached the measured 2-year flood, it
+    caught almost none.
+  - *INAMHI's own* (`npm run inamhi:hydropower`, `data/reports/inamhi-hydropower.md`): the
+    Hydropower app's corrected forecasts, served back to 2025-05-29, every third day, 1,891
+    requests archived. Its ensemble mean, high-resolution member and chart line all tie
+    persistence at one day (skill −0.13 to 0.04) and lose to it from two to fifteen days at five
+    of six plants (to −0.39), with Minas San Francisco the exception (0.03–0.07 from five days).
+    At Delsitanisagua it is far worse (−2 to −5): INAMHI's inflow history there disagrees with
+    CELEC's (r 0.53, 13% higher mean).
+
+  Neither earns a place on the page as an inflow forecast, by the rule §5.3 applies to this
+  repository's own (published only where it beats persistence and climatology). The live
+  "is the Hydroviewer colouring this river?" state is not published either: over the backtest,
+  the raw forecast reached INAMHI's 2-year flow on almost no day while the measured inflow
+  reached the measured one on dozens, so a green light from it would say nothing. Both scripts
+  stay, so the question can be asked again when GEOGLOWS or INAMHI changes their method.
 
 **Candidate list, 2026-09-23:** `ENHANCEMENTS.md` ranks what to do next across the pipeline,
 the public data contract, the site and the models, with the measurement each item rests on
