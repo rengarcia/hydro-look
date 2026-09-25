@@ -7,7 +7,7 @@
 import { Table } from "./DataTable.tsx";
 import type { ReservoirSnapshot } from "../../lib/publish/latest.ts";
 import { longDate, num } from "../../lib/site/format.ts";
-import { modelFitWords, returnPeriodAgreement, returnPeriodReachedWords } from "../../lib/site/story.ts";
+import { modelFitWords, REGULATED_UPSTREAM, returnPeriodAgreement, returnPeriodReachedWords } from "../../lib/site/story.ts";
 
 /** The panel in its own full-width section, or nothing when neither source has numbers for this reservoir. */
 export function ReturnPeriodsSection({ reservoir }: { reservoir: ReservoirSnapshot }) {
@@ -60,6 +60,7 @@ export function ReturnPeriodsSection({ reservoir }: { reservoir: ReservoirSnapsh
             ? `El registro de CELEC tiene ${measured.years} años completos (${measured.first_year}–${measured.last_year}); su mayor caudal fue ` +
               `${num(measured.record_m3s, 0)} m³/s el ${longDate(measured.record_date)}. Con tan pocos años, las crecidas de 50 y 100 años son una extrapolación. `
             : "El registro de CELEC todavía no tiene cinco años completos, que es lo mínimo para calcularlas. "}
+          {REGULATED_UPSTREAM[reservoir.site] ? `${REGULATED_UPSTREAM[reservoir.site]} ` : ""}
           {geoglows ? "Los datos de GEOGLOWS tienen licencia CC BY-NC-SA 4.0." : ""}
         </p>
       </div>

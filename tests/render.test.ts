@@ -19,6 +19,7 @@ import {
   importDependence,
   inflowHeadline,
   inflowVerdict,
+  REGULATED_UPSTREAM,
   returnPeriodAgreement,
   returnPeriodReachedWords,
   scorecardSummary,
@@ -126,9 +127,10 @@ describe("documents written before the additive blocks", () => {
     const { default: DayPage } = await import("../src/app/(site)/dia/[date]/page.tsx");
     const plant = textOf(renderToStaticMarkup(await ReservoirPage({ params: Promise.resolve({ site: "amaluza" }) })));
     expect(plant).toContain("Solo Mazar tiene pronóstico de nivel");
-    // Amaluza has no GEOGLOWS river matched, so only the record's column is shown.
+    // Amaluza has both columns, and says that Mazar, upstream, decides part of what arrives.
+    expect(plant).toContain("INAMHI (GEOGLOWS)");
     expect(plant).toContain("Registro de CELEC");
-    expect(plant).not.toContain("INAMHI (GEOGLOWS)");
+    expect(plant).toContain(REGULATED_UPSTREAM["amaluza"]!);
     expect(plant).not.toContain("Pronóstico del agua que llegará");
     const day = textOf(renderToStaticMarkup(await DayPage({ params: Promise.resolve({ date: "2026-09-21" }) })));
     expect(day).toContain("Pronóstico del nivel de Mazar");

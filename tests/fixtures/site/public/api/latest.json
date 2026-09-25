@@ -283,7 +283,95 @@
         },
         "delta_1d_m3s": -2.34,
         "return_periods": {
-          "geoglows": null,
+          "geoglows": {
+            "river_id": 620955363,
+            "inamhi": [
+              {
+                "years": 2,
+                "m3s": 670.1
+              },
+              {
+                "years": 5,
+                "m3s": 812.1
+              },
+              {
+                "years": 10,
+                "m3s": 906.2
+              },
+              {
+                "years": 25,
+                "m3s": 1025
+              },
+              {
+                "years": 50,
+                "m3s": 1113.2
+              },
+              {
+                "years": 100,
+                "m3s": 1200.7
+              }
+            ],
+            "daily": [
+              {
+                "years": 2,
+                "m3s": 688.8
+              },
+              {
+                "years": 5,
+                "m3s": 887.3
+              },
+              {
+                "years": 10,
+                "m3s": 1018.6
+              },
+              {
+                "years": 25,
+                "m3s": 1184.6
+              },
+              {
+                "years": 50,
+                "m3s": 1307.8
+              },
+              {
+                "years": 100,
+                "m3s": 1430
+              }
+            ],
+            "hourly": [
+              {
+                "years": 2,
+                "m3s": 763.2
+              },
+              {
+                "years": 5,
+                "m3s": 1003.9
+              },
+              {
+                "years": 10,
+                "m3s": 1163.2
+              },
+              {
+                "years": 25,
+                "m3s": 1364.6
+              },
+              {
+                "years": 50,
+                "m3s": 1514
+              },
+              {
+                "years": 100,
+                "m3s": 1662.2
+              }
+            ],
+            "area_diff_pct": -0.79,
+            "store_revision_date": "2026-06-10",
+            "reached_years": null,
+            "simulated_vs_measured": {
+              "days": 4383,
+              "ratio": 1.496,
+              "r_monthly": 0.122
+            }
+          },
           "measured": {
             "years": 11,
             "first_year": 2015,

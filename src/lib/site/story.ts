@@ -511,3 +511,13 @@ export function modelFitWords(ratio: number, rMonthly: number | null): string {
         : "sus promedios mensuales se parecen poco a los medidos";
   return `Día a día, el modelo simula aquí ${volume}, y ${timing} (correlación ${num(rMonthly, 2)}).`;
 }
+
+/**
+ * Reservoirs whose inflow a dam upstream decides in part. GEOGLOWS routes the river without
+ * modelling any reservoir's operation, so at these its flows are the river's, not what arrives.
+ */
+export const REGULATED_UPSTREAM: Record<string, string> = {
+  amaluza:
+    "Aquí el agua que llega depende también de lo que suelta Mazar, río arriba, y el modelo no simula cómo se opera esa presa: " +
+    "sus valores son los del río, no los del agua que Mazar deja pasar.",
+};
