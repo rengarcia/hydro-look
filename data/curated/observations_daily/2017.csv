@@ -11,7 +11,7 @@ date,site,variable,value,source,mrid,fetched_at,raw_ref
 2017-01-01,mazar,cota_masl,2139.5,ords:repDiaHid12m,,2026-09-22T01:28:16Z,celec_ords/2017/09/repDiaHid12m.2017-09-20.ndjson#repDiaHid12m:2017-09-20
 2017-01-01,mazar,produccion_mwh,901.979494,ords:repDiaEner12m,,2026-09-22T01:28:33Z,celec_ords/2017/04/repDiaEner12m.2017-04-26.ndjson#repDiaEner12m:2017-04-26
 2017-01-01,molino,produccion_mwh,6217.83929,ords:repDiaEner12m,,2026-09-22T01:28:33Z,celec_ords/2017/04/repDiaEner12m.2017-04-26.ndjson#repDiaEner12m:2017-04-26
-2017-01-01,paute_cuenca,caudal_cuenca_m3s,127.362704,ords:csrCaudCuenAniosAvg,,2026-09-25T17:35:17Z,celec_ords/2027/01/csrCaudCuenAniosAvg.2027-01-01.ndjson#csrCaudCuenAniosAvg:2010-01-01:2027-01-01
+2017-01-01,paute_cuenca,caudal_cuenca_m3s,127.362704,ords:csrCaudCuenAniosAvg,,2026-09-25T20:10:24Z,celec_ords/2027/01/csrCaudCuenAniosAvg.2027-01-01.ndjson#csrCaudCuenAniosAvg:2010-01-01:2027-01-01
 2017-01-01,sopladora,produccion_mwh,3199.920144,ords:repDiaEner12m,,2026-09-22T01:28:33Z,celec_ords/2017/04/repDiaEner12m.2017-04-26.ndjson#repDiaEner12m:2017-04-26
 2017-01-02,agoyan,caudal_m3s,115,ords:pointValues,140537,2026-09-22T08:42:53Z,celec_ords/2017/01/pointValuesMesH24.2017-01-01.ndjson#pointValuesMesH24:140537:2017-01-01
 2017-01-02,agoyan,cota_masl,1650.12,ords:pointValues,140031,2026-09-22T08:40:00Z,celec_ords/2017/01/pointValuesMesH24.2017-01-01.ndjson#pointValuesMesH24:140031:2017-01-01
