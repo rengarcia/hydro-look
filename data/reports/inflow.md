@@ -1,6 +1,6 @@
 # Inflow forecasts — the plants whose level is not the question
 
-Generated 2026-09-25T15:26:38Z by `npm run forecast` from the committed tables; no network. For the run-of-river and daily-storage plants the level is an operating decision taken within the day, so the target is the water arriving: the mean inflow over the next 7 and 14 days, in m³/s. Origins every 7 days from 2018-01-01, once a plant has 730 days of inflow; each rung sees only data up to its origin.
+Generated 2026-09-25T17:36:31Z by `npm run forecast` from the committed tables; no network. For the run-of-river and daily-storage plants the level is an operating decision taken within the day, so the target is the water arriving: the mean inflow over the next 7 and 14 days, in m³/s. Origins every 7 days from 2018-01-01, once a plant has 730 days of inflow; each rung sees only data up to its origin.
 
 - **persistence** holds the origin day's inflow.
 - **climatology** is the median of the same calendar window's mean over every earlier year.
