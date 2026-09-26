@@ -61,7 +61,9 @@ export function ReturnPeriodsSection({ reservoir }: { reservoir: ReservoirSnapsh
               `${num(measured.record_m3s, 0)} m³/s el ${longDate(measured.record_date)}. Con tan pocos años, las crecidas de 50 y 100 años son una extrapolación. `
             : "El registro de CELEC todavía no tiene cinco años completos, que es lo mínimo para calcularlas. "}
           {REGULATED_UPSTREAM[reservoir.site] ? `${REGULATED_UPSTREAM[reservoir.site]} ` : ""}
-          {geoglows ? "Los datos de GEOGLOWS tienen licencia CC BY-NC-SA 4.0." : ""}
+          {geoglows
+            ? "La simulación de GEOGLOWS tiene licencia CC BY 4.0; los valores del INAMHI se recalculan aquí a partir de ella."
+            : ""}
         </p>
       </div>
     </section>

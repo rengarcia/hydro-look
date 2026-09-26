@@ -302,7 +302,7 @@
                       "object",
                       "null"
                     ],
-                    "description": "The return periods INAMHI's Hydroviewer (inamhi.geoglows.org) draws for the GEOGLOWS v2 river matched to this dam, beside the GEOGLOWS store's own fits (data/reference/geoglows_return_periods.csv). Null where no river matched or `npm run geoglows` has not run. CC BY-NC-SA 4.0.",
+                    "description": "The return periods INAMHI's Hydroviewer (inamhi.geoglows.org) draws for the GEOGLOWS v2 river matched to this dam, beside the GEOGLOWS store's own fits (data/reference/geoglows_return_periods.csv). Null where no river matched or `npm run geoglows` has not run. `inamhi` and `simulated_vs_measured` are computed here from GEOGLOWS' daily simulation (CC BY 4.0, attribution `geoglows`); `daily` and `hourly` are copied from its return-period store (CC BY-NC-SA 4.0, attribution `geoglows_return_periods`).",
                     "properties": {
                       "river_id": {
                         "type": "integer",
@@ -314,11 +314,11 @@
                       },
                       "daily": {
                         "$ref": "#/$defs/return_period_table",
-                        "description": "The GEOGLOWS store's own fit on the daily simulation from 1940."
+                        "description": "The GEOGLOWS store's own fit on the daily simulation from 1940. CC BY-NC-SA 4.0."
                       },
                       "hourly": {
                         "$ref": "#/$defs/return_period_table",
-                        "description": "The GEOGLOWS store's fit on hourly flow from 1940."
+                        "description": "The GEOGLOWS store's fit on hourly flow from 1940. CC BY-NC-SA 4.0."
                       },
                       "area_diff_pct": {
                         "type": "number",

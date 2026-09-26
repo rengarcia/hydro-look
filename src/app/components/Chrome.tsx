@@ -138,7 +138,11 @@ export function Footer() {
             Código bajo licencia MIT. Energía: CELEC EP y CENACE. Meteorología: <a href="https://open-meteo.com/">Open-Meteo</a> (ERA5, CC
             BY 4.0). Índice ONI: <a href="https://psl.noaa.gov/data/correlation/oni.data">NOAA PSL / CPC</a>. Intercambios con Colombia: XM.
             Periodos de retorno y pronóstico de caudal en Agoyán, Manduriacu y Minas San Francisco:{" "}
-            <a href="https://inamhi.geoglows.org/">GEOGLOWS</a>, el modelo del portal INAMHI–GEOGLOWS (CC BY-NC-SA 4.0).{" "}
+            <a href="https://inamhi.geoglows.org/">GEOGLOWS</a>, el modelo del portal INAMHI–GEOGLOWS (
+            <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; los ajustes propios de su almacén de periodos de retorno,
+            solo en los datos, <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>), con escorrentía del ECMWF:
+            © 2023 European Centre for Medium-Range Weather Forecasts (ECMWF), fuente <a href="https://www.ecmwf.int/">www.ecmwf.int</a>, CC
+            BY 4.0; el ECMWF no acepta responsabilidad por errores u omisiones en los datos ni por daños derivados de su uso.{" "}
             <a href={REPO}>Código y datos en GitHub</a>.
           </p>
           <p className="footer-links">
