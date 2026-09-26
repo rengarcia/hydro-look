@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-26T16:49:49Z",
+  "generated_at": "2026-09-26T16:50:19Z",
   "data_date": "2026-09-25",
   "as_of": "2026-09-26",
   "disclaimer": "No es una fuente oficial. Cada número es una copia de lo que publicaron CELEC o CENACE, con la respuesta que lo produjo archivada junto a él.",
@@ -1411,7 +1411,7 @@
     }
   },
   "adequacy": {
-    "origin_date": "2026-09-24",
+    "origin_date": "2026-09-25",
     "tier": "vigilancia",
     "tier_code": "watch",
     "tier_label_es": "Vigilancia",
@@ -1420,8 +1420,8 @@
     "worst_tier_label_es": "Ajustado",
     "worst_tier_horizon_days": 60,
     "narrative_tier_field": "worst_tier",
-    "worst_deficit_gwh_day": 1.321,
-    "run_id": "2026-09-24-adequacy-2-eca15f98"
+    "worst_deficit_gwh_day": 1.435,
+    "run_id": "2026-09-25-adequacy-2-72204ac0"
   },
   "deprecated": {
     "as_of": "data_date; as_of is the day the job ran, not the day the readings describe. Removed in schema_version 2."
