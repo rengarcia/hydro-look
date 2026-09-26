@@ -18,6 +18,7 @@ import {
   weekday,
   wholeYears,
   changeWord,
+  paceWords,
   criticalThreshold,
   heroHeadline,
   narrativeTierNote,
@@ -41,6 +42,32 @@ describe("heroHeadline", () => {
   it("falls back to the site's own line when there is no closed day", () => {
     expect(heroHeadline(null).share).toBeNull();
     expect(heroHeadline(undefined).text).toBe("El sistema hidroeléctrico del Ecuador, día a día.");
+  });
+});
+
+describe("paceWords", () => {
+  it("says a day more than half again the weekly pace is faster, and prints the pace", () => {
+    expect(paceWords(-1.07, -0.4743)).toBe("Baja más rápido que en la última semana (−0,47 m/día)");
+  });
+
+  it("says a day under two thirds of the pace is slower, and one between is the same pace", () => {
+    expect(paceWords(-0.2, -0.5)).toBe("Baja más despacio que en la última semana (−0,50 m/día)");
+    expect(paceWords(0.3, 0.25)).toBe("Sube al ritmo de la última semana (+0,25 m/día)");
+  });
+
+  it("says when the day went against the week", () => {
+    expect(paceWords(0.92, -0.1229)).toBe("Sube, aunque en la semana venía bajando (−0,12 m/día)");
+  });
+
+  it("treats less than half a centimetre as still, on either side", () => {
+    expect(paceWords(0.004, -0.3)).toBe("Se detuvo; en la semana venía bajando (−0,30 m/día)");
+    expect(paceWords(-0.4, 0.001)).toBe("Baja tras una semana quieta");
+    expect(paceWords(0, 0)).toBe("Quieto, como en la última semana");
+  });
+
+  it("has nothing to say without both numbers", () => {
+    expect(paceWords(null, -0.4)).toBeNull();
+    expect(paceWords(-0.4, null)).toBeNull();
   });
 });
 

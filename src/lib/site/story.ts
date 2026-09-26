@@ -81,6 +81,29 @@ export function changeWord(delta: number | null | undefined, digits: number, uni
 }
 
 /**
+ * Yesterday's change in a level set against the last week's pace, so a reader can tell a bad
+ * day from a bad week: "Baja más rápido que en la última semana (−0,47 m/día)". A day more than
+ * half again the weekly pace is faster, one under two thirds of it is slower, and anything
+ * between is the same pace. Both numbers use `direction`'s half-centimetre threshold for "still".
+ */
+export function paceWords(delta1dM: number | null | undefined, slope7dM: number | null | undefined): string | null {
+  if (delta1dM === null || delta1dM === undefined || !Number.isFinite(delta1dM)) return null;
+  if (slope7dM === null || slope7dM === undefined || !Number.isFinite(slope7dM)) return null;
+  const day = direction(delta1dM);
+  const week = direction(slope7dM);
+  const pace = `(${changeWord(slope7dM, 2, "m/día")})`;
+  const verb = day === "up" ? "Sube" : "Baja";
+  if (day === "flat" && week === "flat") return "Quieto, como en la última semana";
+  if (day === "flat") return `Se detuvo; en la semana venía ${week === "up" ? "subiendo" : "bajando"} ${pace}`;
+  if (week === "flat") return `${verb} tras una semana quieta`;
+  if (day !== week) return `${verb}, aunque en la semana venía ${week === "up" ? "subiendo" : "bajando"} ${pace}`;
+  const ratio = Math.abs(delta1dM) / Math.abs(slope7dM);
+  if (ratio > 1.5) return `${verb} más rápido que en la última semana ${pace}`;
+  if (ratio < 2 / 3) return `${verb} más despacio que en la última semana ${pace}`;
+  return `${verb} al ritmo de la última semana ${pace}`;
+}
+
+/**
  * The inflow headline, from today's percentile against the same days of every year on record.
  * The middle fifth of the distribution is "as usual"; the words either side are deliberately
  * plain, because the number is printed right beside them.

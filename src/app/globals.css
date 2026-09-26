@@ -2370,15 +2370,90 @@ a.column:hover {
   color: var(--ink-2);
 }
 
-.since-dots {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
+.since-now .num {
+  white-space: nowrap;
 }
 
-.dot-empty {
-  background: none;
-  box-shadow: inset 0 0 0 1px var(--line-2);
+.since-context {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+.since-fleet {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.since-fleet-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+
+.since-fleet-count {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+.since-fleet-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.since-fleet-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 10px;
+  height: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.2s;
+}
+
+.since-fleet-item:hover {
+  border-color: var(--line-2);
+}
+
+.since-fleet-name {
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.since-fleet-change {
+  font-family: var(--serif);
+  font-size: 22px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.since-fleet-change small {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.since-fleet-level {
+  grid-column: 1 / -1;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--muted);
 }
 
 .since-up {
@@ -2639,6 +2714,9 @@ a.column:hover {
   }
   .since-change {
     font-size: 32px;
+  }
+  .since-fleet-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .stat:nth-child(4) {
     border-left: 0;
@@ -2929,7 +3007,7 @@ a.column:hover {
     gap: 10px;
   }
   .since-item {
-    flex-basis: 130px;
+    flex-basis: 100%;
     padding: 16px;
     gap: 8px;
   }
@@ -2941,6 +3019,22 @@ a.column:hover {
   }
   .since-now {
     font-size: 12px;
+  }
+  .since-context {
+    font-size: 12px;
+  }
+  .since-fleet-list {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+  .since-fleet-item {
+    padding: 10px 14px;
+  }
+  .since-fleet-name {
+    font-size: 12.5px;
+  }
+  .since-fleet-change {
+    font-size: 19px;
   }
   .foresight > div {
     flex-direction: column;
