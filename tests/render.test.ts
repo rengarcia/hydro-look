@@ -97,6 +97,8 @@ describe("the home page, from fixtures", () => {
 
   it("says since yesterday what latest.json's delta says", () => {
     expect(textOf(home)).toContain("Desde ayer");
+    expect(textOf(home)).toContain("Embalses, uno por uno");
+    for (const r of latest.reservoirs) if (r.level?.previous) expect(textOf(home)).toContain(r.label);
   });
 
   it("names the tier the reading was written about", () => {
