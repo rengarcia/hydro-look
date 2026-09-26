@@ -556,11 +556,27 @@
     },
     {
       "id": "geoglows",
-      "name": "GEOGLOWS River Forecast System v2 (ECMWF, BYU; shown in Ecuador by the INAMHI–GEOGLOWS portal)",
-      "provides": "streamflow return periods at the rivers the dams stand on",
+      "name": "GEOGLOWS Hydrologic Model v2 (ECMWF, BYU; shown in Ecuador by the INAMHI–GEOGLOWS portal)",
+      "provides": "the daily simulation the return periods in `geoglows.inamhi` are fitted on, and the daily river forecast that is one member of the inflow forecast at Agoyán, Manduriacu and Minas San Francisco",
       "url": "https://inamhi.geoglows.org/",
-      "terms": "CC BY-NC-SA 4.0, the licence of the return-period store: credit it, no commercial use, share derivatives alike",
-      "terms_es": "CC BY-NC-SA 4.0, la licencia del almacén de periodos de retorno: citarlo, sin uso comercial, compartir igual"
+      "terms": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/; https://geoglows-v2.s3-us-west-2.amazonaws.com/licenses.md). Changed here: the forecast's high-resolution member is averaged to daily means and corrected against CELEC's measured inflow, and the simulation's annual maxima from 1980 are refitted to a Gumbel distribution",
+      "terms_es": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/; https://geoglows-v2.s3-us-west-2.amazonaws.com/licenses.md). Modificado aquí: el miembro de alta resolución del pronóstico se promedia por día y se corrige con el caudal medido por CELEC, y los máximos anuales de la simulación desde 1980 se ajustan a una distribución de Gumbel"
+    },
+    {
+      "id": "geoglows_return_periods",
+      "name": "GEOGLOWS v2 retrospective return periods (Riley Chad Hales; revision 4 of 2026-06-10)",
+      "provides": "the store's own return-period fits, copied unchanged into `geoglows.daily` and `geoglows.hourly`",
+      "url": "https://geoglows-v2.s3-us-west-2.amazonaws.com/retrospective/return-periods.zarr/.zattrs",
+      "terms": "CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/), the licence of this store alone: credit it, no commercial use, share derivatives alike",
+      "terms_es": "CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/), la licencia de este almacén solamente: citarlo, sin uso comercial, compartir igual"
+    },
+    {
+      "id": "ecmwf",
+      "name": "European Centre for Medium-Range Weather Forecasts (ECMWF)",
+      "provides": "the IFS runoff forecasts and ERA5 runoff that drive GEOGLOWS' forecast and simulation",
+      "url": "https://www.ecmwf.int/",
+      "terms": "Copyright \"© 2023 European Centre for Medium-Range Weather Forecasts (ECMWF)\". Source www.ecmwf.int. Licence: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). ECMWF does not accept any liability whatsoever for any error or omission in the data, their availability, or for any loss or damage arising from their use",
+      "terms_es": "Copyright \"© 2023 European Centre for Medium-Range Weather Forecasts (ECMWF)\". Fuente: www.ecmwf.int. Licencia: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). El ECMWF no acepta responsabilidad alguna por errores u omisiones en los datos, su disponibilidad, ni por pérdidas o daños derivados de su uso"
     },
     {
       "id": "noaa",

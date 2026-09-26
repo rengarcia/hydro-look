@@ -94,9 +94,9 @@ export interface ReturnPeriods {
      * GEOGLOWS' daily simulation from 1980, m³/s. The thresholds `reached_years` is read against.
      */
     inamhi: ReturnPeriodValue[];
-    /** The GEOGLOWS store's own fit on the daily simulation from 1940, m³/s. */
+    /** The GEOGLOWS store's own fit on the daily simulation from 1940, m³/s. CC BY-NC-SA 4.0, unlike the rest. */
     daily: ReturnPeriodValue[];
-    /** The same on hourly flow: the thresholds the Hydroviewer colours rivers by. */
+    /** The same on hourly flow: the thresholds the Hydroviewer colours rivers by. CC BY-NC-SA 4.0. */
     hourly: ReturnPeriodValue[];
     /** GEOGLOWS' downstream drainage area against the catchment this repository delineated, %. */
     area_diff_pct: number;
