@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-25T17:36:23Z",
-  "data_date": "2026-09-24",
-  "as_of": "2026-09-25",
+  "generated_at": "2026-09-26T16:49:48Z",
+  "data_date": "2026-09-25",
+  "as_of": "2026-09-26",
   "ok": true,
   "status": "warn",
   "feeds": [
@@ -10,7 +10,7 @@
       "id": "ords_levels",
       "label_es": "ORDS: cotas y caudales",
       "feed": "ORDS levels and inflows (repDiaHid12m)",
-      "latest": "2026-09-24",
+      "latest": "2026-09-25",
       "limit_days": 3,
       "state": "current"
     },
@@ -18,7 +18,7 @@
       "id": "ords_energy",
       "label_es": "ORDS: energía CELEC Sur",
       "feed": "ORDS CELEC Sur energy (repDiaEner12m)",
-      "latest": "2026-09-24",
+      "latest": "2026-09-25",
       "limit_days": 3,
       "state": "current"
     },
@@ -26,7 +26,7 @@
       "id": "ords_historian",
       "label_es": "ORDS: historiador",
       "feed": "ORDS historian (pointValues)",
-      "latest": "2026-09-24",
+      "latest": "2026-09-25",
       "limit_days": 3,
       "state": "current"
     },
@@ -34,7 +34,7 @@
       "id": "smec_balance",
       "label_es": "CENACE SMEC: balance nacional",
       "feed": "CENACE SMEC national balance",
-      "latest": "2026-09-24",
+      "latest": "2026-09-25",
       "limit_days": 4,
       "state": "current"
     },
@@ -42,7 +42,7 @@
       "id": "cenace_operativa",
       "label_es": "CENACE: Información Operativa",
       "feed": "CENACE Información Operativa",
-      "latest": "2026-09-25",
+      "latest": "2026-09-26",
       "limit_days": 3,
       "state": "current"
     },
@@ -50,7 +50,7 @@
       "id": "era5",
       "label_es": "Open-Meteo ERA5",
       "feed": "Open-Meteo ERA5",
-      "latest": "2026-09-18",
+      "latest": "2026-09-19",
       "limit_days": 10,
       "state": "current"
     },
@@ -66,7 +66,7 @@
       "id": "xm_exchanges",
       "label_es": "XM: intercambios con Colombia",
       "feed": "XM exchanges with Colombia",
-      "latest": "2026-09-21",
+      "latest": "2026-09-22",
       "limit_days": 7,
       "state": "current"
     },
@@ -74,7 +74,7 @@
       "id": "xm_storage",
       "label_es": "XM: embalses de Colombia",
       "feed": "XM Colombian storage",
-      "latest": "2026-09-23",
+      "latest": "2026-09-24",
       "limit_days": 4,
       "state": "current"
     },
@@ -97,19 +97,19 @@
   ],
   "tables": {
     "observations_daily": {
-      "rows": 89370
+      "rows": 89450
     },
     "national_balance_daily": {
-      "rows": 58159
+      "rows": 58174
     },
     "operativa_snapshots": {
-      "rows": 893
+      "rows": 987
     },
     "operating_bands": {
       "rows": 7
     },
     "weather_daily": {
-      "rows": 107600
+      "rows": 107864
     },
     "enso_monthly": {
       "rows": 919
@@ -130,10 +130,10 @@
       "rows": 10
     },
     "xm_exchange_daily": {
-      "rows": 4004
+      "rows": 4005
     },
     "xm_system_daily": {
-      "rows": 33172
+      "rows": 33181
     },
     "geoglows_forecasts": {
       "rows": 24510
