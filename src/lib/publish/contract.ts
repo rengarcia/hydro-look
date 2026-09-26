@@ -105,7 +105,8 @@ export const ATTRIBUTION: readonly Attribution[] = [
   {
     id: "geoglows",
     name: "GEOGLOWS River Forecast System v2 (ECMWF, BYU; shown in Ecuador by the INAMHI–GEOGLOWS portal)",
-    provides: "streamflow return periods at the rivers the dams stand on",
+    provides:
+      "streamflow return periods at the rivers the dams stand on, and the daily river forecast that is one member of the inflow forecast at Agoyán, Manduriacu and Minas San Francisco",
     url: "https://inamhi.geoglows.org/",
     terms: "CC BY-NC-SA 4.0, the licence of the return-period store: credit it, no commercial use, share derivatives alike",
     terms_es: "CC BY-NC-SA 4.0, la licencia del almacén de periodos de retorno: citarlo, sin uso comercial, compartir igual",
@@ -133,6 +134,7 @@ export const FEEDS: Record<string, { id: string; label_es: string }> = {
   "NOAA ONI": { id: "oni", label_es: "NOAA ONI" },
   "XM exchanges with Colombia": { id: "xm_exchanges", label_es: "XM: intercambios con Colombia" },
   "XM Colombian storage": { id: "xm_storage", label_es: "XM: embalses de Colombia" },
+  "GEOGLOWS river forecast": { id: "geoglows_forecast", label_es: "GEOGLOWS: pronóstico de caudal" },
   "Mazar level forecast": { id: "mazar_forecast", label_es: "Pronóstico de cota de Mazar" },
   "National adequacy": { id: "adequacy", label_es: "Suficiencia nacional" },
 };

@@ -33,6 +33,7 @@ with the response that produced it archived alongside it.
 | CELEC ORDS `pointValuesMesH24` | daily level and inflow per mrid, a month per request — the only route to Coca Codo Sinclair, Agoyán and Manduriacu, and the deepest route of all for Mazar | 2010-02-10 → (Mazar inflow); 2016-03-07 → for the three |
 | CENACE Información Operativa | live production, demand by distribution utility, last validated day | snapshot |
 | INAMHI–GEOGLOWS return periods (`inamhi.geoglows.org`) | 2- to 100-year flood flows at the river each dam stands on, as INAMHI's Hydroviewer draws them: a Gumbel fit on GEOGLOWS v2's daily simulation from 1980, computed here from the public `geoglows-v2` bucket by `npm run geoglows` and checked against the portal's own charts (all eight rivers within 0.1 m³/s). **CC BY-NC-SA 4.0** | reference, store revision 2026-06-10 |
+| GEOGLOWS v2 river forecast (`geoglows-v2-forecasts`) | Each 00 UTC issue's high-resolution member, as daily means at leads 1–10, for the rivers of Agoyán, Manduriacu and Minas San Francisco: the third member of the inflow forecast at those plants (`data/curated/geoglows_forecasts`, `npm run geoglows:daily`). Reported in `status.json` as `geoglows_forecast` | daily, from 2024-07-01 |
 
 Six things worth knowing before using any of it:
 
