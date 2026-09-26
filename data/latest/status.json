@@ -1,20 +1,10 @@
 {
-  "generated_at": "2026-09-26T19:57:26Z",
-  "command": "covariates",
+  "generated_at": "2026-09-26T19:57:35Z",
+  "command": "xm",
   "source": "all",
-  "requests": 17,
+  "requests": 22,
   "errors": [],
-  "notes": [
-    "paute: provisional sampling point, not a verified basin centroid",
-    "era5:paute:-2.6:-78.6:2026-08-22:2026-09-20: 1 days have missing weather values",
-    "era5:paute_mazar:-2.8819:-78.9173:2026-08-22:2026-09-20: 1 days have missing weather values",
-    "era5:coca_ccs:-0.3034:-77.9266:2026-08-22:2026-09-20: 1 days have missing weather values",
-    "era5:pastaza_agoyan:-1.4018:-78.6128:2026-08-22:2026-09-20: 1 days have missing weather values",
-    "era5:guayllabamba_manduriacu:-0.0475:-78.4355:2026-08-22:2026-09-20: 1 days have missing weather values",
-    "era5:daule_marcel_laniado:-0.544:-79.6412:2026-08-22:2026-09-20: 1 days have missing weather values",
-    "era5:jubones_msf:-3.3653:-79.2546:2026-08-22:2026-09-20: 1 days have missing weather values",
-    "era5:zamora_delsitanisagua:-3.8792:-79.1596:2026-08-22:2026-09-20: 1 days have missing weather values"
-  ],
+  "notes": [],
   "tables": {
     "observations_daily": {
       "rows": 89450,
@@ -53,15 +43,15 @@
       "files": 77
     },
     "xm_exchange_daily": {
-      "rows": 4005,
+      "rows": 4006,
       "first_date": "2016-05-01",
-      "last_date": "2026-09-22",
+      "last_date": "2026-09-23",
       "files": 11
     },
     "xm_system_daily": {
-      "rows": 33181,
+      "rows": 33191,
       "first_date": "2016-05-01",
-      "last_date": "2026-09-24",
+      "last_date": "2026-09-25",
       "files": 11
     }
   },
