@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-26T19:57:39Z",
-  "data_date": "2026-09-25",
-  "as_of": "2026-09-26",
+  "generated_at": "2026-09-27T17:21:24Z",
+  "data_date": "2026-09-26",
+  "as_of": "2026-09-27",
   "ok": true,
   "status": "warn",
   "feeds": [
@@ -10,7 +10,7 @@
       "id": "ords_levels",
       "label_es": "ORDS: cotas y caudales",
       "feed": "ORDS levels and inflows (repDiaHid12m)",
-      "latest": "2026-09-25",
+      "latest": "2026-09-26",
       "limit_days": 3,
       "state": "current"
     },
@@ -18,7 +18,7 @@
       "id": "ords_energy",
       "label_es": "ORDS: energía CELEC Sur",
       "feed": "ORDS CELEC Sur energy (repDiaEner12m)",
-      "latest": "2026-09-25",
+      "latest": "2026-09-26",
       "limit_days": 3,
       "state": "current"
     },
@@ -26,7 +26,7 @@
       "id": "ords_historian",
       "label_es": "ORDS: historiador",
       "feed": "ORDS historian (pointValues)",
-      "latest": "2026-09-25",
+      "latest": "2026-09-26",
       "limit_days": 3,
       "state": "current"
     },
@@ -34,7 +34,7 @@
       "id": "smec_balance",
       "label_es": "CENACE SMEC: balance nacional",
       "feed": "CENACE SMEC national balance",
-      "latest": "2026-09-25",
+      "latest": "2026-09-26",
       "limit_days": 4,
       "state": "current"
     },
@@ -42,7 +42,7 @@
       "id": "cenace_operativa",
       "label_es": "CENACE: Información Operativa",
       "feed": "CENACE Información Operativa",
-      "latest": "2026-09-26",
+      "latest": "2026-09-27",
       "limit_days": 3,
       "state": "current"
     },
@@ -105,13 +105,13 @@
   ],
   "tables": {
     "observations_daily": {
-      "rows": 89450
+      "rows": 89530
     },
     "national_balance_daily": {
-      "rows": 58174
+      "rows": 58189
     },
     "operativa_snapshots": {
-      "rows": 1034
+      "rows": 1081
     },
     "operating_bands": {
       "rows": 7
