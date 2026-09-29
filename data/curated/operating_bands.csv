@@ -1,8 +1,8 @@
 site,cota_min,cota_max,qmax_m3s,source,first_date,last_date
-amaluza,1960,1991,1000,ords:repDiaHid12m,2014-09-20,2026-09-27
-amaluza,1970,1991,,ords:repDiaVolAlm,2026-06-01,2026-09-28
-delsitanisagua,1469,1491,1200,ords:repDiaHid12m,2018-08-31,2026-09-27
-mazar,2100,2153,,ords:repDiaVolAlm,2026-06-01,2026-09-28
-mazar,2100,2153,800,ords:repDiaHid12m,2014-09-20,2026-09-27
-minas_san_francisco,750,793,600,ords:repDiaHid12m,2018-10-01,2026-09-27
-minas_san_francisco,783.33,792.86,,ords:repDiaVolAlm,2026-06-01,2026-09-28
+amaluza,1960,1991,1000,ords:repDiaHid12m,2014-09-20,2026-09-28
+amaluza,1970,1991,,ords:repDiaVolAlm,2026-06-01,2026-09-29
+delsitanisagua,1469,1491,1200,ords:repDiaHid12m,2018-08-31,2026-09-28
+mazar,2100,2153,,ords:repDiaVolAlm,2026-06-01,2026-09-29
+mazar,2100,2153,800,ords:repDiaHid12m,2014-09-20,2026-09-28
+minas_san_francisco,750,793,600,ords:repDiaHid12m,2018-10-01,2026-09-28
+minas_san_francisco,783.33,792.86,,ords:repDiaVolAlm,2026-06-01,2026-09-29
