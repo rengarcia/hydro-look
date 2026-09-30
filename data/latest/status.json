@@ -1,33 +1,33 @@
 {
-  "generated_at": "2026-09-29T21:28:24Z",
-  "command": "xm",
+  "generated_at": "2026-09-30T18:11:26Z",
+  "command": "daily",
   "source": "all",
-  "requests": 22,
+  "requests": 53,
   "errors": [],
   "notes": [],
   "tables": {
     "observations_daily": {
-      "rows": 89690,
+      "rows": 89770,
       "first_date": "2009-01-01",
-      "last_date": "2026-09-29",
+      "last_date": "2026-09-30",
       "files": 18
     },
     "national_balance_daily": {
-      "rows": 58219,
+      "rows": 58234,
       "first_date": "2016-05-01",
-      "last_date": "2026-09-28",
+      "last_date": "2026-09-29",
       "files": 11
     },
     "operativa_snapshots": {
-      "rows": 1363,
+      "rows": 1410,
       "first_date": "2026-09-22",
-      "last_date": "2026-09-29",
+      "last_date": "2026-09-30",
       "files": 1
     },
     "operating_bands": {
       "rows": 7,
-      "first_date": "2026-09-28",
-      "last_date": "2026-09-29",
+      "first_date": "2026-09-29",
+      "last_date": "2026-09-30",
       "files": 1
     },
     "weather_daily": {
