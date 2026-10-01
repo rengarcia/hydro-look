@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-01T18:37:30Z",
+  "generated_at": "2026-10-01T21:26:56Z",
   "data_date": "2026-09-30",
   "as_of": "2026-10-01",
   "ok": true,
@@ -98,7 +98,7 @@
       "id": "adequacy",
       "label_es": "Suficiencia nacional",
       "feed": "National adequacy",
-      "latest": "2026-09-29",
+      "latest": "2026-09-30",
       "limit_days": 3,
       "state": "current"
     }
@@ -111,7 +111,7 @@
       "rows": 58249
     },
     "operativa_snapshots": {
-      "rows": 1551
+      "rows": 1598
     },
     "operating_bands": {
       "rows": 7
@@ -126,16 +126,16 @@
       "rows": 13
     },
     "adequacy_runs": {
-      "rows": 12
+      "rows": 13
     },
     "adequacy_values": {
-      "rows": 60
+      "rows": 65
     },
     "forecast_values": {
       "rows": 65
     },
     "narrative_snapshots": {
-      "rows": 16
+      "rows": 17
     },
     "xm_exchange_daily": {
       "rows": 4010
