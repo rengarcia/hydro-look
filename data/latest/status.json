@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-01T14:00:16Z",
+  "generated_at": "2026-10-01T18:37:24Z",
   "command": "daily",
   "source": "all",
   "requests": 61,
@@ -12,8 +12,7 @@
     "ords:pointValues mrid=140031: all 31 points are null (known open issue)",
     "ords:pointValues mrid=140537: all 31 points are null (known open issue)",
     "ords:pointValues mrid=110031: all 31 points are null (known open issue)",
-    "ords:pointValues mrid=110537: all 31 points are null (known open issue)",
-    "smec 2026-09-30: report is incomplete (missing generacion_hidraulica, total_generacion, demanda_distribucion); the running day fills in at D+1, but a stored-as-missing day has come back identical on every retry"
+    "ords:pointValues mrid=110537: all 31 points are null (known open issue)"
   ],
   "tables": {
     "observations_daily": {
@@ -23,13 +22,13 @@
       "files": 18
     },
     "national_balance_daily": {
-      "rows": 58234,
+      "rows": 58249,
       "first_date": "2016-05-01",
-      "last_date": "2026-09-29",
+      "last_date": "2026-09-30",
       "files": 11
     },
     "operativa_snapshots": {
-      "rows": 1504,
+      "rows": 1551,
       "first_date": "2026-09-22",
       "last_date": "2026-10-01",
       "files": 1
@@ -66,17 +65,18 @@
     }
   },
   "narrative": {
-    "calls": 15,
+    "calls": 16,
     "by_status": {
       "failed": 1,
       "rejected": 4,
-      "ok": 10
+      "ok": 11
     },
-    "spend_usd": 0.4394,
+    "spend_usd": 0.4835,
     "calls_without_cost": 3,
     "by_month": {
-      "2026-09": 0.4394
+      "2026-09": 0.4394,
+      "2026-10": 0.0441
     },
-    "last_call_at": "2026-09-30T18:12:18Z"
+    "last_call_at": "2026-10-01T14:01:07Z"
   }
 }
