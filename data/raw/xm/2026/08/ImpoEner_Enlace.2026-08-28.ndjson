@@ -1,0 +1,1 @@
+{"key":"ImpoEner:Enlace:2026-08-28:2026-08-31","url":"https://servapibi.xm.com.co/hourly","method":"POST","status":200,"fetched_at":"2026-10-02T21:21:47Z","body":"{\"Metric\":{\"Id\":\"ImpoEner\",\"Name\":\"Importaciones Energía\",\"StartDate\":\"2026-08-28T00:00:00\",\"EndDate\":\"2026-08-31T00:00:00\"},\"Items\":[]}"}
