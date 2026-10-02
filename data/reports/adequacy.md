@@ -1,6 +1,6 @@
 # Energy adequacy — what the model is, and what it was measured at
 
-Generated 2026-10-02T18:07:04Z from 3734 usable national-balance days, 2016-05-01 → 2026-10-01. Origin 2026-10-01.
+Generated 2026-10-02T21:05:10Z from 3734 usable national-balance days, 2016-05-01 → 2026-10-01. Origin 2026-10-01.
 
 This is section 7's target 3: expected deficit in GWh per day over the horizon, and the risk
 tiers read off it. It is the number the site's adequacy tile shows, and the `risk_tier` the
