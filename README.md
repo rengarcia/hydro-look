@@ -158,8 +158,10 @@ The pages:
 | `/embed/<site>/` | a fixed 400 × 260 card per reservoir for an `<iframe>`, without the site's chrome |
 | `/feed.xml` | the daily reading as Atom, one entry per day the validator passed |
 
-Every page has Open Graph and Twitter metadata with a canonical URL; the preview image is drawn at
-build time from the day's headline and Mazar's band by `next/og`, with no network. `robots.txt`,
+Every page has Open Graph and Twitter metadata with a canonical URL, built by `pageMetadata` in
+`src/lib/site/meta.ts`, one `<h1>`, and its breadcrumb trail as schema.org `BreadcrumbList`; the
+preview image is drawn at build time from the day's headline and Mazar's band by `next/og`, with
+no network, and every page links to it. `robots.txt`,
 `sitemap.xml`, `icon.svg` (the masthead's mark) and a Spanish 404 come from `src/app/`. The three
 typefaces ("Páramo": Instrument Serif, Geist and Geist Mono over a teal-and-terracotta palette,
 light and dark from the reader's system setting) are self-hosted from `public/fonts/`, the Latin

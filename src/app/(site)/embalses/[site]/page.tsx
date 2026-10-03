@@ -21,6 +21,7 @@ import { ReturnPeriodsSection } from "../../../components/ReturnPeriods.tsx";
 import { apiDocument, latest } from "../../../../lib/site/data.ts";
 import type { ForecastDocument } from "../../../../lib/site/documents.ts";
 import { basinLabel, num } from "../../../../lib/site/format.ts";
+import { pageMetadata } from "../../../../lib/site/meta.ts";
 import type { ReservoirSnapshot } from "../../../../lib/publish/latest.ts";
 
 export const dynamicParams = false;
@@ -37,16 +38,14 @@ export async function generateMetadata({ params }: { params: Promise<{ site: str
   const { site } = await params;
   const reservoir = reservoirOf(site);
   if (reservoir === null) return {};
-  const path = `/embalses/${site}/`;
-  return {
+  return pageMetadata({
     title: reservoir.label,
     description:
       `Nivel del agua, rango de operación, tendencia y el agua que le llega al embalse ${reservoir.label} ` +
       `(${basinLabel(reservoir.basin)})${reservoir.level ? `: ${num(reservoir.level.masl, 2)} m el ${reservoir.level.date}` : ""}. ` +
       "No es una fuente oficial.",
-    alternates: { canonical: path },
-    openGraph: { url: path },
-  };
+    path: `/embalses/${site}/`,
+  });
 }
 
 /**

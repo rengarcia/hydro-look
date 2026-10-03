@@ -12,7 +12,7 @@
 import type { ReactNode } from "react";
 import { dateWithYear } from "../../lib/site/format.ts";
 import { dataDate } from "../../lib/site/data.ts";
-import { REPO_URL } from "../../lib/publish/contract.ts";
+import { REPO_URL, SITE_URL } from "../../lib/publish/contract.ts";
 
 export const REPO = REPO_URL;
 
@@ -109,9 +109,26 @@ export function Masthead({ asOf, links }: { asOf: string | null; links: NavLink[
 }
 
 /** Where a page below the home page sits, as a trail of links ending at the page itself. */
+/**
+ * The trail above a page's title, and the same trail as schema.org `BreadcrumbList`, which is
+ * what lets a search result show it in place of the bare URL. The last step is the page itself
+ * and carries no link, which the schema allows.
+ */
 export function Crumbs({ trail }: { trail: { href?: string; label: string }[] }) {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: trail.map((step, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: step.label,
+      ...(step.href ? { item: `${SITE_URL}${step.href}` } : {}),
+    })),
+  };
   return (
     <nav className="shell crumbs" aria-label="Ruta">
+      {/* Serialised by us, from the page's own labels: nothing user-supplied reaches it. */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       {trail.map((step, i) => (
         <span key={step.label}>
           {i > 0 ? <span aria-hidden="true">/ </span> : null}
@@ -222,6 +239,7 @@ export function SectionIntro({
   titleId,
   children,
   wide = false,
+  level = 2,
 }: {
   index: string;
   eyebrow: ReactNode;
@@ -230,13 +248,16 @@ export function SectionIntro({
   titleId?: string;
   children?: ReactNode;
   wide?: boolean;
+  /** 1 where the section opens a page of its own and its title is the page's only `<h1>`. */
+  level?: 1 | 2;
 }) {
+  const Heading = level === 1 ? "h1" : "h2";
   return (
     <div className={wide ? "section-intro wide" : "section-intro"}>
       <Kicker index={index}>{eyebrow}</Kicker>
-      <h2 id={titleId} className="section-title">
+      <Heading id={titleId} className="section-title">
         {title}
-      </h2>
+      </Heading>
       {children ? <p className="section-lede">{children}</p> : null}
     </div>
   );

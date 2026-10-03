@@ -12,11 +12,12 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { latest } from "../lib/site/data.ts";
+import { PREVIEW_ALT } from "../lib/site/meta.ts";
 import { dateWithYear, num, pct } from "../lib/site/format.ts";
 import { direction, heroHeadline } from "../lib/site/story.ts";
 
 export const dynamic = "force-static";
-export const alt = "hydro-look: cuánta de la electricidad del Ecuador salió del agua ayer, y el nivel de Mazar.";
+export const alt = PREVIEW_ALT;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
