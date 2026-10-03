@@ -109,6 +109,7 @@ describe("narrative.json", () => {
     const result = await generateNarrative(payload, { model: short });
     expect(result.status).toBe("rejected");
     expect(result.reasons[0]).toMatch(/^schema:/);
+    expect(result.reasons).toContain("issue: outlook_es: outlook_es must be 120 to 220 words");
   });
 });
 

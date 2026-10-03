@@ -50,6 +50,7 @@ import {
   type SnapshotRef,
 } from "../src/lib/narrative/generate.ts";
 import { PROMPT_VERSION } from "../src/lib/narrative/prompt.ts";
+import { referenceFor } from "../src/lib/narrative/drivers.ts";
 import { narrativeSnapshotRow } from "../src/lib/contracts/tables.ts";
 import { parseCsv } from "../src/lib/store/csv.ts";
 import { FIXTURES } from "./helpers.ts";
@@ -336,6 +337,10 @@ describe("the validator", () => {
     const other = payload.reservoirs.findIndex((r) => r.site !== "mazar");
     expect(check({ ...DRIVERS[0], payload_ref: `reservoirs[${other}].level_masl` })[0]).toMatch(/factor "mazar_level" points at/);
     expect(check({ ...DRIVERS[0], payload_ref: "not a path!" })).toEqual(['drivers[0]: payload_ref "not a path!" is not a path']);
+  });
+
+  it("reads a margin against zero, as the prompt says (es-7)", () => {
+    expect(referenceFor("adequacy.horizons[1].margin_pct")).toBe(0);
   });
 
   it("requires the outlook to name the risk tier it was given", () => {
