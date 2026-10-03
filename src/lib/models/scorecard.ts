@@ -87,6 +87,13 @@ export interface Scorecard {
   rowsExcluded: number;
   groups: ScoreGroup[];
   scored: ScoredRow[];
+  /**
+   * Requirement only: the start of a rationing episode with no end date. Every window that
+   * reaches past its start is excluded until the episode is closed in `rationing_episodes.csv`,
+   * so while it is open the scorecard cannot grow, and the report says so instead of only
+   * counting exclusions.
+   */
+  openEpisodeSince?: IsoDate | null;
 }
 
 /** The last generated run for each (origin, model version), with the others counted. */
@@ -264,6 +271,7 @@ export function scoreAdequacyRuns(
     rowsExcluded: excluded,
     groups: summarise(scored),
     scored,
+    openEpisodeSince: episodes.filter((e) => e.end === "").at(-1)?.start ?? null,
   };
 }
 
@@ -354,6 +362,14 @@ export function renderScorecardReport(input: { generatedAt: string; level: Score
         `for the same origin and version); ${card.rowsScored} rows scored, ${card.rowsPending} pending, ${card.rowsExcluded} excluded.`,
     );
     lines.push("");
+    if (card.openEpisodeSince) {
+      lines.push(
+        `A rationing episode has been open since ${card.openEpisodeSince} (\`rationing_episodes.csv\`, no end date). Measured ` +
+          "load on those days is suppressed load, so no row whose window reaches past that day can be scored until the " +
+          "episode is given an end date; until then the rows are counted as excluded, not dropped.",
+      );
+      lines.push("");
+    }
     if (card.groups.length === 0) {
       lines.push("No published row has reached its target date with an observation yet. The table fills in as they do.");
       lines.push("");

@@ -32,7 +32,9 @@
  * "el indicador de energía", with its horizon), GWh/día glossed as "es decir, energía por día"
  * (the gap is now sized by `margin_pct`, a share of demand), a record rain forecast listed beside
  * a falling level without a word on why both hold, and a bare ONI value. The first sentence is
- * written as the headline the site sets it as (`splitLead`).
+ * written as the headline the site sets it as (`splitLead`). With PAYLOAD_VERSION 3 the text may
+ * name a restriction in `measures_in_force` — the industrial cuts open since 2026-09-22 — and
+ * still may not predict cuts of its own.
  */
 
 import { canonicalJson, type NarrativePayload } from "./payload.ts";
@@ -105,7 +107,12 @@ export function instructionsFor(payload: NarrativePayload | null): string {
     "- El Niño or La Niña: name the phase from `enso.phase` in words and say the month of the data, which always lags",
     "  about two months. The index value adds little for this reader; leave it out unless it fits easily.",
     "- If `stale_feeds` is not empty, say in plain words which data is out of date.",
-    "- Never say whether there will or will not be power cuts (apagones, cortes de luz): no number in the payload says so.",
+    "- `measures_in_force` lists the supply restrictions in force today (cuts or scheduled outages), from this site's",
+    "  own table. If it is not empty, say in one plain sentence what is in force and since when, translating its `scope`",
+    "  into everyday Spanish (desde el 22 de septiembre de 2026, las grandes industrias se desconectan de la red un día",
+    "  a la semana), and, if `hydro_related` is true, that it is meant to save water. It is a fact, not a forecast.",
+    "- Beyond that, never say whether there will or will not be power cuts (apagones, cortes de luz), for whom, or how",
+    "  long: no number in the payload says so. If `measures_in_force` is empty, do not mention cuts at all.",
     "",
     "## Words to avoid — say what they mean instead",
     "- cota → el nivel del agua (en metros sobre el nivel del mar the first time; after that, metros).",
@@ -125,8 +132,8 @@ export function instructionsFor(payload: NarrativePayload | null): string {
     "1. The first sentence is shown alone, in large type, as the day's headline. It must stand on its own in 30 words",
     "   or fewer: how Mazar, the country's main reservoir, is doing and the energy indicator with its word in «».",
     "2. Mazar: its level, whether it is rising or falling and how fast, and where the forecast puts it, with its limit.",
-    "3. Electricity: what the tier means, how big the gap or the margin is, and what drives it (hydro output against",
-    "   normal, imports) where the payload says so.",
+    "3. Electricity: what the tier means, how big the gap or the margin is, what drives it (hydro output against",
+    "   normal, imports) where the payload says so, and any measure in force.",
     "4. Weather, last and briefest: the rain expected, the water reaching Mazar, and El Niño or La Niña.",
     "",
     "## Output",

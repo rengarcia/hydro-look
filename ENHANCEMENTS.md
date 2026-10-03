@@ -37,7 +37,7 @@ typecheck, type-aware lint, Prettier, shellcheck, `npm run check` and the static
 | 4.3 Accessibility | done | Print leaves chart tables folded |
 | 4.4 More pages | done | `/embalses/[site]/`, `/dia/`, "desde ayer", `/embed/`, `/feed.xml` |
 | 4.5 Rendering weight | mostly done | `page.tsx` split, helpers deduplicated, inline styles 45 → 13 (all data-driven). The forecast fan and the 12-year record are still drawn twice: one SVG is illegible at phone width |
-| 5.1 Scorecard | done | Nothing scored yet: the first published horizon falls due 2026-09-27 |
+| 5.1 Scorecard | done | First Mazar rows scored 2026-09-28 (6 by 2026-10-03). The adequacy half scores nothing while the 2026-09-22 rationing episode is open (PLAN §8a) |
 | 5.2 Versioning | done | Adequacy v2; rules in `adequacy_rules.csv` and in the hash; 2115 m in `thresholds.csv` as unverified |
 | 5.3 Other plants | done | Inflow ships at 7 d for Amaluza and Agoyán, 7 and 14 d for Minas San Francisco and Delsitanisagua; Coca Codo Sinclair, Manduriacu and the Amaluza level forecast are recorded negatives |
 | 5.4 Rain | negative so far | Perfect-foresight rain at `paute` is worse at every horizon; reruns at the centroid once its backfill lands |
