@@ -1,6 +1,6 @@
 # hydro-look — Plan v2
 
-**Status:** Phases 0 to 6, 6b and 6c are done. Phase 1 closed on 2026-09-24 with its third consecutive green scheduled daily run (run 36035245780); all 21 scheduled runs from 2026-09-22 to 2026-10-03 were green. Phase 4 closed 2026-09-24 when ERA5 history reached all seven verified catchment centroids (13,410 days each from 1990-01-01, covariates run 36009328405); the Mazar models then move onto `paute_mazar` by themselves, and on that basin the shipped M4 design no longer wins at seven days (Phase 4, "What is still open"). Phase 6b met its acceptance criterion on 2026-09-29: seven consecutive daily `ok` narratives from 2026-09-23; one later answer (2026-09-30, 221 words) was rejected for length, which prompt `es-7` addresses. The site is deployed on Vercel, and Colombia's side of the interconnection is ingested from XM (Phase 7). The `ENHANCEMENTS.md` list was implemented on 2026-09-23 (Phase 7); what remains of it is the ERA5 dispatches. Gaps neither plan covered are listed in §8a (added 2026-09-24). Still for the owner: whether M4's seven-day point moves to the direct design (Phase 4, "What is still open"); the site has published M3 at seven days since 2026-09-24. The live scorecard scored its first Mazar rows on 2026-09-28; its adequacy half cannot score while the industrial rationing episode open since 2026-09-22 has no end date (§8a). **Updated:** 2026-10-03. Supersedes the initial plan and the
+**Status:** Phases 0 to 6, 6b and 6c are done. Phase 1 closed on 2026-09-24 with its third consecutive green scheduled daily run (run 36035245780); all 21 scheduled runs from 2026-09-22 to 2026-10-03 were green. Phase 4 closed 2026-09-24 when ERA5 history reached all seven verified catchment centroids (13,410 days each from 1990-01-01, covariates run 36009328405); the Mazar models then move onto `paute_mazar` by themselves, and on that basin the residual M4 design no longer won at seven days; on 2026-10-03 the owner moved the seven-day point to `M4-gbm-direct`, the design that does (Phase 4, "What is still open"). Phase 6b met its acceptance criterion on 2026-09-29: seven consecutive daily `ok` narratives from 2026-09-23; one later answer (2026-09-30, 221 words) was rejected for length, which prompt `es-7` addresses. The site is deployed on Vercel, and Colombia's side of the interconnection is ingested from XM (Phase 7). The `ENHANCEMENTS.md` list was implemented on 2026-09-23 (Phase 7); what remains of it is the ERA5 dispatches. Gaps neither plan covered are listed in §8a (added 2026-09-24). The live scorecard scored its first Mazar rows on 2026-09-28; its adequacy half cannot score while the industrial rationing episode open since 2026-09-22 has no end date (§8a). **Updated:** 2026-10-03. Supersedes the initial plan and the
 follow-up research note ("CELEC dashboard covers 7 plants", "CENACE header has usable numbers").
 
 This version was built after reading the two community scrapers that already run daily against
@@ -953,7 +953,15 @@ are in each row's notes and in the report.
   calibrated) **it no longer wins, and the next forecast publishes M3 at seven days.** The
   direct design wins at both 7 and 14 days on the new basin (MAE 1.94 and 3.29 m, coverage 78.5%
   and 80.6%, the 7-day interval below zero). Changing the shipped design is a decision for the
-  owner (`RUNBOOK.md`, "M4 fallback"), not something a run should do on its own. §5.4's rain
+  owner (`RUNBOOK.md`, "M4 fallback"), not something a run should do on its own.
+  *Decided 2026-10-03:* the owner moved the seven-day point to `M4-gbm-direct`
+  (`PUBLISHED_M4_ID` in `m4-live.ts`, forecast `MODEL_VERSION` 3). On the committed snapshot it
+  is the only design that beats M3 at seven days with both the paired interval below zero
+  (−0.62 to −0.10 m) and a band closer to 80% than M3's; a dry run on 2026-10-02's data
+  published it at 2127.97 m (p10–p90 2124.86–2130.57) where M3 said 2126.28 m. Fourteen days
+  stays on M3: the direct design's gain there (3.29 against 3.62 m) has an interval that
+  straddles zero. A rerun that stops showing the win falls back to M3 as before; no run picks
+  a design by itself. §5.4's rain
   experiment, rerun at the centroid, is still negative (14-day MAE 3.93 m against 3.62).
 - **A centroid is still one point.** Area-weighted ERA5 cells over each outline in
   `catchments.geojson` would be the true basin mean; it waits on a backtest showing it matters.
@@ -1523,8 +1531,8 @@ repository is done; its head now carries a per-item status. In brief:
   floors, Prettier and shellcheck in CI, Dependabot and SHA-pinned actions.
 
 What the repository cannot do for itself: ~~the ERA5 backfill at the seven centroids~~ (done
-2026-09-24, see Phase 4); whether M4's seven-day point moves to the direct design now that the
-residual design no longer wins on `paute_mazar` (Phase 4, "What is still open"). TypeScript 7 waits on `typescript-eslint`, which does not yet accept it.
+2026-09-24, see Phase 4); ~~whether M4's seven-day point moves to the direct design~~ (done
+2026-10-03, see Phase 4). TypeScript 7 waits on `typescript-eslint`, which does not yet accept it.
 
 Still listed: ML v2 if it beats v1 in backtests; ARCONEL BNEE monthly loader; CENACE Datos Abiertos per-plant
 validation; Colombia export availability via XM's open API — which Phase 6c has now made the

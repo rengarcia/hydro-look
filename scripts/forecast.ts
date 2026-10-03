@@ -229,7 +229,7 @@ function main(): void {
     console.log(
       `${PUBLISHED_M4_ID} at ${PUBLISHED_M4_HORIZON} d fitted at the live origin in ${((performance.now() - started) / 1000).toFixed(1)} s`,
     );
-    if (!live) fallback = `${PUBLISHED_M4_ID} could not be fitted at the origin ${dates.at(-1)} (no M3 anchor or too few training rows)`;
+    if (!live) fallback = `${PUBLISHED_M4_ID} could not be fitted at the origin ${dates.at(-1)} (too few training rows)`;
   }
   if (fallback) console.log(`${PUBLISHED_M4_HORIZON} d falls back to ${shipped.id}: ${fallback}`);
   const horizonSwitch = m4HorizonSwitch(check.ok ? check.evidence : null, live, fallback, shipped.id, {

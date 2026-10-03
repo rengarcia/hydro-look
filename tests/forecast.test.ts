@@ -251,9 +251,9 @@ describe("the seven-day switch in the published forecast", () => {
     const doc = out.document as Doc;
 
     const seven = doc.forecast.find((h) => h.horizon_days === 7)!;
-    expect(seven.model).toBe("M4-gbm-m3-residual");
+    expect(seven.model).toBe("M4-gbm-direct");
     expect(seven.p50).toBeCloseTo(m3At7.p50 - 1.234, 2);
-    expect(seven.band_source).toContain("M4-gbm-m3-residual out-of-sample residuals");
+    expect(seven.band_source).toContain("M4-gbm-direct out-of-sample residuals");
     expect(seven["backtest_skill"]).toMatchObject({ mae_m: 2.034, reference_model: "M3-water-balance", reference_mae_m: 2.292 });
     // What M3 would have published is kept beside it, so the size of the switch is visible.
     expect(seven["would_have_published"]).toMatchObject({ model: "M3-water-balance", p10: m3At7.p10, p50: m3At7.p50, p90: m3At7.p90 });
@@ -266,22 +266,22 @@ describe("the seven-day switch in the published forecast", () => {
 
     // The skill beside each row is the skill of the model that produced it.
     const skill7 = doc.backtest.horizons.find((h) => h.horizon_days === 7)!;
-    expect(skill7).toMatchObject({ model: "M4-gbm-m3-residual", mae_m: 2.034, skill_vs_persistence: 0.112 });
+    expect(skill7).toMatchObject({ model: "M4-gbm-direct", mae_m: 2.034, skill_vs_persistence: 0.112 });
     expect(doc.backtest.horizons.find((h) => h.horizon_days === 30)!.model).toBe("M3-water-balance");
 
     expect(doc.model.id).toBe("M3-water-balance");
     expect(doc.model.horizon_models).toEqual([
-      { horizon_days: 7, model_id: "M4-gbm-m3-residual" },
+      { horizon_days: 7, model_id: "M4-gbm-direct" },
       { horizon_days: 30, model_id: "M3-water-balance" },
     ]);
-    expect(doc.horizon_switch).toMatchObject({ status: "published", published_model: "M4-gbm-m3-residual" });
+    expect(doc.horizon_switch).toMatchObject({ status: "published", published_model: "M4-gbm-direct" });
   });
 
   it("writes rows that satisfy the contracts, each carrying its model", () => {
     const out = switched(2128.5);
     expect(() => validateRows(FORECAST_VALUES, out.valueRows)).not.toThrow();
     expect(() => validateRows(FORECAST_RUNS, [out.runRow])).not.toThrow();
-    expect(out.valueRows.find((r) => r.horizon_days === 7)!.model_id).toBe("M4-gbm-m3-residual");
+    expect(out.valueRows.find((r) => r.horizon_days === 7)!.model_id).toBe("M4-gbm-direct");
     expect(out.valueRows.find((r) => r.horizon_days === 30)!.model_id).toBe("M3-water-balance");
     expect(out.runRow.model_id).toBe("M3-water-balance");
   });
