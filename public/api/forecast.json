@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-03T15:13:54Z",
+  "generated_at": "2026-10-03T16:48:36Z",
   "data_date": "2026-10-02",
-  "run_id": "2026-10-02-mazar-2-02c685e9",
+  "run_id": "2026-10-02-mazar-3-fa6823f5",
   "origin_date": "2026-10-02",
   "site": "mazar",
   "variable": "cota_masl",
@@ -11,13 +11,13 @@
   "model": {
     "id": "M3-water-balance",
     "label": "Water balance with a fitted release rule and analogue inflow years",
-    "version": "2",
-    "features_hash": "02c685e949ab0833",
+    "version": "3",
+    "features_hash": "fa6823f5878214d1",
     "backtest_origins": 105,
     "horizon_models": [
       {
         "horizon_days": 7,
-        "model_id": "M3-water-balance"
+        "model_id": "M4-gbm-direct"
       },
       {
         "horizon_days": 14,
@@ -39,13 +39,18 @@
   },
   "horizon_switch": {
     "horizon_days": 7,
-    "candidate_model": "M4-gbm-m3-residual",
-    "published_model": "M3-water-balance",
-    "status": "fallback",
-    "reason": "in the M4 snapshot M4-gbm-m3-residual no longer beats M3-water-balance at 7 d under the ladder rule",
+    "candidate_model": "M4-gbm-direct",
+    "published_model": "M4-gbm-direct",
+    "status": "published",
+    "reason": "M4-gbm-direct beats M3-water-balance at 7 d under the ladder's rule (lower MAE, band no worse calibrated) in the committed M4 backtest, which covers exactly this run's ladder origins.",
     "other_horizons_model": "M3-water-balance",
     "scenarios_and_days_to_threshold_model": "M3-water-balance",
-    "snapshot": null,
+    "snapshot": {
+      "path": "data/reports/m4-backtest.json",
+      "generated_at": "2026-09-24T15:36:08Z",
+      "origins": 105,
+      "command": "npm run backtest:m4"
+    },
     "precip_basin": "paute_mazar",
     "precip_basin_fallback_reason": null
   },
@@ -93,9 +98,9 @@
     {
       "horizon_days": 7,
       "target_date": "2026-10-09",
-      "p10": 2121.98,
-      "p50": 2126.28,
-      "p90": 2128.63,
+      "p10": 2124.86,
+      "p50": 2127.97,
+      "p90": 2130.57,
       "ensemble": {
         "p10": 2121.98,
         "p90": 2129.4,
@@ -119,9 +124,40 @@
           2025
         ]
       },
-      "median_backtest_residual_m": 0.13,
-      "model": "M3-water-balance",
-      "band_source": "M3-water-balance out-of-sample residuals at 7 d, this run's ladder backtest"
+      "median_backtest_residual_m": -0.03,
+      "model": "M4-gbm-direct",
+      "band_source": "M4-gbm-direct out-of-sample residuals at 7 d over 105 origins of `npm run backtest:m4` (data/reports/m4-backtest.json, 2026-09-24T15:36:08Z): median + the 10th and 90th percentile of actual − forecast, clamped to contain the median",
+      "backtest_skill": {
+        "source": "data/reports/m4-backtest.json",
+        "snapshot_generated_at": "2026-09-24T15:36:08Z",
+        "origins": 105,
+        "n": 105,
+        "mae_m": 1.937,
+        "skill_vs_persistence": 0.1547,
+        "coverage_p10_p90": 0.7849,
+        "reference_model": "M3-water-balance",
+        "reference_mae_m": 2.292,
+        "reference_coverage_p10_p90": 0.7419,
+        "paired_mae_difference_m": -0.356,
+        "paired_90_interval_m": [
+          -0.618,
+          -0.096
+        ]
+      },
+      "own_quantiles": {
+        "p10": 2126.05,
+        "p90": 2131.3,
+        "note": "The model's own quantile regressions before widening; they cover too little to publish."
+      },
+      "m3_anchor_p50": null,
+      "ensemble_note": "This row's `ensemble` is M3-water-balance's analogue inflow years, kept for reference; it is not this row's band.",
+      "would_have_published": {
+        "model": "M3-water-balance",
+        "p10": 2121.98,
+        "p50": 2126.28,
+        "p90": 2128.63,
+        "median_backtest_residual_m": 0.13
+      }
     },
     {
       "horizon_days": 14,
@@ -482,12 +518,12 @@
     "horizons": [
       {
         "horizon_days": 7,
-        "model": "M3-water-balance",
+        "model": "M4-gbm-direct",
         "n": 105,
-        "mae_m": 2.292,
-        "skill_vs_persistence": -0.0005,
-        "coverage_p10_p90": 0.7419,
-        "ensemble_coverage_p10_p90": 0.6095
+        "mae_m": 1.937,
+        "skill_vs_persistence": 0.1547,
+        "coverage_p10_p90": 0.7849,
+        "ensemble_coverage_p10_p90": 0.6286
       },
       {
         "horizon_days": 14,
@@ -875,14 +911,14 @@
     ]
   },
   "scorecard": {
-    "generated_at": "2026-10-03T15:14:11Z",
+    "generated_at": "2026-10-03T16:48:49Z",
     "observed_through": "2026-10-02",
     "target": "level on the target day, m",
     "units": "m",
-    "runs_considered": 13,
+    "runs_considered": 14,
     "runs_superseded": 2,
     "rows_scored": 6,
-    "rows_pending": 59,
+    "rows_pending": 64,
     "rows_excluded": 0,
     "method": "Every published run whose horizon has passed, scored under the model and version that made it; the last run generated for each origin and version only. Pending rows have not reached their target date yet; excluded rows have no observation on the target day.",
     "by_horizon": [
