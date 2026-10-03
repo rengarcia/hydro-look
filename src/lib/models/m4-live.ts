@@ -1,14 +1,18 @@
 /**
- * M4 in the daily forecast: `M4-gbm-m3-residual`'s median published at seven days, and nowhere
+ * M4 in the daily forecast: one boosted design's median published at seven days, and nowhere
  * else.
  *
- * The M4 backtest (`npm run backtest:m4`, committed as `data/reports/m4-backtest.json`) found
- * one horizon where a rung beats M3 under the ladder's rule: seven days, where the residual
- * design's MAE is 2.03 m against M3's 2.29 m with a paired 90% interval wholly below zero, and
- * its band is no worse calibrated. At 14 and 30 days the gain is noise or costs the band; at 60
- * and 90 it loses by a metre. So the switch is by horizon: seven days publishes M4, everything
- * else — 14 to 90 days, the three named scenarios and days-to-threshold, which need a daily
- * simulated path M4 does not produce — stays M3.
+ * The M4 backtest (`npm run backtest:m4`, committed as `data/reports/m4-backtest.json`) scores
+ * three designs against M3 at every ladder origin. Since 2026-10-03 the published one is
+ * `M4-gbm-direct`, chosen by the owner from the 2026-09-24 snapshot on the verified Mazar
+ * centroid: at seven days its MAE is 1.94 m against M3's 2.29 m (15% better than persistence,
+ * where M3 only ties it), the paired 90% interval of the difference lies wholly below zero, and
+ * its band covers 78.5% of outcomes against M3's 74.2% — closer to the nominal 80%. The residual
+ * design published from 2026-09-22 had stopped winning on that basin (its band covered 73.1%).
+ * At 14 days the direct design's gain is not distinguishable from noise, at 30 it costs the band,
+ * and at 60 and 90 it loses by a metre. So the switch is by horizon: seven days publishes M4,
+ * everything else — 14 to 90 days, the three named scenarios and days-to-threshold, which need a
+ * daily simulated path M4 does not produce — stays M3.
  *
  * Three rules keep the published number the one that was scored.
  *
@@ -21,7 +25,8 @@
  * 3. **A current backtest.** The snapshot must have been scored on exactly the ladder's origins.
  *    Once the ladder gains a month the snapshot lacks, the evidence no longer covers the ladder
  *    and seven days falls back to M3 — saying so in `forecast.json` — until the M4 backtest is
- *    rerun. The same happens if a rerun no longer shows the win.
+ *    rerun. The same happens if a rerun no longer shows the win: a run never picks another
+ *    design by itself.
  *
  * Every feature at the live origin is read as the backtest read it: series cut at the origin,
  * ONI as it could have been read that day, ERA5 lagged five days (see `boosted.ts`).
@@ -46,7 +51,7 @@ import type { HorizonSwitch } from "./forecast.ts";
 import { PROVISIONAL_PRECIP_BASIN } from "../features/weather.ts";
 
 /** The design and horizon the M4 backtest earned, and the only ones published. */
-export const PUBLISHED_M4_ID = "M4-gbm-m3-residual";
+export const PUBLISHED_M4_ID = "M4-gbm-direct";
 export const PUBLISHED_M4_HORIZON = 7;
 /** The one site the M4 backtest was run on; no other site publishes it. */
 export const PUBLISHED_M4_SITE = "mazar";
@@ -176,15 +181,19 @@ export interface M4LiveForecast {
   /** The model's own quantile regressions, before any widening: reported, never the band. */
   ownP10: number;
   ownP90: number;
-  /** M3's median as the residual design anchors on it at this origin (`m3At` in `boosted.ts`). */
+  /**
+   * M3's median as a design that reads M3 sees it at this origin (`m3At` in `boosted.ts`); null
+   * for `M4-gbm-direct`, which does not read M3. What M3 itself would have published is kept
+   * beside the row by `buildForecast` either way.
+   */
   anchorP50: number | null;
 }
 
 /**
  * The residual design fitted at the live origin for one horizon, exactly as the backtest fits
  * it at a monthly origin: training days whose outcome was observed by the origin, every
- * feature read at or before its day. Null when the model cannot be fitted there — no M3 anchor
- * for the origin's month, or too few training rows.
+ * feature read at or before its day. Null when the model cannot be fitted there — too few
+ * training rows, or, for a design that reads M3, no M3 anchor for the origin's month.
  */
 export function fitM4Live(
   inputs: M4LiveInputs,
@@ -306,7 +315,7 @@ export function m4HorizonSwitch(
             note: "The model's own quantile regressions before widening; they cover too little to publish.",
           },
           m3_anchor_p50: live.anchorP50 === null ? null : round(live.anchorP50, 2),
-          ensemble_note: `This row's \`ensemble\` is ${shippedId}'s analogue inflow years, which this model corrects; it is not this row's band.`,
+          ensemble_note: `This row's \`ensemble\` is ${shippedId}'s analogue inflow years, kept for reference; it is not this row's band.`,
         },
       },
     ],

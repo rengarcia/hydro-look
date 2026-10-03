@@ -58,8 +58,9 @@ import type { AdequacyDocument, ForecastDocument, StatusDocument } from "../site
 /**
  * Bumped when the payload's shape changes, which also changes every hash computed from it.
  * 2: other reservoirs trimmed to what the text may say about them; precipitation basin by §1.1.
+ * 3: `measures_in_force`, the supply restrictions in `rationing_episodes.csv` that cover the origin.
  */
-export const PAYLOAD_VERSION = 2;
+export const PAYLOAD_VERSION = 3;
 
 /** The horizons the narrative talks about. §7 publishes 60 and 90 as well; the panel does not. */
 export const NARRATIVE_HORIZONS = [7, 14, 30] as const;
@@ -225,6 +226,24 @@ export interface PayloadEnso {
   note: string;
 }
 
+/**
+ * A supply restriction in force on the origin date, from `rationing_episodes.csv`. Copied, not
+ * judged: the table's own `scope` words, its start, its end when one is known. Without it a text
+ * explaining a «déficit» tier on a day when industry is already being cut would say nothing about
+ * the one measure readers have heard of. The row's note and sources stay out: they are long
+ * English prose, and the source URLs carry numbers the validator would then have to allow.
+ */
+export interface PayloadMeasure {
+  start: IsoDate;
+  /** Null while the episode is open. */
+  end: IsoDate | null;
+  kind: string;
+  scope: string;
+  /** Whether the table attributes it to low water, as opposed to maintenance or a grid failure. */
+  hydro_related: boolean;
+  max_hours_per_day: number | null;
+}
+
 export interface NarrativePayload {
   payload_version: number;
   origin_date: IsoDate;
@@ -235,6 +254,8 @@ export interface NarrativePayload {
   enso: PayloadEnso | null;
   /** Feeds `status.json` does not call current. Empty is the normal case. */
   stale_feeds: { feed: string; latest: IsoDate | null; state: string }[];
+  /** Restrictions covering the origin date. Empty is the normal case. */
+  measures_in_force: PayloadMeasure[];
 }
 
 /** The subset of a `weather_daily` row the precipitation outlook reads. */
@@ -263,6 +284,18 @@ export interface PayloadInputs {
   weather: readonly WeatherInput[];
   basins: readonly BasinRow[];
   oni: OniSeries;
+  /** `rationing_episodes.csv` rows; absent or empty means no restriction is known. */
+  rationing?: readonly RationingRow[];
+}
+
+/** The columns of `rationing_episodes.csv` the payload reads. */
+export interface RationingRow {
+  start: string;
+  end: string;
+  kind: string;
+  hydro_related: string;
+  scope: string;
+  max_hours_per_day: string;
 }
 
 /* ------------------------------------------------------------ computations */
@@ -479,6 +512,30 @@ export function ensoAt(oni: OniSeries, origin: IsoDate): PayloadEnso | null {
   };
 }
 
+const ISO = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * The restrictions that cover `origin`: cuts (`rationing`) and scheduled outages, open or not yet
+ * ended. A lifting (`restrictions_lifted`) and a blackout are events, not measures in force.
+ */
+export function measuresInForce(rows: readonly RationingRow[], origin: IsoDate): PayloadMeasure[] {
+  return rows
+    .filter((row) => (row.kind === "rationing" || row.kind === "scheduled_outage") && ISO.test(row.start))
+    .filter((row) => row.start <= origin && (!ISO.test(row.end) || row.end >= origin))
+    .map((row) => {
+      const hours = row.max_hours_per_day === "" ? NaN : Number(row.max_hours_per_day);
+      return {
+        start: row.start,
+        end: ISO.test(row.end) ? row.end : null,
+        kind: row.kind,
+        scope: row.scope,
+        hydro_related: row.hydro_related === "yes",
+        max_hours_per_day: Number.isFinite(hours) ? hours : null,
+      };
+    })
+    .sort((a, b) => (a.start < b.start ? -1 : 1));
+}
+
 function forecastBlock(forecast: ForecastDocument): PayloadForecast {
   const horizons = forecast.forecast
     .filter((h) => (NARRATIVE_HORIZONS as readonly number[]).includes(h.horizon_days))
@@ -638,6 +695,7 @@ export function buildPayload(inputs: PayloadInputs): NarrativePayload {
     stale_feeds: (inputs.status?.feeds ?? [])
       .filter((f) => f.state !== "current")
       .map((f) => ({ feed: f.feed, latest: f.latest, state: f.state })),
+    measures_in_force: measuresInForce(inputs.rationing ?? [], origin),
   };
 }
 
@@ -709,7 +767,7 @@ export function readBasins(path: string): BasinRow[] {
  * `tests/fixtures/narrative/`, the CLI at the repository. Returns null without `latest.json`,
  * because a narrative with no reservoirs in it has nothing to be about.
  */
-export function loadPayloadInputs(roots: { curated: string; api: string; basins: string }): PayloadInputs | null {
+export function loadPayloadInputs(roots: { curated: string; api: string; basins: string; rationing?: string }): PayloadInputs | null {
   const latest = readJson<LatestDocument>(join(roots.api, "latest.json"));
   if (latest === null) return null;
   return {
@@ -721,5 +779,7 @@ export function loadPayloadInputs(roots: { curated: string; api: string; basins:
     weather: readWeather(roots.curated),
     basins: readBasins(roots.basins),
     oni: readOni(roots.curated),
+    rationing:
+      roots.rationing && existsSync(roots.rationing) ? (parseCsv(readFileSync(roots.rationing, "utf8")) as unknown as RationingRow[]) : [],
   };
 }

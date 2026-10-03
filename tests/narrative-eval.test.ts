@@ -65,7 +65,7 @@ function answering(cost: number) {
   });
 }
 
-describe("the trimmed payload (PAYLOAD_VERSION 2)", () => {
+describe("the trimmed payload (PAYLOAD_VERSION 2, kept in 3)", () => {
   it("keeps Mazar whole and every other reservoir to what the text may say about it", () => {
     const others = payload.reservoirs.filter((r) => r.site !== "mazar");
     expect(others.length).toBeGreaterThan(0);
@@ -74,7 +74,7 @@ describe("the trimmed payload (PAYLOAD_VERSION 2)", () => {
       expect(r.floors.length).toBeLessThanOrEqual(1);
     }
     expect(payload.reservoirs[MAZAR]!.bands!.length).toBeGreaterThan(0);
-    expect(payload.payload_version).toBe(2);
+    expect(payload.payload_version).toBe(3);
   });
 });
 
@@ -109,6 +109,7 @@ describe("narrative.json", () => {
     const result = await generateNarrative(payload, { model: short });
     expect(result.status).toBe("rejected");
     expect(result.reasons[0]).toMatch(/^schema:/);
+    expect(result.reasons).toContain("issue: outlook_es: outlook_es must be 120 to 220 words");
   });
 });
 

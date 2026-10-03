@@ -1,6 +1,6 @@
 # hydro-look — Plan v2
 
-**Status:** Phases 0, 2, 3, 4, 5, 6 and 6c are done. Phase 1 is code-complete and waits only on its clock — three consecutive days with a green *scheduled* daily run; 2026-09-22 and 2026-09-23 are green, so a green scheduled run on 2026-09-24 closes it. Phase 4 closed 2026-09-24 when ERA5 history reached all seven verified catchment centroids (13,410 days each from 1990-01-01, covariates run 36009328405); the Mazar models then move onto `paute_mazar` by themselves, and on that basin the shipped M4 design no longer wins at seven days (Phase 4, "What is still open"). Phase 6b is live: the AI Gateway is configured and the first `ok` narrative was written 2026-09-23 (run 35810691729), so its seven-day acceptance count has started. The site is deployed on Vercel, and Colombia's side of the interconnection is ingested from XM (Phase 7). The `ENHANCEMENTS.md` list was implemented on 2026-09-23 (Phase 7); what remains of it is the ERA5 dispatches. Gaps neither plan covered are listed in §8a (added 2026-09-24). **Updated:** 2026-09-24. Supersedes the initial plan and the
+**Status:** Phases 0 to 6, 6b and 6c are done. Phase 1 closed on 2026-09-24 with its third consecutive green scheduled daily run (run 36035245780); all 21 scheduled runs from 2026-09-22 to 2026-10-03 were green. Phase 4 closed 2026-09-24 when ERA5 history reached all seven verified catchment centroids (13,410 days each from 1990-01-01, covariates run 36009328405); the Mazar models then move onto `paute_mazar` by themselves, and on that basin the residual M4 design no longer won at seven days; on 2026-10-03 the owner moved the seven-day point to `M4-gbm-direct`, the design that does (Phase 4, "What is still open"). Phase 6b met its acceptance criterion on 2026-09-29: seven consecutive daily `ok` narratives from 2026-09-23; one later answer (2026-09-30, 221 words) was rejected for length, which prompt `es-7` addresses. The site is deployed on Vercel, and Colombia's side of the interconnection is ingested from XM (Phase 7). The `ENHANCEMENTS.md` list was implemented on 2026-09-23 (Phase 7); what remains of it is the ERA5 dispatches. Gaps neither plan covered are listed in §8a (added 2026-09-24). The live scorecard scored its first Mazar rows on 2026-09-28; its adequacy half cannot score while the industrial rationing episode open since 2026-09-22 has no end date (§8a). **Updated:** 2026-10-03. Supersedes the initial plan and the
 follow-up research note ("CELEC dashboard covers 7 plants", "CENACE header has usable numbers").
 
 This version was built after reading the two community scrapers that already run daily against
@@ -480,7 +480,7 @@ tested) which saves raw responses into `tests/fixtures/` and a `recon_report.md`
 Acceptance: fixtures committed; `mrids.csv` has candidates for all seven plants with sample values;
 `recon_report.md` answers every "verify" in §2.2 and §3.
 
-**Phase 1 · Skeleton + CELEC report endpoints + backfill — code complete 2026-09-22, backfill running**
+**Phase 1 · Skeleton + CELEC report endpoints + backfill — done 2026-09-24** (code complete 2026-09-22; the clock closed with the third consecutive green scheduled run, [run 36035245780](https://github.com/rengarcia/hydro-look/actions/runs/36035245780))
 Built in TypeScript (decision 6), and widened to the full ingest (decision 7), so it also carries what
 §6 originally deferred to Phase 2: the SMEC parser and the Información Operativa parser ship with it.
 Delivered: `src/lib/parse/*` (one pure parser per endpoint, 59 tests against the Phase 0 fixtures),
@@ -953,7 +953,15 @@ are in each row's notes and in the report.
   calibrated) **it no longer wins, and the next forecast publishes M3 at seven days.** The
   direct design wins at both 7 and 14 days on the new basin (MAE 1.94 and 3.29 m, coverage 78.5%
   and 80.6%, the 7-day interval below zero). Changing the shipped design is a decision for the
-  owner (`RUNBOOK.md`, "M4 fallback"), not something a run should do on its own. §5.4's rain
+  owner (`RUNBOOK.md`, "M4 fallback"), not something a run should do on its own.
+  *Decided 2026-10-03:* the owner moved the seven-day point to `M4-gbm-direct`
+  (`PUBLISHED_M4_ID` in `m4-live.ts`, forecast `MODEL_VERSION` 3). On the committed snapshot it
+  is the only design that beats M3 at seven days with both the paired interval below zero
+  (−0.62 to −0.10 m) and a band closer to 80% than M3's; a dry run on 2026-10-02's data
+  published it at 2127.97 m (p10–p90 2124.86–2130.57) where M3 said 2126.28 m. Fourteen days
+  stays on M3: the direct design's gain there (3.29 against 3.62 m) has an interval that
+  straddles zero. A rerun that stops showing the win falls back to M3 as before; no run picks
+  a design by itself. §5.4's rain
   experiment, rerun at the centroid, is still negative (14-day MAE 3.93 m against 3.62).
 - **A centroid is still one point.** Area-weighted ERA5 cells over each outline in
   `catchments.geojson` would be the true basin mean; it waits on a backtest showing it matters.
@@ -1226,7 +1234,7 @@ the 10.78 they had reached that August, because Colombia was short of water at t
 Imports were also below 1 GWh/day for 398 consecutive days from 2019-07-06. Every horizon
 therefore publishes a stressed deficit beside the central one.
 
-**Phase 6b · AI narrative panel via Vercel AI Gateway — built 2026-09-22, live 2026-09-23; seven-day count running**
+**Phase 6b · AI narrative panel via Vercel AI Gateway — done 2026-09-29** (built 2026-09-22, live 2026-09-23)
 `npm run narrative` builds a deterministic payload (≈9 kB of canonical JSON, sha256-hashed) only
 from what the repository already publishes: per reservoir the level, bands and slopes from
 `latest.json`, days to each floor at the 7- and 30-day slopes (a division, labelled as one), the
@@ -1250,6 +1258,17 @@ added the raw-answer capture, the field-name check and prompt `es-3`. Gateway cr
 added; `claude-opus-5` wrote the first `ok` narrative (run 35810691729), and the model is now
 `claude-opus-5.5`. A change of model earns a new call on unchanged data, as a new prompt does. The acceptance criterion — seven consecutive daily narratives — starts counting at the
 first `ok` snapshot.
+
+*Accepted 2026-09-29:* `ok` narratives on every day from 2026-09-23 to 2026-09-29, at $0.039–0.045
+a call. On 2026-09-30 the answer ran to 221 words against the 220 ceiling and was rejected, so the
+site kept the previous day's text; es-6 answers ran 176–221 words against an aim of 160. Prompt
+`es-7` (2026-10-03) moves the rules the validator enforces to the top and asks for 130–180 words,
+sizes the shortfall by `margin_pct` (a share of demand) rather than glossing GWh/día, and calls
+the tier "el indicador de energía" rather than a "nivel" beside the water level. Payload version 3
+adds `measures_in_force`, the restrictions in `rationing_episodes.csv` that cover the origin — the
+industrial cuts open since 2026-09-22 — so the text can name the measure readers know about
+while still not predicting cuts. A schema rejection now records the zod issues ahead of the raw
+answer, which the row's 2,000 characters used to cut off.
 
 Original phase text, for reference:
 Implements decision 8. The model interprets; it never forecasts.
@@ -1512,8 +1531,8 @@ repository is done; its head now carries a per-item status. In brief:
   floors, Prettier and shellcheck in CI, Dependabot and SHA-pinned actions.
 
 What the repository cannot do for itself: ~~the ERA5 backfill at the seven centroids~~ (done
-2026-09-24, see Phase 4); whether M4's seven-day point moves to the direct design now that the
-residual design no longer wins on `paute_mazar` (Phase 4, "What is still open"). TypeScript 7 waits on `typescript-eslint`, which does not yet accept it.
+2026-09-24, see Phase 4); ~~whether M4's seven-day point moves to the direct design~~ (done
+2026-10-03, see Phase 4). TypeScript 7 waits on `typescript-eslint`, which does not yet accept it.
 
 Still listed: ML v2 if it beats v1 in backtests; ARCONEL BNEE monthly loader; CENACE Datos Abiertos per-plant
 validation; Colombia export availability via XM's open API — which Phase 6c has now made the
@@ -1698,6 +1717,13 @@ Smaller:
   three days of history plus backfills (the raw archive is 17k+ plain NDJSON files). Per-run pack
   growth is small (Phase 7), but the plan sets no limit, no retention rule for the raw archive,
   and no trigger for moving it out (release assets, a separate data repository).
+- **An open rationing episode stops the adequacy scorecard.** *Found 2026-10-03.* The scorecard
+  excludes any window that touches a rationed day (D10), and the AV1 industrial episode from
+  2026-09-22 has no end date, so every adequacy row published since cannot be scored until the
+  row is closed — possibly not before 2026-12-15, the deadline Decree 32 gives AV1 consumers.
+  Seven rows were already excluded on 2026-10-03. `scorecard.md` now says so in words. Whether a
+  one-day-a-week cut should exclude the other six days is a modelling decision left open here:
+  scoring the uncut days would need the cut days themselves, which the table does not list.
 - **Skill is measured only against persistence.** No forecast is compared with an official
   projection (CENACE, the ministry). Where such projections are published, scoring against them
   is the comparison readers will make anyway.

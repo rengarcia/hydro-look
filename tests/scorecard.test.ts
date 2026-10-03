@@ -141,5 +141,15 @@ describe("scoreAdequacyRuns", () => {
     const card = scoreAdequacyRuns(runs, values, days, [{ start: "2026-09-05", end: "2026-09-06", kind: "rationing", hydroRelated: true }]);
     expect(card.rowsScored).toBe(0);
     expect(card.rowsExcluded).toBe(2);
+    expect(card.openEpisodeSince).toBeNull();
+  });
+
+  it("names an open episode, which blocks every later window until it is closed", () => {
+    const card = scoreAdequacyRuns(runs, values, days, [{ start: "2026-09-05", end: "", kind: "rationing", hydroRelated: true }]);
+    expect(card.rowsExcluded).toBe(2);
+    expect(card.openEpisodeSince).toBe("2026-09-05");
+    const level = scoreAdequacyRuns([], [], days, []);
+    const report = renderScorecardReport({ generatedAt: "2026-10-03T00:00:00Z", level: { ...level, kind: "level" }, adequacy: card });
+    expect(report).toContain("A rationing episode has been open since 2026-09-05");
   });
 });

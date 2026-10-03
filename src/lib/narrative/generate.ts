@@ -143,6 +143,25 @@ function describe(error: unknown): string {
   return String(error).slice(0, 300);
 }
 
+/**
+ * What the schema refused, as `path: message` per zod issue — "outlook_es: outlook_es must be 120
+ * to 220 words". The SDK's own message says only that the response did not match, and the zod
+ * error sits a cause or two below it, behind a message that leads with the whole answer.
+ */
+export function schemaIssues(error: unknown): string[] {
+  let here: unknown = error;
+  for (let depth = 0; depth < 5 && typeof here === "object" && here !== null; depth++) {
+    const issues = (here as { issues?: unknown }).issues;
+    if (Array.isArray(issues)) {
+      return issues.map(
+        (issue: { path?: unknown[]; message?: string }) => `${(issue.path ?? []).join(".") || "(root)"}: ${issue.message ?? "invalid"}`,
+      );
+    }
+    here = (here as { cause?: unknown }).cause;
+  }
+  return [];
+}
+
 const defaultSleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 async function callOnce(payload: NarrativePayload, model: LanguageModel) {
@@ -191,8 +210,10 @@ export async function generateNarrative(payload: NarrativePayload, options: Gene
           },
           // The raw answer is the only way to tell a truncated reply from fenced JSON or prose,
           // and the row is the only place it survives the run.
+          // The issues go before the raw answer, which the row's 2,000 characters cut short.
           reasons: [
             `schema: ${describe(error)}`,
+            ...schemaIssues(error).map((issue) => `issue: ${issue}`),
             `finish: ${error.finishReason ?? "unknown"}`,
             `raw: ${(error.text ?? "").slice(0, 2_000)}`,
           ],

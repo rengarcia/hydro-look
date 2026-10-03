@@ -27,6 +27,7 @@ import {
   canonicalJson,
   daysAtSlope,
   loadPayloadInputs,
+  measuresInForce,
   payloadHash,
   precipitationOutlook,
   type NarrativePayload,
@@ -50,6 +51,7 @@ import {
   type SnapshotRef,
 } from "../src/lib/narrative/generate.ts";
 import { PROMPT_VERSION } from "../src/lib/narrative/prompt.ts";
+import { referenceFor } from "../src/lib/narrative/drivers.ts";
 import { narrativeSnapshotRow } from "../src/lib/contracts/tables.ts";
 import { parseCsv } from "../src/lib/store/csv.ts";
 import { FIXTURES } from "./helpers.ts";
@@ -165,6 +167,36 @@ describe("the payload for 2026-09-21", () => {
       climatology_p50_mm: 55.8,
       percentile_vs_climatology: 83,
     });
+  });
+
+  it("carries the restrictions in force on the origin date, and none in the fixture", () => {
+    expect(payload.measures_in_force).toEqual([]);
+    const row = (start: string, end: string, kind = "rationing", scope = "national", hours = "") => ({
+      start,
+      end,
+      kind,
+      hydro_related: kind === "rationing" ? "yes" : "no",
+      scope,
+      max_hours_per_day: hours,
+    });
+    const rows = [
+      row("2024-09-23", "2024-12-19", "rationing", "national", "14"),
+      row("2025-01-01", "", "restrictions_lifted", "industry"),
+      row("2026-09-20", "2026-09-21", "scheduled_outage", "regional (54 cantons)", "4"),
+      row("2026-09-22", "", "rationing", "industry (AV1, one day a week)"),
+    ];
+    expect(measuresInForce(rows, "2026-10-02")).toEqual([
+      {
+        start: "2026-09-22",
+        end: null,
+        kind: "rationing",
+        scope: "industry (AV1, one day a week)",
+        hydro_related: true,
+        max_hours_per_day: null,
+      },
+    ]);
+    expect(measuresInForce(rows, "2026-09-21").map((m) => [m.kind, m.max_hours_per_day])).toEqual([["scheduled_outage", 4]]);
+    expect(measuresInForce(rows, "2024-12-20")).toEqual([]);
   });
 
   it("reads the ONI a forecaster could have on the origin date", () => {
@@ -336,6 +368,10 @@ describe("the validator", () => {
     const other = payload.reservoirs.findIndex((r) => r.site !== "mazar");
     expect(check({ ...DRIVERS[0], payload_ref: `reservoirs[${other}].level_masl` })[0]).toMatch(/factor "mazar_level" points at/);
     expect(check({ ...DRIVERS[0], payload_ref: "not a path!" })).toEqual(['drivers[0]: payload_ref "not a path!" is not a path']);
+  });
+
+  it("reads a margin against zero, as the prompt says (es-7)", () => {
+    expect(referenceFor("adequacy.horizons[1].margin_pct")).toBe(0);
   });
 
   it("requires the outlook to name the risk tier it was given", () => {

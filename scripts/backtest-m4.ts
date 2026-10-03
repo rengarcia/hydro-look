@@ -17,7 +17,7 @@
  * splices M4 into the ladder's tables when the two origin sets are identical.
  *
  * The snapshot is also what `npm run forecast` stands on when it publishes
- * `M4-gbm-m3-residual`'s median at seven days: the band comes from the residual quantiles
+ * `M4-gbm-direct`'s median at seven days: the band comes from the residual quantiles
  * recorded here, and the switch falls back to M3 as soon as the ladder has an origin this
  * snapshot lacks — so rerun this at least monthly, after each new origin's week has passed.
  *

@@ -39,8 +39,9 @@ const LEVEL_DIGITS = 2;
 /**
  * Bumped when the method changes in a way that makes old rows incomparable to new ones.
  * 2: the 7-day row may come from `M4-gbm-m3-residual` rather than M3 (see `m4-live.ts`).
+ * 3: the 7-day row's M4 design is `M4-gbm-direct` (2026-10-03).
  */
-export const MODEL_VERSION = "2";
+export const MODEL_VERSION = "3";
 
 /** How far the days-to-threshold simulation runs before it gives up and says "not within". */
 export const THRESHOLD_HORIZON_DAYS = 365;

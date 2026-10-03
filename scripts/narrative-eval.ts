@@ -54,7 +54,12 @@ async function main(): Promise<void> {
       sizes.push(payloadSize("committed narrative.json basis", basis));
     }
   }
-  const inputs = loadPayloadInputs({ curated: DATA_CURATED, api: apiDir, basins: join(DATA_REFERENCE, "basins.csv") });
+  const inputs = loadPayloadInputs({
+    curated: DATA_CURATED,
+    api: apiDir,
+    basins: join(DATA_REFERENCE, "basins.csv"),
+    rationing: join(DATA_REFERENCE, "rationing_episodes.csv"),
+  });
   const today = inputs ? buildPayload(inputs) : null;
   if (today) {
     payloads.set(payloadHash(today), today);

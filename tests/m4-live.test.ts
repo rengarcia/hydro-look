@@ -257,7 +257,12 @@ describe("fitM4Live", () => {
     expect(live!.ownP10).toBeLessThanOrEqual(live!.p50);
     expect(live!.p50).toBeLessThanOrEqual(live!.ownP90);
 
-    // At a first-of-month origin the residual design is anchored on the shipped M3's median.
+    // The published design does not read M3, so it reports no anchor.
+    expect(PUBLISHED_M4_ID).toBe("M4-gbm-direct");
+    expect(live!.anchorP50).toBeNull();
+
+    // At a first-of-month origin a design that reads M3 is anchored on the shipped M3's median.
+    const residual = fitM4Live({ origin, ...DATA, crestM: CREST }, PUBLISHED_M4_HORIZON, QUICK, "M4-gbm-m3-residual");
     const m3 = waterBalanceModel(DEFAULT_WATER_BALANCE).forecast({
       origin,
       horizonDays: [7],
@@ -266,6 +271,6 @@ describe("fitM4Live", () => {
       production: truncate(DATA.production, origin),
       crestM: CREST,
     });
-    expect(live!.anchorP50).toBeCloseTo(m3[0]!.p50, 9);
+    expect(residual!.anchorP50).toBeCloseTo(m3[0]!.p50, 9);
   });
 });

@@ -11,7 +11,7 @@
  * - **The factor matches the block.** A driver filed under `enso` that points into `adequacy`
  *   is about something other than what it says it is about.
  * - **The direction matches the sign.** For the numbers whose reference is fixed — zero for a
- *   slope, a change, a surplus, a deficit or a skill; fifty for a percentile; one for the hydro
+ *   slope, a change, a surplus, a deficit, a margin or a skill; fifty for a percentile; one for the hydro
  *   anomaly; zero for ONI — `up` must be above it and `down` below. `steady` is accepted without
  *   a check: there is no tolerance that would make "steady" true or false by arithmetic.
  *
@@ -86,7 +86,7 @@ export function referenceFor(ref: string): number | null {
   if (path?.[0] === "enso" && key === "oni") return 0;
   if (key === "hydro_anomaly") return 1;
   if (/percentile/.test(key)) return 50;
-  if (/slope|change|surplus|deficit|skill|^d(7|14|30)$/.test(key)) return 0;
+  if (/slope|change|surplus|deficit|margin|skill|^d(7|14|30)$/.test(key)) return 0;
   return null;
 }
 

@@ -140,7 +140,12 @@ async function main(): Promise<void> {
     return;
   }
 
-  const inputs = loadPayloadInputs({ curated: DATA_CURATED, api: apiDir, basins: join(DATA_REFERENCE, "basins.csv") });
+  const inputs = loadPayloadInputs({
+    curated: DATA_CURATED,
+    api: apiDir,
+    basins: join(DATA_REFERENCE, "basins.csv"),
+    rationing: join(DATA_REFERENCE, "rationing_episodes.csv"),
+  });
   if (inputs === null) {
     console.error(`no latest.json under ${apiDir}: nothing to write a narrative about`);
     process.exitCode = 1;
