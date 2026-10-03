@@ -22,16 +22,16 @@ import { ReturnPeriodsSection } from "../../../components/ReturnPeriods.tsx";
 import { apiDocument, latest } from "../../../../lib/site/data.ts";
 import type { CrossingThreshold, ForecastDocument } from "../../../../lib/site/documents.ts";
 import { dateWithYear, longDate, num } from "../../../../lib/site/format.ts";
+import { pageMetadata } from "../../../../lib/site/meta.ts";
 import { countWord, criticalThreshold, scenarioOf } from "../../../../lib/site/story.ts";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Mazar",
   description:
     "Nivel del agua, pronóstico a 90 días, escenarios de lluvia y los dos mínimos oficiales de Mazar, el embalse " +
     "que más agua guarda en el Ecuador. No es una fuente oficial.",
-  alternates: { canonical: "/embalses/mazar/" },
-  openGraph: { url: "/embalses/mazar/" },
-};
+  path: "/embalses/mazar/",
+});
 
 export default function MazarPage() {
   const now = latest();

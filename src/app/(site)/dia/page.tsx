@@ -12,14 +12,14 @@ import { Table } from "../../components/DataTable.tsx";
 import { days } from "../../../lib/site/data.ts";
 import { worstTierOf } from "../../../lib/site/days.ts";
 import { longDate, num } from "../../../lib/site/format.ts";
+import { pageMetadata } from "../../../lib/site/meta.ts";
 import { tierOf, weekday } from "../../../lib/site/story.ts";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Archivo diario",
   description: "Cada día que el sitio publicó: el pronóstico de Mazar, si alcanza la energía y el resumen del día, tal como quedaron.",
-  alternates: { canonical: "/dia/" },
-  openGraph: { url: "/dia/" },
-};
+  path: "/dia/",
+});
 
 export default function DaysIndex() {
   const all = days();
@@ -27,7 +27,7 @@ export default function DaysIndex() {
     <main id={MAIN_ID} className="stack-lg">
       <Crumbs trail={[{ href: "/", label: "Inicio" }, { label: "Archivo diario" }]} />
       <section className="shell section" aria-labelledby="archivo-title">
-        <SectionIntro index="—" eyebrow="Archivo" titleId="archivo-title" title="Lo que se publicó cada día.">
+        <SectionIntro level={1} index="—" eyebrow="Archivo" titleId="archivo-title" title="Lo que se publicó cada día.">
           La portada cambia cada mañana; estas páginas no. Hay una por día, con el pronóstico de Mazar, si alcanzaba la energía y el resumen
           del día tal como se publicaron. Sirven para comprobar, tiempo después, qué decía el sitio en una fecha concreta.
         </SectionIntro>

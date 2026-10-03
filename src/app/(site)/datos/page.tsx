@@ -18,6 +18,7 @@ import { Table } from "../../components/DataTable.tsx";
 import { apiDocument, latest } from "../../../lib/site/data.ts";
 import type { StatusDocument } from "../../../lib/site/documents.ts";
 import { dateWithYear, num } from "../../../lib/site/format.ts";
+import { pageMetadata } from "../../../lib/site/meta.ts";
 import { cronTimes, fieldRows, utcToEc } from "../../../lib/site/schema-doc.ts";
 import { curatedTables } from "../../../lib/publish/bulk.ts";
 import {
@@ -32,14 +33,13 @@ import {
 } from "../../../lib/publish/contract.ts";
 import type { Schema } from "../../../lib/publish/schema.ts";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Datos abiertos",
   description:
     "Los documentos JSON y las tablas completas de hydro-look: campos, unidades, horarios de actualización, " +
     "esquemas JSON y lo que se promete de ellos.",
-  alternates: { canonical: "/datos/" },
-  openGraph: { url: "/datos/" },
-};
+  path: "/datos/",
+});
 
 const ROOT = process.cwd();
 
@@ -132,6 +132,7 @@ export default function DataPage() {
 
       <section className="shell section" aria-labelledby="datos-doc-title">
         <SectionIntro
+          level={1}
           index="—"
           eyebrow="Datos abiertos"
           titleId="datos-doc-title"

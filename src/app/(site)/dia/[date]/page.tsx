@@ -18,6 +18,7 @@ import { apiDocument, days, series } from "../../../../lib/site/data.ts";
 import type { DayRecord } from "../../../../lib/site/days.ts";
 import type { AdequacyDocument, ForecastDocument, ScorecardBlock } from "../../../../lib/site/documents.ts";
 import { dateWithYear, ecStamp, longDate, num, signed } from "../../../../lib/site/format.ts";
+import { pageMetadata } from "../../../../lib/site/meta.ts";
 import { modelShort, tierOf, weekday } from "../../../../lib/site/story.ts";
 import { CONFIDENCE_ES } from "../../../components/sections/Reading.tsx";
 
@@ -33,13 +34,12 @@ function dayOf(date: string): DayRecord | null {
 
 export async function generateMetadata({ params }: { params: Promise<{ date: string }> }): Promise<Metadata> {
   const { date } = await params;
-  const path = `/dia/${date}/`;
-  return {
+  return pageMetadata({
     title: `El ${longDate(date)}`,
     description: `Lo que hydro-look publicó sobre el ${longDate(date)}: pronóstico de Mazar, si alcanza la energía y el resumen del día.`,
-    alternates: { canonical: path },
-    openGraph: { url: path, type: "article" },
-  };
+    path: `/dia/${date}/`,
+    type: "article",
+  });
 }
 
 export default async function DayPage({ params }: { params: Promise<{ date: string }> }) {
@@ -58,7 +58,7 @@ export default async function DayPage({ params }: { params: Promise<{ date: stri
     <main id={MAIN_ID} className="stack-lg">
       <Crumbs trail={[{ href: "/", label: "Inicio" }, { href: "/dia/", label: "Archivo diario" }, { label: dateWithYear(date) }]} />
       <section className="shell section" aria-labelledby="dia-title">
-        <SectionIntro index="—" eyebrow={`Archivo · ${weekday(date)}`} titleId="dia-title" title={`El ${longDate(date)}.`}>
+        <SectionIntro level={1} index="—" eyebrow={`Archivo · ${weekday(date)}`} titleId="dia-title" title={`El ${longDate(date)}.`}>
           Lo que el sitio publicó sobre este día, sin cambios: los datos son los del {longDate(date)}, y cada cálculo lleva la hora en que
           se hizo.
         </SectionIntro>
