@@ -1,64 +1,64 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-04T14:56:22Z",
+  "generated_at": "2026-10-04T17:06:51Z",
   "data_date": "2026-10-03",
   "status": "ok",
   "model": "anthropic/claude-opus-5.5",
   "prompt_version": "es-7+paute_mazar",
-  "payload_hash": "eaa9b1cf35f53361c9cdf803d57e22c2487a1c21fbf66c44b995dc8f4fe2b47e",
+  "payload_hash": "a15b005db6ca0ccfee6883ce4cd1d4a67bbadbb1c25fc6e96490abb1fea33969",
   "origin_date": "2026-10-03",
   "risk_tier": "deficit",
   "risk_tier_given": {
     "tier": "deficit",
     "horizon_days": 30,
     "source": "adequacy.json current.worst_tier: the worst tier across the published horizons",
-    "tier_at_7d": "ajustado"
+    "tier_at_7d": "deficit"
   },
-  "outlook_es": "Mazar, el principal embalse del país, sigue bajando, y el indicador de energía de este sitio está en «déficit». El nivel del agua está en 2.131,12 metros sobre el nivel del mar. En la última semana bajó unos 0,42 m por día. El pronóstico pone como valor más probable 2.125,56 metros el 2 de noviembre de 2026. A ese plazo, el pronóstico no acierta más que suponer que el nivel se queda igual. El indicador mira a 30 días. «Déficit» significa que, en el escenario más probable, faltaría bastante energía. Faltaría cerca del 4,8 % de la energía que necesita el país. A 7 días, el indicador está en «ajustado». Las centrales hidroeléctricas producen algo menos de lo normal para estas fechas. Desde el 22 de septiembre de 2026, las grandes industrias se desconectan de la red un día a la semana, para ahorrar agua. Se espera mucha lluvia, la más alta registrada para esta época, medida en un solo punto, en el centro de la cuenca. Aun así, el nivel sigue bajando por ahora. Llega a Mazar más agua de lo normal para estas fechas. Hay El Niño, según el dato de julio de 2026.",
+  "outlook_es": "Mazar, el principal embalse del país, sigue bajando, y el indicador de energía de este sitio está en «déficit». El nivel del agua en Mazar es de 2.131,12 metros sobre el nivel del mar. En los últimos 7 días bajó unos 0,42 m por día. El valor más probable para el 2 de noviembre de 2026 es 2.125,56 metros. A ese plazo, el pronóstico no acierta más que suponer que el nivel se queda igual. El indicador mira a 30 días. «Déficit» significa que, en el escenario más probable, faltaría bastante energía. Faltaría cerca del 5,5 % de la energía que necesita el país. Las hidroeléctricas producen menos de lo normal para estas fechas. Desde el 22 de septiembre de 2026, las grandes industrias se desconectan de la red un día a la semana. Esa medida busca ahorrar agua. Se esperan lluvias muy por encima de lo normal, medidas en un solo punto, en el centro de la cuenca. Aun así, el nivel sigue bajando, aunque llega más agua de lo normal para estas fechas. Hay El Niño, según el dato de julio de 2026.",
   "drivers": [
-    "En el escenario más probable faltaría cerca del 4,8 % de la energía que necesita el país en 30 días.",
-    "Mazar bajó unos 0,42 m por día en la última semana.",
-    "A 30 días, el pronóstico de Mazar no acierta más que suponer que el nivel se queda igual.",
-    "Se espera la lluvia más alta registrada para esta época, medida en un solo punto de la cuenca.",
-    "Llega a Mazar más agua de lo normal para estas fechas."
+    "En el escenario más probable faltaría cerca del 5,5 % de la energía que necesita el país.",
+    "El nivel de Mazar baja unos 0,42 m por día en la última semana.",
+    "A 30 días, el pronóstico no acierta más que suponer que el nivel se queda igual.",
+    "Se esperan 116,2 mm de lluvia en 16 días, mucho más de lo normal.",
+    "El índice de El Niño de julio de 2026 está en 1,8, en fase de El Niño."
   ],
   "drivers_structured": [
     {
-      "text": "En el escenario más probable faltaría cerca del 4,8 % de la energía que necesita el país en 30 días.",
+      "text": "En el escenario más probable faltaría cerca del 5,5 % de la energía que necesita el país.",
       "factor": "adequacy",
       "direction": "down",
       "payload_ref": "adequacy.horizons[1].margin_pct"
     },
     {
-      "text": "Mazar bajó unos 0,42 m por día en la última semana.",
+      "text": "El nivel de Mazar baja unos 0,42 m por día en la última semana.",
       "factor": "mazar_level",
       "direction": "down",
       "payload_ref": "reservoirs[0].slopes_m_per_day.d7"
     },
     {
-      "text": "A 30 días, el pronóstico de Mazar no acierta más que suponer que el nivel se queda igual.",
+      "text": "A 30 días, el pronóstico no acierta más que suponer que el nivel se queda igual.",
       "factor": "mazar_forecast",
       "direction": "steady",
       "payload_ref": "mazar_forecast.horizons[2].skill_vs_persistence"
     },
     {
-      "text": "Se espera la lluvia más alta registrada para esta época, medida en un solo punto de la cuenca.",
+      "text": "Se esperan 116,2 mm de lluvia en 16 días, mucho más de lo normal.",
       "factor": "precipitation",
       "direction": "up",
-      "payload_ref": "precipitation_16d.percentile_vs_climatology"
+      "payload_ref": "precipitation_16d.forecast_total_mm"
     },
     {
-      "text": "Llega a Mazar más agua de lo normal para estas fechas.",
-      "factor": "inflow",
+      "text": "El índice de El Niño de julio de 2026 está en 1,8, en fase de El Niño.",
+      "factor": "enso",
       "direction": "up",
-      "payload_ref": "reservoirs[0].inflow.percentile_today"
+      "payload_ref": "enso.oni"
     }
   ],
   "confidence": "medium",
   "usage": {
-    "input_tokens": 7305,
-    "output_tokens": 862,
-    "cost_usd": 0.04646
+    "input_tokens": 7302,
+    "output_tokens": 825,
+    "cost_usd": 0.045708
   },
   "disclaimer": "Resumen escrito por inteligencia artificial a partir de los números que lo acompañan. La IA no hace pronósticos: el de Mazar y el nivel de riesgo los calculan los modelos estadísticos del sitio, y el texto solo los explica.",
   "basis": {
@@ -446,27 +446,27 @@
       "note": "Pronóstico estadístico (§7) con años análogos de caudal. 2115 es un marcador propio del proyecto, no de CELEC."
     },
     "adequacy": {
-      "run_id": "2026-10-02-adequacy-2-936bd150",
-      "origin_date": "2026-10-02",
+      "run_id": "2026-10-03-adequacy-2-11be2186",
+      "origin_date": "2026-10-03",
       "risk_tier": "deficit",
       "risk_tier_horizon_days": 30,
       "risk_tier_definition": "el caso central queda corto en 5 GWh/día o más",
-      "tier_at_7d": "ajustado",
-      "hydro_anomaly": 0.9171,
+      "tier_at_7d": "deficit",
+      "hydro_anomaly": 0.909,
       "horizons": [
         {
           "horizon_days": 7,
-          "tier": "ajustado",
-          "margin_pct": -3.79,
-          "surplus_gwh_day": -4.102,
-          "surplus_with_stressed_imports_gwh_day": -4.113
+          "tier": "deficit",
+          "margin_pct": -4.72,
+          "surplus_gwh_day": -5.111,
+          "surplus_with_stressed_imports_gwh_day": -5.119
         },
         {
           "horizon_days": 30,
           "tier": "deficit",
-          "margin_pct": -4.76,
-          "surplus_gwh_day": -5.107,
-          "surplus_with_stressed_imports_gwh_day": -5.118
+          "margin_pct": -5.51,
+          "surplus_gwh_day": -5.917,
+          "surplus_with_stressed_imports_gwh_day": -5.925
         }
       ],
       "note": "Nivel calculado por el modelo de suficiencia (§7). hydro_anomaly: hidroeléctrica de 14 días / su climatología."
