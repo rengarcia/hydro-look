@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-05T22:58:37Z",
+  "generated_at": "2026-10-05T23:14:00Z",
   "data_date": "2026-10-04",
   "as_of": "2026-10-05",
   "ok": true,
@@ -50,7 +50,7 @@
       "id": "era5",
       "label_es": "Open-Meteo ERA5",
       "feed": "Open-Meteo ERA5",
-      "latest": "2026-09-28",
+      "latest": "2026-09-29",
       "limit_days": 10,
       "state": "current"
     },
@@ -98,7 +98,7 @@
       "id": "adequacy",
       "label_es": "Suficiencia nacional",
       "feed": "National adequacy",
-      "latest": "2026-10-03",
+      "latest": "2026-10-04",
       "limit_days": 3,
       "state": "current"
     }
@@ -117,7 +117,7 @@
       "rows": 7
     },
     "weather_daily": {
-      "rows": 109088
+      "rows": 109224
     },
     "enso_monthly": {
       "rows": 919
@@ -126,16 +126,16 @@
       "rows": 18
     },
     "adequacy_runs": {
-      "rows": 16
+      "rows": 17
     },
     "adequacy_values": {
-      "rows": 80
+      "rows": 85
     },
     "forecast_values": {
       "rows": 90
     },
     "narrative_snapshots": {
-      "rows": 23
+      "rows": 24
     },
     "xm_exchange_daily": {
       "rows": 4014
