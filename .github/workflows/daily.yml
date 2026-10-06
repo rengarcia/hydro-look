@@ -1,8 +1,13 @@
 name: Daily ingest
 
-# Two runs a day, both after the source has published:
+# Four runs a day, so the site is never more than a few hours behind during the day:
 #  - 12:47 UTC (07:47 in Ecuador) for the CELEC ORDS, once the local midnight point exists;
-#  - 16:53 UTC (11:53 local) for SMEC, which closes the previous day around 11:15 local.
+#  - 16:53 UTC (11:53 local) for SMEC, which closes the previous day around 11:15 local;
+#  - 20:47 UTC (15:47 local) and 00:47 UTC (19:47 local), which close no new day but refresh
+#    CENACE's real-time running total for today (latest.json `live`) and re-read the per-day
+#    reports, so a source that published late is picked up the same day rather than the next.
+# A run that finds nothing new commits nothing (apply-and-push.sh), so an extra slot costs a
+# runner, not a commit; the narrative's paid call is skipped when its payload is unchanged.
 # Odd minutes on purpose. GitHub delays scheduled runs on busy minutes, and :15 and :30 are busy
 # minutes: the first two scheduled runs, for the old 12:15 and 16:30 slots, started at 16:58 and
 # 19:47. freshness.yml notices a slot that does not fire at all.
@@ -20,6 +25,8 @@ on:
   schedule:
     - cron: "47 12 * * *"
     - cron: "53 16 * * *"
+    - cron: "47 20 * * *"
+    - cron: "47 0 * * *"
   workflow_dispatch:
     inputs:
       days:

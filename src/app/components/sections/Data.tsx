@@ -69,8 +69,8 @@ export function Data({ status, narrative }: { status: StatusDocument | null; nar
           Llévate los datos
         </h2>
         <p className="panel-lede">
-          Todos los números de esta página, gratis y actualizados cada día, en archivos que cualquiera puede descargar o usar en su propio
-          proyecto. Qué significa cada campo, en <a href="/datos/">la documentación</a>.
+          Todos los números de esta página, gratis y actualizados varias veces al día, en archivos que cualquiera puede descargar o usar en
+          su propio proyecto. Qué significa cada campo, en <a href="/datos/">la documentación</a>.
         </p>
         {downloads.map((d) => (
           <a key={d.path} href={d.path} className="download lift">

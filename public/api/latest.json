@@ -1410,6 +1410,19 @@
       "total_generation_gwh": 1.626
     }
   },
+  "live": {
+    "date": "2026-10-05",
+    "fetched_at": "2026-10-06T02:33:14Z",
+    "total_production_gwh": 95.62,
+    "hydro_gwh": 70.181,
+    "thermal_gwh": 24.558,
+    "nonconventional_gwh": 0.622,
+    "import_gwh": 0.088,
+    "export_gwh": 0.06,
+    "hydro_share_pct": 73.33,
+    "thermal_share_pct": 25.66,
+    "import_share_pct": 0.09
+  },
   "adequacy": {
     "origin_date": "2026-10-04",
     "tier": "deficit",

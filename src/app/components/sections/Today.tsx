@@ -1,11 +1,13 @@
 /**
- * The strip under the headline: the day's supply by source, and the rain and ENSO context the
- * narrative was given. Each tile names the day or window its number describes.
+ * The strip under the headline: the day so far, the last closed day's supply by source, and the
+ * rain and ENSO context the narrative was given. Each tile names the day or window its number
+ * describes.
  */
 
 import type { AdequacyDocument, NarrativeDocument } from "../../../lib/site/documents.ts";
 import { num, shortDate, signed } from "../../../lib/site/format.ts";
 import { monthName } from "../../../lib/site/story.ts";
+import { ecWallClock } from "../../../lib/util/dates.ts";
 import type { LatestDocument } from "../../../lib/publish/latest.ts";
 
 const THERMAL = ["generacion_turbinas_gas", "generacion_motores_bunker", "generacion_vapor_bunker", "generacion_turbinas_diesel"];
@@ -39,6 +41,20 @@ export function Today({
 }) {
   const national = now?.national ?? null;
   const stats: Stat[] = [];
+  // CENACE's running total for a day that has not closed yet: the one number on the page that
+  // moves between runs. Shown only while it is newer than the closed day, and labelled with the
+  // hour it was read, since a share at 08:00 and one at 20:00 describe different mixes.
+  const live = now?.live ?? null;
+  if (live && live.hydro_share_pct !== null && (national === null || live.date > national.date)) {
+    const read = ecWallClock(live.fetched_at);
+    stats.push({
+      label: read?.date === live.date ? `${shortDate(live.date)}, hasta las ${read.time}` : `${shortDate(live.date)}, en curso`,
+      chip: "fill-water",
+      value: num(live.hydro_share_pct, 1),
+      unit: "%",
+      note: `del agua en lo que va del día: ${num(live.hydro_gwh, 1)} de ${num(live.total_production_gwh, 1)} GWh. Cifra preliminar de CENACE, en tiempo real`,
+    });
+  }
   if (national) {
     const gwh = (concept: string) => national.supply_gwh.find((p) => p.concept === concept)?.gwh ?? 0;
     const thermal = THERMAL.reduce((sum, c) => sum + gwh(c), 0);

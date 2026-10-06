@@ -209,6 +209,43 @@ export interface NationalPrevious {
 }
 
 /**
+ * Today so far: CENACE's running total for the day that has not closed yet.
+ *
+ * Every other number in this document describes a closed day, which means the page is always at
+ * least a day behind. Información Operativa's "PRODUCCIÓN EN TIEMPO REAL" block is the one source
+ * that moves during the day — a cumulative total since local midnight (84 GWh at 18:59 on a day
+ * that closed near 105) — and every ingest run already reads it. It is published here as what it
+ * is: preliminary SCADA, a partial day, read at `fetched_at`. Its totals are never comparable with
+ * a closed day's; its shares are, roughly, and are taken over the same denominator (production
+ * plus imports) as `national`.
+ */
+export interface LiveSnapshot {
+  /** The Ecuadorian calendar day the running total covers. */
+  date: IsoDate;
+  /** When the page was read, UTC: the total covers local midnight up to about this instant. */
+  fetched_at: string;
+  total_production_gwh: number | null;
+  hydro_gwh: number | null;
+  thermal_gwh: number | null;
+  nonconventional_gwh: number | null;
+  import_gwh: number | null;
+  export_gwh: number | null;
+  hydro_share_pct: number | null;
+  thermal_share_pct: number | null;
+  import_share_pct: number | null;
+}
+
+/** A row of `data/curated/operativa_snapshots`, as read from the CSV. */
+export interface OperativaRow {
+  fetched_at: string;
+  block: string;
+  period_date: string;
+  metric: string;
+  value: string;
+  unit: string;
+}
+
+/**
  * The adequacy headline, copied from `adequacy.json` rather than recomputed.
  *
  * Copied, because two documents computing the same tier from the same tables would eventually
@@ -244,6 +281,8 @@ export interface LatestDocument extends ContractFields {
   disclaimer: string;
   reservoirs: ReservoirSnapshot[];
   national: NationalSnapshot | null;
+  /** Today's running total from CENACE, newer than `national` and partial; null when not read. */
+  live: LiveSnapshot | null;
   adequacy: AdequacySummary | null;
   see_also: Record<string, string>;
 }
@@ -645,6 +684,54 @@ export interface LatestInputs {
   asOf: IsoDate;
   /** Parsed `public/api/adequacy.json`, or null before it has ever been generated. */
   adequacy?: unknown;
+  /** `data/curated/operativa_snapshots`; absent or empty leaves `live` null. */
+  operativa?: readonly OperativaRow[];
+}
+
+/**
+ * The newest "tiempo real" reading, or null. Only a snapshot that carries production can stand
+ * as one: a page caught mid-render with the block missing would otherwise replace a good reading
+ * with an empty one.
+ */
+export function liveSnapshot(rows: readonly OperativaRow[]): LiveSnapshot | null {
+  const byFetch = new Map<string, OperativaRow[]>();
+  for (const row of rows) {
+    if (row.block !== "tiempo_real" || !row.period_date) continue;
+    const list = byFetch.get(row.fetched_at) ?? [];
+    list.push(row);
+    byFetch.set(row.fetched_at, list);
+  }
+  for (const fetchedAt of [...byFetch.keys()].sort().reverse()) {
+    const snapshot = byFetch.get(fetchedAt)!;
+    const gwh = (metric: string): number | null => {
+      const row = snapshot.find((r) => r.metric === metric);
+      const value = row ? Number(row.value) : NaN;
+      if (!row || !Number.isFinite(value)) return null;
+      return row.unit === "GWh" ? value : value / 1000;
+    };
+    const production = gwh("produccion_total");
+    if (production === null || production <= 0) continue;
+    const imports = gwh("importacion");
+    const supply = production + (imports ?? 0);
+    const share = (value: number | null): number | null => (value === null ? null : roundTo((value / supply) * 100, 2));
+    const round = (value: number | null): number | null => roundOrNull(value, 3);
+    const hydro = gwh("hidraulica");
+    const thermal = gwh("termica");
+    return {
+      date: snapshot[0]!.period_date,
+      fetched_at: fetchedAt,
+      total_production_gwh: round(production),
+      hydro_gwh: round(hydro),
+      thermal_gwh: round(thermal),
+      nonconventional_gwh: round(gwh("renovable_no_convencional")),
+      import_gwh: round(imports),
+      export_gwh: round(gwh("exportacion")),
+      hydro_share_pct: share(hydro),
+      thermal_share_pct: share(thermal),
+      import_share_pct: share(imports),
+    };
+  }
+  return null;
 }
 
 /**
@@ -671,6 +758,7 @@ export function buildLatest(inputs: LatestInputs): LatestDocument {
     disclaimer: DISCLAIMER_ES,
     reservoirs,
     national,
+    live: liveSnapshot(inputs.operativa ?? []),
     adequacy: adequacySummary(inputs.adequacy),
     see_also: {
       forecast: "/api/forecast.json",

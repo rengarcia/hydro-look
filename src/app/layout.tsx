@@ -7,7 +7,7 @@ import "./globals.css";
 
 const DESCRIPTION =
   "Cómo están los embalses del Ecuador, cuánta agua traen los ríos, de dónde sale la electricidad y si alcanzará, " +
-  "con datos públicos de CELEC y CENACE actualizados cada día. No es una fuente oficial.";
+  "con datos públicos de CELEC y CENACE actualizados varias veces al día. No es una fuente oficial.";
 
 /**
  * The metadata every page inherits. `metadataBase` makes each relative URL below absolute, which

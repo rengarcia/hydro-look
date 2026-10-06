@@ -4,14 +4,17 @@
  * wraps every page in it, so no page repeats the chrome by hand.
  *
  * The navigation collapses into a `<details>` element on a phone rather than a scripted drawer.
- * The page needs no JavaScript to read — the only scripts it ships are Next's runtime and the
- * analytics beacon, and neither draws anything — and `<details>` is a disclosure the browser
- * already knows how to open, close, focus and announce, with or without them.
+ * The page needs no JavaScript to read — the scripts it ships are Next's runtime, the analytics
+ * beacon and the masthead's "hace 3 h", which only rewords a time the HTML already carries — and
+ * `<details>` is a disclosure the browser already knows how to open, close, focus and announce,
+ * with or without them.
  */
 
 import type { ReactNode } from "react";
-import { dateWithYear } from "../../lib/site/format.ts";
-import { dataDate } from "../../lib/site/data.ts";
+import { dateWithYear, ecStamp, shortDate } from "../../lib/site/format.ts";
+import { dataDate, latest } from "../../lib/site/data.ts";
+import { ecWallClock } from "../../lib/util/dates.ts";
+import { UpdatedAgo } from "./UpdatedAgo.tsx";
 import { REPO_URL, SITE_URL } from "../../lib/publish/contract.ts";
 
 export const REPO = REPO_URL;
@@ -62,12 +65,16 @@ export interface NavLink {
 }
 
 /**
- * The strip across the top. `asOf` is the date of the data, not of the build: the pill is the
- * first thing a reader sees, and what it has to answer is how old the numbers are. It says so in
- * words ("actualizados al") on every width, shortening only on a phone, where the navigation has
- * folded into the menu and the pill is the one thing beside the mark.
+ * The strip across the top. The pill answers the first thing a reader asks — how old are these
+ * numbers? — with when the pipeline last refreshed them (`updatedAt`, latest.json's
+ * `generated_at`), as an age: the ingest runs several times a day and a refresh in the afternoon
+ * carries the morning's real-time production even when no new day has closed, so "hace 3 h" is
+ * the honest answer and a closed-day date would undersell it. The day the reservoir readings
+ * describe (`asOf`) moves to the tooltip. Without a timestamp the pill falls back to that day.
+ * It shortens only on a phone, where the navigation has folded into the menu.
  */
-export function Masthead({ asOf, links }: { asOf: string | null; links: NavLink[] }) {
+export function Masthead({ asOf, updatedAt = null, links }: { asOf: string | null; updatedAt?: string | null; links: NavLink[] }) {
+  const wall = updatedAt ? ecWallClock(updatedAt) : null;
   return (
     <header className="masthead">
       <div className="shell">
@@ -79,7 +86,13 @@ export function Masthead({ asOf, links }: { asOf: string | null; links: NavLink[
             </a>
           ))}
         </nav>
-        {asOf ? (
+        {updatedAt && wall ? (
+          <UpdatedAgo
+            at={updatedAt}
+            stamp={`el ${shortDate(wall.date)}, ${wall.time}`}
+            title={`Última actualización: ${ecStamp(updatedAt)}.${asOf ? ` Niveles de embalses al ${dateWithYear(asOf)}, el último día cerrado que publican CELEC y CENACE.` : ""}`}
+          />
+        ) : asOf ? (
           <span className="pill masthead-date" title="El último día con datos publicados por CELEC y CENACE">
             <span className="dot tone-good" aria-hidden="true" />
             <span>
@@ -213,7 +226,7 @@ export function Frame({ children }: { children: ReactNode }) {
       </a>
       <div className="site">
         <Contours />
-        <Masthead asOf={dataDate()} links={NAV} />
+        <Masthead asOf={dataDate()} updatedAt={latest()?.generated_at ?? null} links={NAV} />
         {children}
         <Footer />
       </div>
