@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-06T15:13:32Z",
+  "generated_at": "2026-10-06T18:40:44Z",
   "data_date": "2026-10-05",
   "as_of": "2026-10-06",
   "disclaimer": "No es una fuente oficial. Cada número es una copia de lo que publicaron CELEC o CENACE, con la respuesta que lo produjo archivada junto a él.",
@@ -1412,16 +1412,16 @@
   },
   "live": {
     "date": "2026-10-06",
-    "fetched_at": "2026-10-06T15:12:06Z",
-    "total_production_gwh": 40.34,
-    "hydro_gwh": 28.888,
-    "thermal_gwh": 11.247,
-    "nonconventional_gwh": 0.077,
-    "import_gwh": 0.032,
-    "export_gwh": 0.014,
-    "hydro_share_pct": 71.55,
-    "thermal_share_pct": 27.86,
-    "import_share_pct": 0.08
+    "fetched_at": "2026-10-06T18:40:03Z",
+    "total_production_gwh": 56.748,
+    "hydro_gwh": 41.323,
+    "thermal_gwh": 14.96,
+    "nonconventional_gwh": 0.299,
+    "import_gwh": 0.039,
+    "export_gwh": 0.023,
+    "hydro_share_pct": 72.77,
+    "thermal_share_pct": 26.34,
+    "import_share_pct": 0.07
   },
   "adequacy": {
     "origin_date": "2026-10-05",
