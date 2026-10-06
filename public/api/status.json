@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-06T21:18:37Z",
+  "generated_at": "2026-10-06T21:43:46Z",
   "data_date": "2026-10-05",
   "as_of": "2026-10-06",
   "ok": true,
@@ -50,7 +50,7 @@
       "id": "era5",
       "label_es": "Open-Meteo ERA5",
       "feed": "Open-Meteo ERA5",
-      "latest": "2026-09-29",
+      "latest": "2026-09-30",
       "limit_days": 10,
       "state": "current"
     },
@@ -58,7 +58,7 @@
       "id": "oni",
       "label_es": "NOAA ONI",
       "feed": "NOAA ONI",
-      "latest": "2026-07-01",
+      "latest": "2026-08-01",
       "limit_days": 110,
       "state": "current"
     },
@@ -117,10 +117,10 @@
       "rows": 7
     },
     "weather_daily": {
-      "rows": 109224
+      "rows": 109360
     },
     "enso_monthly": {
-      "rows": 919
+      "rows": 920
     },
     "forecast_runs": {
       "rows": 19
