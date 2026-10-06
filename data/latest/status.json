@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-06T18:40:36Z",
+  "generated_at": "2026-10-06T21:18:32Z",
   "command": "daily",
   "source": "all",
   "requests": 53,
@@ -19,7 +19,7 @@
       "files": 11
     },
     "operativa_snapshots": {
-      "rows": 2209,
+      "rows": 2256,
       "first_date": "2026-09-22",
       "last_date": "2026-10-06",
       "files": 1
