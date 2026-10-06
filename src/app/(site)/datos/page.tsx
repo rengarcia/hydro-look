@@ -19,7 +19,7 @@ import { apiDocument, latest } from "../../../lib/site/data.ts";
 import type { StatusDocument } from "../../../lib/site/documents.ts";
 import { dateWithYear, num } from "../../../lib/site/format.ts";
 import { pageMetadata } from "../../../lib/site/meta.ts";
-import { cronTimes, fieldRows, utcToEc } from "../../../lib/site/schema-doc.ts";
+import { cronTimes, fieldRows, listEs, utcToEc } from "../../../lib/site/schema-doc.ts";
 import { curatedTables } from "../../../lib/publish/bulk.ts";
 import {
   ATTRIBUTION,
@@ -178,9 +178,8 @@ export default function DataPage() {
             <p className="panel-lede">
               {slots.length > 0 ? (
                 <>
-                  El trabajo diario está programado a las {slots.map((t) => `${t} UTC (${utcToEc(t)} en Ecuador)`).join(" y a las ")}.
-                  GitHub suele empezarlo con retraso, a veces de horas, así que la hora real de cada documento es su{" "}
-                  <code>generated_at</code>.
+                  El trabajo diario está programado a las {listEs(slots.map((t) => `${t} UTC (${utcToEc(t)} en Ecuador)`))}. GitHub suele
+                  empezarlo con retraso, a veces de horas, así que la hora real de cada documento es su <code>generated_at</code>.
                 </>
               ) : (
                 <>

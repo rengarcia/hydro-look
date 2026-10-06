@@ -100,6 +100,11 @@ export function cronTimes(workflow: string): string[] {
   return out;
 }
 
+/** `["a", "b", "c"]` -> `a, b y c`. */
+export function listEs(items: readonly string[]): string {
+  return items.length <= 1 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} y ${items.at(-1)!}`;
+}
+
 /** `12:15` UTC -> `07:15` in Ecuador (UTC−5 all year). */
 export function utcToEc(time: string): string {
   const [h, m] = time.split(":").map(Number) as [number, number];

@@ -114,6 +114,11 @@ describe("the home page, from fixtures", () => {
   it("carries no inline colour: every colour is a class", () => {
     expect(home).not.toMatch(/style="[^"]*(background|color):\s*var\(--/);
   });
+
+  it("stamps the masthead with when the data was refreshed, which the browser turns into an age", () => {
+    expect(home).toContain(`<time dateTime="${latest.generated_at}">`);
+    expect(home).toMatch(/title="Última actualización: [^"]*\(hora de Ecuador\)\. Niveles de embalses al /);
+  });
 });
 
 describe("documents written before the additive blocks", () => {

@@ -72,6 +72,8 @@ describe("missed daily slots", () => {
     expect(crons).toEqual([
       [47, 12],
       [53, 16],
+      [47, 20],
+      [47, 0],
     ]);
   });
 
@@ -79,8 +81,10 @@ describe("missed daily slots", () => {
     const hours2 = 2 * 3600e3;
     expect(slots.lastDueSlot(crons, new Date("2026-09-23T15:41:00Z"), hours2)?.toISOString()).toBe("2026-09-23T12:47:00.000Z");
     expect(slots.lastDueSlot(crons, new Date("2026-09-23T19:49:00Z"), hours2)?.toISOString()).toBe("2026-09-23T16:53:00.000Z");
-    // Before today's first slot is due, yesterday's second one is the one to look for.
-    expect(slots.lastDueSlot(crons, new Date("2026-09-23T13:00:00Z"), hours2)?.toISOString()).toBe("2026-09-22T16:53:00.000Z");
+    expect(slots.lastDueSlot(crons, new Date("2026-09-23T23:41:00Z"), hours2)?.toISOString()).toBe("2026-09-23T20:47:00.000Z");
+    expect(slots.lastDueSlot(crons, new Date("2026-09-24T03:49:00Z"), hours2)?.toISOString()).toBe("2026-09-24T00:47:00.000Z");
+    // Before today's first slot is due, yesterday's last one is the one to look for.
+    expect(slots.lastDueSlot(crons, new Date("2026-09-23T02:00:00Z"), hours2)?.toISOString()).toBe("2026-09-22T20:47:00.000Z");
   });
 
   it("reports a slot with no scheduled run created after it", async () => {

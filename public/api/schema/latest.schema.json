@@ -12,6 +12,7 @@
     "disclaimer",
     "reservoirs",
     "national",
+    "live",
     "adequacy",
     "license",
     "attribution",
@@ -628,6 +629,92 @@
         "import_share_pct",
         "previous",
         "delta_1d"
+      ]
+    },
+    "live": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Today so far: CENACE Información Operativa's running total since local midnight (preliminary SCADA), newer than national and partial. Totals are not comparable with a closed day; shares are over production plus imports, as in national. Null when no real-time reading has been stored.",
+      "properties": {
+        "date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "The Ecuadorian calendar day the running total covers."
+        },
+        "fetched_at": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "description": "When CENACE's page was read, UTC; the total covers local midnight up to about this instant."
+        },
+        "total_production_gwh": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "hydro_gwh": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "thermal_gwh": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "nonconventional_gwh": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "import_gwh": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "export_gwh": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "hydro_share_pct": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "thermal_share_pct": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "import_share_pct": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "date",
+        "fetched_at",
+        "total_production_gwh",
+        "hydro_gwh",
+        "thermal_gwh",
+        "nonconventional_gwh",
+        "import_gwh",
+        "export_gwh",
+        "hydro_share_pct",
+        "thermal_share_pct",
+        "import_share_pct"
       ]
     },
     "adequacy": {

@@ -5,7 +5,8 @@ name: Weather, ENSO and XM
 # closes the `covariates-failure` issue.
 on:
   schedule:
-    # After both daily slots, and on an odd minute for the reason given in daily.yml.
+    # After the two daily slots that close a day (weather and ENSO move daily at most), and on an
+    # odd minute for the reason given in daily.yml.
     - cron: "23 17 * * *"
   workflow_dispatch:
     inputs:

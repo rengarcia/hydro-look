@@ -13,10 +13,12 @@ import {
   bandsFor,
   balanceByDay,
   climatologyFor,
+  liveSnapshot,
   nationalSnapshot,
   percentileOf,
   slopeOver,
   type BalanceRow,
+  type OperativaRow,
   type ThresholdRow,
 } from "../src/lib/publish/latest.ts";
 import type { DailySeries } from "../src/lib/features/series.ts";
@@ -176,6 +178,52 @@ describe("nationalSnapshot", () => {
 
   it("has no snapshot at all when the table is empty", () => {
     expect(nationalSnapshot(balanceByDay([]))).toBeNull();
+  });
+});
+
+describe("liveSnapshot", () => {
+  const reading = (fetched_at: string, period_date: string, values: Record<string, number>, block = "tiempo_real"): OperativaRow[] =>
+    Object.entries(values).map(([metric, value]) => ({ fetched_at, block, period_date, metric, value: String(value), unit: "MWh" }));
+  const morning = reading("2026-10-05T14:00:00Z", "2026-10-05", {
+    produccion_total: 30000,
+    hidraulica: 21000,
+    termica: 8700,
+    renovable_no_convencional: 300,
+    importacion: 1000,
+    exportacion: 0,
+  });
+  const evening = reading("2026-10-05T22:57:49Z", "2026-10-05", {
+    produccion_total: 75161,
+    hidraulica: 54312,
+    termica: 20065,
+    renovable_no_convencional: 556,
+    importacion: 77,
+    exportacion: 42,
+  });
+
+  it("publishes the newest real-time reading, in GWh", () => {
+    const live = liveSnapshot([...evening, ...morning])!;
+    expect(live).toMatchObject({
+      date: "2026-10-05",
+      fetched_at: "2026-10-05T22:57:49Z",
+      total_production_gwh: 75.161,
+      hydro_gwh: 54.312,
+      import_gwh: 0.077,
+    });
+  });
+
+  it("takes shares over production plus imports, like the closed day's", () => {
+    const live = liveSnapshot(morning)!;
+    expect(live.hydro_share_pct).toBe(67.74);
+    expect(live.import_share_pct).toBe(3.23);
+  });
+
+  it("ignores the closed-day and monthly blocks, and a reading with no production", () => {
+    const daily = reading("2026-10-06T01:00:00Z", "2026-10-04", { produccion_total: 105000, hidraulica: 80000 }, "diaria");
+    const blank = reading("2026-10-06T02:00:00Z", "2026-10-05", { hidraulica: 60000 });
+    expect(liveSnapshot([...morning, ...daily, ...blank])!.fetched_at).toBe("2026-10-05T14:00:00Z");
+    expect(liveSnapshot(daily)).toBeNull();
+    expect(liveSnapshot([])).toBeNull();
   });
 });
 

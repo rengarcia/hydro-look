@@ -121,8 +121,8 @@ export class CenaceOperativa {
       return;
     }
 
-    // A file per run: the page is snapshotted twice a day, and one file per day would be
-    // rewritten by the second run.
+    // A file per run: the page is snapshotted several times a day, and one file per day would be
+    // rewritten by every run after the first.
     const rawRef = this.archive.add(OPERATIVA_SOURCE, "InformacionOperativa", "run", {
       key: `InformacionOperativa:${result.fetchedAt}`,
       url: result.url,

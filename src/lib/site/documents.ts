@@ -19,6 +19,7 @@ import type { NarrativePayload } from "../narrative/payload.ts";
  */
 export const SITE_READS = {
   latest: [
+    "generated_at",
     "data_date",
     "reservoirs[].site",
     "reservoirs[].label",
@@ -48,6 +49,11 @@ export const SITE_READS = {
     "national.import_share_pct",
     "national.total_generation_gwh",
     "national.delta_1d",
+    "live.date",
+    "live.fetched_at",
+    "live.hydro_share_pct",
+    "live.hydro_gwh",
+    "live.total_production_gwh",
   ],
   status: [
     "generated_at",

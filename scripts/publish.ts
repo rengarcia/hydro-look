@@ -20,9 +20,9 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { parseArgs } from "node:util";
-import { buildLatest, type BalanceRow, type ThresholdRow } from "../src/lib/publish/latest.ts";
+import { buildLatest, type BalanceRow, type OperativaRow, type ThresholdRow } from "../src/lib/publish/latest.ts";
 import { loadSeries } from "../src/lib/features/series.ts";
-import { NATIONAL_BALANCE_DAILY } from "../src/lib/contracts/tables.ts";
+import { NATIONAL_BALANCE_DAILY, OPERATIVA_SNAPSHOTS } from "../src/lib/contracts/tables.ts";
 import { parseCsv } from "../src/lib/store/csv.ts";
 import { SITES, type SiteId } from "../src/lib/registry.ts";
 import { DATA_CURATED, DATA_REFERENCE, repoPath } from "../src/lib/util/paths.ts";
@@ -80,6 +80,7 @@ function main(): void {
     generatedAt: nowUtc(),
     asOf: todayEc(),
     adequacy,
+    operativa: readTable(OPERATIVA_SNAPSHOTS.name) as unknown as OperativaRow[],
   });
 
   const withLevel = document.reservoirs.filter((r) => r.level !== null).length;
@@ -102,6 +103,12 @@ function main(): void {
     national
       ? `national ${national.date}: hydro ${national.hydro_share_pct ?? "?"}%, thermal ${national.thermal_share_pct ?? "?"}%, imports ${national.import_share_pct ?? "?"}%`
       : "national: no closed day",
+  );
+  const live = document.live;
+  console.log(
+    live
+      ? `live ${live.date} at ${live.fetched_at}: ${live.total_production_gwh ?? "?"} GWh so far, hydro ${live.hydro_share_pct ?? "?"}%`
+      : "live: no real-time reading",
   );
   const adequate = document.adequacy;
   console.log(

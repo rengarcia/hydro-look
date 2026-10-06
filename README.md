@@ -223,7 +223,7 @@ aged. A feed that has never produced a row is reported rather than failed, so a 
 not had its first run yet does not block the gate.
 
 The sources are unreachable from most sandboxes; ingestion runs in GitHub Actions
-(`daily.yml` at 12:47 and 16:53 UTC, `backfill.yml` by dispatch). Every backfill is resumable —
+(`daily.yml` at 12:47, 16:53, 20:47 and 00:47 UTC, `backfill.yml` by dispatch). Every backfill is resumable —
 it skips days already in the store — so a long history is filled by dispatching the same command
 until it reports no new rows. The schedules sit on odd minutes because GitHub delays scheduled
 runs on busy ones; the first two runs for the old 12:15 and 16:30 slots started hours late.
@@ -330,7 +330,7 @@ tests/fixtures/     the Phase 0 responses the parsers are tested against
 re-scrape. Files are plain NDJSON, one record per request, under monthly directories:
 `<source>/<YYYY>/<MM>/<endpoint>.<day>.ndjson`, where the day is the one the data belongs to (a
 backfill of 2018 files under 2018/), or the fetch day for live endpoints; the Información
-Operativa snapshot, taken twice a day, gets a file per run
+Operativa snapshot, taken on every daily run, gets a file per run
 (`InformacionOperativa.2026-09-22T143642Z.ndjson`). A row's `raw_ref` is `<file>#<request key>`
 (two of them, space-separated, on XM exchange rows). Until 2026-09-23 the archive was one gzip
 bundle per source-month-endpoint, rewritten whole on every run; git cannot delta gzip output, so
