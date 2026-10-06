@@ -2797,7 +2797,7 @@ a.column:hover {
     height: 24px;
   }
   .hero {
-    padding-bottom: 0;
+    padding-bottom: 32px;
   }
   .hero-copy {
     gap: 18px;
