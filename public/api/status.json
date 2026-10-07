@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-07T00:13:48Z",
-  "data_date": "2026-10-05",
-  "as_of": "2026-10-06",
+  "generated_at": "2026-10-07T06:35:20Z",
+  "data_date": "2026-10-06",
+  "as_of": "2026-10-07",
   "ok": true,
   "status": "warn",
   "feeds": [
@@ -10,7 +10,7 @@
       "id": "ords_levels",
       "label_es": "ORDS: cotas y caudales",
       "feed": "ORDS levels and inflows (repDiaHid12m)",
-      "latest": "2026-10-05",
+      "latest": "2026-10-06",
       "limit_days": 3,
       "state": "current"
     },
@@ -18,7 +18,7 @@
       "id": "ords_energy",
       "label_es": "ORDS: energía CELEC Sur",
       "feed": "ORDS CELEC Sur energy (repDiaEner12m)",
-      "latest": "2026-10-05",
+      "latest": "2026-10-06",
       "limit_days": 3,
       "state": "current"
     },
@@ -26,7 +26,7 @@
       "id": "ords_historian",
       "label_es": "ORDS: historiador",
       "feed": "ORDS historian (pointValues)",
-      "latest": "2026-10-05",
+      "latest": "2026-10-06",
       "limit_days": 3,
       "state": "current"
     },
@@ -105,13 +105,13 @@
   ],
   "tables": {
     "observations_daily": {
-      "rows": 90248
+      "rows": 90327
     },
     "national_balance_daily": {
       "rows": 58324
     },
     "operativa_snapshots": {
-      "rows": 2303
+      "rows": 2350
     },
     "operating_bands": {
       "rows": 7
@@ -135,7 +135,7 @@
       "rows": 95
     },
     "narrative_snapshots": {
-      "rows": 26
+      "rows": 27
     },
     "xm_exchange_daily": {
       "rows": 4016
