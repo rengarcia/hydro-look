@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-08T19:03:43Z",
+  "generated_at": "2026-10-08T21:35:16Z",
   "command": "daily",
   "source": "all",
   "requests": 53,
@@ -19,7 +19,7 @@
       "files": 11
     },
     "operativa_snapshots": {
-      "rows": 2585,
+      "rows": 2632,
       "first_date": "2026-09-22",
       "last_date": "2026-10-08",
       "files": 1
@@ -56,18 +56,18 @@
     }
   },
   "narrative": {
-    "calls": 31,
+    "calls": 32,
     "by_status": {
       "failed": 1,
       "rejected": 4,
-      "ok": 26
+      "ok": 27
     },
-    "spend_usd": 1.1673,
+    "spend_usd": 1.2129,
     "calls_without_cost": 3,
     "by_month": {
       "2026-09": 0.4394,
-      "2026-10": 0.7279
+      "2026-10": 0.7735
     },
-    "last_call_at": "2026-10-08T06:45:01Z"
+    "last_call_at": "2026-10-08T19:04:34Z"
   }
 }
