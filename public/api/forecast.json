@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-08T19:04:09Z",
+  "generated_at": "2026-10-08T21:35:34Z",
   "data_date": "2026-10-07",
   "run_id": "2026-10-07-mazar-3-49cc1ed5",
   "origin_date": "2026-10-07",
@@ -910,7 +910,7 @@
     ]
   },
   "scorecard": {
-    "generated_at": "2026-10-08T19:04:26Z",
+    "generated_at": "2026-10-08T21:35:47Z",
     "observed_through": "2026-10-07",
     "target": "level on the target day, m",
     "units": "m",
