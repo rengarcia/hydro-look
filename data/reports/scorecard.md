@@ -1,19 +1,19 @@
 # Scorecard — how the published forecasts did
 
-Generated 2026-10-09T00:44:11Z by `npm run score` from the committed tables; no network. The backtest reports (`backtest.md`, `adequacy.md`) say how each method scores at monthly origins it never published from; this says how the numbers the site actually published did once their horizons passed.
+Generated 2026-10-09T06:56:51Z by `npm run score` from the committed tables; no network. The backtest reports (`backtest.md`, `adequacy.md`) say how each method scores at monthly origins it never published from; this says how the numbers the site actually published did once their horizons passed.
 
 Rows are grouped by the model that published them and the version of the run that made them, so a method change starts a new line rather than blending into the old one. Where an origin was published more than once (a rerun on revised data), only the last run generated is scored.
 
 ## Mazar level (forecast_values)
 
-Observed through 2026-10-07. 19 runs considered (2 superseded by a later run for the same origin and version); 15 rows scored, 80 pending, 0 excluded.
+Observed through 2026-10-08. 20 runs considered (3 superseded by a later run for the same origin and version); 17 rows scored, 83 pending, 0 excluded.
 
 | model | version | horizon | n | MAE (m) | bias | coverage p10–p90 (n) | pinball | origins |
 |---|---|---:|---:|---:|---:|---:|---:|---|
 | M3-water-balance | 1 | 7 d | 1 | 1.600 | -1.600 | 100% (1) | 0.488 | 2026-09-21 → 2026-09-21 |
 | M3-water-balance | 1 | 14 d | 1 | 1.015 | 1.015 | 100% (1) | 0.541 | 2026-09-21 → 2026-09-21 |
-| M3-water-balance | 2 | 7 d | 8 | 3.105 | 3.105 | 25% (8) | 1.067 | 2026-09-23 → 2026-09-30 |
-| M3-water-balance | 2 | 14 d | 3 | 1.530 | 1.530 | 100% (3) | 0.626 | 2026-09-21 → 2026-09-23 |
+| M3-water-balance | 2 | 7 d | 9 | 3.054 | 3.054 | 22% (9) | 1.033 | 2026-09-23 → 2026-10-01 |
+| M3-water-balance | 2 | 14 d | 4 | 1.557 | 1.557 | 100% (4) | 0.631 | 2026-09-21 → 2026-09-24 |
 | M4-gbm-m3-residual | 2 | 7 d | 2 | 1.325 | -1.325 | 100% (2) | 0.425 | 2026-09-21 → 2026-09-22 |
 
 A handful of rows is an anecdote, not a score: read `n` before reading the MAE, and the backtest before either.
