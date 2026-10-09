@@ -9,7 +9,7 @@
 #
 # Everything the script can decide not to do, it decides inside `npm run narrative` and says so
 # in the log: no `AI_GATEWAY_API_KEY` (the sandbox, CI, a fork), a payload whose hash and prompt
-# match the last answered snapshot, or a rate limit that outlasted its one retry. In each of
+# match the last answered snapshot, an origin date already narrated today, or a rate limit that outlasted its one retry. In each of
 # those either nothing is staged, and this exits 0 having pushed nothing, or a `skipped` row is
 # staged and committed so the spend log shows the attempt.
 #

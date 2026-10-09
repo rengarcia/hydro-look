@@ -244,6 +244,7 @@ export async function generateNarrative(payload: NarrativePayload, options: Gene
 
 export interface SnapshotRef {
   generated_at: string;
+  origin_date: string;
   status: string;
   prompt_version: string;
   payload_hash: string;
@@ -276,6 +277,25 @@ export function isNoOp(
 ): boolean {
   const last = lastAnswered(rows);
   return last !== null && last.payload_hash === payloadHash && last.prompt_version === promptVersion && last.model_id === modelId;
+}
+
+/**
+ * The answered snapshot that already covers `origin`, if any: one narrative per data day.
+ *
+ * The daily workflow runs four times a day, and every run after the first usually brings a
+ * slightly different payload for the same origin — CENACE's live running total, a source that
+ * closed late — so the payload hash alone let each run pay for its own paragraph. Once a day has
+ * been answered (`ok` or `rejected`, as in `lastAnswered`) it is not asked again; the next call
+ * waits for the next origin. A new `PROMPT_VERSION` or a new model still earns a call the same
+ * day, since that is a deliberate change rather than a refreshed number.
+ */
+export function answeredForOrigin<T extends SnapshotRef>(
+  rows: readonly T[],
+  origin: string,
+  promptVersion = promptVersionFor(null),
+  modelId = NARRATIVE_MODEL,
+): T | null {
+  return lastAnswered(rows.filter((row) => row.origin_date === origin && row.prompt_version === promptVersion && row.model_id === modelId));
 }
 
 /** `2026-09-21-narrative-es-1-1a2b3c4d-121503`: origin, prompt, payload, and the attempt's time. */
