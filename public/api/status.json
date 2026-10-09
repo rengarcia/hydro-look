@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-08T22:13:05Z",
+  "generated_at": "2026-10-09T00:43:41Z",
   "data_date": "2026-10-07",
   "as_of": "2026-10-08",
   "ok": true,
@@ -42,7 +42,7 @@
       "id": "cenace_operativa",
       "label_es": "CENACE: Información Operativa",
       "feed": "CENACE Información Operativa",
-      "latest": "2026-10-08",
+      "latest": "2026-10-09",
       "limit_days": 3,
       "state": "current"
     },
@@ -111,7 +111,7 @@
       "rows": 58354
     },
     "operativa_snapshots": {
-      "rows": 2632
+      "rows": 2679
     },
     "operating_bands": {
       "rows": 7
