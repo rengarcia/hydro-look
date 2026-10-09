@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-08T19:04:34Z",
+  "generated_at": "2026-10-09T00:44:19Z",
   "data_date": "2026-10-07",
   "status": "ok",
   "model": "anthropic/claude-opus-5.5",
   "prompt_version": "es-7+paute_mazar",
-  "payload_hash": "6e209fa079aee4522b13d266ec7ae840b5648b7631c768c1582bb3108d33a59e",
+  "payload_hash": "968a78774c57c23734fdc5b1c0e9ae26ac519fb3e21f9162e339ceca5612953c",
   "origin_date": "2026-10-07",
   "risk_tier": "deficit",
   "risk_tier_given": {
@@ -14,41 +14,41 @@
     "source": "adequacy.json current.worst_tier: the worst tier across the published horizons",
     "tier_at_7d": "deficit"
   },
-  "outlook_es": "Mazar, el principal embalse del país, sigue bajando, y el indicador de energía de este sitio está en «déficit». El nivel del agua en Mazar es de 2.130,07 metros sobre el nivel del mar. En los últimos 7 días bajó unos 0,28 m por día. Para el 21 de octubre de 2026, el valor más probable es 2.129,17 metros. A ese plazo, el pronóstico no acierta más que suponer que el nivel se queda igual. El indicador mira a 14 días. En el escenario más probable faltaría bastante energía. Faltaría cerca del 5,5 % de la energía que necesita el país. La producción hidroeléctrica está por debajo de lo normal para estas fechas. Desde el 22 de septiembre de 2026, las grandes industrias se desconectan de la red un día a la semana, para ahorrar agua. Se espera más lluvia de lo normal en los próximos 16 días, medida en un solo punto, en el centro de la cuenca. Aun así, hoy llega a Mazar menos agua de lo habitual. El Niño estaba activo en agosto de 2026.",
+  "outlook_es": "Mazar, el principal embalse del país, sigue bajando, y el indicador de energía de este sitio está en «déficit». El nivel del agua en Mazar es de 2.130,07 metros sobre el nivel del mar, medido el 7 de octubre de 2026. En la última semana bajó unos 0,28 m por día. El pronóstico pone el valor más probable en 2.129,17 metros para el 21 de octubre de 2026. A ese plazo, el pronóstico no acierta más que suponer que el nivel se queda igual. El indicador mira a 14 días. Significa que, en el escenario más probable, faltaría bastante energía. Faltaría cerca del 5,5 % de la energía que necesita el país. La producción hidroeléctrica está algo por debajo de lo normal. Desde el 22 de septiembre de 2026, las grandes industrias se desconectan de la red un día a la semana, para ahorrar agua. Se espera mucha más lluvia de lo normal para estas fechas, medida en un solo punto, en el centro de la cuenca. Aun así, el agua que llega a Mazar está por debajo de lo habitual y el nivel sigue bajando. Según los datos de agosto de 2026, hay un episodio de El Niño.",
   "drivers": [
-    "A 14 días faltaría cerca del 5,5 % de la energía que necesita el país.",
-    "El nivel de Mazar bajó unos 0,28 m por día en la última semana.",
-    "A Mazar llega menos agua de lo normal para estas fechas.",
-    "Se esperan 121,2 mm de lluvia en 16 días, más de lo normal para esta época.",
-    "El pronóstico a 14 días no acierta más que suponer que el nivel se queda igual."
+    "En el escenario más probable faltaría cerca del 5,5 % de la energía que necesita el país.",
+    "Mazar bajó unos 0,28 m por día en la última semana.",
+    "El agua que llega a Mazar está por debajo de lo habitual para estas fechas.",
+    "Se espera la lluvia más alta registrada para esta época, medida en un solo punto de la cuenca.",
+    "A 14 días, el pronóstico de Mazar no acierta más que suponer que el nivel se queda igual."
   ],
   "drivers_structured": [
     {
-      "text": "A 14 días faltaría cerca del 5,5 % de la energía que necesita el país.",
+      "text": "En el escenario más probable faltaría cerca del 5,5 % de la energía que necesita el país.",
       "factor": "adequacy",
       "direction": "down",
       "payload_ref": "adequacy.horizons[1].margin_pct"
     },
     {
-      "text": "El nivel de Mazar bajó unos 0,28 m por día en la última semana.",
+      "text": "Mazar bajó unos 0,28 m por día en la última semana.",
       "factor": "mazar_level",
       "direction": "down",
       "payload_ref": "reservoirs[0].slopes_m_per_day.d7"
     },
     {
-      "text": "A Mazar llega menos agua de lo normal para estas fechas.",
+      "text": "El agua que llega a Mazar está por debajo de lo habitual para estas fechas.",
       "factor": "inflow",
       "direction": "down",
       "payload_ref": "reservoirs[0].inflow.percentile_today"
     },
     {
-      "text": "Se esperan 121,2 mm de lluvia en 16 días, más de lo normal para esta época.",
+      "text": "Se espera la lluvia más alta registrada para esta época, medida en un solo punto de la cuenca.",
       "factor": "precipitation",
       "direction": "up",
       "payload_ref": "precipitation_16d.percentile_vs_climatology"
     },
     {
-      "text": "El pronóstico a 14 días no acierta más que suponer que el nivel se queda igual.",
+      "text": "A 14 días, el pronóstico de Mazar no acierta más que suponer que el nivel se queda igual.",
       "factor": "mazar_forecast",
       "direction": "steady",
       "payload_ref": "mazar_forecast.horizons[1].skill_vs_persistence"
@@ -56,9 +56,9 @@
   ],
   "confidence": "medium",
   "usage": {
-    "input_tokens": 7380,
-    "output_tokens": 805,
-    "cost_usd": 0.04562
+    "input_tokens": 7378,
+    "output_tokens": 856,
+    "cost_usd": 0.046632
   },
   "disclaimer": "Resumen escrito por inteligencia artificial a partir de los números que lo acompañan. La IA no hace pronósticos: el de Mazar y el nivel de riesgo los calculan los modelos estadísticos del sitio, y el texto solo los explica.",
   "basis": {
@@ -352,9 +352,9 @@
         {
           "horizon_days": 7,
           "target_date": "2026-10-14",
-          "p10": 2124.37,
-          "p50": 2127.47,
-          "p90": 2130.08,
+          "p10": 2123.91,
+          "p50": 2127.02,
+          "p90": 2129.63,
           "skill_vs_persistence": 0.155,
           "coverage_p10_p90": 0.78,
           "model_id": "M4-gbm-direct"
@@ -483,16 +483,16 @@
       "latitude": -2.8819,
       "longitude": -78.9173,
       "coordinate_status": "verified",
-      "issued_at": "2026-10-07T22:04:26Z",
-      "from": "2026-10-07",
-      "to": "2026-10-22",
+      "issued_at": "2026-10-08T22:11:20Z",
+      "from": "2026-10-08",
+      "to": "2026-10-23",
       "days": 16,
-      "forecast_total_mm": 121.2,
+      "forecast_total_mm": 164.3,
       "climatology_years": 36,
-      "climatology_p10_mm": 35.5,
-      "climatology_p50_mm": 71.3,
-      "climatology_p90_mm": 108.3,
-      "percentile_vs_climatology": 92,
+      "climatology_p10_mm": 36.7,
+      "climatology_p50_mm": 69.8,
+      "climatology_p90_mm": 111,
+      "percentile_vs_climatology": 100,
       "note": "Un solo punto, el centroide verificado de la cuenca, no un promedio de la cuenca; pronóstico Open-Meteo frente a climatología ERA5."
     },
     "enso": {
