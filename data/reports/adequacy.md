@@ -1,6 +1,6 @@
 # Energy adequacy — what the model is, and what it was measured at
 
-Generated 2026-10-08T21:35:47Z from 3740 usable national-balance days, 2016-05-01 → 2026-10-07. Origin 2026-10-07.
+Generated 2026-10-09T00:44:11Z from 3740 usable national-balance days, 2016-05-01 → 2026-10-07. Origin 2026-10-07.
 
 This is section 7's target 3: expected deficit in GWh per day over the horizon, and the risk
 tiers read off it. It is the number the site's adequacy tile shows, and the `risk_tier` the
@@ -358,7 +358,7 @@ Imports from Colombia as a least-squares function of `colombia_useful_storage_fr
 | export model + ONI | 2024 Colombian cut | 7 d | 91 | 3.32 | 3.95 |
 | export model + ONI | 2024 Colombian cut | 14 d | 91 | 4.06 | 3.75 |
 | export model + ONI | 2024 Colombian cut | 30 d | 91 | 5.75 | 3.44 |
-| export model + ONI | 2026-09 stop | 7 d | 30 | 5.65 | 3.51 |
+| export model + ONI | 2026-09 stop | 7 d | 30 | 5.65 | 3.50 |
 | export model + ONI | 2026-09 stop | 14 d | 23 | 7.64 | 3.87 |
 | export model + ONI | 2026-09 stop | 30 d | 7 | 10.23 | 4.73 |
 
