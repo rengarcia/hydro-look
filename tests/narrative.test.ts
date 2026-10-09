@@ -45,6 +45,7 @@ import {
   costFromMetadata,
   generateNarrative,
   isNoOp,
+  answeredForOrigin,
   NARRATIVE_MODEL,
   narrativeDocument,
   snapshotRow,
@@ -388,7 +389,7 @@ describe("the no-op", () => {
     payload_hash = hash,
     prompt_version = PROMPT_VERSION,
     model_id = NARRATIVE_MODEL,
-  ): SnapshotRef => ({ status, generated_at, payload_hash, prompt_version, model_id });
+  ): SnapshotRef => ({ status, generated_at, origin_date: payload.origin_date, payload_hash, prompt_version, model_id });
 
   it("is a no-op when the last answered snapshot has the same payload and prompt", () => {
     expect(isNoOp([row("ok", "2026-09-22T12:40:00Z")], hash)).toBe(true);
@@ -407,6 +408,37 @@ describe("the no-op", () => {
   it("compares against the newest answered snapshot, not the first", () => {
     const rows = [row("ok", "2026-09-22T12:40:00Z"), row("ok", "2026-09-23T12:40:00Z", "1".repeat(64))];
     expect(isNoOp(rows, hash)).toBe(false);
+  });
+});
+
+describe("one narrative per day", () => {
+  const origin = payload.origin_date;
+  const row = (
+    status: string,
+    origin_date = origin,
+    prompt_version = PROMPT_VERSION,
+    model_id = NARRATIVE_MODEL,
+  ): SnapshotRef & { run_id: string } => ({
+    run_id: `${origin_date}-${status}`,
+    status,
+    generated_at: "2026-09-22T12:40:00Z",
+    origin_date,
+    payload_hash: "0".repeat(64),
+    prompt_version,
+    model_id,
+  });
+
+  it("does not call again for an origin already answered, whatever the payload", () => {
+    expect(answeredForOrigin([row("ok")], origin)?.run_id).toBe(`${origin}-ok`);
+    expect(answeredForOrigin([row("rejected")], origin)?.run_id).toBe(`${origin}-rejected`);
+  });
+
+  it("calls for a new origin, a new prompt, a new model, or when nothing was answered", () => {
+    expect(answeredForOrigin([], origin)).toBeNull();
+    expect(answeredForOrigin([row("ok", "2000-01-01")], origin)).toBeNull();
+    expect(answeredForOrigin([row("ok", origin, "es-0")], origin)).toBeNull();
+    expect(answeredForOrigin([row("ok", origin, PROMPT_VERSION, "other/model")], origin)).toBeNull();
+    expect(answeredForOrigin([row("skipped"), row("failed")], origin)).toBeNull();
   });
 });
 

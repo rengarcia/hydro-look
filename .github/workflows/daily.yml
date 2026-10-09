@@ -7,7 +7,8 @@ name: Daily ingest
 #    CENACE's real-time running total for today (latest.json `live`) and re-read the per-day
 #    reports, so a source that published late is picked up the same day rather than the next.
 # A run that finds nothing new commits nothing (apply-and-push.sh), so an extra slot costs a
-# runner, not a commit; the narrative's paid call is skipped when its payload is unchanged.
+# runner, not a commit; the narrative's paid call is made once per data day (origin date), on
+# the first run that has one, and skipped on the later runs of that day.
 # Odd minutes on purpose. GitHub delays scheduled runs on busy minutes, and :15 and :30 are busy
 # minutes: the first two scheduled runs, for the old 12:15 and 16:30 slots, started at 16:58 and
 # 19:47. freshness.yml notices a slot that does not fire at all.
@@ -146,7 +147,8 @@ jobs:
       # would be the one thing on the page describing the wrong day. It makes the run's only paid
       # call (Vercel AI Gateway), which is why it is `continue-on-error` and why the key is the
       # only secret this workflow reads: without it the command logs one line and writes nothing,
-      # and a rerun on unchanged data is a no-op by payload hash. The step summary carries the
+      # and a run whose origin date already has an answered narrative makes no call, so the four
+      # daily slots pay for one paragraph a day. The step summary carries the
       # call's cost and latency and the spend to date. See narrative-and-push.sh.
       - name: Narrative and commit
         if: steps.models.outcome == 'success'

@@ -17,9 +17,11 @@
  * twice for one narrative, so the call happens once, into a directory, and only the cheap merge
  * is repeated. `.github/scripts/narrative-and-push.sh` drives that.
  *
- * Three ways to exit 0 without calling anything, each with a line in the log saying which:
+ * Four ways to exit 0 without calling anything, each with a line in the log saying which:
  * `--dry-run`; no `AI_GATEWAY_API_KEY` in the environment (the sandbox and CI never have one);
- * and a payload whose hash and prompt version match the last answered snapshot. Exit code is 1
+ * a payload whose hash and prompt version match the last answered snapshot; and an origin date
+ * that already has an answered snapshot under this prompt and model — one narrative per day,
+ * however many times the daily workflow runs (`answeredForOrigin`). Exit code is 1
  * only for a `failed` attempt — a bad key, an unknown model id, a gateway outage — so that one
  * is visibly red, and for inputs that cannot produce a payload at all.
  */
@@ -30,6 +32,7 @@ import { parseArgs } from "node:util";
 import { buildPayload, estimateTokens, loadPayloadInputs, payloadHash, type NarrativePayload } from "../src/lib/narrative/payload.ts";
 import { promptVersionFor } from "../src/lib/narrative/prompt.ts";
 import {
+  answeredForOrigin,
   generateNarrative,
   isNoOp,
   lastAnswered,
@@ -59,6 +62,7 @@ function readSnapshots(): (SnapshotRef & { run_id: string })[] {
       rows.push({
         run_id: row["run_id"] ?? "",
         generated_at: row["generated_at"] ?? "",
+        origin_date: row["origin_date"] ?? "",
         status: row["status"] ?? "",
         prompt_version: row["prompt_version"] ?? "",
         payload_hash: row["payload_hash"] ?? "",
@@ -157,7 +161,9 @@ async function main(): Promise<void> {
 
   if (dryRun) {
     console.log(JSON.stringify(payload, null, 2));
-    console.log(`dry run: would call ${NARRATIVE_MODEL} unless the last answered snapshot has this hash and prompt`);
+    console.log(
+      `dry run: would call ${NARRATIVE_MODEL} unless the last answered snapshot has this hash and prompt, or this origin is already narrated`,
+    );
     return;
   }
 
@@ -165,6 +171,13 @@ async function main(): Promise<void> {
   if (isNoOp(snapshots, hash, promptVersionFor(payload))) {
     console.log(
       `unchanged since ${lastAnswered(snapshots)?.run_id ?? "the last snapshot"} (same payload and prompt ${promptVersionFor(payload)}): no call made`,
+    );
+    return;
+  }
+  const earlier = answeredForOrigin(snapshots, payload.origin_date, promptVersionFor(payload));
+  if (earlier !== null) {
+    console.log(
+      `origin ${payload.origin_date} already narrated by ${earlier.run_id} (prompt ${promptVersionFor(payload)}): one narrative per day, no call made`,
     );
     return;
   }
