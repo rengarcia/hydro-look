@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-10T20:22:38Z",
+  "generated_at": "2026-10-10T23:55:44Z",
   "data_date": "2026-10-09",
   "run_id": "2026-10-09-mazar-3-bd93dc4e",
   "origin_date": "2026-10-09",
@@ -98,9 +98,9 @@
     {
       "horizon_days": 7,
       "target_date": "2026-10-16",
-      "p10": 2121.2,
-      "p50": 2124.31,
-      "p90": 2126.9,
+      "p10": 2121.4,
+      "p50": 2124.51,
+      "p90": 2127.11,
       "ensemble": {
         "p10": 2123.28,
         "p90": 2130.58,
@@ -587,7 +587,7 @@
   "precipitation_basin": {
     "basin": "paute_mazar",
     "verified_centroid": true,
-    "era5_days": 13424,
+    "era5_days": 13425,
     "share_since_1990": 1,
     "fallback_reason": null
   },
@@ -910,7 +910,7 @@
     ]
   },
   "scorecard": {
-    "generated_at": "2026-10-10T20:22:54Z",
+    "generated_at": "2026-10-10T23:55:55Z",
     "observed_through": "2026-10-09",
     "target": "level on the target day, m",
     "units": "m",
