@@ -1,6 +1,6 @@
 # Backtest — mazar level forecast
 
-Generated 2026-10-10T00:22:45Z from the committed tables; no network. Origins are the first of each month, each one refitting every model on the data before it. 106 origins scored per horizon, 94 of them with a calibrated band (the first twelve are the calibration's warm-up).
+Generated 2026-10-10T02:45:23Z from the committed tables; no network. Origins are the first of each month, each one refitting every model on the data before it. 106 origins scored per horizon, 94 of them with a calibrated band (the first twelve are the calibration's warm-up).
 
 Level history: 4402 days, 2014-09-20 → 2026-10-08.
 
