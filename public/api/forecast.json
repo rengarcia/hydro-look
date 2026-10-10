@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-09T21:22:46Z",
+  "generated_at": "2026-10-10T00:22:51Z",
   "data_date": "2026-10-08",
   "run_id": "2026-10-08-mazar-3-5e3bd269",
   "origin_date": "2026-10-08",
@@ -98,9 +98,9 @@
     {
       "horizon_days": 7,
       "target_date": "2026-10-15",
-      "p10": 2121.97,
-      "p50": 2125.08,
-      "p90": 2127.68,
+      "p10": 2122.06,
+      "p50": 2125.16,
+      "p90": 2127.76,
       "ensemble": {
         "p10": 2123.52,
         "p90": 2130.28,
@@ -144,8 +144,8 @@
         ]
       },
       "own_quantiles": {
-        "p10": 2123.63,
-        "p90": 2128.74,
+        "p10": 2123.89,
+        "p90": 2128.82,
         "note": "The model's own quantile regressions before widening; they cover too little to publish."
       },
       "m3_anchor_p50": null,
@@ -587,7 +587,7 @@
   "precipitation_basin": {
     "basin": "paute_mazar",
     "verified_centroid": true,
-    "era5_days": 13423,
+    "era5_days": 13424,
     "share_since_1990": 1,
     "fallback_reason": null
   },
@@ -910,7 +910,7 @@
     ]
   },
   "scorecard": {
-    "generated_at": "2026-10-09T21:23:02Z",
+    "generated_at": "2026-10-10T00:23:04Z",
     "observed_through": "2026-10-08",
     "target": "level on the target day, m",
     "units": "m",
