@@ -1,6 +1,6 @@
 # Backtest — mazar level forecast
 
-Generated 2026-10-11T06:33:05Z from the committed tables; no network. Origins are the first of each month, each one refitting every model on the data before it. 106 origins scored per horizon, 94 of them with a calibrated band (the first twelve are the calibration's warm-up).
+Generated 2026-10-11T17:07:05Z from the committed tables; no network. Origins are the first of each month, each one refitting every model on the data before it. 106 origins scored per horizon, 94 of them with a calibrated band (the first twelve are the calibration's warm-up).
 
 Level history: 4404 days, 2014-09-20 → 2026-10-10.
 
@@ -280,7 +280,7 @@ MAE in metres. Coverage of the calibrated band:
 
 ## The crisis check
 
-Section 7 asks for the lead time at which the P50 first predicted a crossing of 2115 m (PLAN.md section 7; no upstream source publishes it). Answered strictly: a call counts only if it is *sustained* — the earliest origin from which this and every later origin also predicted the crossing on or before the day it happened. One origin that says yes and is then contradicted by the next three did not forecast anything, and crediting it would flatter the model.
+Section 7 asks for the lead time at which the P50 first predicted a crossing of 2115 m (celec sur via press). Answered strictly: a call counts only if it is *sustained* — the earliest origin from which this and every later origin also predicted the crossing on or before the day it happened. One origin that says yes and is then contradicted by the next three did not forecast anything, and crediting it would flatter the model.
 
 | level first at or below | P50 called it from | P50 lead | P10 called it from | P10 lead |
 |---|---|---|---|---|
