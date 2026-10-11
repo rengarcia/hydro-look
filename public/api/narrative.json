@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-11T06:33:30Z",
+  "generated_at": "2026-10-11T17:07:37Z",
   "data_date": "2026-10-10",
   "status": "ok",
   "model": "anthropic/claude-opus-5.5",
-  "prompt_version": "es-7+paute_mazar",
-  "payload_hash": "0257a6cddf3372f5204a81671b0b9bbe336e80e1e30fb2d2d12b607681b448d2",
+  "prompt_version": "es-8+paute_mazar",
+  "payload_hash": "e4d203cfb1c5071cb228aa22c3ba18a6ead91ce9956705d07bdd5f07acae1eef",
   "origin_date": "2026-10-10",
   "risk_tier": "deficit",
   "risk_tier_given": {
@@ -14,23 +14,23 @@
     "source": "adequacy.json current.worst_tier: the worst tier across the published horizons",
     "tier_at_7d": "deficit"
   },
-  "outlook_es": "Mazar, el principal embalse del país, sigue bajando, y el indicador de energía de este sitio está en «déficit». El nivel del agua en Mazar es de 2.126,44 metros sobre el nivel del mar. En la última semana bajó unos 0,67 m por día. El pronóstico pone el valor más probable en 2.128,65 metros el 24 de octubre de 2026. Pero a ese plazo, el pronóstico no acierta más que suponer que el nivel se queda igual. El indicador de energía está en «déficit» a 14 días. Eso significa que, en el escenario más probable, faltaría bastante energía. Faltaría cerca del 5,3 % de la energía que necesita el país. Desde el 22 de septiembre de 2026, las grandes industrias se desconectan de la red un día a la semana, para ahorrar agua. Se espera más lluvia de lo normal para estas fechas, medida en un solo punto, en el centro de la cuenca. Aun así, hoy llega a Mazar menos agua de lo habitual, y el nivel sigue cayendo. Hay El Niño, según el dato de agosto de 2026.",
+  "outlook_es": "Mazar, el principal embalse del país, sigue bajando, y el indicador de energía de este sitio está en «déficit». Hoy, 10 de octubre de 2026, el nivel del agua en Mazar es de 2.126,44 metros sobre el nivel del mar. En los últimos 7 días bajó unos 0,67 m por día. El mínimo de operación es 2.115 m. Si siguiera bajando al mismo ritmo, llegaría en unos 17 días; es una cuenta simple, no un pronóstico. Para el 24 de octubre de 2026, el valor más probable del pronóstico es 2.128,65 m. A ese plazo, el pronóstico no acierta más que suponer que el nivel se queda igual. El indicador mira a 14 días. «Déficit» significa que, en el escenario más probable, faltaría bastante energía. Faltaría cerca del 5 % de la energía que necesita el país. Las centrales hidroeléctricas producen algo menos de lo normal para estas fechas. Desde el 22 de septiembre de 2026, las grandes industrias se desconectan de la red un día a la semana, para ahorrar agua. Se espera más lluvia de lo normal, medida en un solo punto, en el centro de la cuenca. Pero hoy llega a Mazar menos agua de lo habitual, y el nivel sigue bajando. Hay El Niño, según el dato de agosto de 2026.",
   "drivers": [
-    "En el escenario más probable faltaría cerca del 5,3 % de la energía que necesita el país.",
-    "El nivel de Mazar baja unos 0,67 m por día en la última semana.",
+    "A 14 días faltaría cerca del 5 % de la energía que necesita el país.",
+    "Mazar baja unos 0,67 m por día en la última semana.",
     "A 14 días, el pronóstico no acierta más que suponer que el nivel se queda igual.",
-    "Llega a Mazar menos agua de lo habitual para estas fechas.",
+    "Llega a Mazar menos agua de lo normal para estas fechas.",
     "Se espera más lluvia de lo normal en los próximos 16 días, en un punto de la cuenca."
   ],
   "drivers_structured": [
     {
-      "text": "En el escenario más probable faltaría cerca del 5,3 % de la energía que necesita el país.",
+      "text": "A 14 días faltaría cerca del 5 % de la energía que necesita el país.",
       "factor": "adequacy",
       "direction": "down",
       "payload_ref": "adequacy.horizons[1].margin_pct"
     },
     {
-      "text": "El nivel de Mazar baja unos 0,67 m por día en la última semana.",
+      "text": "Mazar baja unos 0,67 m por día en la última semana.",
       "factor": "mazar_level",
       "direction": "down",
       "payload_ref": "reservoirs[0].slopes_m_per_day.d7"
@@ -42,7 +42,7 @@
       "payload_ref": "mazar_forecast.horizons[1].skill_vs_persistence"
     },
     {
-      "text": "Llega a Mazar menos agua de lo habitual para estas fechas.",
+      "text": "Llega a Mazar menos agua de lo normal para estas fechas.",
       "factor": "inflow",
       "direction": "down",
       "payload_ref": "reservoirs[0].inflow.percentile_today"
@@ -54,11 +54,11 @@
       "payload_ref": "precipitation_16d.percentile_vs_climatology"
     }
   ],
-  "confidence": "medium",
+  "confidence": "low",
   "usage": {
-    "input_tokens": 7355,
-    "output_tokens": 816,
-    "cost_usd": 0.04574
+    "input_tokens": 7487,
+    "output_tokens": 900,
+    "cost_usd": 0.047948
   },
   "disclaimer": "Resumen escrito por inteligencia artificial a partir de los números que lo acompañan. La IA no hace pronósticos: el de Mazar y el nivel de riesgo los calculan los modelos estadísticos del sitio, y el texto solo los explica.",
   "basis": {
@@ -73,6 +73,15 @@
         "observed_on": "2026-10-10",
         "record_from": "2014-09-20",
         "bands": [
+          {
+            "floor_masl": 2115,
+            "ceiling_masl": 2153,
+            "band_pct": 30.1,
+            "metres_below_ceiling": 26.56,
+            "declared_by": [
+              "celec sur via press"
+            ]
+          },
           {
             "floor_masl": 2100,
             "ceiling_masl": 2153,
@@ -101,7 +110,7 @@
         "floors": [
           {
             "floor_masl": 2115,
-            "status": "unverified",
+            "status": "published",
             "metres_above": 11.44,
             "days_at_slope_7d": 17,
             "days_at_slope_30d": 21
@@ -296,17 +305,17 @@
       {
         "site": "agoyan",
         "label": "Agoyán",
-        "level_masl": 1645.58,
-        "observed_on": "2026-10-09",
+        "level_masl": 1645.62,
+        "observed_on": "2026-10-10",
         "slopes_m_per_day": {
-          "d7": -0.0529,
-          "d14": -0.0121,
-          "d30": -0.0303
+          "d7": -0.0486,
+          "d14": -0.0479,
+          "d30": -0.005
         },
         "floors": [],
         "inflow": {
           "m3s": 60,
-          "percentile_today": 16.5
+          "percentile_today": 15.8
         }
       },
       {
@@ -403,7 +412,7 @@
       "crossings": [
         {
           "threshold_masl": 2115,
-          "status": "unverified",
+          "status": "published",
           "analogue_years": 14,
           "years_that_cross": 7,
           "p10_days": 17.3,
@@ -438,37 +447,37 @@
           "crossing_scenarios": []
         }
       ],
-      "note": "Pronóstico estadístico (§7) con años análogos de caudal. 2115 es un marcador propio del proyecto, no de CELEC."
+      "note": "Pronóstico estadístico (§7) con años análogos de caudal. 2115 es el mínimo de operación de CELEC Sur; 2100 y 2098 son mínimos de diseño."
     },
     "adequacy": {
-      "run_id": "2026-10-09-adequacy-2-e0861112",
-      "origin_date": "2026-10-09",
+      "run_id": "2026-10-10-adequacy-2-1debb4d2",
+      "origin_date": "2026-10-10",
       "risk_tier": "deficit",
       "risk_tier_horizon_days": 14,
       "risk_tier_definition": "el caso central queda corto en 5 GWh/día o más",
       "tier_at_7d": "deficit",
-      "hydro_anomaly": 0.9277,
+      "hydro_anomaly": 0.9333,
       "horizons": [
         {
           "horizon_days": 7,
           "tier": "deficit",
-          "margin_pct": -5.07,
-          "surplus_gwh_day": -5.473,
-          "surplus_with_stressed_imports_gwh_day": -5.471
+          "margin_pct": -4.89,
+          "surplus_gwh_day": -5.278,
+          "surplus_with_stressed_imports_gwh_day": -5.274
         },
         {
           "horizon_days": 14,
           "tier": "deficit",
-          "margin_pct": -5.26,
-          "surplus_gwh_day": -5.677,
-          "surplus_with_stressed_imports_gwh_day": -5.674
+          "margin_pct": -5.01,
+          "surplus_gwh_day": -5.407,
+          "surplus_with_stressed_imports_gwh_day": -5.402
         },
         {
           "horizon_days": 30,
           "tier": "ajustado",
-          "margin_pct": -4.57,
-          "surplus_gwh_day": -4.883,
-          "surplus_with_stressed_imports_gwh_day": -4.88
+          "margin_pct": -4.23,
+          "surplus_gwh_day": -4.524,
+          "surplus_with_stressed_imports_gwh_day": -4.519
         }
       ],
       "note": "Nivel calculado por el modelo de suficiencia (§7). hydro_anomaly: hidroeléctrica de 14 días / su climatología."
