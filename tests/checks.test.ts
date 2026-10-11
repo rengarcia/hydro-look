@@ -165,6 +165,19 @@ describe("reference integrity", () => {
       checkReference({ ...ok, rationing }).some((f) => f.level === "fail" && /marked open but carries an end date/.test(f.message)),
     ).toBe(true);
   });
+
+  it("fails a plant location outside Ecuador or under an unknown site", () => {
+    const locations = [
+      { key: "mazar", site_id: "mazar", feature: "dam", lat: "-2.59", lon: "-78.62" },
+      { key: "typo", site_id: "", feature: "dam", lat: "2.59", lon: "-78.62" },
+      { key: "ghost", site_id: "el_dorado", feature: "dam", lat: "-1", lon: "-78" },
+    ];
+    const fails = checkReference({ ...ok, locations }).filter((f) => f.check === "reference:locations");
+    expect(fails.map((f) => f.message)).toEqual([
+      expect.stringMatching(/typo at 2.59, -78.62, outside/),
+      expect.stringMatching(/el_dorado/),
+    ]);
+  });
 });
 
 describe("freshness", () => {

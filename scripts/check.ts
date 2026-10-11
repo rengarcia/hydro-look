@@ -210,6 +210,7 @@ function main(): void {
       plants: readReference("plants.csv"),
       thresholds,
       rationing: readReference("rationing_episodes.csv"),
+      locations: readReference("plant_locations.csv"),
     }),
   );
 

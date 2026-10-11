@@ -9,7 +9,9 @@ import { RecordChart } from "./RecordChart.tsx";
 import { ReservoirCutFor } from "./ReservoirParts.tsx";
 import { Table } from "./DataTable.tsx";
 import { MetresPerDay } from "./Fleet.tsx";
-import { series } from "../../lib/site/data.ts";
+import { CatchmentMap, Locator, WhereFacts, catchmentFor } from "./Maps.tsx";
+import { PAUTE_SITES, PauteCascade } from "./PauteCascade.tsx";
+import { latest, series } from "../../lib/site/data.ts";
 import type { ForecastDocument } from "../../lib/site/documents.ts";
 import { basinLabel, capitalise, dateWithYear, declarationLabel, longDate, num, pct, shortDate, signed } from "../../lib/site/format.ts";
 import { countWord, inflowWords, monthYear, wholeYears } from "../../lib/site/story.ts";
@@ -201,5 +203,40 @@ export function FloorsPanel({ reservoir }: { reservoir: ReservoirSnapshot }) {
         porcentaje mide altura, no cuánta agua hay guardada.
       </p>
     </div>
+  );
+}
+
+/** The reservoir on the map: the area that drains into its dam, the rivers in it and the dams around it. */
+export function WhereSection({ reservoir }: { reservoir: ReservoirSnapshot }) {
+  if (catchmentFor(reservoir.site) === null) return null;
+  return (
+    <section className="shell split wide-left map-split" aria-labelledby="donde-title">
+      <div className="panel map-panel">
+        <CatchmentMap site={reservoir.site} label={reservoir.label} />
+      </div>
+      <div className="panel">
+        <div className="where-head">
+          <h3 id="donde-title" className="panel-title">
+            Dónde está
+          </h3>
+          <Locator site={reservoir.site} />
+        </div>
+        <p className="panel-lede">
+          La mancha es su cuenca: toda la lluvia que cae dentro llega, por los ríos dibujados, a la presa. Los tonos marcan cada 1.000 m de
+          altura; las líneas punteadas, las cuencas de las presas vecinas.
+        </p>
+        <WhereFacts site={reservoir.site} label={reservoir.label} />
+      </div>
+    </section>
+  );
+}
+
+/** For Mazar, Amaluza and Sopladora: the three on one river, in profile. */
+export function CascadeSection({ reservoir }: { reservoir: ReservoirSnapshot }) {
+  if (!PAUTE_SITES.has(reservoir.site)) return null;
+  return (
+    <section className="shell" aria-label="La cascada del Paute">
+      <PauteCascade reservoirs={latest()?.reservoirs ?? []} site={reservoir.site} />
+    </section>
   );
 }

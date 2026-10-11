@@ -680,7 +680,8 @@ export function simplifyRing(ring: number[][], tolerance: number): number[][] {
   return out.length >= 4 ? out : ring;
 }
 
-function simplifyLine(line: number[][], tolerance: number): number[][] {
+/** Douglas–Peucker on an open line; both ends are always kept. */
+export function simplifyLine(line: number[][], tolerance: number): number[][] {
   if (line.length <= 2) return line;
   const keep = new Uint8Array(line.length);
   keep[0] = 1;

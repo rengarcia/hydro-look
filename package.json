@@ -23,6 +23,7 @@
     "probe:ords": "tsx scripts/probe-ords.ts",
     "probe:basins": "tsx scripts/probe-basins.ts",
     "catchments": "tsx scripts/catchments.ts",
+    "basemap": "tsx scripts/basemap.ts",
     "geoglows": "tsx scripts/geoglows.ts",
     "geoglows:forecast": "tsx scripts/geoglows-forecast.ts",
     "geoglows:experiment": "tsx scripts/geoglows-experiment.ts",

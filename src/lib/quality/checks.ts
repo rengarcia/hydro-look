@@ -197,7 +197,7 @@ export function checkObservationRanges(observations: Rows, bands: Map<string, Ba
 }
 
 /** `data/reference/` is committed input, so nothing else validates it. */
-export function checkReference(reference: { plants: Rows; thresholds: Rows; rationing: Rows }): Finding[] {
+export function checkReference(reference: { plants: Rows; thresholds: Rows; rationing: Rows; locations?: Rows }): Finding[] {
   const out: Finding[] = [];
   const known = new Set(Object.keys(SITES));
 
@@ -257,6 +257,34 @@ export function checkReference(reference: { plants: Rows; thresholds: Rows; rati
         check: "reference:rationing",
         level: "fail",
         message: `rationing_episodes.csv row from ${start} is marked open but carries an end date`,
+      });
+    }
+  }
+
+  // The maps place every plant from this file; a typo in a coordinate puts a dam in the Pacific.
+  for (const row of reference.locations ?? []) {
+    const site = row["site_id"] ?? "";
+    if (site && !known.has(site)) {
+      out.push({
+        check: "reference:locations",
+        level: "fail",
+        message: `plant_locations.csv names site_id "${site}", which the registry does not have`,
+      });
+    }
+    const lat = row["lat"] ? Number(row["lat"]) : Number.NaN;
+    const lon = row["lon"] ? Number(row["lon"]) : Number.NaN;
+    if (!(lat >= -5.1 && lat <= 1.6 && lon >= -81.2 && lon <= -75.1)) {
+      out.push({
+        check: "reference:locations",
+        level: "fail",
+        message: `plant_locations.csv puts ${row["key"]} at ${row["lat"]}, ${row["lon"]}, outside mainland Ecuador's box`,
+      });
+    }
+    if (row["feature"] !== "dam" && row["feature"] !== "powerhouse") {
+      out.push({
+        check: "reference:locations",
+        level: "fail",
+        message: `plant_locations.csv: ${row["key"]} is a "${row["feature"]}", not a dam or powerhouse`,
       });
     }
   }
