@@ -192,6 +192,10 @@ export interface ForecastDocument {
   forecast: ForecastHorizon[];
   days_to_threshold: { horizon_days: number; note: string; thresholds: CrossingThreshold[] };
   backtest: { report: string; horizons: BacktestHorizon[] };
+  /** The fitted reservoir physics. Only the area-elevation curve is read by the site. */
+  reservoir?: {
+    area_elevation?: { form: string; coefficient: number; exponent: number; datum_m: number; fit_rmse_level_m: number; fit_days: number };
+  };
   crisis_check: {
     threshold_masl: number;
     origins_considered: number;

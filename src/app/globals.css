@@ -1086,6 +1086,13 @@ svg.chart {
   background-image: repeating-linear-gradient(135deg, transparent 0 4px, var(--line-2) 4px 5px);
 }
 
+.key-shape {
+  width: 22px;
+  height: 12px;
+  background: var(--water);
+  clip-path: polygon(0 40%, 100% 0, 100% 100%, 0 60%);
+}
+
 .key-p {
   width: 22px;
   font-family: var(--mono);
@@ -1272,6 +1279,74 @@ a.column:hover {
   bottom: 0;
   width: 0;
   border-left: 2px solid var(--deficit);
+}
+
+/*
+ * A gauge drawn in its reservoir's shape (lib/site/shape.ts): the box loses its own background
+ * and border, and the vessel is the SVG's outline instead, so the painted area is the water.
+ */
+.tank.shaped {
+  background: none;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+}
+
+.tank-shape,
+.bar-shape {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+
+.tank-shape {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+}
+
+.bar-shape {
+  height: 18px;
+}
+
+.tank-vessel {
+  fill: var(--sunk);
+  stroke: var(--line);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.tank-shape-surface {
+  stroke: var(--water-3);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.tank-shape-floor {
+  stroke: var(--deficit);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+/* The narrow end of the vessel leaves the corners empty: the scale labels sit on the page. */
+.tank.shaped .tank-bottom {
+  color: var(--muted);
+}
+
+.tank.shaped .tank-pct {
+  right: auto;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.tank-pct-unit {
+  display: block;
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  opacity: 0.85;
 }
 
 /* ---- Mazar --------------------------------------------------------------- */
