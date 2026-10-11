@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-11T21:01:02Z",
+  "generated_at": "2026-10-11T21:01:14Z",
   "data_date": "2026-10-10",
   "as_of": "2026-10-11",
   "ok": true,
@@ -74,7 +74,7 @@
       "id": "xm_storage",
       "label_es": "XM: embalses de Colombia",
       "feed": "XM Colombian storage",
-      "latest": "2026-10-09",
+      "latest": "2026-10-10",
       "limit_days": 4,
       "state": "current"
     },
@@ -141,7 +141,7 @@
       "rows": 4021
     },
     "xm_system_daily": {
-      "rows": 33318
+      "rows": 33325
     },
     "geoglows_forecasts": {
       "rows": 24990
