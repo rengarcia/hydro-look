@@ -382,15 +382,17 @@ export function returnPeriodsFor(inflow: DailySeries, today: number, row: Geoglo
 }
 
 /**
- * Every band declared for a site, best-evidenced first.
+ * Every band declared for a site, the operational minimum first and the rest best-evidenced first.
  *
- * All of them are kept because they disagree and nothing in the data settles which is right:
- * Mazar's floor is 2098 by the dashboard's chart title and 2100 by both report endpoints.
- * Picking one here would hide the disagreement behind a tidy gauge; carrying both makes the
- * site draw two floors, which is the truth.
+ * All of them are kept because they disagree: Mazar's design floor is 2098 by the dashboard's
+ * chart title and 2100 by both report endpoints, while CELEC Sur runs the plant only down to
+ * 2115, below which it takes the units offline for sediment risk. Picking one here would hide
+ * the disagreement behind a tidy gauge; carrying all three makes the site draw three floors,
+ * which is the truth. The operational minimum leads because it is the floor the plant is
+ * actually run to, so it is the one a gauge's percentage should be read against.
  *
- * The order is by how long the declaration was observed, longest first, and that is a claim
- * about evidence rather than about correctness. A chart title is a string in a JavaScript
+ * After it, the order is by how long the declaration was observed, longest first, and that is a
+ * claim about evidence rather than about correctness. A chart title is a string in a JavaScript
  * bundle, read once, so it spans a single day; `repDiaHid12m` restated its band on every one of
  * 4,384 days from 2014-09-20. Neither is thereby right — CELEC publishes both — but the first
  * is the band the fleet was actually reported against, which is the one a gauge should default
@@ -416,7 +418,12 @@ export function bandsFor(rows: readonly ThresholdRow[], site: string, level: num
       metres_above_min: level === null ? null : roundTo(level - min, 2),
     });
   }
-  return out.sort((a, b) => spanDays(b) - spanDays(a) || a.min_masl - b.min_masl);
+  return out.sort(
+    (a, b) =>
+      Number(b.declaration === "operational_minimum") - Number(a.declaration === "operational_minimum") ||
+      spanDays(b) - spanDays(a) ||
+      a.min_masl - b.min_masl,
+  );
 }
 
 /** Days a declaration was observed over, inclusive. Unparseable dates count as a single day. */

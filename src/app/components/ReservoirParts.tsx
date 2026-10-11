@@ -11,7 +11,7 @@ import { InflowChart } from "./InflowChart.tsx";
 import { ribbon, series, window as windowOf } from "../../lib/site/data.ts";
 import type { ForecastDocument } from "../../lib/site/documents.ts";
 import { longDate, num, shortDate } from "../../lib/site/format.ts";
-import { thresholdSource } from "../../lib/site/story.ts";
+import { isOperational, thresholdSource } from "../../lib/site/story.ts";
 import { eachDay } from "../../lib/util/dates.ts";
 import type { ReservoirSnapshot } from "../../lib/publish/latest.ts";
 
@@ -20,8 +20,8 @@ const INFLOW_DAYS = 365;
 
 /**
  * The floors ruled across the cross-section. For the forecast reservoir they are the forecast's
- * own thresholds, 2115 included and marked as this project's; for any other, every distinct
- * floor CELEC declares.
+ * own thresholds — the operational minimum, 2115, and the design floors below it; for any other,
+ * every distinct floor CELEC declares.
  */
 export function cutFloors(forecast: ForecastDocument | null, reservoir: ReservoirSnapshot): CutLevel[] {
   if (forecast && forecast.site === reservoir.site) {
@@ -32,16 +32,25 @@ export function cutFloors(forecast: ForecastDocument | null, reservoir: Reservoi
         unverified,
         label: unverified
           ? `${num(t.level_masl, 0)} m · referencia de este sitio`
-          : `${num(t.level_masl, 0)} m · mín. ${thresholdSource(t.name)}`,
-        short: unverified ? `${num(t.level_masl, 0)} ref.` : `${num(t.level_masl, 0)} mín.`,
+          : isOperational(t.name)
+            ? `${num(t.level_masl, 0)} m · mínimo de operación`
+            : `${num(t.level_masl, 0)} m · diseño, ${thresholdSource(t.name)}`,
+        short: unverified
+          ? `${num(t.level_masl, 0)} ref.`
+          : isOperational(t.name)
+            ? `${num(t.level_masl, 0)} mín.`
+            : `${num(t.level_masl, 0)} dis.`,
       };
     });
   }
-  return [...new Set(reservoir.bands.map((b) => b.min_masl))].map((level) => ({
-    level_masl: level,
-    label: `${num(level, 0)} m · mínimo oficial`,
-    short: `${num(level, 0)} mín.`,
-  }));
+  return [...new Set(reservoir.bands.map((b) => b.min_masl))].map((level) => {
+    const operational = reservoir.bands.some((b) => b.min_masl === level && isOperational(b.declaration));
+    return {
+      level_masl: level,
+      label: `${num(level, 0)} m · ${operational ? "mínimo de operación" : "mínimo oficial"}`,
+      short: `${num(level, 0)} mín.`,
+    };
+  });
 }
 
 export function ReservoirCutFor({ reservoir, forecast }: { reservoir: ReservoirSnapshot; forecast: ForecastDocument | null }) {

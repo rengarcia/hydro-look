@@ -16,9 +16,9 @@
  * whisker of its own, and the legend and the list beside the chart name the model. The named
  * scenarios and days-to-threshold stay M3's daily simulation and are not drawn here.
  *
- * The declared floors are drawn as horizontal rules. 2115 is drawn like the others and labelled
- * like none of them: no upstream source publishes it, it is this project's own marker from
- * PLAN.md §7. Drawing it unlabelled beside two CELEC declarations would quietly promote it to one.
+ * The declared floors are drawn as horizontal rules, each labelled with what it is: 2115 the
+ * operational minimum CELEC Sur runs Mazar to, 2100 and 2098 the design floors CELEC publishes.
+ * A project marker, should a site carry one, is dotted and labelled as this site's own.
  */
 
 import { bandPath, linePath, type Point } from "../../lib/chart/scale.ts";

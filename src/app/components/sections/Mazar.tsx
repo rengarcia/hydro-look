@@ -12,7 +12,16 @@ import { ScorecardPanel } from "../Scorecard.tsx";
 import { nextScoreDue, series, window as windowOf } from "../../../lib/site/data.ts";
 import type { ForecastDocument } from "../../../lib/site/documents.ts";
 import { dateWithYear, longDate, num, shortDate, signed } from "../../../lib/site/format.ts";
-import { SKILL_TIE, criticalThreshold, joinDays, modelShort, scenarioOf, skillTone, thresholdSource } from "../../../lib/site/story.ts";
+import {
+  SKILL_TIE,
+  criticalThreshold,
+  isOperational,
+  joinDays,
+  modelShort,
+  scenarioOf,
+  skillTone,
+  thresholdSource,
+} from "../../../lib/site/story.ts";
 
 /** Days of history drawn behind the forecast. */
 export const FAN_HISTORY_DAYS = 180;
@@ -44,7 +53,9 @@ export function fanChartOf(forecast: ForecastDocument) {
       label:
         t.status === "unverified"
           ? `${num(t.level_masl, 0)} m · referencia de este sitio, no oficial`
-          : `${num(t.level_masl, 0)} m · mínimo oficial (${thresholdSource(t.name)})`,
+          : isOperational(t.name)
+            ? `${num(t.level_masl, 0)} m · mínimo de operación (CELEC Sur)`
+            : `${num(t.level_masl, 0)} m · mínimo de diseño (${thresholdSource(t.name)})`,
       unverified: t.status === "unverified",
     })),
     label: `Nivel de Mazar: los últimos ${FAN_HISTORY_DAYS} días y el pronóstico a ${last.horizon_days} días con su rango probable`,
@@ -108,7 +119,7 @@ export function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
   const ties = scores.filter((b) => Math.abs(b.skill_vs_persistence) < SKILL_TIE).map((b) => b.horizon_days);
   const coverage = scores.map((b) => b.coverage_p10_p90 * 100);
   const critical = criticalThreshold(forecast.days_to_threshold.thresholds);
-  const declared = forecast.days_to_threshold.thresholds.filter((t) => t.status !== "unverified");
+  const declared = forecast.days_to_threshold.thresholds.filter((t) => t !== critical && t.status !== "unverified");
   const last = forecast.forecast.at(-1)!;
 
   return (
@@ -221,12 +232,14 @@ export function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
               años registrados, en {critical.across_all_analogue_years.years_that_cross} el nivel baja de {num(critical.level_masl, 0)} m
               {declared.length > 0
                 ? declared.every((t) => t.across_all_analogue_years.years_that_cross === 0)
-                  ? `; en ninguno llega al mínimo oficial de ${num(Math.max(...declared.map((t) => t.level_masl)), 0)} m.`
-                  : `; en ${Math.max(...declared.map((t) => t.across_all_analogue_years.years_that_cross))} llega a un mínimo oficial.`
+                  ? `; en ninguno llega al mínimo de diseño de ${num(Math.max(...declared.map((t) => t.level_masl)), 0)} m.`
+                  : `; en ${Math.max(...declared.map((t) => t.across_all_analogue_years.years_that_cross))} llega a un mínimo de diseño.`
                 : "."}{" "}
               {critical.status === "unverified"
                 ? `${num(critical.level_masl, 0)} m es un nivel de referencia de este sitio, no una cifra oficial de CELEC.`
-                : ""}
+                : isOperational(critical.threshold)
+                  ? `${num(critical.level_masl, 0)} m es el mínimo de operación de CELEC Sur: por debajo, la central sale de servicio por el riesgo de que entren sedimentos a las turbinas.`
+                  : ""}
             </p>
           </div>
         ) : null}

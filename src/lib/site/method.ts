@@ -41,10 +41,11 @@ export const METHOD_NOTES: readonly MethodNote[] = [
       "coinciden. Los modelos usan uno solo, según un orden de preferencia fijo.",
   },
   {
-    title: "Los 2.115 m son una referencia de este sitio",
+    title: "El mínimo de Mazar es 2.115 m",
     body:
-      "Ninguna fuente oficial dice que ese nivel sea crítico. Es una referencia que eligió este proyecto (Mazar bajó de " +
-      "él durante la crisis de 2024), y se marca como no oficial en todas partes para que nadie la confunda con una cifra de CELEC.",
+      "CELEC Sur saca de servicio las turbinas de Mazar por debajo de 2.115 m, por el riesgo de que entren sedimentos; así lo ha " +
+      "dicho a la prensa y así operó en abril y noviembre de 2024. Su ficha técnica y sus reportes todavía dan 2.098 y 2.100 m: son " +
+      "mínimos de diseño. El sitio los muestra, pero mide a Mazar, y lo pronostica, contra 2.115 m.",
   },
 ];
 

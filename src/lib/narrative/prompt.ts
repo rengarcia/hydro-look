@@ -35,12 +35,15 @@
  * written as the headline the site sets it as (`splitLead`). With PAYLOAD_VERSION 3 the text may
  * name a restriction in `measures_in_force` — the industrial cuts open since 2026-09-22 — and
  * still may not predict cuts of its own.
+ *
+ * es-8: 2115 m is Mazar's operational minimum — the floor CELEC Sur runs the plant to — rather than
+ * a marker of this project's, and 2100 and 2098 are named as the design floors they are.
  */
 
 import { canonicalJson, type NarrativePayload } from "./payload.ts";
 import { DRIVER_DIRECTIONS, DRIVER_FACTORS } from "./drivers.ts";
 
-export const PROMPT_VERSION = "es-7";
+export const PROMPT_VERSION = "es-8";
 
 const PROVISIONAL_RAIN =
   "- Precipitation comes from one provisional sampling point, not a basin average. If you mention it, say so plainly: medida en un solo punto de la cuenca.";
@@ -98,8 +101,9 @@ export function instructionsFor(payload: NarrativePayload | null): string {
     "  suponer que el nivel se queda igual.",
     "- `days_at_slope_*` is a division (distance / current slope), not a prediction. If you use it: si siguiera bajando",
     "  al mismo ritmo, llegaría en unos N días; es una cuenta simple, no un pronóstico.",
-    "- 2115 m is this project's own marker (`status: unverified`). If you mention it: un nivel de referencia que usa este",
-    "  sitio, no una cifra oficial de CELEC.",
+    "- 2115 m is Mazar's operational minimum: below it CELEC Sur takes the plant offline for sediment risk to the turbines.",
+    "  2100 and 2098 m are design floors CELEC also publishes. If you mention them: el mínimo de operación es 2.115 m;",
+    "  2.100 y 2.098 m son mínimos de diseño.",
     verifiedRain(payload) ? CENTROID_RAIN : PROVISIONAL_RAIN,
     "- The rain total is a forecast for the coming days; the water level and the water reaching the reservoir are",
     "  measured. When they point different ways (heavy rain expected while the level keeps falling), say so in one",
