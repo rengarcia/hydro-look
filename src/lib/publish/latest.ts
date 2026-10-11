@@ -52,7 +52,7 @@ export interface ThresholdRow {
 export interface BandDeclaration {
   min_masl: number;
   max_masl: number;
-  /** How CELEC declared it, as a code: `report_endpoint` or `dashboard_chart_title`. */
+  /** How CELEC declared it, as a code: `report_endpoint`, `dashboard_chart_title` or `operational_minimum`. */
   declaration: string;
   /** The same, in the page's words. */
   declaration_es: string;
