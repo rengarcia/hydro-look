@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-11T06:33:26Z",
+  "generated_at": "2026-10-11T16:47:09Z",
   "data_date": "2026-10-10",
   "as_of": "2026-10-11",
   "disclaimer": "No es una fuente oficial. Cada número es una copia de lo que publicaron CELEC o CENACE, con la respuesta que lo produjo archivada junto a él.",
@@ -23,6 +23,17 @@
         "delta_1d_m": -1.21
       },
       "bands": [
+        {
+          "min_masl": 2115,
+          "max_masl": 2153,
+          "declaration": "operational_minimum",
+          "declaration_es": "mínimo operativo de CELEC Sur",
+          "source": "celec sur via press",
+          "observed_from": "2024-04-16",
+          "observed_to": "2026-10-09",
+          "band_pct": 30.1,
+          "metres_above_min": 11.44
+        },
         {
           "min_masl": 2100,
           "max_masl": 2153,

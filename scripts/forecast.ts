@@ -264,8 +264,9 @@ function main(): void {
     return;
   }
 
-  // Section 7's crisis check, run against the plan's critical level — the unverified marker in
-  // `thresholds.csv` — or, for a site with no marker, its highest declared floor.
+  // Section 7's crisis check, run against the critical level in `thresholds.csv` — a project
+  // marker or the operational minimum (Mazar's 2115) — or, for a site with neither, its highest
+  // declared floor.
   const critical = criticalMarker(site) ?? thresholds[0] ?? null;
   if (critical === null) {
     console.error(`${site} has no row in thresholds.csv to run the crisis check against; nothing written`);

@@ -14,7 +14,7 @@ import { PAUTE_SITES, PauteCascade } from "./PauteCascade.tsx";
 import { latest, series } from "../../lib/site/data.ts";
 import type { ForecastDocument } from "../../lib/site/documents.ts";
 import { basinLabel, capitalise, dateWithYear, declarationLabel, longDate, num, pct, shortDate, signed } from "../../lib/site/format.ts";
-import { countWord, inflowWords, monthYear, wholeYears } from "../../lib/site/story.ts";
+import { countWord, inflowWords, isOperational, monthYear, wholeYears } from "../../lib/site/story.ts";
 import type { ReservoirSnapshot } from "../../lib/publish/latest.ts";
 
 export function ReservoirHero({
@@ -106,7 +106,15 @@ export function RecordSection({ reservoir, forecast }: { reservoir: ReservoirSna
     ...(unverified
       ? [{ level_masl: unverified.level_masl, label: `${num(unverified.level_masl, 0)} m · referencia de este sitio`, unverified: true }]
       : []),
-    ...(primary ? [{ level_masl: primary.min_masl, label: `${num(primary.min_masl, 0)} m · mínimo oficial`, unverified: false }] : []),
+    ...(primary
+      ? [
+          {
+            level_masl: primary.min_masl,
+            label: `${num(primary.min_masl, 0)} m · ${isOperational(primary.declaration) ? "mínimo de operación" : "mínimo oficial"}`,
+            unverified: false,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -152,7 +160,8 @@ export function FloorsPanel({ reservoir }: { reservoir: ReservoirSnapshot }) {
       </div>
     );
   }
-  const floors = [...new Set(bands.map((b) => b.min_masl))].sort((a, b) => a - b);
+  const operational = bands.find((b) => isOperational(b.declaration)) ?? null;
+  const floors = [...new Set(bands.filter((b) => b !== operational).map((b) => b.min_masl))].sort((a, b) => a - b);
   const who = (floor: number) => {
     const declarations = bands.filter((b) => b.min_masl === floor).map((b) => declarationLabel(b));
     const counts = new Map<string, number>();
@@ -161,8 +170,9 @@ export function FloorsPanel({ reservoir }: { reservoir: ReservoirSnapshot }) {
       .map(([label, n]) => (n === 1 ? `el ${label}` : `${n === 2 ? "ambos" : `los ${n}`} ${label.replace(/^(\S+)/, "$1s")}`))
       .join(" y ");
   };
-  const title =
-    floors.length === 1
+  const title = operational
+    ? `El mínimo de operación es ${num(operational.min_masl, 0)} m`
+    : floors.length === 1
       ? "Un nivel mínimo oficial"
       : floors.length === 2
         ? "Dos niveles mínimos, los dos de CELEC"
@@ -172,7 +182,15 @@ export function FloorsPanel({ reservoir }: { reservoir: ReservoirSnapshot }) {
     <div className="panel">
       <h3 className="panel-title">{title}</h3>
       <p className="panel-lede">
-        {floors.length > 1 ? (
+        {operational ? (
+          <>
+            CELEC Sur opera {name} hasta {num(operational.min_masl, 0)} m: por debajo, saca de servicio las turbinas por el riesgo de que
+            entren sedimentos. Así lo ha dicho a la prensa y así operó en 2024.
+            {floors.length > 0
+              ? ` Su ficha técnica y sus reportes dan ${floors.map((f) => `${num(f, 0)} m según ${who(f)}`).join(" y ")}: son mínimos de diseño, que este sitio muestra pero no usa para medir el embalse.`
+              : ""}
+          </>
+        ) : floors.length > 1 ? (
           <>
             CELEC da más de un mínimo para {name}: {floors.map((f) => `${num(f, 0)} m según ${who(f)}`).join(" y ")}. Este sitio no elige
             entre ellos: muestra {floors.length === 2 ? "los dos" : "todos"}.

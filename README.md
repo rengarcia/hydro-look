@@ -345,7 +345,10 @@ resolve, to the day file that holds the record.
 `data/reference/` is committed input rather than output, and every row says how far it can be
 trusted. `thresholds.csv` is derived from `operating_bands.csv` and `mrids.csv`, so it needs no
 outside confirmation — and it keeps all three declarations rather than picking one, because they
-disagree: Mazar's floor is 2098 by the dashboard chart title and 2100 by both report endpoints.
+disagree: Mazar's design floor is 2098 by the dashboard chart title and 2100 by both report endpoints.
+Its operational minimum is 2115 — the level below which CELEC Sur takes the plant offline for
+sediment risk, as it has told the press and as it ran the plant in 2024 — so that row leads,
+and gauges, the forecast's crisis check and the narrative all read Mazar against it.
 `plants.csv` carries research from press, so every row of it is marked `unverified` with an empty
 `verified_on` until someone checks it. `rationing_episodes.csv` was checked on 2026-09-24: each row
 names its sources and says how the dates were confirmed, including against SMEC demand. `adequacy_assumptions.csv` is

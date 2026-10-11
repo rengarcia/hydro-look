@@ -83,7 +83,7 @@ function main(): void {
   const write =
     !(values["dry-run"] ?? false) && values["last-origin"] === undefined && (SITE === PUBLISHED_M4_SITE || values.out !== undefined);
   const outPath = values.out?.trim() || M4_SNAPSHOT_PATH;
-  // The plan's critical marker (`thresholds.csv`, unverified), or the site's highest declared floor.
+  // The critical level (`thresholds.csv`: a project marker or the operational minimum), or the site's highest declared floor.
   const PLAN_CRITICAL_LEVEL = (criticalMarker(SITE) ?? thresholdsFor(SITE)[0])?.levelMasl ?? Number.NaN;
 
   const series = loadSeries();

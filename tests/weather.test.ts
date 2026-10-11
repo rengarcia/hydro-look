@@ -1,8 +1,8 @@
 /**
  * §1.1's switch, decided by data rather than by an edit: the Mazar models and the narrative read
  * rain at the verified catchment centroid once its ERA5 history is adequate, and at the
- * provisional point until then. And the 2115 marker, which moved from two scripts into
- * `thresholds.csv` without changing what the forecast says about it.
+ * provisional point until then. And Mazar's 2115, which moved from two scripts into
+ * `thresholds.csv` and is now its operational minimum rather than a marker of this project's.
  */
 
 import { describe, expect, it } from "vitest";
@@ -88,21 +88,29 @@ describe("selectPrecipBasin", () => {
 });
 
 describe("thresholds.csv", () => {
-  it("carries 2115 as an unverified marker with no ceiling, so no page draws it as a band", () => {
+  it("carries 2115 as Mazar's operational minimum, a band up to the crest", () => {
     const row = readThresholdRows().find((r) => r["site"] === "mazar" && r["cota_min_masl"] === "2115");
     expect(row).toBeDefined();
-    expect(row!["cota_max_masl"]).toBe("");
-    expect(row!["declaration"]).toMatch(/unverified/);
+    expect(row!["cota_max_masl"]).toBe("2153");
+    expect(row!["declaration"]).toBe("operational minimum");
   });
 
-  it("gives the forecast the thresholds it had when 2115 was a literal", () => {
+  it("gives the forecast 2115 as its critical level, with the design floors below it", () => {
     const thresholds = thresholdsFor("mazar");
-    expect(thresholds.map((t) => [t.levelMasl, t.status])).toEqual([
-      [2115, "unverified"],
-      [2100, "published"],
-      [2098, "published"],
+    expect(thresholds.map((t) => [t.levelMasl, t.name, t.status])).toEqual([
+      [2115, "operational minimum", "published"],
+      [2100, "declared minimum (report endpoint)", "published"],
+      [2098, "declared minimum (dashboard chart title)", "published"],
     ]);
-    expect(criticalMarker("mazar")).toMatchObject({ name: "critical (plan)", levelMasl: 2115, source: "PLAN.md section 7" });
+    expect(criticalMarker("mazar")).toMatchObject({ name: "operational minimum", levelMasl: 2115, source: "celec sur via press" });
     expect(criticalMarker("amaluza")).toBeNull();
+  });
+
+  it("still prefers a project marker as the critical level when a site carries one", () => {
+    const rows = [
+      ...readThresholdRows(),
+      { site: "mazar", cota_min_masl: "2120", cota_max_masl: "", declaration: "project marker (unverified)", source: "test" },
+    ];
+    expect(criticalMarker("mazar", rows)).toMatchObject({ name: "critical (plan)", levelMasl: 2120, status: "unverified" });
   });
 });

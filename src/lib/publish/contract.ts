@@ -193,6 +193,7 @@ export function feedCode(label: string): { id: string; label_es: string } {
 export const DECLARATIONS: Record<string, { code: string; label_es: string }> = {
   "report endpoint": { code: "report_endpoint", label_es: "servicio de reportes" },
   "dashboard chart title": { code: "dashboard_chart_title", label_es: "título del gráfico del tablero" },
+  "operational minimum": { code: "operational_minimum", label_es: "mínimo operativo de CELEC Sur" },
 };
 
 export function declarationCode(declaration: string): { code: string; label_es: string } {

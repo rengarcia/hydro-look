@@ -321,15 +321,24 @@ export function scenarioOf(scenario: string): { name: string; tone: string } {
 
 /**
  * The threshold the scenarios are read against: this project's own unverified marker when the
- * forecast carries one — it is the one that is crossed first and the one PLAN.md §7 asks about —
- * and otherwise the first declared floor.
+ * forecast carries one, then the operational minimum — Mazar's 2115, the floor CELEC Sur runs the
+ * plant to and the one PLAN.md §7 asks about — and otherwise the first declared floor.
  */
-export function criticalThreshold<T extends { status: string }>(thresholds: readonly T[]): T | undefined {
-  return thresholds.find((t) => t.status === "unverified") ?? thresholds[0];
+export function criticalThreshold<T extends { status: string; threshold?: string; name?: string }>(
+  thresholds: readonly T[],
+): T | undefined {
+  return (
+    thresholds.find((t) => t.status === "unverified") ?? thresholds.find((t) => isOperational(t.threshold ?? t.name ?? "")) ?? thresholds[0]
+  );
+}
+
+/** A threshold name or band declaration that is the floor CELEC operates the plant to. */
+export function isOperational(nameOrDeclaration: string): boolean {
+  return /operational/.test(nameOrDeclaration);
 }
 
 /**
- * A declared floor's label as the charts print it. `where` names the declaration that set it —
+ * A design floor's label as the charts print it. `where` names the declaration that set it —
  * the dashboard's chart title or the report endpoints — because the two disagree and the page
  * never picks between them.
  */

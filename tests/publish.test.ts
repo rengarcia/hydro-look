@@ -120,6 +120,22 @@ describe("bandsFor", () => {
     expect(bands.map((b) => b.min_masl)).toEqual([2100, 2098]);
   });
 
+  it("puts the operational minimum ahead of longer-observed design floors", () => {
+    const operational = threshold({
+      declaration: "operational minimum",
+      cota_min_masl: "2115",
+      observed_from: "2024-04-16",
+      observed_to: "2026-10-09",
+    });
+    const bands = bandsFor([...rows, operational], "mazar", 2134);
+    expect(bands.map((b) => [b.min_masl, b.declaration])).toEqual([
+      [2115, "operational_minimum"],
+      [2100, "report_endpoint"],
+      [2098, "dashboard_chart_title"],
+    ]);
+    expect(bands[0]!.band_pct).toBeCloseTo(((2134 - 2115) / (2153 - 2115)) * 100, 6);
+  });
+
   it("recomputes the band position from the level rather than copying volutilalm", () => {
     const [primary] = bandsFor(rows, "mazar", 2126.5);
     expect(primary!.band_pct).toBeCloseTo(((2126.5 - 2100) / (2153 - 2100)) * 100, 6);

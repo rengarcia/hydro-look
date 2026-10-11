@@ -16,7 +16,7 @@
  *   `slopeOver` already made the decisions (every declared band kept, a slope that refuses to
  *   stretch over a gap); recomputing here would be a second definition that could drift.
  * - **Mazar's quantiles, thresholds and scenario crossings are copied from `forecast.json`**,
- *   including the `unverified` status of 2115. The page shows those same numbers in the fan
+ *   including each threshold's status. The page shows those same numbers in the fan
  *   chart, so the text and the chart cannot disagree about what the forecast said.
  * - **The risk tier is copied from `adequacy.json`.** It is an input the model must explain,
  *   never an output it may choose; see `risk_tier` below.
@@ -82,7 +82,7 @@ export interface PayloadBand {
 
 export interface PayloadFloorCrossing {
   floor_masl: number;
-  /** `published` for a CELEC declaration; `unverified` for this project's own 2115. */
+  /** `published` for a CELEC declaration, Mazar's operational 2115 included; `unverified` for a project marker. */
   status: "published" | "unverified";
   metres_above: number | null;
   /**
@@ -380,8 +380,8 @@ export function foldBands(reservoir: ReservoirSnapshot): PayloadBand[] {
 
 /**
  * Every distinct floor for a reservoir with the days to it at each slope. For the forecast
- * reservoir the forecast's own thresholds are added, which is how 2115 arrives — with its
- * `unverified` status, because no upstream source publishes it.
+ * reservoir the forecast's own thresholds are added, so a floor the forecast carries and the bands
+ * do not still arrives — with its `unverified` status when it is a project marker.
  */
 export function floorsFor(
   reservoir: ReservoirSnapshot,
@@ -584,7 +584,7 @@ function forecastBlock(forecast: ForecastDocument): PayloadForecast {
         s.crossesOn === null || s.days === null ? [] : [{ scenario: s.scenario, crosses_on: s.crossesOn, days: s.days }],
       ),
     })),
-    note: "Pronóstico estadístico (§7) con años análogos de caudal. 2115 es un marcador propio del proyecto, no de CELEC.",
+    note: "Pronóstico estadístico (§7) con años análogos de caudal. 2115 es el mínimo de operación de CELEC Sur; 2100 y 2098 son mínimos de diseño.",
   };
 }
 

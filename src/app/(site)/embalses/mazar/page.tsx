@@ -23,12 +23,12 @@ import { apiDocument, latest } from "../../../../lib/site/data.ts";
 import type { CrossingThreshold, ForecastDocument } from "../../../../lib/site/documents.ts";
 import { dateWithYear, longDate, num } from "../../../../lib/site/format.ts";
 import { pageMetadata } from "../../../../lib/site/meta.ts";
-import { countWord, criticalThreshold, scenarioOf } from "../../../../lib/site/story.ts";
+import { countWord, criticalThreshold, isOperational, scenarioOf } from "../../../../lib/site/story.ts";
 
 export const metadata: Metadata = pageMetadata({
   title: "Mazar",
   description:
-    "Nivel del agua, pronóstico a 90 días, escenarios de lluvia y los dos mínimos oficiales de Mazar, el embalse " +
+    "Nivel del agua, pronóstico a 90 días, escenarios de lluvia y el mínimo de operación (2.115 m) de Mazar, el embalse " +
     "que más agua guarda en el Ecuador. No es una fuente oficial.",
   path: "/embalses/mazar/",
 });
@@ -56,7 +56,7 @@ export default function MazarPage() {
         </section>
       ) : null}
       {mazar ? (
-        <section className="shell split lean-left" aria-label="Agua que llega y mínimos oficiales">
+        <section className="shell split lean-left" aria-label="Agua que llega y niveles mínimos">
           <InflowPanel reservoir={mazar} heading="El agua que llega, frente a otros años" />
           <FloorsPanel reservoir={mazar} />
         </section>
@@ -90,7 +90,9 @@ function Crossing({ forecast }: { forecast: ForecastDocument }) {
         embalse. Cada cuadro es un año; los rellenos son los años en que el nivel bajaría de {level} m.
         {threshold.status === "unverified"
           ? ` Ojo: ${level} m es un nivel de referencia de este sitio, no una cifra oficial de CELEC.`
-          : ""}
+          : isOperational(threshold.threshold)
+            ? ` ${level} m es el mínimo de operación de CELEC Sur: por debajo, la central sale de servicio.`
+            : ""}
       </p>
       {/* One square per analogue year, filled when that year crosses. A picture of a count: the
           list items are empty, so the strip is one image with the count as its name. */}

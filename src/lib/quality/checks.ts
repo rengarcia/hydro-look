@@ -231,7 +231,7 @@ export function checkReference(reference: { plants: Rows; thresholds: Rows; rati
       });
     }
     const min = Number(row["cota_min_masl"]);
-    // A marker row (Mazar's unverified 2115) has a floor and no ceiling; `Number("")` is 0.
+    // A marker row has a floor and no ceiling; `Number("")` is 0.
     const max = row["cota_max_masl"] ? Number(row["cota_max_masl"]) : Number.NaN;
     if (Number.isFinite(min) && Number.isFinite(max) && min >= max) {
       out.push({
