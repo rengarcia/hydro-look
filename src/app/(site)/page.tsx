@@ -45,7 +45,7 @@ export default function HomePage() {
         <SinceYesterday now={now} />
       </div>
       <Reading narrative={narrative} forecast={forecast} adequacy={adequacy} />
-      <Reservoirs now={now} />
+      <Reservoirs now={now} forecast={forecast} />
       <Mazar forecast={forecast} />
       <div className="shell split even">
         <Inflow mazar={mazar} />
