@@ -193,7 +193,7 @@ on (`src/lib/publish/contract.ts`):
   `status.json` as a deprecated alias until schema version 2, and each document lists its
   deprecations in a `deprecated` block.
 - **Codes are English slugs with Spanish labels beside them**: feeds carry `id` and `label_es`,
-  band declarations `report_endpoint` / `dashboard_chart_title` with `declaration_es`, adequacy tiers
+  band declarations `report_endpoint` / `dashboard_chart_title` / `operational_minimum` with `declaration_es`, adequacy tiers
   `tier_code` (`comfortable`, `watch`, `tight`, `deficit`) and `tier_label_es` beside the model's
   own Spanish word. `adequacy.json`'s `current.narrative_tier_field` names the tier the daily
   narrative is written about (the worst), and the page says so.

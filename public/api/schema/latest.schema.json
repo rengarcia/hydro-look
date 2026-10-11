@@ -139,7 +139,8 @@
                   "type": "string",
                   "enum": [
                     "report_endpoint",
-                    "dashboard_chart_title"
+                    "dashboard_chart_title",
+                    "operational_minimum"
                   ],
                   "description": "How CELEC declared the band, as a code."
                 },

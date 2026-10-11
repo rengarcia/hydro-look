@@ -22,7 +22,7 @@ import {
   type ThresholdRow,
 } from "../src/lib/publish/latest.ts";
 import type { DailySeries } from "../src/lib/features/series.ts";
-import { DOCUMENTS, SCHEMA_VERSION } from "../src/lib/publish/contract.ts";
+import { DECLARATIONS, DOCUMENTS, SCHEMA_VERSION } from "../src/lib/publish/contract.ts";
 import { unsupportedKeywords, validate, type Schema } from "../src/lib/publish/schema.ts";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -265,6 +265,16 @@ describe("the JSON Schemas", () => {
 
   it.each(DOCUMENTS)("%s.schema.json names itself where see_also says it lives", (name) => {
     expect(schemaOf(name)["$id"]).toBe((documentOf(name)["see_also"] as Record<string, string>)["schema"]);
+  });
+
+  it("lists every band declaration code the publisher can write", () => {
+    const reservoir = (schemaOf("latest")["properties"] as Record<string, Schema>)["reservoirs"]!["items"] as Schema;
+    const band = ((reservoir["properties"] as Record<string, Schema>)["bands"]!["items"] as Schema)["properties"] as Record<string, Schema>;
+    expect([...(band["declaration"]!["enum"] as string[])].sort()).toEqual(
+      Object.values(DECLARATIONS)
+        .map((d) => d.code)
+        .sort(),
+    );
   });
 
   it("fails a document that drops a required field, retypes one, or leaves an enum", () => {
