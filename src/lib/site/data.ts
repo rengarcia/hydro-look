@@ -26,6 +26,17 @@ import { dayOfYear } from "../util/stats.ts";
 import { addDays, type IsoDate } from "../util/dates.ts";
 import { dataDateOf, type LatestDocument } from "../publish/latest.ts";
 import { daysFrom, firstPendingTarget, type DayRecord } from "./days.ts";
+import {
+  BASEMAP_FILE,
+  CATCHMENTS_FILE,
+  PLANT_LOCATIONS_FILE,
+  basemapFrom,
+  catchmentsFrom,
+  plantPlaces,
+  type Basemap,
+  type Catchment,
+  type PlantPlace,
+} from "./places.ts";
 
 /**
  * `HYDRO_LOOK_SITE_ROOT` points the reads at another tree with the same `data/curated` and
@@ -68,6 +79,29 @@ export function series(): SeriesSet {
 export function referenceTable(file: string): Record<string, string>[] {
   const path = join(process.cwd(), "data", "reference", file);
   return existsSync(path) ? parseCsv(readFileSync(path, "utf8")) : [];
+}
+
+/** A JSON (or GeoJSON) file under `data/reference/`, or null when it is not there. */
+export function referenceJson<T>(file: string): T | null {
+  const path = join(process.cwd(), "data", "reference", file);
+  return existsSync(path) ? (JSON.parse(readFileSync(path, "utf8")) as T) : null;
+}
+
+export interface MapData {
+  plants: PlantPlace[];
+  catchments: Catchment[];
+  basemap: Basemap | null;
+}
+
+/** What the maps draw, read once per build: half a megabyte of GeoJSON is not worth reading per page. */
+let mapCache: MapData | null = null;
+export function mapData(): MapData {
+  mapCache ??= {
+    plants: plantPlaces(referenceTable(PLANT_LOCATIONS_FILE)),
+    catchments: catchmentsFrom(referenceJson(CATCHMENTS_FILE)),
+    basemap: basemapFrom(referenceJson(BASEMAP_FILE)),
+  };
+  return mapCache;
 }
 
 /** A document under `public/api/`, or null when it has not been generated yet. */

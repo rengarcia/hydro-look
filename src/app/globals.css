@@ -1391,6 +1391,267 @@ a.column:hover {
   opacity: 0.85;
 }
 
+/* ---- maps ---------------------------------------------------------------- */
+
+.map {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.map-figure {
+  margin: 0;
+}
+
+.map-panel {
+  padding: 16px;
+}
+
+.map-split {
+  margin-top: 8px;
+}
+
+.map-sea {
+  fill: color-mix(in srgb, var(--water) 7%, var(--surface));
+}
+
+.map-land {
+  fill: var(--surface);
+}
+
+.map-land-other {
+  fill: var(--sunk);
+  opacity: 0.6;
+}
+
+.map-relief {
+  fill: var(--ink);
+  fill-opacity: 0.055;
+}
+
+.map-rivers path {
+  fill: none;
+  stroke: var(--water-2);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.map-border {
+  fill: none;
+  stroke: var(--ink-2);
+  stroke-width: 0.8;
+}
+
+.map-catchments path {
+  fill: var(--water);
+  fill-opacity: 0.1;
+  stroke: var(--water);
+  stroke-opacity: 0.5;
+  stroke-width: 0.7;
+}
+
+.map-catchments-other path {
+  fill: none;
+  stroke: var(--ink-2);
+  stroke-opacity: 0.55;
+  stroke-dasharray: 3 3;
+}
+
+.map-catchment-own {
+  fill: var(--water);
+  fill-opacity: 0.12;
+  stroke: var(--water);
+  stroke-width: 1.6;
+}
+
+.map-plant {
+  fill: var(--water);
+  stroke: var(--surface);
+  stroke-width: 1.2;
+}
+
+.map-plant-other {
+  fill: var(--surface);
+  stroke: var(--ink-2);
+}
+
+a:hover .map-plant,
+a:focus-visible .map-plant {
+  fill: var(--ink);
+}
+
+.map-cities rect {
+  fill: var(--surface);
+  stroke: var(--ink);
+  stroke-width: 1.2;
+}
+
+.map-labels text,
+.map-cities text,
+.map-scale text {
+  font-family: var(--sans);
+  font-size: 11.5px;
+  fill: var(--ink);
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+.map-labels .map-label-other {
+  fill: var(--muted);
+}
+
+.map-labels .map-label-own {
+  font-weight: 600;
+}
+
+.map-region text {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 15px;
+  fill: var(--muted);
+  stroke: none;
+}
+
+.map-scale line {
+  stroke: var(--ink);
+  stroke-width: 1.2;
+}
+
+.map-locator {
+  width: 72px;
+  flex: none;
+}
+
+.map-locator-land {
+  stroke: var(--ink-2);
+  stroke-width: 1;
+}
+
+.map-locator-frame {
+  fill: var(--water);
+  fill-opacity: 0.25;
+  stroke: var(--water);
+  stroke-width: 1.5;
+}
+
+.where-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.map-legend {
+  margin: 20px 0 8px;
+  min-width: 0;
+}
+
+.map-legend > div > span {
+  flex: none;
+}
+
+.key-relief {
+  width: 22px;
+  height: 12px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--ink) 6%, transparent), color-mix(in srgb, var(--ink) 22%, transparent));
+}
+
+.key-river {
+  width: 22px;
+  height: 0;
+  border-top: 2px solid var(--water-2);
+}
+
+.key-catchment {
+  width: 22px;
+  height: 12px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--water) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--water) 50%, transparent);
+}
+
+.key-diamond {
+  width: 11px;
+  height: 11px;
+  margin: 0 5.5px;
+  background: var(--water);
+  transform: rotate(45deg);
+}
+
+.key-circle {
+  width: 13px;
+  height: 13px;
+  margin: 0 4.5px;
+  border-radius: 50%;
+  background: var(--water);
+}
+
+.key-circle.key-hollow {
+  background: var(--surface);
+  border: 1.2px solid var(--ink-2);
+}
+
+.cascade-bed {
+  fill: none;
+  stroke: var(--ink-2);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.cascade-water {
+  fill: var(--water);
+  fill-opacity: 0.55;
+}
+
+.cascade-dam {
+  fill: var(--ink-2);
+}
+
+.cascade-band {
+  stroke: var(--water);
+  stroke-dasharray: 3 3;
+}
+
+.cascade-note {
+  font-family: var(--mono);
+  font-size: 11px;
+  fill: var(--muted);
+}
+
+.cascade-name {
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  fill: var(--ink);
+}
+
+.cascade-level {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  fill: var(--ink);
+}
+
+.cascade-tunnel {
+  fill: none;
+  stroke: var(--water-2);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+
+.cascade-arrowhead {
+  fill: var(--water-2);
+}
+
+.cascade-chamber {
+  fill: none;
+  stroke: var(--ink-2);
+  stroke-width: 1.2;
+}
+
 /* ---- Mazar --------------------------------------------------------------- */
 
 .split {
@@ -3180,5 +3441,30 @@ a.column:hover {
   }
   .brand-word {
     font-size: 19px;
+  }
+}
+
+/* After the map and profile rules above, so these win at phone width. */
+@media (max-width: 720px) {
+  .map-labels text,
+  .map-cities text,
+  .map-scale text {
+    font-size: 22px;
+  }
+  .map-region text {
+    font-size: 26px;
+  }
+  /* The profile's notes do not fit at a size a phone can read; the caption says them in words. */
+  .cascade-note {
+    display: none;
+  }
+  .cascade .axis {
+    font-size: 18px;
+  }
+  .cascade-level {
+    font-size: 24px;
+  }
+  .cascade-name {
+    font-size: 30px;
   }
 }
