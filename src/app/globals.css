@@ -1086,6 +1086,12 @@ svg.chart {
   background-image: repeating-linear-gradient(135deg, transparent 0 4px, var(--line-2) 4px 5px);
 }
 
+.key-spill {
+  width: 22px;
+  height: 0;
+  border-top: 2px dashed var(--water-2);
+}
+
 .key-shape {
   width: 22px;
   height: 12px;
@@ -1328,8 +1334,13 @@ a.column:hover {
   vector-effect: non-scaling-stroke;
 }
 
-/* The narrow end of the vessel leaves the corners empty: the scale labels sit on the page. */
+/* The vessel's walls cross the corner the scale label sits in: it gets the page behind it. */
 .tank.shaped .tank-bottom {
+  left: 0;
+  bottom: 0;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--bg);
   color: var(--muted);
 }
 
@@ -1339,6 +1350,37 @@ a.column:hover {
   transform: translateX(-50%);
   text-align: center;
   white-space: nowrap;
+}
+
+/* Sopladora's chamber: the level above which it spills, ruled in water rather than deficit. */
+.tank-spill,
+.bar-spill {
+  position: absolute;
+  border: 0 dashed var(--water-2);
+}
+
+.tank-spill {
+  left: 0;
+  right: 0;
+  height: 0;
+  border-top-width: 2px;
+}
+
+.bar-spill {
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left-width: 2px;
+}
+
+.column-note {
+  color: var(--ink-2);
+}
+
+.column-row .note {
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--ink-2);
 }
 
 .tank-pct-unit {

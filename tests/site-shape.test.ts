@@ -7,10 +7,12 @@
 import { describe, expect, it } from "vitest";
 import {
   areaM2,
+  areaVolumeCurve,
   horizontalPath,
   isAreaCurve,
   outline,
   storedHm3,
+  twoPointCurve,
   verticalPath,
   volumeShare,
   widthAt,
@@ -118,5 +120,38 @@ describe("the paths", () => {
 
   it("stands a vertical gauge on its centre line, crest at the top", () => {
     expect(verticalPath(points, 100, 200)).toBe("M25 200 L0 0 L100 0 L75 200 Z");
+  });
+});
+
+describe("curves from design figures", () => {
+  it("passes through both published volumes, measured from the riverbed", () => {
+    // Amaluza: 120 hm³ below 1991 m, 20 below the 1935 m minimum, riverbed at 1994 − 170.
+    const curve = twoPointCurve(1824, { masl: 1991, hm3: 120 }, { masl: 1935, hm3: 20 })!;
+    expect(storedHm3(curve, 1824, 1991)).toBeCloseTo(120, 9);
+    expect(storedHm3(curve, 1824, 1935)).toBeCloseTo(20, 9);
+    expect(curve.exponent).toBeCloseTo(3.39, 2);
+  });
+
+  it("recovers a prism and a wedge exactly", () => {
+    expect(twoPointCurve(0, { masl: 20, hm3: 2 }, { masl: 10, hm3: 1 })!.exponent).toBeCloseTo(0, 12);
+    expect(twoPointCurve(0, { masl: 20, hm3: 4 }, { masl: 10, hm3: 1 })!.exponent).toBeCloseTo(1, 12);
+  });
+
+  it("passes through a published area and volume at one level", () => {
+    // Manduriacu: 70.5 ha and 10.3 hm³ at 492.5 m, riverbed at 454.
+    const curve = areaVolumeCurve(454, { masl: 492.5, hm3: 10.3, km2: 0.705 })!;
+    expect(areaM2(curve, 492.5)).toBeCloseTo(705_000, 3);
+    expect(storedHm3(curve, 454, 492.5)).toBeCloseTo(10.3, 9);
+    expect(curve.exponent).toBeCloseTo(1.64, 2);
+  });
+
+  it("refuses figures no valley could produce", () => {
+    expect(twoPointCurve(0, { masl: 10, hm3: 2 }, { masl: 20, hm3: 1 })).toBeNull();
+    expect(twoPointCurve(0, { masl: 20, hm3: 1 }, { masl: 10, hm3: 2 })).toBeNull();
+    expect(twoPointCurve(15, { masl: 20, hm3: 2 }, { masl: 10, hm3: 1 })).toBeNull();
+    // An area too small for the volume would need a reservoir wider at the bottom than the top.
+    expect(areaVolumeCurve(0, { masl: 10, hm3: 10, km2: 0.5 })).toBeNull();
+    // A volume typed a thousand times too small makes an implausibly steep valley, not a curve.
+    expect(areaVolumeCurve(454, { masl: 492.5, hm3: 0.0103, km2: 0.705 })).toBeNull();
   });
 });

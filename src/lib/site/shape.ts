@@ -8,13 +8,21 @@
  * drawn is `∫ A(h) dh` — the stored volume — and the eye reads the right quantity without a
  * caption.
  *
- * The width comes from an area-elevation curve, and only one exists: Mazar's, fitted by
+ * The width comes from an area-elevation curve, from one of two places. Mazar's is fitted by
  * `features/hydrology.ts` from this repository's own readings and published in `forecast.json`
- * as `reservoir.area_elevation`. The same fit was tried on the other seven and does not close —
- * level errors of 4–5 m on bands 14–33 m tall, and 82 hm³ for Coca Codo Sinclair's 0.8 hm³
- * compensation pond — so they get no curve and stay straight. Inventing a valley shape for them
- * would be drawing a claim no data supports. Every function here is pure; the components only
- * place what these return.
+ * as `reservoir.area_elevation`. That fit does not close on the others — level errors of 4–5 m on
+ * bands 14–33 m tall, and 82 hm³ for Coca Codo Sinclair's 0.8 hm³ compensation pond, because a
+ * pond holding an hour of flow turns a 1% flow error into metres of level — so their curves come
+ * from CELEC's design figures instead (`data/reference/reservoir_geometry.csv`): two published
+ * volumes at two levels, or a volume and an area at one, with the riverbed as the curve's zero.
+ * That fixes `A = a (h − riverbed)^b` exactly, on CELEC's own level datum.
+ *
+ * A design curve is wrong in absolute hm³ wherever silt has taken water, but the gauge mostly
+ * shows a *share*, and a share depends only on the exponent: scale errors cancel. Over a band
+ * that is a thin slice near the top of a deep valley, any plausible exponent gives the same share
+ * within a few points, which is what makes a two-point curve honest enough to draw. Where nothing
+ * fixes a shape — a pond with only a volume, a chamber with none — nothing is drawn. Every
+ * function here is pure; the components only place what these return.
  */
 
 /** `A(level) = coefficient * (level - datum_m)^exponent`, in m². The form `forecast.json` publishes. */
@@ -22,6 +30,45 @@ export interface AreaCurve {
   coefficient: number;
   exponent: number;
   datum_m: number;
+}
+
+/** The largest exponent a two-point solution may return before it is treated as a typo, not a valley. */
+const MAX_EXPONENT = 6;
+
+function curveOrNull(curve: AreaCurve): AreaCurve | null {
+  return isAreaCurve(curve) && curve.exponent >= 0 && curve.exponent <= MAX_EXPONENT ? curve : null;
+}
+
+/**
+ * The power law through two published volumes: `upperHm3` held below `upperMasl` and `lowerHm3`
+ * below `lowerMasl`, both measured from the riverbed, where the curve's area and volume are zero.
+ * `V = a/(b+1) (h − riverbed)^(b+1)`, so the ratio of the two volumes fixes `b` and either one
+ * then fixes `a`. Null when the points cannot belong to a valley (volumes or levels out of order).
+ */
+export function twoPointCurve(
+  riverbedMasl: number,
+  upper: { masl: number; hm3: number },
+  lower: { masl: number; hm3: number },
+): AreaCurve | null {
+  const hu = upper.masl - riverbedMasl;
+  const hl = lower.masl - riverbedMasl;
+  if (!(hu > hl && hl > 0 && upper.hm3 > lower.hm3 && lower.hm3 > 0)) return null;
+  const power = Math.log(upper.hm3 / lower.hm3) / Math.log(hu / hl);
+  const coefficient = (power * upper.hm3 * 1e6) / Math.pow(hu, power);
+  return curveOrNull({ coefficient, exponent: power - 1, datum_m: riverbedMasl });
+}
+
+/**
+ * The power law through a published volume and surface area at one level. A valley-shaped
+ * reservoir holds `A·depth/(b+1)`, so the two together fix `b`: a prism (`b = 0`) holds
+ * `A·depth`, a cone-like valley much less.
+ */
+export function areaVolumeCurve(riverbedMasl: number, at: { masl: number; hm3: number; km2: number }): AreaCurve | null {
+  const depth = at.masl - riverbedMasl;
+  if (!(depth > 0 && at.hm3 > 0 && at.km2 > 0)) return null;
+  const power = (at.km2 * 1e6 * depth) / (at.hm3 * 1e6);
+  const exponent = power - 1;
+  return curveOrNull({ coefficient: (at.km2 * 1e6) / Math.pow(depth, exponent), exponent, datum_m: riverbedMasl });
 }
 
 /** One point of a gauge outline: `t` 0–1 along the axis from its minimum, `w` the width relative to the axis maximum. */

@@ -61,6 +61,15 @@ export function series(): SeriesSet {
   return seriesCache;
 }
 
+/**
+ * A table under `data/reference/`. That is committed input rather than output, so it comes from
+ * the repository even when `HYDRO_LOOK_SITE_ROOT` points the rest of the reads at a fixture.
+ */
+export function referenceTable(file: string): Record<string, string>[] {
+  const path = join(process.cwd(), "data", "reference", file);
+  return existsSync(path) ? parseCsv(readFileSync(path, "utf8")) : [];
+}
+
 /** A document under `public/api/`, or null when it has not been generated yet. */
 export function apiDocument<T>(name: string): T | null {
   const path = join(ROOT, "public", "api", name);
