@@ -1,6 +1,6 @@
 # Energy adequacy — what the model is, and what it was measured at
 
-Generated 2026-10-11T20:39:53Z from 3743 usable national-balance days, 2016-05-01 → 2026-10-10. Origin 2026-10-10.
+Generated 2026-10-12T00:03:54Z from 3743 usable national-balance days, 2016-05-01 → 2026-10-10. Origin 2026-10-10.
 
 This is section 7's target 3: expected deficit in GWh per day over the horizon, and the risk
 tiers read off it. It is the number the site's adequacy tile shows, and the `risk_tier` the
@@ -358,9 +358,9 @@ Imports from Colombia as a least-squares function of `colombia_useful_storage_fr
 | export model + ONI | 2024 Colombian cut | 7 d | 91 | 3.32 | 3.95 |
 | export model + ONI | 2024 Colombian cut | 14 d | 91 | 4.06 | 3.75 |
 | export model + ONI | 2024 Colombian cut | 30 d | 91 | 5.75 | 3.44 |
-| export model + ONI | 2026-09 stop | 7 d | 30 | 5.65 | 3.50 |
+| export model + ONI | 2026-09 stop | 7 d | 30 | 5.65 | 3.51 |
 | export model + ONI | 2026-09 stop | 14 d | 26 | 6.76 | 3.82 |
-| export model + ONI | 2026-09 stop | 30 d | 10 | 10.36 | 4.64 |
+| export model + ONI | 2026-09 stop | 30 d | 10 | 10.36 | 4.65 |
 
 **Negative.** The model (without ONI) is better in 2024 Colombian cut at 14 d, 2024 Colombian cut at 30 d, 2026-09 stop at 7 d, 2026-09 stop at 14 d, 2026-09 stop at 30 d and worse in 2024 Colombian cut at 7 d; with ONI, worse in 2024 Colombian cut at 7 d. Where it wins it is because the rule keeps assuming the demonstrated ceiling until a full regime window of near-zero imports has passed; where it loses, the rule's trailing read of what is arriving is the better nowcast. Neither wins everywhere, so the ceilings and the cutoff rule stay, and the sensitivity table is what a reader should use to weigh the import assumption.
 
