@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-12T23:43:10Z",
+  "generated_at": "2026-10-13T01:49:06Z",
   "data_date": "2026-10-11",
   "as_of": "2026-10-12",
   "ok": true,
@@ -117,7 +117,7 @@
       "rows": 7
     },
     "weather_daily": {
-      "rows": 110144
+      "rows": 110272
     },
     "enso_monthly": {
       "rows": 920
