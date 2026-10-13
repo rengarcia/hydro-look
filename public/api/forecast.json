@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-12T23:18:07Z",
+  "generated_at": "2026-10-13T02:17:58Z",
   "data_date": "2026-10-11",
   "run_id": "2026-10-11-mazar-3-ea679a9b",
   "origin_date": "2026-10-11",
@@ -98,9 +98,9 @@
     {
       "horizon_days": 7,
       "target_date": "2026-10-18",
-      "p10": 2118.04,
-      "p50": 2121.14,
-      "p90": 2123.74,
+      "p10": 2118.41,
+      "p50": 2121.52,
+      "p90": 2124.12,
       "ensemble": {
         "p10": 2120.39,
         "p90": 2132.98,
@@ -144,8 +144,8 @@
         ]
       },
       "own_quantiles": {
-        "p10": 2120.18,
-        "p90": 2124.35,
+        "p10": 2120.27,
+        "p90": 2125.08,
         "note": "The model's own quantile regressions before widening; they cover too little to publish."
       },
       "m3_anchor_p50": null,
@@ -587,7 +587,7 @@
   "precipitation_basin": {
     "basin": "paute_mazar",
     "verified_centroid": true,
-    "era5_days": 13426,
+    "era5_days": 13428,
     "share_since_1990": 1,
     "fallback_reason": null
   },
@@ -617,11 +617,11 @@
               "coverage_p10_p90": 0.8404
             },
             "target_date": "2026-10-18",
-            "p10": 52.5,
-            "p50": 114.4,
-            "p90": 161,
-            "ensemble_years": 12,
-            "rain_conditioned": false,
+            "p10": 61.4,
+            "p50": 123.4,
+            "p90": 169.9,
+            "ensemble_years": 6,
+            "rain_conditioned": true,
             "with_river_forecast": false
           },
           {
@@ -638,11 +638,11 @@
               "coverage_p10_p90": 0.8356
             },
             "target_date": "2026-10-25",
-            "p10": 53.6,
-            "p50": 111.8,
-            "p90": 153.2,
-            "ensemble_years": 12,
-            "rain_conditioned": false,
+            "p10": 69.5,
+            "p50": 127.7,
+            "p90": 169.2,
+            "ensemble_years": 6,
+            "rain_conditioned": true,
             "with_river_forecast": false
           }
         ]
@@ -669,11 +669,11 @@
               "coverage_p10_p90": 0.7778
             },
             "target_date": "2026-10-18",
-            "p10": 108.2,
-            "p50": 211.2,
-            "p90": 366.1,
-            "ensemble_years": 10,
-            "rain_conditioned": false,
+            "p10": 116.5,
+            "p50": 219.5,
+            "p90": 374.4,
+            "ensemble_years": 5,
+            "rain_conditioned": true,
             "with_river_forecast": false
           },
           {
@@ -690,11 +690,11 @@
               "coverage_p10_p90": 0.7743
             },
             "target_date": "2026-10-25",
-            "p10": 133.7,
-            "p50": 238.7,
-            "p90": 371.5,
-            "ensemble_years": 10,
-            "rain_conditioned": false,
+            "p10": 139.6,
+            "p50": 244.6,
+            "p90": 377.4,
+            "ensemble_years": 5,
+            "rain_conditioned": true,
             "with_river_forecast": false
           }
         ]
@@ -721,11 +721,11 @@
               "coverage_p10_p90": 0.8179
             },
             "target_date": "2026-10-18",
-            "p10": 23.3,
-            "p50": 67.3,
-            "p90": 126.2,
-            "ensemble_years": 10,
-            "rain_conditioned": false,
+            "p10": 25.5,
+            "p50": 69.5,
+            "p90": 128.5,
+            "ensemble_years": 5,
+            "rain_conditioned": true,
             "with_river_forecast": true
           },
           {
@@ -742,11 +742,11 @@
               "coverage_p10_p90": 0.7946
             },
             "target_date": "2026-10-25",
-            "p10": 29.1,
-            "p50": 81.6,
-            "p90": 129,
-            "ensemble_years": 9,
-            "rain_conditioned": false,
+            "p10": 26.8,
+            "p50": 79.3,
+            "p90": 126.7,
+            "ensemble_years": 5,
+            "rain_conditioned": true,
             "with_river_forecast": false
           }
         ]
@@ -773,11 +773,11 @@
               "coverage_p10_p90": 0.832
             },
             "target_date": "2026-10-18",
-            "p10": 80.9,
-            "p50": 123.2,
-            "p90": 212,
-            "ensemble_years": 8,
-            "rain_conditioned": false,
+            "p10": 77.9,
+            "p50": 120.3,
+            "p90": 209.1,
+            "ensemble_years": 4,
+            "rain_conditioned": true,
             "with_river_forecast": true
           },
           {
@@ -794,11 +794,11 @@
               "coverage_p10_p90": 0.8079
             },
             "target_date": "2026-10-25",
-            "p10": 91.8,
-            "p50": 137.1,
-            "p90": 213.3,
-            "ensemble_years": 8,
-            "rain_conditioned": false,
+            "p10": 97.6,
+            "p50": 142.9,
+            "p90": 219.1,
+            "ensemble_years": 4,
+            "rain_conditioned": true,
             "with_river_forecast": false
           }
         ]
@@ -827,9 +827,9 @@
             "target_date": "2026-10-18",
             "p10": 0,
             "p50": 15.2,
-            "p90": 66.9,
-            "ensemble_years": 7,
-            "rain_conditioned": false,
+            "p90": 66.8,
+            "ensemble_years": 4,
+            "rain_conditioned": true,
             "with_river_forecast": true
           },
           {
@@ -847,10 +847,10 @@
             },
             "target_date": "2026-10-25",
             "p10": 0,
-            "p50": 18.6,
-            "p90": 56,
-            "ensemble_years": 7,
-            "rain_conditioned": false,
+            "p50": 21.9,
+            "p90": 59.3,
+            "ensemble_years": 4,
+            "rain_conditioned": true,
             "with_river_forecast": false
           }
         ]
@@ -877,11 +877,11 @@
               "coverage_p10_p90": 0.7668
             },
             "target_date": "2026-10-18",
-            "p10": 11.6,
-            "p50": 30.7,
-            "p90": 50.1,
-            "ensemble_years": 8,
-            "rain_conditioned": false,
+            "p10": 12.5,
+            "p50": 31.6,
+            "p90": 51,
+            "ensemble_years": 4,
+            "rain_conditioned": true,
             "with_river_forecast": false
           },
           {
@@ -898,11 +898,11 @@
               "coverage_p10_p90": 0.7817
             },
             "target_date": "2026-10-25",
-            "p10": 14.7,
-            "p50": 32.7,
-            "p90": 46.9,
-            "ensemble_years": 8,
-            "rain_conditioned": false,
+            "p10": 17.4,
+            "p50": 35.5,
+            "p90": 49.7,
+            "ensemble_years": 4,
+            "rain_conditioned": true,
             "with_river_forecast": false
           }
         ]
@@ -910,7 +910,7 @@
     ]
   },
   "scorecard": {
-    "generated_at": "2026-10-12T23:18:20Z",
+    "generated_at": "2026-10-13T02:18:14Z",
     "observed_through": "2026-10-11",
     "target": "level on the target day, m",
     "units": "m",
