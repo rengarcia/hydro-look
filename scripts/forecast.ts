@@ -47,7 +47,7 @@ import {
   selectPrecipBasin,
 } from "../src/lib/features/weather.ts";
 import { climatologicalDrift, persistence, seasonalAnomalyDecay } from "../src/lib/models/baselines.ts";
-import { createFitCache, DEFAULT_WATER_BALANCE, waterBalanceModel } from "../src/lib/models/water-balance.ts";
+import { createFitCache, DEFAULT_WATER_BALANCE, waterBalanceModel, type WaterBalanceOptions } from "../src/lib/models/water-balance.ts";
 import {
   crisisEpisodes,
   crisisLeadTime,
@@ -64,7 +64,7 @@ import {
   type ExperimentSection,
   type PublishedSwitch,
 } from "../src/lib/models/report.ts";
-import { readM4Snapshot } from "../src/lib/models/m4-scoring.ts";
+import { pairedAgainst, readM4Snapshot } from "../src/lib/models/m4-scoring.ts";
 import {
   fitM4Live,
   m4HorizonSwitch,
@@ -199,6 +199,9 @@ function main(): void {
 
     experiments.push(rainExperiment(inputs, options, shipped, cache, precip));
     experiments.push(sharedMembersExperiment(inputs, options, shipped, cache));
+    experiments.push(
+      inflowStateExperiment(inputs, options, shipped, cache, criticalMarker(site)?.levelMasl ?? thresholdsFor(site)[0]?.levelMasl ?? null),
+    );
   }
 
   // Seven days: the M4 design the backtest earned, if its committed snapshot still covers the
@@ -510,6 +513,137 @@ function sharedMembersExperiment(
         : `**Negative: not better at ${verdict.worseAt.join(", ")} d**, and the ladder's rule asks for every horizon. The shipped ` +
           "model keeps every year a horizon can use; dropping the years whose record stops short of ninety days takes members " +
           "from the short horizons, and whatever it gains elsewhere is not enough to pay for that everywhere.",
+    ],
+  };
+}
+
+/**
+ * Adopted 2026-10-13: each analogue year starts from today's river (`scaleToState`). The
+ * comparison reruns daily against the same model with the years replayed as they were, with the
+ * half-lives either side of the shipped one, so the choice is seen to rest on a plateau and not
+ * on a peak, and a reversal is seen the day it happens.
+ */
+function inflowStateExperiment(
+  inputs: Inputs,
+  options: Options,
+  shipped: ReturnType<typeof waterBalanceModel>,
+  cache: ReturnType<typeof createFitCache>,
+  criticalM: number | null,
+): ExperimentSection {
+  const state = DEFAULT_WATER_BALANCE.inflowState;
+  const replayedId = `${shipped.id}-replayed`;
+  const variant = (id: string, label: string, o: WaterBalanceOptions) => ({ ...waterBalanceModel(o, undefined, cache), id, label });
+  const replayedOptions = { ...DEFAULT_WATER_BALANCE, inflowState: null };
+  const replayed = variant(replayedId, `${shipped.label}, each year replayed as it was`, replayedOptions);
+  const sensitivity = state
+    ? [10, 20, 30]
+        .filter((h) => h !== state.halfLifeDays)
+        .map((h) =>
+          variant(`${shipped.id}-half-life-${h}`, `${shipped.label}, half-life ${h} d`, {
+            ...DEFAULT_WATER_BALANCE,
+            inflowState: { ...state, halfLifeDays: h },
+          }),
+        )
+    : [];
+  const run = runBacktest(inputs, [replayed, shipped, ...sensitivity], options);
+  const verdict = comparison(run.scores, replayedId, shipped.id);
+  const paired = pairedAgainst(run.predictions, shipped.id, replayedId, options.horizonDays);
+  const signed = (x: number) => `${x < 0 ? "−" : "+"}${Math.abs(x).toFixed(2)}`;
+  // Why each horizon in `worseAt` fails the rule: its MAE, its band, or both.
+  const shortfalls = () =>
+    verdict.worseAt.map((h) => {
+      const at = (id: string) => run.scores.find((sc) => sc.modelId === id)?.horizons.find((x) => x.horizonDays === h);
+      const [mine, ref] = [at(shipped.id), at(replayedId)];
+      const pair = paired.find((p) => p.horizonDays === h);
+      const reasons: string[] = [];
+      if (mine && ref && !(mine.maeM < ref.maeM)) {
+        reasons.push(
+          `higher MAE${pair ? ` (paired ${signed(pair.maeDifferenceM)} m, [${signed(pair.low90)}, ${signed(pair.high90)}])` : ""}`,
+        );
+      }
+      if (
+        mine?.coverageP10P90 != null &&
+        ref?.coverageP10P90 != null &&
+        Math.abs(mine.coverageP10P90 - 0.8) > Math.abs(ref.coverageP10P90 - 0.8)
+      ) {
+        reasons.push(
+          `band further from 80% (${(mine.coverageP10P90 * 100).toFixed(1)}% against ${(ref.coverageP10P90 * 100).toFixed(1)}%)`,
+        );
+      }
+      return `${reasons.join(" and ")} at ${h} d`;
+    });
+
+  const crisis =
+    criticalM === null
+      ? []
+      : [replayed.id, shipped.id].map((id, i) => {
+          const calls = crossingCallsByOrigin(
+            inputs.levels,
+            inputs.inflow,
+            inputs.production,
+            monthlyOrigins(inputs.levels, DEFAULT_BACKTEST.firstOrigin, DEFAULT_BACKTEST.lastOrigin),
+            criticalM,
+            options.crestM,
+            i === 0 ? replayedOptions : DEFAULT_WATER_BALANCE,
+            cache,
+          );
+          const lead = (episode: ReturnType<typeof crisisEpisodes>[number], q: "p50" | "p10") =>
+            crisisLeadTime(
+              episode,
+              calls.map((c) => ({ origin: c.origin, predictedCrossing: c[q] })),
+            ).leadTimeDays;
+          const episodes = crisisEpisodes(inputs.levels, criticalM).map(
+            (e) =>
+              `${e.crossedOn}: P50 ${lead(e, "p50") === null ? "never" : `${lead(e, "p50")} d`}, P10 ${lead(e, "p10") === null ? "never" : `${lead(e, "p10")} d`}`,
+          );
+          return `| ${id} | ${episodes.join("; ")} | ${falseAlarms(calls, inputs.levels, criticalM).length} of ${calls.length} |`;
+        });
+
+  console.log(
+    `inflow-state experiment: ${verdict.better ? "better than replayed years at every horizon" : `not better than replayed years at ${verdict.worseAt.join(", ")} d`}`,
+  );
+  return {
+    heading: "Does starting each analogue year from today's river help? (adopted 2026-10-13)",
+    body: [
+      "Replayed as it was, an analogue year brings its own starting flow as well as its weather. On 2026-10-11, with the Paute " +
+        "at about 25 m³/s for a week and Mazar falling more than a metre a day, the median member brought 70–80 m³/s over the " +
+        "next fortnight, because most Octobers began wetter, and M3 forecast a refill in the middle of a drawdown. The years that " +
+        "began as dry — 2010, 2018, 2023, 2024 — brought 23–26. The shipped model multiplies each member by today's trailing " +
+        `${state?.days ?? "—"}-day inflow over that year's, clamped to ${state ? `${state.ratioBounds[0]}–${state.ratioBounds[1]}` : "—"} ` +
+        `(the inflow forecast's window and clamp), and lets the multiplier fade with a ${state?.halfLifeDays ?? "—"}-day half-life. ` +
+        "Same origins:",
+      scoreTable(run.scores, options.horizonDays, (h) => h.maeM.toFixed(3)),
+      "MAE in metres. Bias (actual − forecast; negative means the forecast was too high):",
+      scoreTable(run.scores, options.horizonDays, (h) => h.biasM.toFixed(2)),
+      "Coverage of the calibrated band:",
+      scoreTable(run.scores, options.horizonDays, (h) => (h.coverageP10P90 === null ? "—" : `${(h.coverageP10P90 * 100).toFixed(1)}%`)),
+      `Paired, ${shipped.id} against ${replayedId}: mean of |error| − |error of the replayed years|, metres, with a 90% ` +
+        "block-bootstrap interval and the share of origins where the shipped model was closer:",
+      [
+        `| | ${options.horizonDays.map((h) => `h=${h}`).join(" | ")} |`,
+        `|---|${options.horizonDays.map(() => "---").join("|")}|`,
+        `| ${shipped.id} | ${paired
+          .map((p) => `${signed(p.maeDifferenceM)} [${signed(p.low90)}, ${signed(p.high90)}], ${(p.winShare * 100).toFixed(1)}%`)
+          .join(" | ")} |`,
+      ].join("\n"),
+      ...(criticalM === null
+        ? []
+        : [
+            `The crisis check against ${criticalM} m, on the daily 365-day simulation, for both:`,
+            ["| model | lead time to each crossing | false alarms at P50 |", "|---|---|---|", ...crisis].join("\n"),
+          ]),
+      verdict.better
+        ? "**Better than replaying the years at every horizon**, with no band further from 80%: the ladder's rule is met outright."
+        : `**Adopted, and it does not meet the ladder's rule outright: ${shortfalls().join("; ")}.** ` +
+          "Read the paired row before the MAE row: the adoption (2026-10-13) rested on a thirty-day gain whose interval lay " +
+          "below zero against a ninety-day loss whose interval straddled it, a band a few origins in about ninety short of the " +
+          "replayed years' at thirty days, the fourteen- and thirty-day optimism halved, and a P50 that called the October 2024 " +
+          "crossing where the replayed years' never did. Setting `DEFAULT_WATER_BALANCE.inflowState` to null restores the " +
+          "replayed years everywhere, M4's M3 features included.",
+      "Also tried on 2026-10-13, and recorded as a negative rather than kept: a release rule that adds each season's median " +
+        "departure from the level-only rule (±30, ±45 or ±60 days of the calendar). Mazar's operation is seasonal, but the level " +
+        "already says most of it: the seasonal rule tied at every horizon to thirty days and made the long-horizon bias worse " +
+        "(−4.4 m at ninety days against −3.6).",
     ],
   };
 }
