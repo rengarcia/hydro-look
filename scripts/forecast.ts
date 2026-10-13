@@ -549,6 +549,29 @@ function inflowStateExperiment(
   const verdict = comparison(run.scores, replayedId, shipped.id);
   const paired = pairedAgainst(run.predictions, shipped.id, replayedId, options.horizonDays);
   const signed = (x: number) => `${x < 0 ? "−" : "+"}${Math.abs(x).toFixed(2)}`;
+  // Why each horizon in `worseAt` fails the rule: its MAE, its band, or both.
+  const shortfalls = () =>
+    verdict.worseAt.map((h) => {
+      const at = (id: string) => run.scores.find((sc) => sc.modelId === id)?.horizons.find((x) => x.horizonDays === h);
+      const [mine, ref] = [at(shipped.id), at(replayedId)];
+      const pair = paired.find((p) => p.horizonDays === h);
+      const reasons: string[] = [];
+      if (mine && ref && !(mine.maeM < ref.maeM)) {
+        reasons.push(
+          `higher MAE${pair ? ` (paired ${signed(pair.maeDifferenceM)} m, [${signed(pair.low90)}, ${signed(pair.high90)}])` : ""}`,
+        );
+      }
+      if (
+        mine?.coverageP10P90 != null &&
+        ref?.coverageP10P90 != null &&
+        Math.abs(mine.coverageP10P90 - 0.8) > Math.abs(ref.coverageP10P90 - 0.8)
+      ) {
+        reasons.push(
+          `band further from 80% (${(mine.coverageP10P90 * 100).toFixed(1)}% against ${(ref.coverageP10P90 * 100).toFixed(1)}%)`,
+        );
+      }
+      return `${reasons.join(" and ")} at ${h} d`;
+    });
 
   const crisis =
     criticalM === null
@@ -611,12 +634,12 @@ function inflowStateExperiment(
           ]),
       verdict.better
         ? "**Better than replaying the years at every horizon**, with no band further from 80%: the ladder's rule is met outright."
-        : `**Adopted, and it does not meet the ladder's rule outright: it is not better at ${verdict.worseAt.join(", ")} d.** ` +
-          "Read the paired row before the MAE row. Where the shipped model is worse, the interval straddles zero. Where it is " +
-          "better at thirty days, the interval lies below zero. A band a few points further from 80% at one horizon is a " +
-          "handful of origins in about ninety. It halves the optimism the replayed years carried at fourteen and thirty days. " +
-          "And its P50 called the October 2024 crossing, which the replayed years' P50 never did. Setting " +
-          "`DEFAULT_WATER_BALANCE.inflowState` to null restores the replayed years everywhere, M4's M3 features included.",
+        : `**Adopted, and it does not meet the ladder's rule outright: ${shortfalls().join("; ")}.** ` +
+          "Read the paired row before the MAE row: the adoption (2026-10-13) rested on a thirty-day gain whose interval lay " +
+          "below zero against a ninety-day loss whose interval straddled it, a band a few origins in about ninety short of the " +
+          "replayed years' at thirty days, the fourteen- and thirty-day optimism halved, and a P50 that called the October 2024 " +
+          "crossing where the replayed years' never did. Setting `DEFAULT_WATER_BALANCE.inflowState` to null restores the " +
+          "replayed years everywhere, M4's M3 features included.",
       "Also tried on 2026-10-13, and recorded as a negative rather than kept: a release rule that adds each season's median " +
         "departure from the level-only rule (±30, ±45 or ±60 days of the calendar). Mazar's operation is seasonal, but the level " +
         "already says most of it: the seasonal rule tied at every horizon to thirty days and made the long-horizon bias worse " +

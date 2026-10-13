@@ -456,12 +456,17 @@ function m4Summary(decisions: readonly M4Decision[]) {
  * why this run did not. A reader of the verdict should not have to reach the M4 section to learn
  * that one row of `forecast.json` comes from another model.
  */
+/** A reason as a sentence: the switch's reasons are written as clauses, without a full stop. */
+function sentence(text: string): string {
+  return text === "" || /[.!?]$/.test(text) ? text : `${text}.`;
+}
+
 function publishedLine(published: PublishedSwitch, snapshot: M4Snapshot | null, shippedId: string): string {
   const h = published.horizonDays;
   if (!published.published) {
     return (
       `**${h} days would publish ${published.modelId}, but this run falls back to ${shippedId}:** ` +
-      `${published.reason ?? "no reason recorded"} Every horizon of \`forecast.json\` is ${shippedId} until the ` +
+      `${sentence(published.reason ?? "no reason recorded")} Every horizon of \`forecast.json\` is ${shippedId} until the ` +
       "M4 backtest covers the ladder again, and the document says so in `horizon_switch`."
     );
   }
@@ -717,7 +722,7 @@ function renderM4Section(
     } else if (published) {
       out.push(
         `**M4 wins only in places** (${cells}) and no variant wins everywhere. \`forecast.json\` would publish ` +
-          `${published.modelId} at ${published.horizonDays} days, but this run fell back to M3: ${published.reason ?? ""}`,
+          `${published.modelId} at ${published.horizonDays} days, but this run fell back to M3: ${sentence(published.reason ?? "")}`,
       );
     } else {
       out.push(`**M4 wins only in places** (${cells}) and no variant wins everywhere, so \`forecast.json\` keeps M3.`);
@@ -800,46 +805,44 @@ function renderM4Section(
  * rather than silently keep it — which is the signal to rewrite it.
  */
 const M4_FINDINGS: readonly string[] = [
-  "**Where it wins: one week out.** On the verified Mazar centroid (snapshot of 2026-09-24) every design " +
-    "beats M3 at seven days, by 0.26–0.36 m (MAE 1.94–2.03 m against 2.29 m), which is 11–16% better than " +
-    "persistence at the one horizon where M3 and every earlier rung only tied with it — the first short-range " +
-    "skill anything on this ladder has shown. For all three the paired interval lies below zero. The direct " +
-    "design is the best of them and the only one whose band is better calibrated than M3's (78.5% against " +
-    "74.2%; the residual design's covers 73.1%). A week out, the level is mostly what the operator is doing " +
-    "this week, and the last few days' level change and production say that more directly than a rule curve " +
-    "averaged over years. At fourteen days the MAE is still lower (by 0.18–0.33 m) but the interval straddles " +
-    "zero; at thirty the direct design's 0.44 m gain comes with a band that covers 76% against M3's 80%, and " +
-    "the other two are within 0.3 m of M3.",
-  "**Where it loses: past a month, clearly.** At sixty and ninety days every design is worse than M3 by " +
-    "0.8–1.6 m, with the paired interval above zero — a measured negative in the same sense as M1's. Two months " +
-    "out the level is decided by inflow that has not fallen yet and by how the operator responds to the level " +
-    "on the way; the water balance has both built in, and the trees have to learn them from at most a decade " +
-    "of overlapping windows that contains only a handful of drawdowns. Their own quantiles are badly overconfident there (36–46% " +
-    "inside a nominal 80% at 60–90 days); widening by residuals brings that to 66–68%, still short of M3's " +
-    "72–74%.",
+  "**Where it wins: one week out, and since 2026-10-13 not clearly.** Against the M3 of 2026-09-24 every design " +
+    "beat M3 at seven days by 0.26–0.36 m with the paired interval below zero — the first short-range skill on this " +
+    "ladder — because a week out the level is mostly what the operator is doing this week, and the last few days' " +
+    "level change and production say that more directly than a rule curve averaged over years. Much of that edge was " +
+    "M3 starting every analogue year from that year's river instead of today's. With M3's years started from today's " +
+    "river (2026-10-13), M3 itself is 6.7% better than persistence at seven days, the direct design's lead shrinks to " +
+    "0.21 m with an interval that crosses zero, and its band (78.7%) is no longer nearer 80% than M3's (79.8%). The " +
+    "residual design meets the rule at seven days by 0.05 m, and the two direct designs at fourteen days by 0.2 m, all " +
+    "with intervals across zero: wins by the letter of the rule, not measurements.",
+  "**Where it loses: past a month, clearly.** At sixty days every design is worse than M3 by about a metre, with the " +
+    "paired interval above zero, and at ninety by 0.9–1.2 m with the interval just reaching zero — a measured negative " +
+    "in the same sense as M1's. Two months out the level is decided by inflow that has not fallen yet and by how the " +
+    "operator responds to the level on the way; the water balance has both built in, and the trees have to learn them " +
+    "from at most a decade of overlapping windows that contains only a handful of drawdowns. Their own quantiles are " +
+    "badly overconfident there (36–51% inside a nominal 80% at 60–90 days); widening by residuals brings that to " +
+    "65–77%, still short of M3's 75–78%.",
   "**M3 as a feature or as the target does not rescue the long horizons.** Predicting M3's residual was the " +
     "design most likely to keep M3's long-range skill, since trees that learn nothing leave M3 untouched. It " +
     "does not: the corrections learned on earlier years move the 60- and 90-day median the wrong way often " +
     "enough to cost about a metre. Giving the trees M3's forecast as a feature is no better. At seven days the " +
     "design that never sees M3 is the most accurate of the three, so the short-range gain comes from the " +
     "recent-state features, not from M3.",
-  "**Crisis check.** No design's P50 called either 2024 crossing, and neither did M3's. The P10 of the two " +
-    "direct designs called April 2024 ten days out, from an origin at 2116.7 m — a crossing no quantile of M3 " +
-    "called, because no analogue year was that dry — but `M4-gbm-direct` then missed October, which M3's dry " +
-    "tail and the two M3-informed designs called seven days out. A ten-day call from 1.7 m above the line is " +
-    "short-range extrapolation, not early warning. Every design also raised one false alarm (the P50 from " +
-    "2023-11-01, at 2115.6 m, put a crossing a week out that did not come until April).",
-  "**What `forecast.json` does with it (adopted 2026-09-22, design changed 2026-10-03).** It switches by " +
-    "horizon, not wholesale: one M4 design's median is published at seven days and M3 at 14–90 days, for the " +
-    "three named scenarios and for the days-to-threshold distribution, which need a daily simulated path M4 " +
-    "does not produce. From 2026-09-22 the design was `M4-gbm-m3-residual`, which won on the provisional rain " +
-    "point; on the verified centroid it no longer did, seven days fell back to M3 from 2026-09-24, and on " +
-    "2026-10-03 the owner moved the seven-day point to `M4-gbm-direct`, the design that wins there with the " +
-    "interval below zero and a better-calibrated band. The daily run fits that one design at the live origin " +
-    "for seven days only (with the settings and features this snapshot was scored with — the switch is " +
-    "refused if they differ), and bands it with the residual quantiles this snapshot recorded for it at seven " +
-    "days, the same rule that bands M3. The 7-day entry names its model, its band's source and the backtest it " +
-    "rests on, and carries what M3 would have published beside it. When the ladder gains an origin this " +
-    "snapshot lacks, or a rerun no longer shows the win, seven days falls back to M3 and `forecast.json` says so; " +
-    "a run never switches to another design by itself.",
+  "**Crisis check.** On this five-horizon grid no design's P50 called either 2024 crossing, and neither did M3's " +
+    "(on its own daily path, M3's P50 has called October seven days out since its years start from today's river). " +
+    "The P10 of all three designs called April 2024 ten days out, from an origin at 2116.7 m — a crossing no quantile " +
+    "of M3 called — but `M4-gbm-direct` then missed October, which M3's dry tail and the two M3-informed designs called " +
+    "seven days out. A ten-day call from 1.7 m above the line is short-range extrapolation, not early warning.",
+  "**What `forecast.json` does with it (adopted 2026-09-22, design changed 2026-10-03, fallen back 2026-10-13).** " +
+    "It switches by horizon, not wholesale, when the snapshot earns it: one M4 design's median at seven days and M3 " +
+    "at 14–90 days, for the three named scenarios and for the days-to-threshold distribution, which need a daily " +
+    "simulated path M4 does not produce. From 2026-09-22 the design was `M4-gbm-m3-residual`, which won on the " +
+    "provisional rain point; on the verified centroid it no longer did, seven days fell back to M3 from 2026-09-24, " +
+    "and on 2026-10-03 the owner moved the seven-day point to `M4-gbm-direct`. Its live record was poor — from the " +
+    "2026-10-03 and -04 origins its median put Mazar above where it started, and the reservoir finished 4.7 and 6.9 m " +
+    "below it — and against the M3 of 2026-10-13 it no longer meets the ladder's rule, so seven days publishes M3 " +
+    "and `horizon_switch` says why. The switch is still wired: the daily run fits the named design at the live origin " +
+    "for seven days only, with the settings and features this snapshot was scored with, and bands it with the " +
+    "residual quantiles recorded here. A run never switches to another design by itself; moving seven days to " +
+    "`M4-gbm-m3-residual`, which meets the rule there by 0.05 m, would be the owner's call, and is not recommended on " +
+    "a margin that size.",
 ];
