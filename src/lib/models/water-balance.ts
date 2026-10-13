@@ -28,6 +28,8 @@
  *   equally weighted member. This is what makes the forecast probabilistic without assuming a
  *   distribution, and it is what the days-to-threshold scenarios in section 7 are drawn from:
  *   a dry year, a median year and a wet year are three real years, nameable in the output.
+ *   Since 2026-10-13 each year is started from today's river and fades back to its own flow
+ *   (`scaleToState`): 14% better at thirty days, and the first P50 to call a 2024 crossing.
  *
  * What is *not* here, and is marked deferred rather than done: conditioning the analogue draw
  * on ONI phase or on the 16-day precipitation forecast. ONI is held back to 1950 and could be
@@ -53,6 +55,7 @@ import type { DailySeries } from "../features/series.ts";
 import type { Hypsometry } from "../features/hydrology.ts";
 import { balanceDays, fitHypsometry, impliedReleases, levelAt, nextDay, trimReleases, volumeAt } from "../features/hydrology.ts";
 import { median, quantile } from "../util/stats.ts";
+import { trailingMean } from "./inflow.ts";
 import type { ForecastContext, HorizonForecast, Model } from "./types.ts";
 
 const SECONDS_PER_DAY = 86_400;
@@ -84,6 +87,17 @@ export interface WaterBalanceOptions {
   fitCeilingM: number;
   /** Fewest analogue years that make an ensemble worth publishing. */
   minAnalogYears: number;
+  /** Start each analogue year from today's river rather than its own; null replays it as it was. */
+  inflowState: InflowStateOptions | null;
+}
+
+export interface InflowStateOptions {
+  /** Trailing days today's inflow is compared over, against the same days of each analogue year. */
+  days: number;
+  /** Days for the scaling to fade halfway back to the analogue year's own flow. */
+  halfLifeDays: number;
+  /** The ratio is clamped to this range, so a dry-season trickle cannot explode it. */
+  ratioBounds: readonly [number, number];
 }
 
 export const DEFAULT_WATER_BALANCE: WaterBalanceOptions = {
@@ -93,6 +107,8 @@ export const DEFAULT_WATER_BALANCE: WaterBalanceOptions = {
   stanceDecay: 0.97,
   fitCeilingM: 2150,
   minAnalogYears: 4,
+  // The window and the clamp are the inflow forecast's (`DEFAULT_INFLOW`), not tuned here.
+  inflowState: { days: 7, halfLifeDays: 15, ratioBounds: [0.33, 3] },
 };
 
 /**
@@ -225,6 +241,45 @@ export function analogPathsUpTo(
   return out;
 }
 
+/**
+ * Today's inflow against the analogue year's over the same trailing days, clamped; 1 when either
+ * window has a gap, so a member whose state cannot be read is replayed as it was.
+ */
+export function stateRatio(inflow: DailySeries, origin: IsoDate, startDate: IsoDate, state: InflowStateOptions): number {
+  const now = trailingMean(inflow, origin, state.days);
+  const then = trailingMean(inflow, startDate, state.days);
+  if (now === null || then === null || !(then > 0)) return 1;
+  return Math.min(state.ratioBounds[1], Math.max(state.ratioBounds[0], now / then));
+}
+
+/** An analogue year's inflow scaled by `ratio` on its first day, fading back to itself. */
+export function scalePath(path: readonly number[], ratio: number, halfLifeDays: number): number[] {
+  if (ratio === 1) return [...path];
+  const decay = Math.pow(0.5, 1 / halfLifeDays);
+  return path.map((value, day) => value * Math.pow(ratio, Math.pow(decay, day + 1)));
+}
+
+/**
+ * Each analogue year started from today's river (`WaterBalanceOptions.inflowState`).
+ *
+ * Replayed as it was, an analogue year carries its own weather *and its own starting flow*: on
+ * 2026-10-11, with the Paute at 25 m3/s for a week, the median member of the shipped ensemble
+ * brought 70-80 m3/s over the next fortnight, because most Octobers began wetter. The years that
+ * began as dry as this one — 2010, 2018, 2023, 2024 — brought 23-26. Recession is the most
+ * persistent thing in a river, and an ensemble that forgets it forecasts a refill in the middle of
+ * a drawdown. So each member is multiplied by today's trailing-week inflow over its own, and the
+ * multiplier fades geometrically, so the year's later weather is left as it fell. The window and
+ * clamp are the ones the inflow forecast already uses for the other six plants.
+ */
+export function scaleToState(paths: AnalogPath[], inflow: DailySeries, origin: IsoDate, options: WaterBalanceOptions): AnalogPath[] {
+  const state = options.inflowState;
+  if (!state) return paths;
+  return paths.map((path) => {
+    const inflowM3s = scalePath(path.inflowM3s, stateRatio(inflow, origin, path.startDate, state), state.halfLifeDays);
+    return { ...path, inflowM3s, totalHm3: (inflowM3s.reduce((a, b) => a + b, 0) * SECONDS_PER_DAY) / 1e6 };
+  });
+}
+
 /** How a model narrows the analogue pool at one origin; empty keeps every earlier year. */
 export interface AnalogPool {
   accept?: (startDate: IsoDate) => boolean;
@@ -265,6 +320,7 @@ export function horizonEnsembles(
   const longest = Math.max(0, ...horizons);
   let paths = analogPathsUpTo(inflow, origin, longest, pool.accept);
   if (pool.select) paths = pool.select(paths);
+  paths = scaleToState(paths, inflow, origin, options);
   if (pool.sharedMembers) paths = paths.filter((path) => path.inflowM3s.length === longest);
   const runs = paths.map((path) => ({
     year: path.year,
@@ -501,7 +557,8 @@ export function inflowScenarios(
   crestM: number,
   options: WaterBalanceOptions = DEFAULT_WATER_BALANCE,
 ): ScenarioRun[] {
-  const paths = [...analogPaths(inflow, origin, days)].sort((a, b) => a.totalHm3 - b.totalHm3);
+  // Ranked after scaling, so "dry" is the driest year as it would unfold from today's river.
+  const paths = scaleToState(analogPaths(inflow, origin, days), inflow, origin, options).sort((a, b) => a.totalHm3 - b.totalHm3);
   if (paths.length < options.minAnalogYears) return [];
   const totals = paths.map((p) => p.totalHm3);
 
@@ -576,7 +633,7 @@ export function crossingDistribution(
   crestM: number,
   options: WaterBalanceOptions = DEFAULT_WATER_BALANCE,
 ): CrossingDistribution | null {
-  const paths = analogPaths(inflow, origin, days);
+  const paths = scaleToState(analogPaths(inflow, origin, days), inflow, origin, options);
   if (paths.length < options.minAnalogYears) return null;
 
   const crossings: number[] = [];

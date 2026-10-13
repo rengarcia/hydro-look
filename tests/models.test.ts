@@ -8,7 +8,10 @@ import {
   DEFAULT_WATER_BALANCE,
   firstCrossing,
   releaseAt,
+  scalePath,
+  scaleToState,
   simulatePath,
+  stateRatio,
   type ReleaseRule,
   type WaterBalanceFit,
 } from "../src/lib/models/water-balance.ts";
@@ -83,6 +86,48 @@ describe("analogue paths", () => {
   it("honours a variant that narrows the pool", () => {
     const paths = analogPaths(inflow, "2024-03-01", 10, (start) => start.startsWith("2021") || start.startsWith("2023"));
     expect(paths.map((p) => p.year)).toEqual([2021, 2023]);
+  });
+});
+
+describe("analogue years started from today's river", () => {
+  const state = { days: 7, halfLifeDays: 10, ratioBounds: [0.33, 3] as const };
+  // Every earlier year runs at 100 m3/s; this year has been at 25 for the week to the origin.
+  const inflow: DailySeries = new Map();
+  for (let day = 0; day < 365 * 5; day++) inflow.set(addDays("2020-01-01", day), 100);
+  for (let day = 0; day < 7; day++) inflow.set(addDays("2024-10-11", -day), 25);
+
+  it("compares the trailing week now with the same week of the analogue year", () => {
+    // 25 against 100 is 0.25, below the clamp.
+    expect(stateRatio(inflow, "2024-10-11", "2022-10-11", state)).toBeCloseTo(0.33, 9);
+    const milder = new Map(inflow);
+    for (let day = 0; day < 7; day++) milder.set(addDays("2024-10-11", -day), 50);
+    expect(stateRatio(milder, "2024-10-11", "2022-10-11", state)).toBeCloseTo(0.5, 9);
+  });
+
+  it("replays a year as it was when either week has a gap", () => {
+    const holed = new Map(inflow);
+    holed.delete("2022-10-09");
+    expect(stateRatio(holed, "2024-10-11", "2022-10-11", state)).toBe(1);
+  });
+
+  it("fades the scaling back to the year's own flow at the half-life", () => {
+    const path = scalePath(new Array(60).fill(100), 0.5, 10);
+    expect(path[0]).toBeLessThan(55);
+    // After ten days the exponent is one half: 100 × 0.5^0.5.
+    expect(path[9]).toBeCloseTo(100 * Math.sqrt(0.5), 6);
+    expect(path[59]).toBeGreaterThan(98);
+    for (let day = 1; day < path.length; day++) expect(path[day]!).toBeGreaterThanOrEqual(path[day - 1]!);
+  });
+
+  it("scales every member and its total, and leaves them alone when switched off", () => {
+    const paths = analogPaths(inflow, "2024-10-11", 30);
+    const scaled = scaleToState(paths, inflow, "2024-10-11", { ...DEFAULT_WATER_BALANCE, inflowState: state });
+    expect(scaled.map((p) => p.year)).toEqual(paths.map((p) => p.year));
+    for (const [i, p] of scaled.entries()) {
+      expect(p.inflowM3s[0]).toBeLessThan(paths[i]!.inflowM3s[0]!);
+      expect(p.totalHm3).toBeCloseTo((p.inflowM3s.reduce((a, b) => a + b, 0) * 86_400) / 1e6, 9);
+    }
+    expect(scaleToState(paths, inflow, "2024-10-11", { ...DEFAULT_WATER_BALANCE, inflowState: null })).toBe(paths);
   });
 });
 

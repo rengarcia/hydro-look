@@ -15,6 +15,7 @@ import {
   DEFAULT_WATER_BALANCE,
   fitAt,
   horizonEnsembles,
+  scaleToState,
   simulatePath,
   waterBalanceModel,
 } from "../src/lib/models/water-balance.ts";
@@ -94,7 +95,7 @@ describe("one simulation per analogue year", () => {
     expect(fit).not.toBeNull();
     const ensembles = horizonEnsembles(fit, context.inflow, origin, context.horizonDays, crestM);
     for (const { horizonDays, ends, years } of ensembles) {
-      const paths = analogPaths(context.inflow, origin, horizonDays);
+      const paths = scaleToState(analogPaths(context.inflow, origin, horizonDays), context.inflow, origin, DEFAULT_WATER_BALANCE);
       expect(years).toEqual(paths.map((p) => p.year));
       const separate = paths.map(
         (p) => simulatePath(fit.curve, fit.rule, fit.startLevel, origin, p.inflowM3s, fit.stance, crestM).at(-1)!.level,

@@ -152,9 +152,11 @@ export function renderBacktestReport(inputs: ReportInputs): string {
   );
   lines.push(
     `**${inputs.shippedModelId} ships.** At ${longest} days it is ${pct(long?.skillVsPersistence)} better ` +
-      `than persistence; at ${shortest} days it is ${pct(short?.skillVsPersistence)}, which is to say ` +
-      "indistinguishable from doing nothing, and the forecast document says so rather than implying a " +
-      "precision the measurement does not support.",
+      `than persistence; at ${shortest} days it is ${pct(short?.skillVsPersistence)}, ` +
+      (Math.abs(short?.skillVsPersistence ?? 0) < 0.05
+        ? "which is to say indistinguishable from doing nothing, and the forecast document says so rather than implying a " +
+          "precision the measurement does not support."
+        : "a gain small enough that a week out the band, not the median, is the forecast."),
   );
   lines.push("");
   if (rivals.length === 0) {

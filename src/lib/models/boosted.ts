@@ -51,7 +51,9 @@ import {
   DEFAULT_WATER_BALANCE,
   fitAt,
   releaseAt,
+  scalePath,
   simulateLevels,
+  stateRatio,
   type FitCache,
   type WaterBalanceFit,
   type WaterBalanceOptions,
@@ -336,7 +338,8 @@ function monthlyFit(context: ForecastContext, month: IsoDate, cache: M4Cache, op
 
 /**
  * M3's forecast as it would have been made on `date`: the fit from the first of the month, the
- * stance over the thirty days to `date`, and every earlier year's inflow over the same window.
+ * stance over the thirty days to `date`, and every earlier year's inflow over the same window,
+ * started from the river at `date` as `scaleToState` starts it.
  * On the first of a month this is the shipped M3 exactly.
  */
 function m3At(
@@ -393,7 +396,9 @@ function m3At(
       path.push(v);
     }
     if (path.length === 0) continue;
-    const levels = simulateLevels(fit.curve, fit.rule, startLevel, path, stance, context.crestM, options);
+    const state = options.inflowState;
+    const run = state ? scalePath(path, stateRatio(context.inflow, date, startDate, state), state.halfLifeDays) : path;
+    const levels = simulateLevels(fit.curve, fit.rule, startLevel, run, stance, context.crestM, options);
     for (const h of M3_FEATURE_HORIZONS) if (path.length >= h) ends.get(h)!.push(levels[h - 1]!);
   }
   const byHorizon = new Map<number, { p50: number; p10: number; p90: number }>();
