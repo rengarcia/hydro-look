@@ -1,29 +1,25 @@
 {
-  "generated_at": "2026-10-14T05:31:05Z",
+  "generated_at": "2026-10-14T17:39:48Z",
   "command": "daily",
   "source": "all",
   "requests": 53,
   "errors": [],
-  "notes": [
-    "ords:msfEnerDia 2026-10-13: only 23/24 hours present, daily total not written",
-    "ords:pointValues manduriacu 2026-10-13: inflow 0 is zero on a route that publishes decimals, so it is a missing reading rather than a stopped river; dropped",
-    "smec 2026-10-13: report is incomplete (missing generacion_hidraulica, total_generacion, demanda_distribucion); the running day fills in at D+1, but a stored-as-missing day has come back identical on every retry"
-  ],
+  "notes": [],
   "tables": {
     "observations_daily": {
-      "rows": 90865,
+      "rows": 90887,
       "first_date": "2009-01-01",
       "last_date": "2026-10-14",
       "files": 18
     },
     "national_balance_daily": {
-      "rows": 58429,
+      "rows": 58444,
       "first_date": "2016-05-01",
-      "last_date": "2026-10-12",
+      "last_date": "2026-10-13",
       "files": 11
     },
     "operativa_snapshots": {
-      "rows": 3854,
+      "rows": 3901,
       "first_date": "2026-09-22",
       "last_date": "2026-10-14",
       "files": 1
@@ -60,18 +56,18 @@
     }
   },
   "narrative": {
-    "calls": 40,
+    "calls": 41,
     "by_status": {
       "failed": 1,
       "rejected": 4,
-      "ok": 35
+      "ok": 36
     },
-    "spend_usd": 1.6132,
+    "spend_usd": 1.6872,
     "calls_without_cost": 3,
     "by_month": {
       "2026-09": 0.4394,
-      "2026-10": 1.1739
+      "2026-10": 1.2478
     },
-    "last_call_at": "2026-10-13T07:11:16Z"
+    "last_call_at": "2026-10-14T05:31:54Z"
   }
 }
