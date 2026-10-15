@@ -33,12 +33,22 @@
  * días"), and a true number attached to the wrong thing ("2.130 m a 7 días" when 2130.95 is the
  * 14-day p50). The first is rare in this register; the second is why the page renders the
  * numbers beside the text.
+ *
+ * Two narrower checks sit beside the figure scan (prompt es-10):
+ *
+ * - **A forecast level needs skill.** A p10, p50 or p90 of a horizon whose skill against
+ *   persistence is below `FORECAST_SKILL_MIN` is a real payload number the text may not quote,
+ *   because the backtest says it is no better than today's level. A figure is refused when it
+ *   matches such a quantile and nothing else in the payload; one that also matches another
+ *   number cannot be told apart and passes.
+ * - **Banned phrases.** Wording a prompt once put in every answer, refused so that removing it
+ *   from the prompt is enough to keep it out of the text.
  */
 
 import { isCalendarDate, type IsoDate } from "../util/dates.ts";
 import { roundTo } from "../util/numbers.ts";
 import type { NarrativePayload } from "./payload.ts";
-import { checkDriver, type StructuredDriver } from "./drivers.ts";
+import { checkDriver, parseRef, type StructuredDriver } from "./drivers.ts";
 
 /** The length the prompt asks for, and the schema and the validator enforce (§5.6). */
 export const OUTLOOK_WORDS = { min: 120, max: 220 } as const;
@@ -276,6 +286,73 @@ export function fieldNames(text: string): string[] {
   return [...text.matchAll(IDENTIFIER)].map((m) => m[0]);
 }
 
+/**
+ * Below this skill against persistence a horizon's levels may not be quoted: within five percent
+ * either way the backtest cannot tell the model from assuming the level stays put (`SKILL_TIE`
+ * in `site/story.ts`, the same line the page colours by).
+ */
+export const FORECAST_SKILL_MIN = 0.05;
+
+const QUANTILES = ["p10", "p50", "p90"] as const;
+
+/** The forecast horizons whose levels the text may not quote: skill missing or below the line. */
+export function unskilledHorizons(payload: NarrativePayload): number[] {
+  return (payload.mazar_forecast?.horizons ?? [])
+    .map((h, i) => ({ h, i }))
+    .filter(({ h }) => h.skill_vs_persistence === null || h.skill_vs_persistence < FORECAST_SKILL_MIN)
+    .map(({ i }) => i);
+}
+
+/** The payload with the unskilled horizons' quantiles blanked: what the text may quote. */
+function withoutUnskilledLevels(payload: NarrativePayload, unskilled: readonly number[]): NarrativePayload {
+  const copy = structuredClone(payload);
+  for (const i of unskilled) {
+    const horizon = copy.mazar_forecast!.horizons[i]! as unknown as Record<string, unknown>;
+    for (const q of QUANTILES) horizon[q] = null;
+  }
+  return copy;
+}
+
+/** Figures in `text` that quote a level of a horizon without skill, and nothing else in the payload. */
+export function unskilledQuotes(text: string, payload: NarrativePayload): string[] {
+  const unskilled = unskilledHorizons(payload);
+  if (unskilled.length === 0) return [];
+  const already = inventedFigures(text, allowedSet(payload));
+  const without = inventedFigures(text, allowedSet(withoutUnskilledLevels(payload, unskilled)));
+  const days = unskilled.map((i) => payload.mazar_forecast!.horizons[i]!.horizon_days).join(", ");
+  for (const problem of already) {
+    const at = without.indexOf(problem);
+    if (at >= 0) without.splice(at, 1);
+  }
+  return without.map((problem) => `${problem} quotes a forecast level at ${days} d, whose skill is below ${FORECAST_SKILL_MIN}`);
+}
+
+/** A driver that rests on a level of a horizon without skill. */
+export function unskilledRef(ref: string, payload: NarrativePayload): string | null {
+  const path = parseRef(ref);
+  if (path?.[0] !== "mazar_forecast" || path[1] !== "horizons" || typeof path[2] !== "number") return null;
+  if (!QUANTILES.includes(path[3] as (typeof QUANTILES)[number])) return null;
+  if (!unskilledHorizons(payload).includes(path[2])) return null;
+  return `payload_ref "${ref}" is a forecast level at a horizon whose skill is below ${FORECAST_SKILL_MIN}`;
+}
+
+/**
+ * Phrases the text may not use, compared without accents or case. Each one is here because a
+ * prompt wrote it into answers: "el principal embalse del país" opened 32 of 33 answers from es-6
+ * to es-9, and Daule-Peripa stores 5,400 hm³ to Mazar's 410.
+ */
+export const BANNED_PHRASES = [
+  "principal embalse del pais",
+  "embalse principal del pais",
+  "mayor embalse del pais",
+  "embalse mas grande del pais",
+] as const;
+
+export function bannedPhrases(text: string): string[] {
+  const folded = fold(text).replace(/\s+/gu, " ");
+  return BANNED_PHRASES.filter((phrase) => folded.includes(phrase)).map((phrase) => `banned phrase "${phrase}"`);
+}
+
 export interface NarrativeText {
   outlook_es: string;
   /** Structured since prompt es-5; plain strings in snapshots written before it. */
@@ -302,6 +379,8 @@ export function validateNarrative(narrative: NarrativeText, payload: NarrativePa
   const problems: string[] = [];
   for (const problem of inventedFigures(narrative.outlook_es, allowed)) problems.push(`outlook_es: ${problem}`);
   for (const name of fieldNames(narrative.outlook_es)) problems.push(`outlook_es: field name "${name}"`);
+  for (const problem of unskilledQuotes(narrative.outlook_es, payload)) problems.push(`outlook_es: ${problem}`);
+  for (const problem of bannedPhrases(narrative.outlook_es)) problems.push(`outlook_es: ${problem}`);
   const words = countWords(narrative.outlook_es);
   if (words < OUTLOOK_WORDS.min || words > OUTLOOK_WORDS.max) {
     problems.push(`outlook_es: ${words} words, outside ${OUTLOOK_WORDS.min}–${OUTLOOK_WORDS.max}`);
@@ -313,7 +392,13 @@ export function validateNarrative(narrative: NarrativeText, payload: NarrativePa
     const text = driverText(driver);
     for (const problem of inventedFigures(text, allowed)) problems.push(`drivers[${i}]: ${problem}`);
     for (const name of fieldNames(text)) problems.push(`drivers[${i}]: field name "${name}"`);
-    if (typeof driver !== "string") for (const problem of checkDriver(driver, payload)) problems.push(`drivers[${i}]: ${problem}`);
+    for (const problem of unskilledQuotes(text, payload)) problems.push(`drivers[${i}]: ${problem}`);
+    for (const problem of bannedPhrases(text)) problems.push(`drivers[${i}]: ${problem}`);
+    if (typeof driver !== "string") {
+      for (const problem of checkDriver(driver, payload)) problems.push(`drivers[${i}]: ${problem}`);
+      const unskilled = unskilledRef(driver.payload_ref, payload);
+      if (unskilled) problems.push(`drivers[${i}]: ${unskilled}`);
+    }
   });
   const tier = payload.adequacy?.risk_tier;
   if (tier && !fold(narrative.outlook_es).includes(fold(tier))) {

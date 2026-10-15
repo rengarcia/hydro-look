@@ -31,6 +31,7 @@ export const DRIVER_FACTORS = [
   "enso",
   "stale_data",
   "other_reservoirs",
+  "cascade",
 ] as const;
 export type DriverFactor = (typeof DRIVER_FACTORS)[number];
 
@@ -55,6 +56,7 @@ const FACTOR_ROOTS: Record<DriverFactor, readonly string[]> = {
   enso: ["enso"],
   stale_data: ["stale_feeds"],
   other_reservoirs: ["reservoirs"],
+  cascade: ["cascade"],
 };
 
 /** `a.b[2].c` → `["a", "b", 2, "c"]`, or null for anything that is not such a path. */

@@ -43,7 +43,7 @@ const DRIVERS = [
 
 const answer = {
   outlook_es:
-    "Mazar está en 2138,37 m y el pronóstico estadístico pone su mediana en 2133,28 m a 30 días. " +
+    "Mazar está en 2138,37 m y el pronóstico estadístico no acierta más que suponer que el nivel se queda igual. " +
     "El nivel de suficiencia es holgado: el caso p90 sigue cubierto." +
     PAD,
   drivers: [...DRIVERS],
@@ -65,7 +65,7 @@ function answering(cost: number) {
   });
 }
 
-describe("the trimmed payload (PAYLOAD_VERSION 2, kept in 3)", () => {
+describe("the trimmed payload (PAYLOAD_VERSION 2, kept since)", () => {
   it("keeps Mazar whole and every other reservoir to what the text may say about it", () => {
     const others = payload.reservoirs.filter((r) => r.site !== "mazar");
     expect(others.length).toBeGreaterThan(0);
@@ -74,7 +74,7 @@ describe("the trimmed payload (PAYLOAD_VERSION 2, kept in 3)", () => {
       expect(r.floors.length).toBeLessThanOrEqual(1);
     }
     expect(payload.reservoirs[MAZAR]!.bands!.length).toBeGreaterThan(0);
-    expect(payload.payload_version).toBe(3);
+    expect(payload.payload_version).toBe(4);
   });
 });
 

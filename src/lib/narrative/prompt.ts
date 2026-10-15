@@ -47,17 +47,43 @@
  * quotes the forecast only at horizons whose skill is 0.05 or more (the line `report.ts` draws
  * between a gain and "indistinguishable from doing nothing"), ties the floors to today's level,
  * and gives the headline the day's change. The rules the validator enforces are unchanged.
+ *
+ * es-10: three errors the prompt itself wrote into every es-9 answer, and what it left out
+ * (`NARRATIVE_PLAN.md` §1–2). "Mazar, the country's main reservoir" opened 32 of 33 answers
+ * since es-6, and Daule-Peripa stores thirteen times more; the centroid rain clause ("en un solo
+ * punto del centro de la cuenca") read as rain falling on one spot; and "más allá de N días"
+ * assumed skill decays with distance, which on 2026-10-14 (0.067, 0.021, 0.148) it did not, so
+ * the 30-day level was followed by a 14-day caveat that seemed to retract it. "por eso" is gone
+ * from the connectors after it tied the industrial cuts to this site's indicator, and the tier's
+ * definition is no longer glossed beside the margin that already sizes it. It asks for what
+ * es-9 answers actually ran to (150–190 words, up from 130–180, which 4 of 33 met), and at most
+ * eight figures with dates and plazos uncounted, since the shape needs eight once the crossing
+ * sentence is in: when most analogue years cross 2115 m the text must say how many and how soon.
+ * A hand-written answer for 2026-10-14 meets every target at 187 words (`narrative.test.ts`).
+ * El Niño joins the weather sentences.
+ * The validator now also refuses a forecast level quoted at a horizon without skill and a short
+ * list of banned phrases.
+ *
+ * es-11: the cascade (PAYLOAD_VERSION 4, `cascade.ts`). What 2,115 m means is what happens below
+ * Mazar: from 8 October to 10 December 2024 Molino and Sopladora averaged 7.1 GWh a day against
+ * 16.9 normal for those dates. When the crossing sentence is required, the text now also says
+ * that, from `cascade.last_episode_below_operational_min`, and the forecast level becomes
+ * optional to make room. Amaluza may be named only against its own record, never against a
+ * floor: CELEC publishes three. Amaluza's and Sopladora's inflow no longer carry a percentile,
+ * because they are releases, not rain. El Niño is optional. Targets follow a hand-written answer
+ * for 2026-10-14 that meets every rule at 198 words and nine figures (`narrative.test.ts`):
+ * 160–200 words, at most ten figures, two sentences up to 30 words.
  */
 
 import { canonicalJson, type NarrativePayload } from "./payload.ts";
 import { DRIVER_DIRECTIONS, DRIVER_FACTORS } from "./drivers.ts";
 
-export const PROMPT_VERSION = "es-9";
+export const PROMPT_VERSION = "es-11";
 
 const PROVISIONAL_RAIN =
-  "- Precipitation comes from one provisional sampling point, not a basin average. If you mention it, say so in a short clause inside the rain sentence: se pronostica más lluvia de lo normal, medida en un solo punto de la cuenca.";
+  "- Precipitation comes from one provisional sampling point, not a basin average. If you mention it, say so in a short clause inside the rain sentence, about the forecast and not about where rain falls: se pronostica más lluvia de lo normal, según el pronóstico para un solo punto de la cuenca.";
 const CENTROID_RAIN =
-  "- Precipitation comes from one grid point at the verified centroid of the catchment above Mazar, not a basin average. If you mention it, say so in a short clause inside the rain sentence: se pronostica más lluvia de lo normal, en un solo punto del centro de la cuenca.";
+  "- Precipitation comes from one grid point at the verified centroid of the catchment above Mazar, not a basin average. If you mention it, say so in a short clause inside the rain sentence, about the forecast and not about where rain falls: se pronostica más lluvia de lo normal, según el pronóstico para un solo punto del centro de la cuenca.";
 
 function verifiedRain(payload: NarrativePayload | null): boolean {
   return payload?.precipitation_16d?.coordinate_status === "verified";
@@ -77,11 +103,11 @@ export function instructionsFor(payload: NarrativePayload | null): string {
     "## Who reads it",
     "Ordinary people in Ecuador — a shopkeeper, a student, a parent, a local journalist — who want to know how the",
     "reservoirs are doing and whether there is enough electricity. They are not engineers or statisticians. Write like a",
-    "calm radio news explainer telling a story, not like a list of facts read aloud: sentences of 10 to 25 words,",
-    "everyday words, active voice. When two facts belong together, join them with a connector (y, pero, aun así, por eso,",
-    "mientras, por ahora) instead of giving each its own sentence, and do not start two sentences in a row with the same",
-    "word. Say what each number means for the reader, not only what it is. Do not alarm and do not reassure beyond the",
-    "numbers.",
+    "calm radio news explainer telling a story, not like a list of facts read aloud: sentences of 12 to 25 words (two may",
+    "run to 30, none longer), everyday words, active voice. When two facts belong together, join them with a connector",
+    "(y, pero, aun así, mientras, por ahora) instead of giving each its own sentence, and do not start two sentences in a",
+    "row with the same word. Say what each number means for the reader, not only what it is. Do not alarm and do not",
+    "reassure beyond the numbers.",
     "",
     "## Say each thing once",
     "- Every sentence tells the reader something the earlier ones did not. Never restate a fact in other words.",
@@ -90,9 +116,11 @@ export function instructionsFor(payload: NarrativePayload | null): string {
     "  cerca del 5 %…): merge the two sentences.",
     "- A caveat or a purpose goes inside the sentence it qualifies, never alone (not «El indicador mira a 14 días.» or",
     "  «Esa medida busca ahorrar agua.»).",
+    "- Claim a cause only where the payload states one. Two facts side by side are not cause and effect: never join them",
+    "  with por eso, por ello, así que or debido a eso unless a payload field says one follows from the other.",
     "",
     "## Hard rules — a code check rejects the whole answer if any one is broken, and nothing is published that day",
-    "1. Length: outlook_es is 130 to 180 words, about 8 to 10 sentences. Never more than 200: the check refuses anything",
+    "1. Length: outlook_es is 160 to 200 words, about 9 sentences. Never more than 210: the check refuses anything",
     "   over 220 or under 120, and long answers have been refused. When in doubt, cut a sentence.",
     "2. Figures: every number and every date you write must appear in the payload. Copy it; you may only round it to",
     "   fewer decimals and format it the Spanish way. Never add, subtract, average, convert or count anything yourself,",
@@ -104,6 +132,10 @@ export function instructionsFor(payload: NarrativePayload | null): string {
     "4. The tier: write the exact word of `adequacy.risk_tier` between «» in outlook_es (deficit is written «déficit»).",
     "5. No JSON keys, field paths or code values in any text: El Niño, not el_nino; el nivel de Mazar, not level_masl.",
     "6. drivers: 3 to 5 objects, each matching the schema at the end.",
+    "7. The forecast: never write a p10, p50 or p90 of a `mazar_forecast` horizon whose `skill_vs_persistence` is below",
+    "   0.05, in outlook_es or in a driver, and never point a driver's payload_ref at such a horizon.",
+    "8. Never call Mazar the country's main or largest reservoir (el principal embalse del país): Daule-Peripa stores",
+    "   far more. Mazar is the reservoir that regulates the Paute complex (el embalse que regula el complejo Paute).",
     "",
     "## What the numbers mean, and how to say them",
     "- The tier is an input, not your judgement; never propose another one. Introduce it as the site's indicator, not as",
@@ -112,17 +144,56 @@ export function instructionsFor(payload: NarrativePayload | null): string {
     "  «Ajustado» quiere decir que, a 30 días y en el escenario más probable, faltaría cerca del 4,8 % de la energía que",
     "  necesita el país. The meanings, from `risk_tier_definition`:",
     "  holgado = hay margen de sobra; vigilancia = alcanza, pero con poco margen; ajustado = en el escenario más probable",
-    "  faltaría algo de energía; deficit = en el escenario más probable faltaría bastante energía. If `tier_at_7d` is a",
-    "  different word, you may add that a 7 días el indicador está en «<that word>».",
+    "  faltaría algo de energía; deficit = en el escenario más probable faltaría bastante energía. The percentage is the",
+    "  explanation: once you give it, do not add the meaning's words beside it (not «faltaría cerca del 5,5 %…, y eso",
+    "  significa bastante energía»). If `tier_at_7d` is a different word, you may add that a 7 días el indicador está en",
+    "  «<that word>».",
     "- The gap in that sentence is `margin_pct` of the tier's horizon, a share of the country's electricity demand.",
     '  GWh/día is optional; if you use it, never gloss it as "energía por día" — write gigavatios hora al día once instead.',
     "- `mazar_forecast` is the only forecast, from a statistical model; do not extend it to other dates, other reservoirs",
     "  or other thresholds. Quote its most probable level only at a horizon whose `skill_vs_persistence` is 0.05 or more,",
     "  and in the same sentence say whether that is above or below today's level (subiría, seguiría bajando): el modelo",
-    "  espera que siga bajando hasta unos X m el <target_date>. Never quote the level at a horizon below 0.05: a number",
-    "  followed by a sentence saying it is no better than a guess only confuses. Say that limit once instead: más allá",
-    "  de N días, el pronóstico no acierta más que suponer que el nivel se queda igual. If no horizon reaches",
-    "  0.05, quote no forecast level and say only that.",
+    "  espera que siga bajando hasta unos X m el <target_date>. Quote one such horizon, the longest that qualifies.",
+    "  Skill does not always fall with distance (7 and 30 days can qualify while 14 does not), so say nothing about a",
+    "  horizon shorter than the one you quote: «hasta unos X m el 13 de noviembre, aunque a 14 días el pronóstico no",
+    "  acierta» reads as retracting the number. Only when every horizon after the one you quote is below 0.05 may you add,",
+    "  in the same sentence: más allá de N días, el pronóstico no acierta más que suponer que el nivel se queda igual.",
+    "  If no horizon reaches 0.05, quote no forecast level and say only that the forecast does no better than assuming",
+    "  the level stays where it is.",
+    "- `mazar_forecast.crossings` says, for each floor, in how many of the `analogue_years` past years of weather the",
+    "  level would fall to it (`years_that_cross`), and `p50_days`: half of all those years reach it within that many",
+    "  days. For the operational minimum (`threshold_masl` 2115), when `years_that_cross` is at least half of",
+    "  `analogue_years`, you must say both in the Mazar part, in one sentence: si llueve como en alguno de los <A> años",
+    "  anteriores, en <C> de esos casos Mazar bajaría del mínimo de operación, y en la mitad lo haría en unos <D> días o",
+    "  menos (A = `analogue_years`, C = `years_that_cross`, D = `p50_days`; if `p50_days` is null, leave out the part",
+    "  after the comma). When it is fewer than half, you may say it. Never give these numbers for 2.100 or 2.098 m unless",
+    "  Mazar is below 2.115 m. When this sentence is required, the forecast level above becomes optional: leave it out",
+    "  if the paragraph runs long.",
+    "",
+    "## The Paute cascade (`cascade`)",
+    "Mazar's water goes on to two much larger plants: Amaluza's reservoir feeds Molino, and what leaves Molino feeds",
+    "Sopladora. That is why Mazar's operational minimum matters to the whole country, not only to Mazar.",
+    "- `last_episode_below_operational_min` is the last time Mazar was below 2.115 m and what Molino and Sopladora made",
+    "  across it (`downstream_gwh_day`) against what is normal for those dates (`downstream_normal_gwh_day`). Whenever",
+    "  the crossing sentence above is required and this block is present, you must say it, in the Mazar part, in one or",
+    "  two sentences: la última vez que Mazar estuvo debajo, entre el <from> y el <to>, también cayeron Molino y",
+    "  Sopladora, que usan su agua; juntas produjeron unos <X> gigavatios hora al día, frente a unos <Y> normales para",
+    "  esas fechas. Write «también cayeron» only when X is below Y; otherwise give the two numbers without a verb of",
+    "  falling. It is a past, recorded episode: never say it will happen again or how much would be lost now.",
+    "- `downstream_gwh_day` against `downstream_normal_gwh_day` is Molino and Sopladora this week. `mazar_turbined_m3s`",
+    "  against `mazar_inflow_m3s` is what Mazar sends through its turbines against what reaches it. You may give both",
+    "  pairs side by side (Mazar suelta unos X m³/s mientras le llegan unos Y); do not compute a ratio or say why.",
+    "- `storage_above_operational_min_gwh` is the energy Mazar's water above 2.115 m would make across the three plants.",
+    "  You may say it once (lo que queda en Mazar sobre su mínimo alcanza para unos X gigavatios hora en las tres",
+    "  centrales); never compare it with demand, days or households.",
+    "- `local_inflow_m3s` against `local_inflow_normal_m3s` is the river between Mazar and Amaluza; it may join the",
+    "  weather sentence. Never use Amaluza's or Sopladora's own inflow as a sign of rain: it is mostly what Mazar and",
+    "  Molino release.",
+    "- `amaluza`: you may name Amaluza only against its own record, and only when `days_lower_in_record` is 3 or fewer:",
+    "  Amaluza, el embalse de Molino, llegó el <low_7d_on> a <low_7d_masl> m, un nivel que desde <the year of",
+    "  record_from> solo había estado más abajo <days_lower_in_record> vez/veces, la última el <last_lower_on> (when",
+    "  `days_lower_in_record` is 0: el más bajo desde <that year>). Never say Amaluza is below, near or above its minimum: CELEC publishes several",
+    "  references for it (`declared_floors`) and none is confirmed as the one it operates to.",
     "- `days_at_slope_*` is a division (distance / current slope), not a prediction. If you use it: si siguiera bajando",
     "  al mismo ritmo, llegaría en unos N días; es una cuenta simple, no un pronóstico.",
     "- 2115 m is Mazar's operational minimum: below it CELEC Sur takes the plant offline for sediment risk to the turbines.",
@@ -134,14 +205,17 @@ export function instructionsFor(payload: NarrativePayload | null): string {
     "  measured. When they point different ways (heavy rain expected while the level keeps falling), say so in one",
     "  sentence instead of listing them side by side.",
     "- El Niño or La Niña: name the phase from `enso.phase` in words and say the month of the data, which always lags",
-    "  about two months: El Niño sigue activo, según el último dato, de <month> de <year>. The index value adds little for",
-    "  this reader; leave it out.",
+    "  about two months, inside one of the weather sentences rather than in one of its own: …, con El Niño todavía activo",
+    "  según el último dato, de <month> de <year>. It is optional: leave it out when the paragraph runs long. The index",
+    "  value adds little for this reader; leave it out.",
     "- If `stale_feeds` is not empty, say in plain words which data is out of date.",
     "- `measures_in_force` lists the supply restrictions in force today (cuts or scheduled outages), from this site's",
     "  own table. If it is not empty, say in one plain sentence what is in force and since when, translating its `scope`",
     "  into everyday Spanish (desde el 22 de septiembre de 2026, las grandes industrias se desconectan de la red un día",
     "  a la semana), and, if `hydro_related` is true, in the same sentence that it is meant to save water (para ahorrar",
-    "  agua). It is a fact, not a forecast.",
+    "  agua). It is a fact, not a forecast, and a decision of the authorities rather than a result of this site's",
+    "  indicator: start the sentence with its date (Desde el 22 de septiembre de 2026, …), never with por eso or any",
+    "  word that makes it follow from the sentence before.",
     "- Beyond that, never say whether there will or will not be power cuts (apagones, cortes de luz), for whom, or how",
     "  long: no number in the payload says so. If `measures_in_force` is empty, do not mention cuts at all.",
     "",
@@ -160,16 +234,19 @@ export function instructionsFor(payload: NarrativePayload | null): string {
     "- centroide, ERA5, ONI, ENSO, anomalía → un punto de la cuenca; el índice de El Niño; por encima o por debajo de lo normal.",
     "",
     "## Shape of outlook_es",
-    "Plain prose in one paragraph: no markdown, headings or lists. Quote at most six numbers; dates do not count.",
+    "Plain prose in one paragraph: no markdown, headings or lists. Quote at most ten numbers; dates and plazos",
+    "(a 14 días) do not count.",
     "1. The first sentence is shown alone, in large type, as the day's headline. It must stand on its own in 30 words",
-    "   or fewer: Mazar, the country's main reservoir, with the one change that makes today different (how fast it",
-    "   moved this week, or that it turned), and the energy indicator with its word in «». A headline that could run",
-    "   unchanged every day («Mazar sigue bajando») is not one.",
-    "2. Mazar: its level, how close it is to the operational minimum, and what the forecast says where it has skill.",
+    "   or fewer and start from the one change that makes today different (how fast Mazar moved this week, or that it",
+    "   turned), then give the energy indicator with its word in «». Do not open with a description of Mazar: the",
+    "   reader has seen it before, and a headline that could run unchanged every day («Mazar sigue bajando») is not one.",
+    "2. Mazar: its level, how close it is to the operational minimum, how many past years of weather take it below that",
+    "   minimum and how soon, what that meant for Molino and Sopladora the last time, and what the forecast says where",
+    "   it has skill if there is room.",
     "3. Electricity: one sentence on what the tier means and the size of the gap or margin, then what drives it (hydro",
     "   output against normal, imports) where the payload says so, and any measure in force.",
-    "4. Weather, last and briefest: the rain expected against the water reaching Mazar now, and El Niño or La Niña.",
-    "   End on a complete thought, not on a dangling fact.",
+    "4. Weather, last and briefest, in one or two sentences: the rain expected against the water reaching Mazar now,",
+    "   with El Niño or La Niña inside them if there is room. End on a complete thought, not on a dangling fact.",
     "",
     "## Output",
     "Write in Spanish as used in Ecuador. outlook_es and every driver's text are Spanish; confidence, factor and",
