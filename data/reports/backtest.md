@@ -1,6 +1,6 @@
 # Backtest — mazar level forecast
 
-Generated 2026-10-15T20:06:01Z from the committed tables; no network. Origins are the first of each month, each one refitting every model on the data before it. 106 origins scored per horizon, 94 of them with a calibrated band (the first twelve are the calibration's warm-up).
+Generated 2026-10-15T23:22:12Z from the committed tables; no network. Origins are the first of each month, each one refitting every model on the data before it. 106 origins scored per horizon, 94 of them with a calibrated band (the first twelve are the calibration's warm-up).
 
 Level history: 4408 days, 2014-09-20 → 2026-10-14.
 
@@ -230,12 +230,12 @@ Runtime: 421 s, single-threaded, for the whole run on the machine that produced 
 
 ## Does conditioning the analogue years on ENSO phase help?
 
-No. Scored over the 60 origins where both variants could forecast — the matched variant declines the rest, because narrowing an analogue pool of barely a dozen members by ENSO phase often leaves too few to form an ensemble at all:
+No. Scored over the 59 origins where both variants could forecast — the matched variant declines the rest, because narrowing an analogue pool of barely a dozen members by ENSO phase often leaves too few to form an ensemble at all:
 
 | model | h=7 | h=14 | h=30 | h=60 | h=90 |
 |---|---|---|---|---|---|
-| M3-water-balance | 2.224 | 3.466 | 5.683 | 7.394 | 7.902 |
-| M3-water-balance-enso | 2.294 | 3.578 | 6.178 | 7.986 | 8.475 |
+| M3-water-balance | 2.155 | 3.430 | 5.647 | 7.447 | 8.023 |
+| M3-water-balance-enso | 2.276 | 3.652 | 6.408 | 8.374 | 8.652 |
 
 The phase used is the one a forecaster could actually have read at each origin: ONI is a three-month mean centred on its label, so the newest value available on any day is about two months old, and the backtest never looks through that lag. Basin precipitation is the other conditioner, and its upper bound is the next section.
 
