@@ -34,11 +34,15 @@ import {
 } from "../src/lib/narrative/payload.ts";
 import {
   allowedSet,
+  bannedPhrases,
   countWords,
   fieldNames,
   inventedFigures,
   numberAllowed,
   readNumber,
+  unskilledHorizons,
+  unskilledQuotes,
+  unskilledRef,
   validateNarrative,
 } from "../src/lib/narrative/validate.ts";
 import {
@@ -64,6 +68,13 @@ function fixturePayload(): NarrativePayload {
   const inputs = loadPayloadInputs({ curated: join(DAY, "curated"), api: join(DAY, "api"), basins: join(DAY, "basins.csv") });
   if (inputs === null) throw new Error("fixture has no latest.json");
   return buildPayload(inputs);
+}
+
+/** A copy of `p` whose forecast horizons carry these skills, in order. */
+function withSkill(p: NarrativePayload, skills: (number | null)[]): NarrativePayload {
+  const copy = structuredClone(p);
+  copy.mazar_forecast!.horizons.forEach((h, i) => (h.skill_vs_persistence = skills[i] ?? null));
+  return copy;
 }
 
 const payload = fixturePayload();
@@ -269,6 +280,10 @@ describe("the computed pieces", () => {
 
 describe("the validator", () => {
   const allowed = allowedSet(payload);
+  // The fixture day predates any forecast skill (0.000, -0.012 and 0.001), so quoting its levels
+  // is now refused (es-10). These tests are about typography and the other checks, so they read a
+  // copy whose horizons have skill; the skill rule has its own tests below.
+  const skilled = withSkill(payload, [0.1, 0.1, 0.1]);
 
   const good = {
     outlook_es:
@@ -282,11 +297,11 @@ describe("the validator", () => {
   };
 
   it("accepts a text that only quotes the payload, in Spanish typography", () => {
-    expect(validateNarrative(good, payload)).toEqual({ ok: true, problems: [] });
+    expect(validateNarrative(good, skilled)).toEqual({ ok: true, problems: [] });
   });
 
   it("rejects an invented level", () => {
-    const result = validateNarrative({ ...good, outlook_es: `${good.outlook_es} Llegará a 2.112 m.` }, payload);
+    const result = validateNarrative({ ...good, outlook_es: `${good.outlook_es} Llegará a 2.112 m.` }, skilled);
     expect(result.ok).toBe(false);
     expect(result.problems).toContain("outlook_es: number 2.112");
   });
@@ -341,22 +356,22 @@ describe("the validator", () => {
   });
 
   it("rejects field names and code values, and not Spanish abbreviations", () => {
-    const result = validateNarrative({ ...good, drivers: ["La fase es el_nino según mazar.level_masl.", ...DRIVERS.slice(1)] }, payload);
+    const result = validateNarrative({ ...good, drivers: ["La fase es el_nino según mazar.level_masl.", ...DRIVERS.slice(1)] }, skilled);
     expect(result.problems).toEqual(['drivers[0]: field name "el_nino"', 'drivers[0]: field name "mazar.level_masl"']);
     expect(fieldNames("2.138,37 m.s.n.m., p. ej. El Niño; ONI de 2026-07")).toEqual([]);
   });
 
   it("enforces 120–220 words and 3–5 drivers", () => {
     expect(countWords("Mazar, a 2.138,37 m — el 21 de septiembre.")).toBe(8);
-    const short = validateNarrative({ ...good, outlook_es: good.outlook_es.replace(pad(3), "") }, payload);
+    const short = validateNarrative({ ...good, outlook_es: good.outlook_es.replace(pad(3), "") }, skilled);
     expect(short.problems).toEqual([expect.stringMatching(/^outlook_es: \d+ words, outside 120–220$/)]);
-    const long = validateNarrative({ ...good, outlook_es: good.outlook_es + PAD }, payload);
+    const long = validateNarrative({ ...good, outlook_es: good.outlook_es + PAD }, skilled);
     expect(long.problems).toEqual([expect.stringMatching(/words, outside/)]);
-    expect(validateNarrative({ ...good, drivers: DRIVERS.slice(0, 2) }, payload).problems).toEqual(["drivers: 2, outside 3–5"]);
+    expect(validateNarrative({ ...good, drivers: DRIVERS.slice(0, 2) }, skilled).problems).toEqual(["drivers: 2, outside 3–5"]);
   });
 
   it("checks each structured driver against the payload number it cites", () => {
-    const check = (driver: object) => validateNarrative({ ...good, drivers: [driver as never, ...DRIVERS.slice(1)] }, payload).problems;
+    const check = (driver: object) => validateNarrative({ ...good, drivers: [driver as never, ...DRIVERS.slice(1)] }, skilled).problems;
     expect(check({ ...DRIVERS[0], payload_ref: `reservoirs[${MAZAR}].slopes_m_per_day.d90` })).toEqual([
       `drivers[0]: payload_ref "reservoirs[${MAZAR}].slopes_m_per_day.d90" does not resolve to a number in the payload`,
     ]);
@@ -376,8 +391,114 @@ describe("the validator", () => {
   });
 
   it("requires the outlook to name the risk tier it was given", () => {
-    const result = validateNarrative({ ...good, outlook_es: good.outlook_es.replace("holgado", "tranquilo") }, payload);
+    const result = validateNarrative({ ...good, outlook_es: good.outlook_es.replace("holgado", "tranquilo") }, skilled);
     expect(result.problems).toEqual(['outlook_es: does not name the risk tier "holgado"']);
+  });
+
+  it("refuses a forecast level quoted at a horizon without skill, and only that horizon's (es-10)", () => {
+    // 2026-10-14's pattern: 7 and 30 days have skill, 14 days does not.
+    const mixed = withSkill(payload, [0.067, 0.021, 0.148]);
+    expect(unskilledHorizons(mixed)).toEqual([1]);
+    const at = (text: string) => validateNarrative({ ...good, outlook_es: `${good.outlook_es} ${text}` }, mixed).problems;
+    // The fixture's good text quotes 7- and 30-day levels: still fine.
+    expect(at("")).toEqual([]);
+    expect(at("A 14 días, el modelo espera unos 2.130,95 m.")).toEqual([
+      "outlook_es: number 2.130,95 quotes a forecast level at 14 d, whose skill is below 0.05",
+    ]);
+    // Rounded is still a quote of the same number (the 14-day p90, 2134.25)...
+    expect(at("Como mucho, unos 2.134,3 m.")).toEqual([
+      "outlook_es: number 2.134,3 quotes a forecast level at 14 d, whose skill is below 0.05",
+    ]);
+    // ...but a figure that also rounds from a quotable number cannot be told apart, and passes:
+    // 2.131 is the 14-day p50 (2130.95) and the 7-day p10 (2130.9) alike.
+    expect(at("A 14 días, unos 2.131 m.")).toEqual([]);
+    // A missing skill counts as none.
+    expect(unskilledHorizons(withSkill(payload, [0.1, null, 0.1]))).toEqual([1]);
+    // On the real fixture day no horizon has skill, so the good text's levels are refused.
+    expect(validateNarrative(good, payload).problems).toHaveLength(4);
+  });
+
+  it("reports an invented figure once, not also as an unskilled quote", () => {
+    expect(unskilledQuotes("Llegará a 2.112 m.", payload)).toEqual([]);
+    expect(validateNarrative({ ...good, outlook_es: `${good.outlook_es} Llegará a 2.112 m.` }, skilled).problems).toEqual([
+      "outlook_es: number 2.112",
+    ]);
+  });
+
+  it("refuses a driver resting on a level without skill, and not on the horizon's other numbers", () => {
+    const mixed = withSkill(payload, [0.1, 0.021, 0.1]);
+    expect(unskilledRef("mazar_forecast.horizons[1].p50", mixed)).toMatch(/is a forecast level at a horizon whose skill is below 0.05/);
+    expect(unskilledRef("mazar_forecast.horizons[1].skill_vs_persistence", mixed)).toBeNull();
+    expect(unskilledRef("mazar_forecast.horizons[0].p50", mixed)).toBeNull();
+    expect(unskilledRef(`reservoirs[${MAZAR}].level_masl`, mixed)).toBeNull();
+    const driver = {
+      text: "El modelo espera bajar.",
+      factor: "mazar_forecast",
+      direction: "steady",
+      payload_ref: "mazar_forecast.horizons[1].p90",
+    };
+    const problems = validateNarrative(
+      { ...good, drivers: [driver as never, ...DRIVERS.slice(1)] },
+      withSkill(payload, [0.1, 0.021, 0.1]),
+    ).problems;
+    expect(problems).toEqual([
+      'drivers[0]: payload_ref "mazar_forecast.horizons[1].p90" is a forecast level at a horizon whose skill is below 0.05',
+    ]);
+  });
+
+  it("refuses the phrases a prompt once wrote into every answer, however they are accented or cased", () => {
+    expect(bannedPhrases("Mazar, el principal embalse del país, bajó.")).toEqual(['banned phrase "principal embalse del pais"']);
+    expect(bannedPhrases("MAZAR, EL PRINCIPAL EMBALSE DEL PAIS")).toHaveLength(1);
+    expect(bannedPhrases("el principal  embalse\ndel país")).toHaveLength(1);
+    expect(bannedPhrases("Mazar, el embalse que regula el complejo Paute, bajó.")).toEqual([]);
+    const result = validateNarrative({ ...good, outlook_es: `Mazar, el principal embalse del país. ${good.outlook_es}` }, skilled);
+    expect(result.problems).toEqual(['outlook_es: banned phrase "principal embalse del pais"']);
+  });
+});
+
+describe("prompt es-10 against a real day (2026-10-14)", () => {
+  // The narrative document as published that day: its es-9 answer and the payload it was given.
+  const published = JSON.parse(readFileSync(join(FIXTURES, "narrative", "2026-10-14", "narrative.json"), "utf8")) as {
+    outlook_es: string;
+    drivers_structured: { text: string; factor: string; direction: string; payload_ref: string }[];
+    basis: NarrativePayload;
+  };
+  const day = published.basis;
+  const drivers = published.drivers_structured as never[];
+
+  /**
+   * An answer written by hand to es-10's rules, to show they can all be met at once on a day
+   * with a crossing to report: 187 words, eight figures, no sentence over 29 words.
+   */
+  const ES10 = [
+    "Mazar bajó unos 0,8 m por día esta semana, más rápido que en el último mes, y el indicador de energía del sitio marca «déficit».",
+    "El nivel del agua está en 2.124,46 metros sobre el nivel del mar, a 9,46 m del mínimo de operación, 2.115 m.",
+    "Si llueve como en alguno de los 15 años anteriores, en 10 de esos casos bajaría de ese mínimo, y en la mitad, en unos 30 días o menos.",
+    "El modelo espera que siga bajando hasta unos 2.117,15 m el 13 de noviembre de 2026.",
+    "En el escenario más probable, a 14 días faltaría cerca del 5,5 % de la energía que necesita el país.",
+    "Desde el 22 de septiembre de 2026, las grandes industrias se desconectan de la red un día a la semana para ahorrar agua.",
+    "Hoy llega a Mazar mucha menos agua de lo normal para estas fechas, con El Niño todavía activo según el último dato, de agosto de 2026.",
+    "Se pronostica más lluvia de lo habitual, según el pronóstico para un solo punto del centro de la cuenca, pero por ahora el embalse no lo refleja.",
+  ];
+
+  it("has a crossing to report and a 14-day horizon without skill", () => {
+    const critical = day.mazar_forecast!.crossings.find((c) => c.threshold_masl === 2115)!;
+    expect(critical).toMatchObject({ analogue_years: 15, years_that_cross: 10, p50_days: 30 });
+    expect(unskilledHorizons(day)).toEqual([1]);
+  });
+
+  it("refuses the es-9 answer as published for the phrase es-10 removed, and nothing else", () => {
+    expect(validateNarrative({ outlook_es: published.outlook_es, drivers }, day).problems).toEqual([
+      'outlook_es: banned phrase "principal embalse del pais"',
+    ]);
+  });
+
+  it("accepts an answer that follows es-10, inside its word and sentence targets", () => {
+    const text = ES10.join(" ");
+    expect(validateNarrative({ outlook_es: text, drivers }, day)).toEqual({ ok: true, problems: [] });
+    expect(countWords(text)).toBeGreaterThanOrEqual(150);
+    expect(countWords(text)).toBeLessThanOrEqual(190);
+    expect(Math.max(...ES10.map(countWords))).toBeLessThanOrEqual(30);
   });
 });
 
@@ -478,7 +599,7 @@ function answering(answer: unknown, metadata?: Record<string, Record<string, str
 
 const goodAnswer = {
   outlook_es:
-    "Mazar está en 2138,37 m y el pronóstico estadístico pone su mediana en 2133,28 m a 30 días. " +
+    "Mazar está en 2138,37 m y el pronóstico estadístico no acierta más que suponer que el nivel se queda igual. " +
     "El nivel de suficiencia es holgado: el caso p90 sigue cubierto." +
     PAD,
   drivers: [...DRIVERS],

@@ -18,6 +18,24 @@ see. Two kinds of problem:
 
 ---
 
+## Implementation status (2026-10-15)
+
+Phase A (items 1–5) is implemented on branch `claude/funny-planck-c22bp0`. Tests 795, all green,
+with typecheck, lint, Prettier, coverage, `npm run check` and `npm run narrative -- --dry-run`.
+
+| § | State | Notes |
+|---|---|---|
+| 1.1 Prompt errors | done | `es-10`: no "principal embalse del país"; the rain clause is about the forecast ("según el pronóstico para un solo punto…"); quote the longest skilled horizon and say nothing about a shorter one |
+| 1.2 Cause and filler | done | "por eso" removed from the connectors; causal connectors only where the payload states a cause; a measure starts with its own date; no tier definition beside the margin; El Niño inside the weather sentences |
+| 1.3 Targets | done, with one correction | 150–190 words, sentences 12–25 (one may reach 30). The figure cap is **8, not 7**: a hand-written answer for 2026-10-14 needed eight once the crossing sentence was in |
+| 1.4 Headline | done | Starts from the day's change; no description of Mazar in it |
+| 2.1 Crossings | done (prompt) | Required when `years_that_cross ≥ analogue_years / 2` for 2115 m; the soft check that it appeared is §3.2 |
+| 3.1 Hard checks | done | `unskilledQuotes`, `unskilledRef`, `bannedPhrases` in `validate.ts`, with tests, including the published 2026-10-14 document as a fixture: its es-9 answer is now refused for the banned phrase and nothing else, and the hand-written es-10 answer passes at 187 words |
+| 3.3 Replay | **not run** | Needs the AI Gateway key, which this environment does not have. Run `npm run narrative:eval -- --replay --models anthropic/claude-opus-5.5` before merging, or watch the first scheduled answers: a rejected day keeps the previous narrative on the site |
+| 1.4–3.1 side effect | expected | `narrative:eval`'s "passes now" column will show earlier answers failing on the banned phrase, and the 2026-09-21 answers on unskilled levels. The validator tests now read a fixture copy with skill raised, and the canned answers no longer quote levels at horizons without skill |
+
+---
+
 ## 0. Ranked summary
 
 | # | Item | Why now | Effort |
@@ -62,8 +80,7 @@ Items 7 and 8 are `PAYLOAD_VERSION` 4 with `es-11`.
   energía`) appended after the margin already gave the size. **Change:** when `margin_pct` is
   quoted, it *is* the explanation, and the definition word is not added.
 - The ending: "Además, El Niño sigue activo…" ends on the dangling fact the prompt forbids. **Change:**
-  El Niño goes inside the rain sentence, and the paragraph ends on Mazar or the electricity
-  balance.
+  El Niño goes inside the weather sentences, which close the paragraph on a complete thought.
 
 ### 1.3 A target the model can meet
 
@@ -75,8 +92,9 @@ Items 7 and 8 are `PAYLOAD_VERSION` 4 with `es-11`.
 
 The shape in "Shape of outlook_es" requires at least seven figures: level, distance, minimum,
 forecast level, slope, gap, and the gap's horizon. A six-figure cap cannot be met, so the model
-ignores it. **Change:** ask for 150–190 words; at most 7 figures, with plazos ("a 14 días")
-counted as dates; sentences of 12–25 words, with at most one longer. Keep the validator's
+ignores it. **Change:** ask for 150–190 words; at most 8 figures (seven, plus the crossing count
+from §2.1), with plazos ("a 14 días") counted as dates; sentences of 12–25 words, with at most one
+longer. Keep the validator's
 120–220 band as it is, and measure the soft targets in §3.2 instead of rejecting on them.
 
 ### 1.4 The headline
@@ -164,7 +182,7 @@ answers already pass it, so a stricter rule never costs a day's narrative unanno
 `npm run narrative:eval -- --replay` over the last 14 committed payloads, with the old and new
 prompts side by side, recorded in `data/reports/narrative.md`. It costs about $1.70 for 28 calls.
 **Acceptance for `es-10`:** 14 of 14 pass the validator; median words 150–190; median figures
-≤ 7; no sentence over 30 words; no banned phrase; the crossing count present on every day it is
+≤ 8; no sentence over 30 words; no banned phrase; the crossing count present on every day it is
 required.
 
 ---

@@ -43,7 +43,7 @@ const DRIVERS = [
 
 const answer = {
   outlook_es:
-    "Mazar está en 2138,37 m y el pronóstico estadístico pone su mediana en 2133,28 m a 30 días. " +
+    "Mazar está en 2138,37 m y el pronóstico estadístico no acierta más que suponer que el nivel se queda igual. " +
     "El nivel de suficiencia es holgado: el caso p90 sigue cubierto." +
     PAD,
   drivers: [...DRIVERS],
