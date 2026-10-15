@@ -20,7 +20,8 @@ see. Two kinds of problem:
 
 ## Implementation status (2026-10-15)
 
-Phase A (items 1–5) is implemented on branch `claude/funny-planck-c22bp0`. Tests 795, all green,
+Phases A (items 1–5) and C (items 7, 8 and the text side of 10) are implemented on branch
+`claude/funny-planck-c22bp0`. Tests 811, all green, with the static build too,
 with typecheck, lint, Prettier, coverage, `npm run check` and `npm run narrative -- --dry-run`.
 
 | § | State | Notes |
@@ -32,6 +33,10 @@ with typecheck, lint, Prettier, coverage, `npm run check` and `npm run narrative
 | 2.1 Crossings | done (prompt) | Required when `years_that_cross ≥ analogue_years / 2` for 2115 m; the soft check that it appeared is §3.2 |
 | 3.1 Hard checks | done | `unskilledQuotes`, `unskilledRef`, `bannedPhrases` in `validate.ts`, with tests, including the published 2026-10-14 document as a fixture: its es-9 answer is now refused for the banned phrase and nothing else, and the hand-written es-10 answer passes at 187 words |
 | 3.3 Replay | **not run** | Needs the AI Gateway key, which this environment does not have. Run `npm run narrative:eval -- --replay --models anthropic/claude-opus-5.5` before merging, or watch the first scheduled answers: a rejected day keeps the previous narrative on the site |
+| 2.2 Cascade block | **done** | `PAYLOAD_VERSION` 4, `src/lib/narrative/cascade.ts`, prompt `es-11`, driver factor `cascade`. On 2026-10-14: Mazar turbines 56.9 m³/s against 25.7 arriving; Molino + Sopladora make 24 GWh/day against a normal 17, running on Mazar's storage; the last episode below 2,115 m (2024-10-08 → 2024-12-10, 51 days below) averaged 7.1 GWh/day against 16.9 normal. When the crossing sentence is required, the text must also give that episode; the forecast level and El Niño become optional, and the targets move to 160–200 words and 10 figures, from a hand-written answer that meets them at 198 |
+| 2.3 Regulated inflow | **done** | No inflow percentile for Amaluza or Sopladora (`REGULATED_INFLOW`); the river between the dams is `cascade.local_inflow_m3s` |
+| 4.3 Amaluza's floor | **in the text only** | Every declared floor goes to the model with its source, and the prompt forbids saying Amaluza is below, near or above its minimum. Which floor CELEC operates to is still unknown: the `thresholds.csv` row needs evidence |
+| Two corrections | — | The storage above 2,115 m is **28.7 hm³, about 83 GWh**, not the 175 GWh written below: `forecast.json`'s 62.44 hm³ is measured above 2,098 m. And the river between the dams is 43.7 m³/s against a normal of **54.1** for the date, not "close to normal"; it is low too, if less than Mazar's |
 | 1.4–3.1 side effect | expected | `narrative:eval`'s "passes now" column will show earlier answers failing on the banned phrase, and the 2026-09-21 answers on unskilled levels. The validator tests now read a fixture copy with skill raised, and the canned answers no longer quote levels at horizons without skill |
 
 ---
@@ -131,7 +136,7 @@ block, every number computed in code and tested:
 | `mazar_release_7d_m3s` vs `mazar_inflow_7d_m3s` | ~57 vs 26 | Mazar `produccion_mwh` × `turbine_m3s_per_mw` from `forecast.json` |
 | `downstream_gwh_7d` vs its climatology | Molino + Sopladora, 7-day mean | `produccion_mwh` |
 | `cascade_gwh_per_hm3` | ~2.8 (Mazar ~1.2, Molino ~5.7, Sopladora ~3.25 MW per m³/s) | ratio of sums over the 137 days with `q_turbinado_m3s` |
-| `storage_above_operational_min_gwh` | 62.4 hm³ × 2.8 ≈ 175 GWh | `forecast.json` `storage_above_lowest_threshold_hm3` |
+| `storage_above_operational_min_gwh` | 28.7 hm³ × 2.9 ≈ 83 GWh (*corrected: 175 GWh used the 62.4 hm³ above 2,098 m*) | integrated from `forecast.json`'s area-elevation curve between 2,115 m and today's level |
 | `reference_episode` | 2024-10/11, Mazar 2,111–2,116 m: Molino 15–18 → 1.3–8.5 GWh/day, Sopladora 8–9 → 0.7–4.4 | a fixed reference row, like `rationing_episodes.csv` |
 
 Prompt (`es-11`): one sentence in the Mazar part on what the operational minimum means for the
@@ -151,8 +156,9 @@ Amaluza at 1.03 m³/s. On the 257 days Mazar did not generate, Amaluza's inflow 
 is at the 10th. A reader, or the model, takes that as rain.
 
 **Change:** remove `percentile_today` from Amaluza's block, or replace it with the local inflow
-(Amaluza inflow − Mazar release, 7-day means). In the last week that is ~44 m³/s against an
-October median of ~47, which is itself worth knowing: the drought is concentrated above Mazar.
+(Amaluza inflow − Mazar release, 7-day means). In the last week that is ~44 m³/s against a
+normal of 54 for the date (*corrected: an October monthly median of ~47 was compared at first,
+which made it look normal*). It is low too, though less than Mazar's own river.
 
 ---
 
@@ -204,7 +210,7 @@ use these scenarios (the crisis check reads the full distribution), so no backte
 `PauteCascade.tsx` shows Mazar's 410 hm³ and "~39 días de caudal medio". Add the energy reading
 (GWh per hm³ through the cascade, and storage above 2,115 m in GWh) from the same functions as
 §2.2, and Amaluza's place in its record. The aim is one sentence a reader can carry: "lo que queda
-en Mazar sobre su mínimo vale unos 175 GWh en las tres centrales".
+en Mazar sobre su mínimo vale unos 83 GWh en las tres centrales" (*corrected from 175*).
 
 ### 4.3 Amaluza's floor
 

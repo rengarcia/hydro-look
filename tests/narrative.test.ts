@@ -502,6 +502,58 @@ describe("prompt es-10 against a real day (2026-10-14)", () => {
   });
 });
 
+describe("prompt es-11 against the same day, with the cascade (PAYLOAD_VERSION 4)", () => {
+  const day = JSON.parse(readFileSync(join(FIXTURES, "narrative", "2026-10-14", "payload-v4.json"), "utf8")) as NarrativePayload;
+  const published = JSON.parse(readFileSync(join(FIXTURES, "narrative", "2026-10-14", "narrative.json"), "utf8")) as {
+    drivers_structured: never[];
+  };
+  const cascadeDriver = {
+    text: "La última vez que Mazar bajó de su mínimo, Molino y Sopladora produjeron unos 7,1 gigavatios hora al día.",
+    factor: "cascade",
+    direction: "down",
+    payload_ref: "cascade.last_episode_below_operational_min.downstream_gwh_day",
+  } as never;
+  const drivers = [...published.drivers_structured.slice(0, 4), cascadeDriver];
+
+  /**
+   * An answer written by hand to es-11's rules: the crossing sentence makes the cascade sentence
+   * required, the forecast level and El Niño are left out for room. 198 words, nine figures.
+   */
+  const ES11 = [
+    "Mazar bajó unos 0,8 m por día esta semana, más rápido que en el último mes, y el indicador de energía del sitio marca «déficit».",
+    "El nivel del agua está en 2.124,46 metros sobre el nivel del mar, a 9,46 m del mínimo de operación, 2.115 m.",
+    "Si llueve como en alguno de los 15 años anteriores, en 10 de esos casos bajaría de ese mínimo, y en la mitad, en unos 30 días o menos.",
+    "La última vez que Mazar estuvo debajo, entre el 8 de octubre y el 10 de diciembre de 2024, también cayeron Molino y Sopladora, que usan su agua.",
+    "Juntas produjeron unos 7,1 gigavatios hora al día, frente a unos 16,9 normales para esas fechas.",
+    "En el escenario más probable, a 14 días faltaría cerca del 5,5 % de la energía que necesita el país.",
+    "Desde el 22 de septiembre de 2026, las grandes industrias se desconectan de la red un día a la semana para ahorrar agua.",
+    "Hoy llega a Mazar mucha menos agua de lo normal para estas fechas.",
+    "Se pronostica más lluvia de lo habitual, según el pronóstico para un solo punto de la cuenca, aunque el embalse aún no lo refleja.",
+  ];
+
+  it("accepts an answer that follows es-11, inside its word and sentence targets", () => {
+    const text = ES11.join(" ");
+    expect(validateNarrative({ outlook_es: text, drivers }, day)).toEqual({ ok: true, problems: [] });
+    expect(countWords(text)).toBeGreaterThanOrEqual(160);
+    expect(countWords(text)).toBeLessThanOrEqual(200);
+    const lengths = ES11.map(countWords);
+    expect(Math.max(...lengths)).toBeLessThanOrEqual(30);
+    expect(lengths.filter((n) => n > 25).length).toBeLessThanOrEqual(2);
+  });
+
+  it("refuses a cascade figure the payload does not hold, such as a computed loss", () => {
+    // 16,9 − 7,1 is 9,8: arithmetic the model may not do.
+    const text = `${ES11.join(" ")} Eso fue una pérdida de 9,8 gigavatios hora al día.`;
+    expect(validateNarrative({ outlook_es: text, drivers }, day).problems).toEqual(["outlook_es: number 9,8"]);
+  });
+
+  it("refuses a cascade driver filed under another block", () => {
+    const misfiled = { ...(cascadeDriver as object), payload_ref: "adequacy.horizons[1].margin_pct" } as never;
+    const problems = validateNarrative({ outlook_es: ES11.join(" "), drivers: [...drivers.slice(0, 4), misfiled] }, day).problems;
+    expect(problems).toEqual(['drivers[4]: factor "cascade" does not match payload_ref "adequacy.horizons[1].margin_pct"']);
+  });
+});
+
 describe("the no-op", () => {
   const hash = payloadHash(payload);
   const row = (

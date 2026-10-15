@@ -54,13 +54,27 @@ import { MAZAR_PRECIP_BASIN, PROVISIONAL_PRECIP_BASIN, selectPrecipBasin } from 
 import { loadSeries, type DailySeries, type SeriesSet } from "../features/series.ts";
 import { percentileOf, type LatestDocument, type ReservoirSnapshot } from "../publish/latest.ts";
 import type { AdequacyDocument, ForecastDocument, StatusDocument } from "../site/documents.ts";
+import { cascadeBlock, type PayloadCascade } from "./cascade.ts";
 
 /**
  * Bumped when the payload's shape changes, which also changes every hash computed from it.
  * 2: other reservoirs trimmed to what the text may say about them; precipitation basin by §1.1.
  * 3: `measures_in_force`, the supply restrictions in `rationing_episodes.csv` that cover the origin.
+ * 4: `cascade` (Mazar's turbined flow, the river between the dams, Molino and Sopladora against
+ *    normal, energy per hm³, storage above the operational minimum, Amaluza against its record,
+ *    and the last episode below the minimum; `cascade.ts`), and no inflow percentile for a
+ *    reservoir whose inflow is an upstream plant's release (`REGULATED_INFLOW`).
  */
-export const PAYLOAD_VERSION = 3;
+export const PAYLOAD_VERSION = 4;
+
+/**
+ * Reservoirs whose recorded inflow is mostly an upstream plant's release: Amaluza takes Mazar's
+ * (each m³/s Mazar turbines arrives at 1.03 m³/s), Sopladora's chamber takes Molino's tailrace.
+ * A percentile of that flow describes the operator, not the weather, and on 2026-10-14 put
+ * Amaluza at the 69th while Mazar's own river was at the 10th. The river between Mazar and
+ * Amaluza is in `cascade.local_inflow_m3s` instead.
+ */
+export const REGULATED_INFLOW: ReadonlySet<string> = new Set(["amaluza", "sopladora"]);
 
 /** The horizons the narrative talks about. §7 publishes 60 and 90 as well; the panel does not. */
 export const NARRATIVE_HORIZONS = [7, 14, 30] as const;
@@ -256,6 +270,8 @@ export interface NarrativePayload {
   stale_feeds: { feed: string; latest: IsoDate | null; state: string }[];
   /** Restrictions covering the origin date. Empty is the normal case. */
   measures_in_force: PayloadMeasure[];
+  /** The Paute cascade below Mazar; null without Mazar and Amaluza in `latest.json`. */
+  cascade: PayloadCascade | null;
 }
 
 /** The subset of a `weather_daily` row the precipitation outlook reads. */
@@ -279,7 +295,7 @@ export interface PayloadInputs {
   forecast: ForecastDocument | null;
   adequacy: AdequacyDocument | null;
   status: StatusDocument | null;
-  /** The resolved observations; only `cota_masl` of the reservoirs in `latest` is read. */
+  /** The resolved observations: the reservoirs' `cota_masl`, and the Paute plants' flows and energy for `cascade`. */
   series: SeriesSet;
   weather: readonly WeatherInput[];
   basins: readonly BasinRow[];
@@ -629,7 +645,10 @@ function reservoirBlock(reservoir: ReservoirSnapshot, inputs: PayloadInputs, for
       observed_on: level.date,
       slopes_m_per_day: reservoir.slopes_m_per_day,
       floors: nearest ? [nearest] : [],
-      inflow: inflow && { m3s: inflow.m3s, percentile_today: inflow.climatology?.percentile_today ?? null },
+      inflow: inflow && {
+        m3s: inflow.m3s,
+        percentile_today: REGULATED_INFLOW.has(reservoir.site) ? null : (inflow.climatology?.percentile_today ?? null),
+      },
     };
   }
   const years = analogYears(inputs.series.get(reservoir.site, "cota_masl"), level.date);
@@ -696,7 +715,34 @@ export function buildPayload(inputs: PayloadInputs): NarrativePayload {
       .filter((f) => f.state !== "current")
       .map((f) => ({ feed: f.feed, latest: f.latest, state: f.state })),
     measures_in_force: measuresInForce(inputs.rationing ?? [], origin),
+    cascade: pauteCascade(inputs, origin),
   };
+}
+
+/** The cascade block from the tables and `forecast.json`, for the Paute sites only. */
+function pauteCascade(inputs: PayloadInputs, origin: IsoDate): PayloadCascade | null {
+  const amaluza = inputs.latest.reservoirs.find((r) => r.site === "amaluza");
+  if (!amaluza || !inputs.latest.reservoirs.some((r) => r.site === "mazar")) return null;
+  const forecast = inputs.forecast?.site === "mazar" ? inputs.forecast : null;
+  const get = (site: string, variable: string) => inputs.series.get(site, variable);
+  return cascadeBlock({
+    origin,
+    series: {
+      mazarLevel: get("mazar", "cota_masl"),
+      mazarInflow: get("mazar", "caudal_m3s"),
+      mazarEnergyMwh: get("mazar", "produccion_mwh"),
+      amaluzaLevel: get("amaluza", "cota_masl"),
+      amaluzaInflow: get("amaluza", "caudal_m3s"),
+      molinoEnergyMwh: get("molino", "produccion_mwh"),
+      molinoTurbinedM3s: get("molino", "q_turbinado_m3s"),
+      sopladoraEnergyMwh: get("sopladora", "produccion_mwh"),
+      sopladoraTurbinedM3s: get("sopladora", "q_turbinado_m3s"),
+    },
+    turbineM3sPerMw: forecast?.reservoir?.turbine_m3s_per_mw ?? null,
+    areaCurve: forecast?.reservoir?.area_elevation ?? null,
+    operationalMinMasl: forecast?.thresholds.find((t) => t.name === "operational minimum")?.level_masl ?? null,
+    amaluzaFloors: foldBands(amaluza).map((b) => ({ floor_masl: b.floor_masl, declared_by: b.declared_by })),
+  });
 }
 
 /* ------------------------------------------------------------------- hashing */
