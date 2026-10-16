@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-16T15:39:47Z",
+  "generated_at": "2026-10-16T15:41:04Z",
   "data_date": "2026-10-15",
   "as_of": "2026-10-16",
   "ok": true,
@@ -50,7 +50,7 @@
       "id": "era5",
       "label_es": "Open-Meteo ERA5",
       "feed": "Open-Meteo ERA5",
-      "latest": "2026-10-09",
+      "latest": "2026-10-10",
       "limit_days": 10,
       "state": "current"
     },
@@ -82,7 +82,7 @@
       "id": "geoglows_forecast",
       "label_es": "GEOGLOWS: pronóstico de caudal",
       "feed": "GEOGLOWS river forecast",
-      "latest": "2026-10-15",
+      "latest": "2026-10-16",
       "limit_days": 3,
       "state": "current"
     },
@@ -98,7 +98,7 @@
       "id": "adequacy",
       "label_es": "Suficiencia nacional",
       "feed": "National adequacy",
-      "latest": "2026-10-14",
+      "latest": "2026-10-15",
       "limit_days": 3,
       "state": "current"
     }
@@ -117,22 +117,22 @@
       "rows": 7
     },
     "weather_daily": {
-      "rows": 110664
+      "rows": 110800
     },
     "enso_monthly": {
       "rows": 920
     },
     "forecast_runs": {
-      "rows": 30
+      "rows": 31
     },
     "adequacy_runs": {
-      "rows": 27
+      "rows": 28
     },
     "adequacy_values": {
-      "rows": 135
+      "rows": 140
     },
     "forecast_values": {
-      "rows": 150
+      "rows": 155
     },
     "narrative_snapshots": {
       "rows": 44
@@ -144,7 +144,7 @@
       "rows": 33361
     },
     "geoglows_forecasts": {
-      "rows": 25110
+      "rows": 25140
     }
   },
   "findings": [
