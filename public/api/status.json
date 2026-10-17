@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-17T16:00:10Z",
+  "generated_at": "2026-10-17T18:54:35Z",
   "data_date": "2026-10-16",
   "as_of": "2026-10-17",
   "ok": true,
@@ -82,7 +82,7 @@
       "id": "geoglows_forecast",
       "label_es": "GEOGLOWS: pronóstico de caudal",
       "feed": "GEOGLOWS river forecast",
-      "latest": "2026-10-16",
+      "latest": "2026-10-17",
       "limit_days": 3,
       "state": "current"
     },
@@ -90,7 +90,7 @@
       "id": "mazar_forecast",
       "label_es": "Pronóstico de cota de Mazar",
       "feed": "Mazar level forecast",
-      "latest": "2026-10-15",
+      "latest": "2026-10-16",
       "limit_days": 3,
       "state": "current"
     },
@@ -98,7 +98,7 @@
       "id": "adequacy",
       "label_es": "Suficiencia nacional",
       "feed": "National adequacy",
-      "latest": "2026-10-15",
+      "latest": "2026-10-16",
       "limit_days": 3,
       "state": "current"
     }
@@ -111,7 +111,7 @@
       "rows": 58489
     },
     "operativa_snapshots": {
-      "rows": 4512
+      "rows": 4559
     },
     "operating_bands": {
       "rows": 7
@@ -123,19 +123,19 @@
       "rows": 920
     },
     "forecast_runs": {
-      "rows": 32
+      "rows": 33
     },
     "adequacy_runs": {
-      "rows": 28
+      "rows": 29
     },
     "adequacy_values": {
-      "rows": 140
+      "rows": 145
     },
     "forecast_values": {
-      "rows": 160
+      "rows": 165
     },
     "narrative_snapshots": {
-      "rows": 44
+      "rows": 45
     },
     "xm_exchange_daily": {
       "rows": 4026
@@ -144,7 +144,7 @@
       "rows": 33371
     },
     "geoglows_forecasts": {
-      "rows": 25140
+      "rows": 25170
     }
   },
   "findings": [
