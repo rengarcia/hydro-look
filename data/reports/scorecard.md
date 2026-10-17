@@ -1,12 +1,12 @@
 # Scorecard — how the published forecasts did
 
-Generated 2026-10-16T23:05:29Z by `npm run score` from the committed tables; no network. The backtest reports (`backtest.md`, `adequacy.md`) say how each method scores at monthly origins it never published from; this says how the numbers the site actually published did once their horizons passed.
+Generated 2026-10-17T05:05:21Z by `npm run score` from the committed tables; no network. The backtest reports (`backtest.md`, `adequacy.md`) say how each method scores at monthly origins it never published from; this says how the numbers the site actually published did once their horizons passed.
 
 Rows are grouped by the model that published them and the version of the run that made them, so a method change starts a new line rather than blending into the old one. Where an origin was published more than once (a rerun on revised data), only the last run generated is scored.
 
 ## Mazar level (forecast_values)
 
-Observed through 2026-10-15. 27 runs considered (4 superseded by a later run for the same origin and version); 32 rows scored, 103 pending, 0 excluded.
+Observed through 2026-10-15. 27 runs considered (5 superseded by a later run for the same origin and version); 32 rows scored, 103 pending, 0 excluded.
 
 | model | version | horizon | n | MAE (m) | bias | coverage p10–p90 (n) | pinball | origins |
 |---|---|---:|---:|---:|---:|---:|---:|---|
