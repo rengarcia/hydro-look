@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-17T05:05:24Z",
+  "generated_at": "2026-10-17T16:00:12Z",
   "data_date": "2026-10-16",
   "as_of": "2026-10-17",
   "disclaimer": "No es una fuente oficial. Cada número es una copia de lo que publicaron CELEC o CENACE, con la respuesta que lo produjo archivada junto a él.",
@@ -10,17 +10,17 @@
       "label": "Mazar",
       "basin": "paute",
       "level": {
-        "masl": 2123.53,
-        "date": "2026-10-15",
+        "masl": 2123.52,
+        "date": "2026-10-16",
         "first_reading": "2014-09-20",
-        "days": 4409,
+        "days": 4410,
         "observed_min_masl": 2106.66,
         "observed_max_masl": 2155.83,
         "previous": {
-          "masl": 2124.46,
-          "date": "2026-10-14"
+          "masl": 2123.53,
+          "date": "2026-10-15"
         },
-        "delta_1d_m": -0.93
+        "delta_1d_m": -0.01
       },
       "bands": [
         {
@@ -31,8 +31,8 @@
           "source": "celec sur via press",
           "observed_from": "2024-04-16",
           "observed_to": "2026-10-09",
-          "band_pct": 22.46,
-          "metres_above_min": 8.53
+          "band_pct": 22.43,
+          "metres_above_min": 8.52
         },
         {
           "min_masl": 2100,
@@ -42,8 +42,8 @@
           "source": "ords:repDiaHid12m",
           "observed_from": "2014-09-20",
           "observed_to": "2026-09-20",
-          "band_pct": 44.4,
-          "metres_above_min": 23.53
+          "band_pct": 44.38,
+          "metres_above_min": 23.52
         },
         {
           "min_masl": 2098,
@@ -53,8 +53,8 @@
           "source": "celec dashboard bundle",
           "observed_from": "2026-09-21",
           "observed_to": "2026-09-21",
-          "band_pct": 46.43,
-          "metres_above_min": 25.53
+          "band_pct": 46.41,
+          "metres_above_min": 25.52
         },
         {
           "min_masl": 2100,
@@ -64,33 +64,33 @@
           "source": "ords:repDiaVolAlm",
           "observed_from": "2026-09-21",
           "observed_to": "2026-09-21",
-          "band_pct": 44.4,
-          "metres_above_min": 23.53
+          "band_pct": 44.38,
+          "metres_above_min": 23.52
         }
       ],
       "slopes_m_per_day": {
-        "d7": -0.7094,
-        "d14": -0.5257,
-        "d30": -0.5292
+        "d7": -0.5888,
+        "d14": -0.4956,
+        "d30": -0.5085
       },
       "inflow": {
-        "m3s": 31.06,
-        "date": "2026-10-15",
+        "m3s": 55.16,
+        "date": "2026-10-16",
         "first_reading": "2010-02-10",
-        "days": 6086,
+        "days": 6087,
         "climatology": {
-          "p10": 20.39,
+          "p10": 20.05,
           "p50": 45,
-          "p90": 117.13,
+          "p90": 123.6,
           "years": 17,
           "n": 247,
-          "percentile_today": 30.4
+          "percentile_today": 58.7
         },
         "previous": {
-          "m3s": 20.08,
-          "date": "2026-10-14"
+          "m3s": 31.06,
+          "date": "2026-10-15"
         },
-        "delta_1d_m3s": 10.97,
+        "delta_1d_m3s": 24.1,
         "return_periods": {
           "geoglows": {
             "river_id": 620988388,
@@ -223,17 +223,17 @@
       "label": "Amaluza",
       "basin": "paute",
       "level": {
-        "masl": 1972.83,
-        "date": "2026-10-15",
+        "masl": 1971.36,
+        "date": "2026-10-16",
         "first_reading": "2014-09-20",
-        "days": 4409,
-        "observed_min_masl": 1971.65,
+        "days": 4410,
+        "observed_min_masl": 1971.36,
         "observed_max_masl": 1991.69,
         "previous": {
-          "masl": 1972.89,
-          "date": "2026-10-14"
+          "masl": 1972.83,
+          "date": "2026-10-15"
         },
-        "delta_1d_m": -0.06
+        "delta_1d_m": -1.48
       },
       "bands": [
         {
@@ -244,8 +244,8 @@
           "source": "ords:repDiaHid12m",
           "observed_from": "2014-09-20",
           "observed_to": "2026-09-20",
-          "band_pct": 41.4,
-          "metres_above_min": 12.83
+          "band_pct": 36.63,
+          "metres_above_min": 11.36
         },
         {
           "min_masl": 1970,
@@ -255,8 +255,8 @@
           "source": "ords:repDiaVolAlm",
           "observed_from": "2026-09-21",
           "observed_to": "2026-09-21",
-          "band_pct": 13.5,
-          "metres_above_min": 2.83
+          "band_pct": 6.46,
+          "metres_above_min": 1.36
         },
         {
           "min_masl": 1975,
@@ -266,33 +266,33 @@
           "source": "celec dashboard bundle",
           "observed_from": "2026-09-21",
           "observed_to": "2026-09-21",
-          "band_pct": -13.54,
-          "metres_above_min": -2.17
+          "band_pct": -22.77,
+          "metres_above_min": -3.64
         }
       ],
       "slopes_m_per_day": {
-        "d7": -1.1531,
-        "d14": -0.8451,
-        "d30": -0.3736
+        "d7": -1.0936,
+        "d14": -1.0222,
+        "d30": -0.4234
       },
       "inflow": {
-        "m3s": 102.83,
-        "date": "2026-10-15",
+        "m3s": 20.13,
+        "date": "2026-10-16",
         "first_reading": "2014-09-20",
-        "days": 4409,
+        "days": 4410,
         "climatology": {
-          "p10": 33.7,
-          "p50": 104,
-          "p90": 171.6,
+          "p10": 27.18,
+          "p50": 100.5,
+          "p90": 175.1,
           "years": 13,
           "n": 188,
-          "percentile_today": 49.5
+          "percentile_today": 6.9
         },
         "previous": {
-          "m3s": 131.72,
-          "date": "2026-10-14"
+          "m3s": 102.83,
+          "date": "2026-10-15"
         },
-        "delta_1d_m3s": -28.89,
+        "delta_1d_m3s": -82.7,
         "return_periods": {
           "geoglows": {
             "river_id": 620955363,
@@ -425,17 +425,17 @@
       "label": "Sopladora",
       "basin": "paute",
       "level": {
-        "masl": 1315.77,
-        "date": "2026-10-15",
+        "masl": 1314.98,
+        "date": "2026-10-16",
         "first_reading": "2026-05-31",
-        "days": 138,
+        "days": 139,
         "observed_min_masl": 1313.51,
         "observed_max_masl": 1317.12,
         "previous": {
-          "masl": 1315.63,
-          "date": "2026-10-14"
+          "masl": 1315.77,
+          "date": "2026-10-15"
         },
-        "delta_1d_m": 0.14
+        "delta_1d_m": -0.79
       },
       "bands": [
         {
@@ -446,26 +446,26 @@
           "source": "celec dashboard bundle",
           "observed_from": "2026-09-21",
           "observed_to": "2026-09-21",
-          "band_pct": 62.81,
-          "metres_above_min": 3.77
+          "band_pct": 49.58,
+          "metres_above_min": 2.98
         }
       ],
       "slopes_m_per_day": {
-        "d7": 0.0765,
-        "d14": 0.0216,
-        "d30": 0.0068
+        "d7": -0.1404,
+        "d14": -0.0453,
+        "d30": -0.0259
       },
       "inflow": {
-        "m3s": 134.34,
-        "date": "2026-10-15",
+        "m3s": 32.43,
+        "date": "2026-10-16",
         "first_reading": "2026-05-31",
-        "days": 138,
+        "days": 139,
         "climatology": null,
         "previous": {
-          "m3s": 149.64,
-          "date": "2026-10-14"
+          "m3s": 134.34,
+          "date": "2026-10-15"
         },
-        "delta_1d_m3s": -15.3,
+        "delta_1d_m3s": -101.91,
         "return_periods": {
           "geoglows": null,
           "measured": null
@@ -859,42 +859,42 @@
       "label": "Agoyán",
       "basin": "pastaza",
       "level": {
-        "masl": 1645.66,
-        "date": "2026-10-15",
+        "masl": 1645.65,
+        "date": "2026-10-16",
         "first_reading": "2016-07-05",
-        "days": 3750,
+        "days": 3751,
         "observed_min_masl": 1637,
         "observed_max_masl": 1651,
         "previous": {
-          "masl": 1646.04,
-          "date": "2026-10-14"
+          "masl": 1645.66,
+          "date": "2026-10-15"
         },
-        "delta_1d_m": -0.38
+        "delta_1d_m": -0.01
       },
       "bands": [],
       "slopes_m_per_day": {
-        "d7": -0.0943,
-        "d14": -0.02,
-        "d30": -0.1217
+        "d7": 0.01,
+        "d14": -0.0214,
+        "d30": -0.0467
       },
       "inflow": {
-        "m3s": 58,
-        "date": "2026-10-15",
+        "m3s": 72,
+        "date": "2026-10-16",
         "first_reading": "2016-07-06",
-        "days": 3740,
+        "days": 3741,
         "climatology": {
-          "p10": 57.2,
-          "p50": 75,
-          "p90": 126.6,
+          "p10": 56,
+          "p50": 77,
+          "p90": 135.6,
           "years": 11,
           "n": 157,
-          "percentile_today": 13.4
+          "percentile_today": 42.7
         },
         "previous": {
-          "m3s": 55,
-          "date": "2026-10-14"
+          "m3s": 58,
+          "date": "2026-10-15"
         },
-        "delta_1d_m3s": 3,
+        "delta_1d_m3s": 14,
         "return_periods": {
           "geoglows": {
             "river_id": 621014469,
@@ -1027,42 +1027,42 @@
       "label": "Manduriacu",
       "basin": "guayllabamba",
       "level": {
-        "masl": 490.5,
-        "date": "2026-10-15",
+        "masl": 491,
+        "date": "2026-10-16",
         "first_reading": "2017-08-01",
-        "days": 3363,
+        "days": 3364,
         "observed_min_masl": 460,
         "observed_max_masl": 493.1,
         "previous": {
-          "masl": 491,
-          "date": "2026-10-14"
+          "masl": 490.5,
+          "date": "2026-10-15"
         },
-        "delta_1d_m": -0.5
+        "delta_1d_m": 0.5
       },
       "bands": [],
       "slopes_m_per_day": {
-        "d7": 0.0143,
-        "d14": -0.0214,
-        "d30": -0.0567
+        "d7": 0.0857,
+        "d14": -0.0143,
+        "d30": -0.04
       },
       "inflow": {
-        "m3s": 105.1,
-        "date": "2026-10-15",
+        "m3s": 105.3,
+        "date": "2026-10-16",
         "first_reading": "2017-08-01",
-        "days": 3331,
+        "days": 3332,
         "climatology": {
-          "p10": 66.19,
-          "p50": 88.5,
+          "p10": 65.75,
+          "p50": 91.39,
           "p90": 159.3,
           "years": 10,
           "n": 142,
-          "percentile_today": 65.5
+          "percentile_today": 62.7
         },
         "previous": {
-          "m3s": 120.7,
-          "date": "2026-10-14"
+          "m3s": 105.1,
+          "date": "2026-10-15"
         },
-        "delta_1d_m3s": -15.6,
+        "delta_1d_m3s": 0.2,
         "return_periods": {
           "geoglows": {
             "river_id": 670078161,
@@ -1195,42 +1195,42 @@
       "label": "Coca Codo Sinclair",
       "basin": "coca",
       "level": {
-        "masl": 1218.3,
-        "date": "2026-10-15",
+        "masl": 1217.4,
+        "date": "2026-10-16",
         "first_reading": "2016-06-26",
-        "days": 3758,
+        "days": 3759,
         "observed_min_masl": 1198,
         "observed_max_masl": 1230.5,
         "previous": {
-          "masl": 1218.1,
-          "date": "2026-10-14"
+          "masl": 1218.3,
+          "date": "2026-10-15"
         },
-        "delta_1d_m": 0.2
+        "delta_1d_m": -0.9
       },
       "bands": [],
       "slopes_m_per_day": {
-        "d7": -0.1286,
-        "d14": -0.1571,
-        "d30": -0.1533
+        "d7": -0.3286,
+        "d14": -0.2143,
+        "d30": -0.1733
       },
       "inflow": {
-        "m3s": 166,
-        "date": "2026-10-15",
+        "m3s": 204,
+        "date": "2026-10-16",
         "first_reading": "2016-06-21",
-        "days": 3743,
+        "days": 3744,
         "climatology": {
-          "p10": 134,
-          "p50": 195,
-          "p90": 388,
+          "p10": 132.8,
+          "p50": 196.5,
+          "p90": 396.3,
           "years": 11,
           "n": 158,
-          "percentile_today": 36.7
+          "percentile_today": 54.4
         },
         "previous": {
-          "m3s": 161,
-          "date": "2026-10-14"
+          "m3s": 166,
+          "date": "2026-10-15"
         },
-        "delta_1d_m3s": 5,
+        "delta_1d_m3s": 38,
         "return_periods": {
           "geoglows": {
             "river_id": 620922213,
@@ -1360,79 +1360,79 @@
     }
   ],
   "national": {
-    "date": "2026-10-15",
+    "date": "2026-10-16",
     "supply_gwh": [
       {
         "concept": "generacion_hidraulica",
-        "gwh": 74.859,
-        "pct": 73.25
+        "gwh": 69.424,
+        "pct": 71.03
       },
       {
         "concept": "generacion_motores_bunker",
-        "gwh": 11.16,
-        "pct": 10.92
+        "gwh": 11.264,
+        "pct": 11.52
       },
       {
         "concept": "generacion_vapor_bunker",
-        "gwh": 7.911,
-        "pct": 7.74
+        "gwh": 8.081,
+        "pct": 8.27
       },
       {
         "concept": "generacion_turbinas_diesel",
-        "gwh": 4.547,
-        "pct": 4.45
+        "gwh": 4.621,
+        "pct": 4.73
       },
       {
         "concept": "generacion_turbinas_gas",
-        "gwh": 2.943,
-        "pct": 2.88
-      },
-      {
-        "concept": "generacion_otros_tipos",
-        "gwh": 0.641,
-        "pct": 0.63
+        "gwh": 2.972,
+        "pct": 3.04
       },
       {
         "concept": "total_importacion",
-        "gwh": 0.134,
-        "pct": 0.13
+        "gwh": 0.951,
+        "pct": 0.97
+      },
+      {
+        "concept": "generacion_otros_tipos",
+        "gwh": 0.43,
+        "pct": 0.44
       }
     ],
-    "total_generation_gwh": 102.06,
-    "total_import_gwh": 0.134,
-    "total_export_gwh": 0.074,
-    "distribution_demand_gwh": 91.317,
-    "transport_losses_gwh": -0.997,
-    "hydro_share_pct": 73.25,
-    "thermal_share_pct": 25.99,
-    "import_share_pct": 0.13,
+    "total_generation_gwh": 96.791,
+    "total_import_gwh": 0.951,
+    "total_export_gwh": 0.041,
+    "distribution_demand_gwh": 88.69,
+    "transport_losses_gwh": -2.682,
+    "hydro_share_pct": 71.03,
+    "thermal_share_pct": 27.56,
+    "import_share_pct": 0.97,
     "previous": {
-      "date": "2026-10-14",
-      "total_generation_gwh": 95.524,
-      "total_import_gwh": 0.112,
-      "hydro_share_pct": 73.72,
-      "thermal_share_pct": 25.75,
-      "import_share_pct": 0.12
+      "date": "2026-10-15",
+      "total_generation_gwh": 102.06,
+      "total_import_gwh": 0.134,
+      "hydro_share_pct": 73.25,
+      "thermal_share_pct": 25.99,
+      "import_share_pct": 0.13
     },
     "delta_1d": {
-      "hydro_share_pct_points": -0.47,
-      "thermal_share_pct_points": 0.24,
-      "import_share_pct_points": 0.01,
-      "total_generation_gwh": 6.536
+      "hydro_share_pct_points": -2.22,
+      "thermal_share_pct_points": 1.57,
+      "import_share_pct_points": 0.84,
+      "total_generation_gwh": -5.269
     }
   },
   "live": {
     "date": "2026-10-17",
-    "fetched_at": "2026-10-17T05:04:01Z",
-    "total_production_gwh": 1.961,
-    "hydro_gwh": 1.3,
-    "thermal_gwh": 0.652,
-    "nonconventional_gwh": 0.008,
-    "import_gwh": 0,
-    "export_gwh": 0,
-    "hydro_share_pct": 66.29,
-    "thermal_share_pct": 33.25,
-    "import_share_pct": 0
+    "fetched_at": "2026-10-17T15:59:36Z",
+    "total_production_gwh": 39.265,
+    "hydro_gwh": 25.189,
+    "thermal_gwh": 13.805,
+    "nonconventional_gwh": 0.235,
+    "import_gwh": 0.02,
+    "export_gwh": 0.028,
+    "hydro_share_pct": 64.12,
+    "thermal_share_pct": 35.14,
+    "import_share_pct": 0.05
   },
   "adequacy": {
     "origin_date": "2026-10-15",

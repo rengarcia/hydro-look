@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-17T05:04:45Z",
+  "generated_at": "2026-10-17T16:00:10Z",
   "data_date": "2026-10-16",
   "as_of": "2026-10-17",
   "ok": true,
@@ -26,7 +26,7 @@
       "id": "ords_historian",
       "label_es": "ORDS: historiador",
       "feed": "ORDS historian (pointValues)",
-      "latest": "2026-10-15",
+      "latest": "2026-10-16",
       "limit_days": 3,
       "state": "current"
     },
@@ -34,7 +34,7 @@
       "id": "smec_balance",
       "label_es": "CENACE SMEC: balance nacional",
       "feed": "CENACE SMEC national balance",
-      "latest": "2026-10-15",
+      "latest": "2026-10-16",
       "limit_days": 4,
       "state": "current"
     },
@@ -105,13 +105,13 @@
   ],
   "tables": {
     "observations_daily": {
-      "rows": 91078
+      "rows": 91127
     },
     "national_balance_daily": {
-      "rows": 58474
+      "rows": 58489
     },
     "operativa_snapshots": {
-      "rows": 4465
+      "rows": 4512
     },
     "operating_bands": {
       "rows": 7
@@ -123,7 +123,7 @@
       "rows": 920
     },
     "forecast_runs": {
-      "rows": 31
+      "rows": 32
     },
     "adequacy_runs": {
       "rows": 28
@@ -132,7 +132,7 @@
       "rows": 140
     },
     "forecast_values": {
-      "rows": 155
+      "rows": 160
     },
     "narrative_snapshots": {
       "rows": 44
