@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-17T16:00:44Z",
-  "data_date": "2026-10-16",
+  "generated_at": "2026-10-19T05:26:11Z",
+  "data_date": "2026-10-18",
   "status": "ok",
   "model": "anthropic/claude-opus-5.5",
   "prompt_version": "es-11+paute_mazar",
-  "payload_hash": "357250375876e890db61ffab5fe6bb7d2b3ecbfecf78a46608cdbf220d125c86",
-  "origin_date": "2026-10-16",
+  "payload_hash": "d40e7c720c7695004464bf7ceb2ef5efa7dabc84493a425c7971ed91d31c4d25",
+  "origin_date": "2026-10-18",
   "risk_tier": "deficit",
   "risk_tier_given": {
     "tier": "deficit",
@@ -14,41 +14,41 @@
     "source": "adequacy.json current.worst_tier: the worst tier across the published horizons",
     "tier_at_7d": "deficit"
   },
-  "outlook_es": "Mazar bajó esta semana casi 0,59 metros por día, más rápido que en el último mes, y el indicador de energía del sitio está en «déficit». El embalse que regula el complejo Paute está hoy a 2.123,52 metros sobre el nivel del mar, a 8,52 metros del mínimo de operación, 2.115 m. Si llueve como en alguno de los 15 años anteriores, en 11 de esos casos Mazar bajaría del mínimo de operación, y en la mitad lo haría en unos 22 días o menos. La última vez que estuvo debajo, entre el 8 de octubre de 2024 y el 10 de diciembre de 2024, también cayeron Molino y Sopladora, que usan su agua; juntas produjeron unos 7,1 gigavatios hora al día, frente a unos 16,9 normales para esas fechas. Esto quiere decir que, a 7 días y en el escenario más probable, faltaría cerca del 5,7 % de la energía que necesita el país. Desde el 22 de septiembre de 2026, las grandes industrias se desconectan de la red un día a la semana para ahorrar agua. Para los próximos 16 días se pronostica mucha más lluvia de lo normal, según el pronóstico para un solo punto del centro de la cuenca, pero el nivel de Mazar todavía sigue bajando.",
+  "outlook_es": "Mazar bajó unos 0,34 m al día esta semana, más despacio que antes, pero el indicador de energía del sitio está en «déficit». El embalse que regula el complejo Paute está a 2.122,57 metros sobre el nivel del mar, cada vez más cerca del mínimo de operación, 2.115 m. Si llueve como en alguno de los 15 años anteriores, en 11 de esos casos Mazar bajaría del mínimo de operación, y en la mitad lo haría en unos 13 días o menos. La última vez que estuvo debajo, entre el 8 de octubre de 2024 y el 10 de diciembre de 2024, también cayeron Molino y Sopladora, que usan su agua; juntas produjeron unos 7,1 gigavatios hora al día, frente a unos 16,8 normales para esas fechas. «Déficit» quiere decir que, a 7 días y en el escenario más probable, faltaría cerca del 5,5 % de la energía que necesita el país. Desde el 22 de septiembre de 2026, las grandes industrias se desconectan de la red un día a la semana para ahorrar agua. Para los próximos días se espera la lluvia más alta registrada para esta época, según el pronóstico para un solo punto del centro de la cuenca, aunque hoy a Mazar le llegan apenas 14,4 m³/s, muy por debajo de lo normal.",
   "drivers": [
-    "Mazar está a 8,52 metros de su mínimo de operación.",
-    "En 11 de 15 años anteriores de clima, Mazar bajaría de su mínimo de operación.",
-    "A 7 días faltaría cerca del 5,7 % de la energía que necesita el país.",
-    "La última vez bajo el mínimo, Molino y Sopladora produjeron unos 7,1 gigavatios hora al día.",
-    "Se pronostica la lluvia más alta registrada para esta época en la cuenca de Mazar."
+    "A 7 días, en el escenario más probable faltaría cerca del 5,5 % de la energía que necesita el país.",
+    "En 11 de 15 años de clima pasado, Mazar bajaría de su mínimo de operación.",
+    "Mazar sigue bajando, unos 0,34 m al día en la última semana.",
+    "A Mazar le llega mucha menos agua de lo normal para estas fechas.",
+    "Se pronostica la lluvia más alta registrada para esta época en la cuenca."
   ],
   "drivers_structured": [
     {
-      "text": "Mazar está a 8,52 metros de su mínimo de operación.",
-      "factor": "mazar_level",
-      "direction": "down",
-      "payload_ref": "reservoirs[0].floors[0].metres_above"
-    },
-    {
-      "text": "En 11 de 15 años anteriores de clima, Mazar bajaría de su mínimo de operación.",
-      "factor": "mazar_forecast",
-      "direction": "down",
-      "payload_ref": "mazar_forecast.crossings[0].years_that_cross"
-    },
-    {
-      "text": "A 7 días faltaría cerca del 5,7 % de la energía que necesita el país.",
+      "text": "A 7 días, en el escenario más probable faltaría cerca del 5,5 % de la energía que necesita el país.",
       "factor": "adequacy",
       "direction": "down",
       "payload_ref": "adequacy.horizons[0].margin_pct"
     },
     {
-      "text": "La última vez bajo el mínimo, Molino y Sopladora produjeron unos 7,1 gigavatios hora al día.",
-      "factor": "cascade",
+      "text": "En 11 de 15 años de clima pasado, Mazar bajaría de su mínimo de operación.",
+      "factor": "mazar_forecast",
       "direction": "down",
-      "payload_ref": "cascade.last_episode_below_operational_min.downstream_gwh_day"
+      "payload_ref": "mazar_forecast.crossings[0].years_that_cross"
     },
     {
-      "text": "Se pronostica la lluvia más alta registrada para esta época en la cuenca de Mazar.",
+      "text": "Mazar sigue bajando, unos 0,34 m al día en la última semana.",
+      "factor": "mazar_level",
+      "direction": "down",
+      "payload_ref": "reservoirs[0].slopes_m_per_day.d7"
+    },
+    {
+      "text": "A Mazar le llega mucha menos agua de lo normal para estas fechas.",
+      "factor": "inflow",
+      "direction": "down",
+      "payload_ref": "reservoirs[0].inflow.percentile_today"
+    },
+    {
+      "text": "Se pronostica la lluvia más alta registrada para esta época en la cuenca.",
       "factor": "precipitation",
       "direction": "up",
       "payload_ref": "precipitation_16d.percentile_vs_climatology"
@@ -56,28 +56,28 @@
   ],
   "confidence": "medium",
   "usage": {
-    "input_tokens": 10649,
-    "output_tokens": 903,
-    "cost_usd": 0.060656
+    "input_tokens": 10650,
+    "output_tokens": 1899,
+    "cost_usd": 0.08058
   },
   "disclaimer": "Resumen escrito por inteligencia artificial a partir de los números que lo acompañan. La IA no hace pronósticos: el de Mazar y el nivel de riesgo los calculan los modelos estadísticos del sitio, y el texto solo los explica.",
   "basis": {
     "payload_version": 4,
-    "origin_date": "2026-10-16",
+    "origin_date": "2026-10-18",
     "reservoirs": [
       {
         "site": "mazar",
         "label": "Mazar",
         "basin": "paute",
-        "level_masl": 2123.52,
-        "observed_on": "2026-10-16",
+        "level_masl": 2122.57,
+        "observed_on": "2026-10-18",
         "record_from": "2014-09-20",
         "bands": [
           {
             "floor_masl": 2115,
             "ceiling_masl": 2153,
-            "band_pct": 22.43,
-            "metres_below_ceiling": 29.48,
+            "band_pct": 19.91,
+            "metres_below_ceiling": 30.43,
             "declared_by": [
               "celec sur via press"
             ]
@@ -85,8 +85,8 @@
           {
             "floor_masl": 2100,
             "ceiling_masl": 2153,
-            "band_pct": 44.38,
-            "metres_below_ceiling": 29.48,
+            "band_pct": 42.58,
+            "metres_below_ceiling": 30.43,
             "declared_by": [
               "ords:repDiaHid12m",
               "ords:repDiaVolAlm"
@@ -95,295 +95,295 @@
           {
             "floor_masl": 2098,
             "ceiling_masl": 2153,
-            "band_pct": 46.41,
-            "metres_below_ceiling": 29.48,
+            "band_pct": 44.66,
+            "metres_below_ceiling": 30.43,
             "declared_by": [
               "celec dashboard bundle"
             ]
           }
         ],
         "slopes_m_per_day": {
-          "d7": -0.5888,
-          "d14": -0.4956,
-          "d30": -0.5085
+          "d7": -0.335,
+          "d14": -0.6778,
+          "d30": -0.5162
         },
         "floors": [
           {
             "floor_masl": 2115,
             "status": "published",
-            "metres_above": 8.52,
-            "days_at_slope_7d": 14,
-            "days_at_slope_30d": 17
+            "metres_above": 7.57,
+            "days_at_slope_7d": 23,
+            "days_at_slope_30d": 15
           },
           {
             "floor_masl": 2100,
             "status": "published",
-            "metres_above": 23.52,
-            "days_at_slope_7d": 40,
-            "days_at_slope_30d": 46
+            "metres_above": 22.57,
+            "days_at_slope_7d": 67,
+            "days_at_slope_30d": 44
           },
           {
             "floor_masl": 2098,
             "status": "published",
-            "metres_above": 25.52,
-            "days_at_slope_7d": 43,
-            "days_at_slope_30d": 50
+            "metres_above": 24.57,
+            "days_at_slope_7d": 73,
+            "days_at_slope_30d": 48
           }
         ],
         "inflow": {
-          "m3s": 55.16,
-          "climatology_p50_m3s": 45,
-          "percentile_today": 58.7,
+          "m3s": 14.41,
+          "climatology_p50_m3s": 46,
+          "percentile_today": 6.9,
           "climatology_years": 17
         },
         "analog_30d": {
           "years": 12,
-          "change_30d_p10_m": -6.65,
-          "change_30d_p50_m": -3.17,
-          "change_30d_p90_m": 0.81,
-          "years_falling": 9
+          "change_30d_p10_m": -6.78,
+          "change_30d_p50_m": -2.13,
+          "change_30d_p90_m": 1.71,
+          "years_falling": 8
         },
         "analog_years": [
           {
             "year": 2014,
-            "level_masl": 2153.69,
-            "change_30d_m": -7.12
+            "level_masl": 2153.18,
+            "change_30d_m": -6.86
           },
           {
             "year": 2015,
-            "level_masl": 2150.81,
-            "change_30d_m": -2.61
+            "level_masl": 2153.25,
+            "change_30d_m": -5.28
           },
           {
             "year": 2016,
-            "level_masl": 2144.33,
-            "change_30d_m": -3.27
+            "level_masl": 2143.37,
+            "change_30d_m": -3.16
           },
           {
             "year": 2017,
-            "level_masl": 2152.65,
-            "change_30d_m": -5.03
+            "level_masl": 2153.71,
+            "change_30d_m": -6.06
           },
           {
             "year": 2018,
-            "level_masl": 2144.61,
-            "change_30d_m": -5.77
+            "level_masl": 2143.25,
+            "change_30d_m": -1.1
           },
           {
             "year": 2019,
-            "level_masl": 2152.05,
-            "change_30d_m": 0.85
+            "level_masl": 2153.04,
+            "change_30d_m": 0.31
           },
           {
             "year": 2020,
-            "level_masl": 2145.71,
-            "change_30d_m": -6.68
+            "level_masl": 2148.65,
+            "change_30d_m": -10.61
           },
           {
             "year": 2021,
-            "level_masl": 2149.78,
-            "change_30d_m": 2.99
+            "level_masl": 2150.13,
+            "change_30d_m": 2.64
           },
           {
             "year": 2022,
-            "level_masl": 2140.43,
-            "change_30d_m": -0.38
+            "level_masl": 2140.35,
+            "change_30d_m": 1.82
           },
           {
             "year": 2023,
-            "level_masl": 2124.28,
-            "change_30d_m": -3.07
+            "level_masl": 2122.86,
+            "change_30d_m": -0.44
           },
           {
             "year": 2024,
-            "level_masl": 2116.67,
-            "change_30d_m": -6.36
+            "level_masl": 2116.44,
+            "change_30d_m": -5.63
           },
           {
             "year": 2025,
-            "level_masl": 2152.69,
-            "change_30d_m": 0.44
+            "level_masl": 2152.31,
+            "change_30d_m": 0.76
           }
         ]
       },
       {
         "site": "amaluza",
         "label": "Amaluza",
-        "level_masl": 1971.36,
-        "observed_on": "2026-10-16",
+        "level_masl": 1970.84,
+        "observed_on": "2026-10-18",
         "slopes_m_per_day": {
-          "d7": -1.0936,
-          "d14": -1.0222,
-          "d30": -0.4234
+          "d7": -1.4891,
+          "d14": -1.0206,
+          "d30": -0.4891
         },
         "floors": [
           {
             "floor_masl": 1975,
             "status": "published",
-            "metres_above": -3.64,
+            "metres_above": -4.16,
             "days_at_slope_7d": 0,
             "days_at_slope_30d": 0
           }
         ],
         "inflow": {
-          "m3s": 20.13,
+          "m3s": 150.34,
           "percentile_today": null
         }
       },
       {
         "site": "sopladora",
         "label": "Sopladora",
-        "level_masl": 1314.98,
-        "observed_on": "2026-10-16",
+        "level_masl": 1315.81,
+        "observed_on": "2026-10-18",
         "slopes_m_per_day": {
-          "d7": -0.1404,
-          "d14": -0.0453,
-          "d30": -0.0259
+          "d7": 0.1211,
+          "d14": 0.0465,
+          "d30": 0.0015
         },
         "floors": [
           {
             "floor_masl": 1312,
             "status": "published",
-            "metres_above": 2.98,
-            "days_at_slope_7d": 21,
-            "days_at_slope_30d": 115
+            "metres_above": 3.81,
+            "days_at_slope_7d": null,
+            "days_at_slope_30d": null
           }
         ],
         "inflow": {
-          "m3s": 32.43,
+          "m3s": 78.83,
           "percentile_today": null
         }
       },
       {
         "site": "minas_san_francisco",
         "label": "Minas San Francisco",
-        "level_masl": 783.45,
-        "observed_on": "2026-10-16",
+        "level_masl": 783.69,
+        "observed_on": "2026-10-18",
         "slopes_m_per_day": {
-          "d7": -0.29,
-          "d14": -0.45,
-          "d30": -0.144
+          "d7": -0.4714,
+          "d14": -0.4764,
+          "d30": -0.1603
         },
         "floors": [
           {
             "floor_masl": 783.33,
             "status": "published",
-            "metres_above": 0.12,
-            "days_at_slope_7d": 0,
-            "days_at_slope_30d": 1
+            "metres_above": 0.36,
+            "days_at_slope_7d": 1,
+            "days_at_slope_30d": 2
           }
         ],
         "inflow": {
-          "m3s": 9.68,
-          "percentile_today": 23
+          "m3s": 13.31,
+          "percentile_today": 42.2
         }
       },
       {
         "site": "delsitanisagua",
         "label": "Delsitanisagua",
-        "level_masl": 1488.05,
-        "observed_on": "2026-10-16",
+        "level_masl": 1486.55,
+        "observed_on": "2026-10-18",
         "slopes_m_per_day": {
-          "d7": 0.1471,
-          "d14": -0.0557,
-          "d30": -0.09
+          "d7": -0.2229,
+          "d14": -0.115,
+          "d30": -0.147
         },
         "floors": [
           {
             "floor_masl": 1469,
             "status": "published",
-            "metres_above": 19.05,
-            "days_at_slope_7d": null,
-            "days_at_slope_30d": 212
+            "metres_above": 17.55,
+            "days_at_slope_7d": 79,
+            "days_at_slope_30d": 119
           }
         ],
         "inflow": {
-          "m3s": 32,
-          "percentile_today": 59.4
+          "m3s": 24,
+          "percentile_today": 26.6
         }
       },
       {
         "site": "agoyan",
         "label": "Agoyán",
-        "level_masl": 1645.65,
-        "observed_on": "2026-10-16",
+        "level_masl": 1645.62,
+        "observed_on": "2026-10-18",
         "slopes_m_per_day": {
-          "d7": 0.01,
-          "d14": -0.0214,
-          "d30": -0.0467
+          "d7": -0.0471,
+          "d14": -0.07,
+          "d30": -0.1677
         },
         "floors": [],
         "inflow": {
-          "m3s": 72,
-          "percentile_today": 42.7
+          "m3s": 65,
+          "percentile_today": 31.2
         }
       },
       {
         "site": "manduriacu",
         "label": "Manduriacu",
         "level_masl": 491,
-        "observed_on": "2026-10-16",
+        "observed_on": "2026-10-17",
         "slopes_m_per_day": {
-          "d7": 0.0857,
+          "d7": 0.0714,
           "d14": -0.0143,
-          "d30": -0.04
+          "d30": -0.0367
         },
         "floors": [],
         "inflow": {
-          "m3s": 105.3,
-          "percentile_today": 62.7
+          "m3s": 108,
+          "percentile_today": 63.8
         }
       },
       {
         "site": "coca_codo_sinclair",
         "label": "Coca Codo Sinclair",
-        "level_masl": 1217.4,
-        "observed_on": "2026-10-16",
+        "level_masl": 1217.5,
+        "observed_on": "2026-10-18",
         "slopes_m_per_day": {
-          "d7": -0.3286,
-          "d14": -0.2143,
-          "d30": -0.1733
+          "d7": -0.2429,
+          "d14": -0.3,
+          "d30": -0.1067
         },
         "floors": [],
         "inflow": {
-          "m3s": 204,
-          "percentile_today": 54.4
+          "m3s": 166,
+          "percentile_today": 36.7
         }
       }
     ],
     "mazar_forecast": {
       "site": "mazar",
-      "run_id": "2026-10-16-mazar-4-d7532b1d",
-      "origin_date": "2026-10-16",
+      "run_id": "2026-10-18-mazar-4-f994d74c",
+      "origin_date": "2026-10-18",
       "model_id": "M3-water-balance",
-      "level_masl": 2123.52,
+      "level_masl": 2122.57,
       "horizons": [
         {
           "horizon_days": 7,
-          "target_date": "2026-10-23",
-          "p10": 2117.59,
-          "p50": 2120.87,
-          "p90": 2124.17,
+          "target_date": "2026-10-25",
+          "p10": 2114.81,
+          "p50": 2118.08,
+          "p90": 2121.39,
           "skill_vs_persistence": 0.067,
           "coverage_p10_p90": 0.8,
           "model_id": "M3-water-balance"
         },
         {
           "horizon_days": 14,
-          "target_date": "2026-10-30",
-          "p10": 2110.62,
-          "p50": 2117.95,
-          "p90": 2122.04,
+          "target_date": "2026-11-01",
+          "p10": 2106.89,
+          "p50": 2114.22,
+          "p90": 2118.31,
           "skill_vs_persistence": 0.036,
           "coverage_p10_p90": 0.79,
           "model_id": "M3-water-balance"
         },
         {
           "horizon_days": 30,
-          "target_date": "2026-11-15",
-          "p10": 2103.66,
-          "p50": 2115.82,
-          "p90": 2122.12,
+          "target_date": "2026-11-17",
+          "p10": 2103.39,
+          "p50": 2115.54,
+          "p90": 2121.84,
           "skill_vs_persistence": 0.148,
           "coverage_p10_p90": 0.73,
           "model_id": "M3-water-balance"
@@ -393,20 +393,20 @@
         {
           "scenario": "dry",
           "analog_year": 2022,
-          "inflow_mean_m3s": 61.96,
-          "minimum_level_masl": 2113.13
+          "inflow_mean_m3s": 61.18,
+          "minimum_level_masl": 2112.84
         },
         {
           "scenario": "median",
           "analog_year": 2019,
-          "inflow_mean_m3s": 88.12,
-          "minimum_level_masl": 2123.1
+          "inflow_mean_m3s": 87.17,
+          "minimum_level_masl": 2120.33
         },
         {
           "scenario": "wet",
           "analog_year": 2010,
-          "inflow_mean_m3s": 101.11,
-          "minimum_level_masl": 2109.89
+          "inflow_mean_m3s": 101.08,
+          "minimum_level_masl": 2109.38
         }
       ],
       "crossings": [
@@ -415,19 +415,19 @@
           "status": "published",
           "analogue_years": 15,
           "years_that_cross": 11,
-          "p10_days": 10.8,
-          "p50_days": 22,
+          "p10_days": 10.4,
+          "p50_days": 13,
           "p90_days": null,
           "crossing_scenarios": [
             {
               "scenario": "dry",
-              "crosses_on": "2026-12-21",
-              "days": 66
+              "crosses_on": "2026-12-05",
+              "days": 48
             },
             {
               "scenario": "wet",
-              "crosses_on": "2026-10-31",
-              "days": 15
+              "crosses_on": "2026-10-30",
+              "days": 12
             }
           ]
         },
@@ -455,27 +455,27 @@
       "note": "Pronóstico estadístico (§7) con años análogos de caudal. 2115 es el mínimo de operación de CELEC Sur; 2100 y 2098 son mínimos de diseño."
     },
     "adequacy": {
-      "run_id": "2026-10-16-adequacy-2-fd287563",
-      "origin_date": "2026-10-16",
+      "run_id": "2026-10-17-adequacy-2-549e7ed7",
+      "origin_date": "2026-10-17",
       "risk_tier": "deficit",
       "risk_tier_horizon_days": 7,
       "risk_tier_definition": "el caso central queda corto en 5 GWh/día o más",
       "tier_at_7d": "deficit",
-      "hydro_anomaly": 0.938,
+      "hydro_anomaly": 0.9421,
       "horizons": [
         {
           "horizon_days": 7,
           "tier": "deficit",
-          "margin_pct": -5.65,
-          "surplus_gwh_day": -6.108,
-          "surplus_with_stressed_imports_gwh_day": -6.159
+          "margin_pct": -5.53,
+          "surplus_gwh_day": -5.99,
+          "surplus_with_stressed_imports_gwh_day": -6.04
         },
         {
           "horizon_days": 30,
           "tier": "ajustado",
-          "margin_pct": -4.08,
-          "surplus_gwh_day": -4.359,
-          "surplus_with_stressed_imports_gwh_day": -4.41
+          "margin_pct": -3.88,
+          "surplus_gwh_day": -4.159,
+          "surplus_with_stressed_imports_gwh_day": -4.209
         }
       ],
       "note": "Nivel calculado por el modelo de suficiencia (§7). hydro_anomaly: hidroeléctrica de 14 días / su climatología."
@@ -485,15 +485,15 @@
       "latitude": -2.8819,
       "longitude": -78.9173,
       "coordinate_status": "verified",
-      "issued_at": "2026-10-16T19:59:09Z",
-      "from": "2026-10-16",
-      "to": "2026-10-31",
+      "issued_at": "2026-10-18T19:28:12Z",
+      "from": "2026-10-18",
+      "to": "2026-11-02",
       "days": 16,
-      "forecast_total_mm": 196.2,
+      "forecast_total_mm": 137.6,
       "climatology_years": 36,
-      "climatology_p10_mm": 45.5,
-      "climatology_p50_mm": 75.9,
-      "climatology_p90_mm": 114.6,
+      "climatology_p10_mm": 40.6,
+      "climatology_p50_mm": 78.2,
+      "climatology_p90_mm": 118.2,
       "percentile_vs_climatology": 100,
       "note": "Un solo punto, el centroide verificado de la cuenca, no un promedio de la cuenca; pronóstico Open-Meteo frente a climatología ERA5."
     },
@@ -525,22 +525,22 @@
       }
     ],
     "cascade": {
-      "window_from": "2026-10-10",
-      "window_to": "2026-10-16",
-      "mazar_inflow_m3s": 32.3,
-      "mazar_turbined_m3s": 46.1,
-      "local_inflow_m3s": 33.1,
-      "local_inflow_normal_m3s": 49.9,
-      "downstream_gwh_day": 20.8,
-      "downstream_normal_gwh_day": 17.1,
+      "window_from": "2026-10-12",
+      "window_to": "2026-10-18",
+      "mazar_inflow_m3s": 29.4,
+      "mazar_turbined_m3s": 34.9,
+      "local_inflow_m3s": 49.2,
+      "local_inflow_normal_m3s": 49.2,
+      "downstream_gwh_day": 18.9,
+      "downstream_normal_gwh_day": 17.5,
       "energy_per_hm3_gwh": 2.9,
-      "storage_above_operational_min_hm3": 25.5,
-      "storage_above_operational_min_gwh": 74,
+      "storage_above_operational_min_hm3": 22.3,
+      "storage_above_operational_min_gwh": 65,
       "amaluza": {
-        "level_masl": 1971.36,
-        "observed_on": "2026-10-16",
-        "low_7d_masl": 1971.36,
-        "low_7d_on": "2026-10-16",
+        "level_masl": 1970.84,
+        "observed_on": "2026-10-18",
+        "low_7d_masl": 1970.84,
+        "low_7d_on": "2026-10-18",
         "days_lower_in_record": 0,
         "last_lower_on": null,
         "record_from": "2014-09-20",
@@ -570,7 +570,7 @@
         "to": "2024-12-10",
         "days_below": 51,
         "downstream_gwh_day": 7.1,
-        "downstream_normal_gwh_day": 16.9
+        "downstream_normal_gwh_day": 16.8
       },
       "note": "Promedios de los últimos 7 días. Lo turbinado por Mazar sale de su energía y de los m³/s por MW que ajusta el pronóstico; el caudal local es lo que llega a Amaluza menos eso. Abajo = Molino + Sopladora. Lo normal es la mediana del registro para estas fechas."
     }
