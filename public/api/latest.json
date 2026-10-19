@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-19T18:51:09Z",
+  "generated_at": "2026-10-19T18:53:14Z",
   "data_date": "2026-10-18",
   "as_of": "2026-10-19",
   "disclaimer": "No es una fuente oficial. Cada número es una copia de lo que publicaron CELEC o CENACE, con la respuesta que lo produjo archivada junto a él.",
@@ -1423,7 +1423,7 @@
   },
   "live": {
     "date": "2026-10-19",
-    "fetched_at": "2026-10-19T18:49:37Z",
+    "fetched_at": "2026-10-19T18:52:28Z",
     "total_production_gwh": 52.081,
     "hydro_gwh": 34.387,
     "thermal_gwh": 17.304,
