@@ -41,15 +41,15 @@
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
-    "ai": "^7.0.137",
+    "ai": "^7.0.142",
     "cheerio": "^1.0.0",
     "geotiff": "^3.0.5",
-    "hyparquet": "^1.31.3",
-    "next": "^16.4.0",
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0",
-    "undici": "^8.11.2",
-    "zod": "^4.6.5"
+    "hyparquet": "^1.31.4",
+    "next": "^16.4.2",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "undici": "^8.12.2",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
