@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-21T13:54:08Z",
+  "generated_at": "2026-10-21T17:43:47Z",
   "data_date": "2026-10-20",
   "as_of": "2026-10-21",
   "ok": true,
@@ -34,7 +34,7 @@
       "id": "smec_balance",
       "label_es": "CENACE SMEC: balance nacional",
       "feed": "CENACE SMEC national balance",
-      "latest": "2026-10-19",
+      "latest": "2026-10-20",
       "limit_days": 4,
       "state": "current"
     },
@@ -82,7 +82,7 @@
       "id": "geoglows_forecast",
       "label_es": "GEOGLOWS: pronóstico de caudal",
       "feed": "GEOGLOWS river forecast",
-      "latest": "2026-10-20",
+      "latest": "2026-10-21",
       "limit_days": 3,
       "state": "current"
     },
@@ -105,13 +105,13 @@
   ],
   "tables": {
     "observations_daily": {
-      "rows": 91434
+      "rows": 91447
     },
     "national_balance_daily": {
-      "rows": 58534
+      "rows": 58549
     },
     "operativa_snapshots": {
-      "rows": 5311
+      "rows": 5358
     },
     "operating_bands": {
       "rows": 7
@@ -144,7 +144,7 @@
       "rows": 33406
     },
     "geoglows_forecasts": {
-      "rows": 25260
+      "rows": 25290
     }
   },
   "findings": [
