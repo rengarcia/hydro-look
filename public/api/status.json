@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-21T05:24:01Z",
+  "generated_at": "2026-10-21T13:54:08Z",
   "data_date": "2026-10-20",
   "as_of": "2026-10-21",
   "ok": true,
@@ -90,7 +90,7 @@
       "id": "mazar_forecast",
       "label_es": "Pronóstico de cota de Mazar",
       "feed": "Mazar level forecast",
-      "latest": "2026-10-19",
+      "latest": "2026-10-20",
       "limit_days": 3,
       "state": "current"
     },
@@ -111,7 +111,7 @@
       "rows": 58534
     },
     "operativa_snapshots": {
-      "rows": 5264
+      "rows": 5311
     },
     "operating_bands": {
       "rows": 7
@@ -123,7 +123,7 @@
       "rows": 920
     },
     "forecast_runs": {
-      "rows": 37
+      "rows": 38
     },
     "adequacy_runs": {
       "rows": 32
@@ -132,10 +132,10 @@
       "rows": 160
     },
     "forecast_values": {
-      "rows": 185
+      "rows": 190
     },
     "narrative_snapshots": {
-      "rows": 48
+      "rows": 49
     },
     "xm_exchange_daily": {
       "rows": 4030

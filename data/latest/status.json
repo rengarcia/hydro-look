@@ -1,11 +1,58 @@
 {
-  "generated_at": "2026-10-21T05:23:56Z",
+  "generated_at": "2026-10-21T13:54:00Z",
   "command": "daily",
   "source": "all",
-  "requests": 53,
-  "errors": [],
+  "requests": 6,
+  "errors": [
+    "repDiaHid12m:2026-10-21: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "repDiaEner12m:2026-10-21: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "repDiaNivQIng:2026-10-19: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "repDiaPotQTurb:2026-10-19: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "repDiaEnerAyerHoy:2026-10-19: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "repDiaRegAyer:2026-10-19: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "repDiaVolAlm:2026-10-19: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "mazEnerDia:2026-10-18: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "molEnerDia:2026-10-18: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "sopEnerDia:2026-10-18: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "msfEnerDia:2026-10-18: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "agoEnerDia:2026-10-18: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "manEnerDia:2026-10-18: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "ccsEnerDia:2026-10-18: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "repDiaNivQIng:2026-10-20: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "repDiaPotQTurb:2026-10-20: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "repDiaEnerAyerHoy:2026-10-20: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "repDiaRegAyer:2026-10-20: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "repDiaVolAlm:2026-10-20: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "mazEnerDia:2026-10-19: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "molEnerDia:2026-10-19: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "sopEnerDia:2026-10-19: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "msfEnerDia:2026-10-19: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "agoEnerDia:2026-10-19: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "manEnerDia:2026-10-19: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "ccsEnerDia:2026-10-19: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "repDiaNivQIng:2026-10-21: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "repDiaPotQTurb:2026-10-21: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "repDiaEnerAyerHoy:2026-10-21: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "repDiaRegAyer:2026-10-21: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "repDiaVolAlm:2026-10-21: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "mazEnerDia:2026-10-20: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "molEnerDia:2026-10-20: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "sopEnerDia:2026-10-20: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "msfEnerDia:2026-10-20: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "agoEnerDia:2026-10-20: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "manEnerDia:2026-10-20: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "ccsEnerDia:2026-10-20: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "csrCaudCuenAniosAvg:2010-01-01:2027-01-01: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "pointValuesMesH24:30031:2026-10-01: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "pointValuesMesH24:30538:2026-10-01: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "pointValuesMesH24:100540:2026-10-01: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "pointValuesMesH24:100037:2026-10-01: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "pointValuesMesH24:140031:2026-10-01: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "pointValuesMesH24:140537:2026-10-01: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "pointValuesMesH24:110031:2026-10-01: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out",
+    "pointValuesMesH24:110537:2026-10-01: Error: TLS pin check failed for generacioncsr.celec.gob.ec:8443: TLS handshake with generacioncsr.celec.gob.ec:8443 timed out"
+  ],
   "notes": [
-    "ords:pointValues manduriacu 2026-10-20: inflow 0 is zero on a route that publishes decimals, so it is a missing reading rather than a stopped river; dropped",
     "smec 2026-10-20: report is incomplete (missing generacion_hidraulica, total_generacion, demanda_distribucion); the running day fills in at D+1, but a stored-as-missing day has come back identical on every retry"
   ],
   "tables": {
@@ -22,7 +69,7 @@
       "files": 11
     },
     "operativa_snapshots": {
-      "rows": 5264,
+      "rows": 5311,
       "first_date": "2026-09-22",
       "last_date": "2026-10-21",
       "files": 1
@@ -59,18 +106,18 @@
     }
   },
   "narrative": {
-    "calls": 48,
+    "calls": 49,
     "by_status": {
       "failed": 1,
-      "rejected": 6,
+      "rejected": 7,
       "ok": 41
     },
     "spend_usd": 2.1003,
-    "calls_without_cost": 5,
+    "calls_without_cost": 6,
     "by_month": {
       "2026-09": 0.4394,
       "2026-10": 1.6609
     },
-    "last_call_at": "2026-10-20T05:26:34Z"
+    "last_call_at": "2026-10-21T05:24:31Z"
   }
 }
