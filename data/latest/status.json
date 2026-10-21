@@ -1,9 +1,12 @@
 {
-  "generated_at": "2026-10-21T17:43:40Z",
+  "generated_at": "2026-10-21T20:27:20Z",
   "command": "daily",
   "source": "all",
-  "requests": 53,
-  "errors": [],
+  "requests": 60,
+  "errors": [
+    "repDiaVolAlm:2026-10-19: Error: repDiaVolAlm:2026-10-19: gave up after 4 attempts in 44554 ms: ConnectTimeoutError: Connect Timeout Error (attempted address: generacioncsr.celec.gob.ec:8443, timeout: 10000ms)",
+    "mazEnerDia:2026-10-18: HTTP 503 (archived at celec_ords/2026/10/mazEnerDia.2026-10-18.ndjson#mazEnerDia:2026-10-18~http503@2026-10-21T20:24:50Z)"
+  ],
   "notes": [],
   "tables": {
     "observations_daily": {
@@ -19,7 +22,7 @@
       "files": 11
     },
     "operativa_snapshots": {
-      "rows": 5358,
+      "rows": 5405,
       "first_date": "2026-09-22",
       "last_date": "2026-10-21",
       "files": 1
