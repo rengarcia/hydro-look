@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-21T13:54:34Z",
+  "generated_at": "2026-10-21T17:44:05Z",
   "data_date": "2026-10-20",
   "run_id": "2026-10-20-mazar-4-038fb330",
   "origin_date": "2026-10-20",
@@ -722,7 +722,7 @@
       },
       {
         "site": "manduriacu",
-        "origin_date": "2026-10-19",
+        "origin_date": "2026-10-20",
         "variable": "caudal_m3s",
         "target": "mean inflow over the horizon, m3/s",
         "precip_basin": "guayllabamba_manduriacu",
@@ -741,10 +741,10 @@
               "climatology_mae_m3s": 56.99,
               "coverage_p10_p90": 0.8333
             },
-            "target_date": "2026-10-26",
-            "p10": 132.1,
-            "p50": 174.4,
-            "p90": 263,
+            "target_date": "2026-10-27",
+            "p10": 148.4,
+            "p50": 190.7,
+            "p90": 279.3,
             "ensemble_years": 8,
             "rain_conditioned": false,
             "with_river_forecast": true
@@ -762,10 +762,10 @@
               "climatology_mae_m3s": 52.72,
               "coverage_p10_p90": 0.8095
             },
-            "target_date": "2026-11-02",
-            "p10": 130,
-            "p50": 175,
-            "p90": 251.1,
+            "target_date": "2026-11-03",
+            "p10": 135.8,
+            "p50": 180.9,
+            "p90": 257,
             "ensemble_years": 8,
             "rain_conditioned": false,
             "with_river_forecast": false
@@ -879,7 +879,7 @@
     ]
   },
   "scorecard": {
-    "generated_at": "2026-10-21T13:54:52Z",
+    "generated_at": "2026-10-21T17:44:22Z",
     "observed_through": "2026-10-20",
     "target": "level on the target day, m",
     "units": "m",
