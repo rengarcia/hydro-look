@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-22T20:37:46Z",
+  "generated_at": "2026-10-22T23:41:54Z",
   "data_date": "2026-10-21",
   "as_of": "2026-10-22",
   "ok": true,
@@ -111,7 +111,7 @@
       "rows": 58564
     },
     "operativa_snapshots": {
-      "rows": 5593
+      "rows": 5640
     },
     "operating_bands": {
       "rows": 7
