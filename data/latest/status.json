@@ -1,15 +1,19 @@
 {
-  "generated_at": "2026-10-21T23:44:32Z",
+  "generated_at": "2026-10-22T05:28:26Z",
   "command": "daily",
   "source": "all",
   "requests": 53,
   "errors": [],
-  "notes": [],
+  "notes": [
+    "ords:agoEnerDia 2026-10-21: only 23/24 hours present, daily total not written",
+    "ords:pointValues manduriacu 2026-10-21: inflow 0 is zero on a route that publishes decimals, so it is a missing reading rather than a stopped river; dropped",
+    "smec 2026-10-21: report is incomplete (missing generacion_hidraulica, total_generacion, demanda_distribucion); the running day fills in at D+1, but a stored-as-missing day has come back identical on every retry"
+  ],
   "tables": {
     "observations_daily": {
-      "rows": 91447,
+      "rows": 91513,
       "first_date": "2009-01-01",
-      "last_date": "2026-10-21",
+      "last_date": "2026-10-22",
       "files": 18
     },
     "national_balance_daily": {
@@ -19,15 +23,15 @@
       "files": 11
     },
     "operativa_snapshots": {
-      "rows": 5452,
+      "rows": 5499,
       "first_date": "2026-09-22",
-      "last_date": "2026-10-21",
+      "last_date": "2026-10-22",
       "files": 1
     },
     "operating_bands": {
       "rows": 7,
-      "first_date": "2026-10-20",
-      "last_date": "2026-10-21",
+      "first_date": "2026-10-21",
+      "last_date": "2026-10-22",
       "files": 1
     },
     "weather_daily": {
