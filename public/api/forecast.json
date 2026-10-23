@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-23T20:09:28Z",
+  "generated_at": "2026-10-23T23:36:19Z",
   "data_date": "2026-10-22",
   "run_id": "2026-10-22-mazar-4-6517394e",
   "origin_date": "2026-10-22",
@@ -556,7 +556,7 @@
   "precipitation_basin": {
     "basin": "paute_mazar",
     "verified_centroid": true,
-    "era5_days": 13437,
+    "era5_days": 13438,
     "share_since_1990": 1,
     "fallback_reason": null
   },
@@ -648,12 +648,12 @@
           {
             "horizon_days": 14,
             "published": true,
-            "reason": "ensemble MAE 78.2 m3/s beats persistence 120.9 and climatology 81.3",
+            "reason": "ensemble MAE 78.3 m3/s beats persistence 120.9 and climatology 81.3",
             "backtest": {
               "model": "ensemble",
               "n": 333,
-              "mae_m3s": 78.24,
-              "analogue_mae_m3s": 101.2,
+              "mae_m3s": 78.25,
+              "analogue_mae_m3s": 101.23,
               "persistence_mae_m3s": 120.87,
               "climatology_mae_m3s": 81.32,
               "coverage_p10_p90": 0.7757
@@ -879,7 +879,7 @@
     ]
   },
   "scorecard": {
-    "generated_at": "2026-10-23T20:09:45Z",
+    "generated_at": "2026-10-23T23:36:36Z",
     "observed_through": "2026-10-22",
     "target": "level on the target day, m",
     "units": "m",

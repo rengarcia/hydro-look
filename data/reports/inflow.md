@@ -1,6 +1,6 @@
 # Inflow forecasts — the plants whose level is not the question
 
-Generated 2026-10-23T20:09:17Z by `npm run forecast` from the committed tables; no network. For the run-of-river and daily-storage plants the level is an operating decision taken within the day, so the target is the water arriving: the mean inflow over the next 7 and 14 days, in m³/s. Origins every 7 days from 2018-01-01, once a plant has 730 days of inflow; each rung sees only data up to its origin.
+Generated 2026-10-23T23:36:08Z by `npm run forecast` from the committed tables; no network. For the run-of-river and daily-storage plants the level is an operating decision taken within the day, so the target is the water arriving: the mean inflow over the next 7 and 14 days, in m³/s. Origins every 7 days from 2018-01-01, once a plant has 730 days of inflow; each rung sees only data up to its origin.
 
 - **persistence** holds the origin day's inflow.
 - **climatology** is the median of the same calendar window's mean over every earlier year.
@@ -16,7 +16,7 @@ A plant's forecast is published at a horizon only where the ensemble's MAE beats
 | Amaluza | 459 | 7 d | 39.3 | 43.6 | 51.1 | 47.7 | 84% | **yes** |
 | Amaluza | 459 | 14 d | 36.8 | 43.9 | 52.5 | 42.2 | 84% | **yes** |
 | Coca Codo Sinclair | 347 | 7 d | 86.3 | 103.1 | 118.3 | 94.8 | 78% | **yes** |
-| Coca Codo Sinclair | 347 | 14 d | 78.2 | 101.2 | 120.9 | 81.3 | 78% | **yes** |
+| Coca Codo Sinclair | 347 | 14 d | 78.3 | 101.2 | 120.9 | 81.3 | 78% | **yes** |
 | Agoyán | 360 | 7 d | 33.8 | 40.3 | 41.5 | 40.6 | 82% | **yes** |
 | Agoyán | 360 | 14 d | 32.9 | 41.4 | 43.3 | 37.6 | 80% | **yes** |
 | Manduriacu | 264 | 7 d | 42.3 | 50.5 | 43.9 | 57.0 | 83% | **yes** |
@@ -67,8 +67,8 @@ The conditioner is the rain that had already fallen, read with ERA5's five-day l
 | coca_codo_sinclair | 7 d | ensemble | 347 | 86.3 | 15.3 | 78% (335) | 28.1 |
 | coca_codo_sinclair | 14 d | persistence | 333 | 120.9 | -7.4 | 78% (321) | 44.2 |
 | coca_codo_sinclair | 14 d | climatology | 333 | 81.3 | 23.3 | 76% (321) | 25.3 |
-| coca_codo_sinclair | 14 d | analogue | 333 | 101.2 | -5.8 | 79% (321) | 34.5 |
-| coca_codo_sinclair | 14 d | ensemble | 333 | 78.2 | 8.8 | 78% (321) | 25.6 |
+| coca_codo_sinclair | 14 d | analogue | 333 | 101.2 | -5.7 | 79% (321) | 34.6 |
+| coca_codo_sinclair | 14 d | ensemble | 333 | 78.3 | 8.8 | 78% (321) | 25.6 |
 | agoyan | 7 d | persistence | 360 | 41.5 | -1.3 | 83% (348) | 15.8 |
 | agoyan | 7 d | climatology | 360 | 40.6 | 4.4 | 76% (348) | 13.8 |
 | agoyan | 7 d | analogue | 360 | 40.3 | 0.5 | 82% (348) | 14.1 |
