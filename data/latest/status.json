@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-10-24T19:35:14Z",
-  "command": "xm",
+  "generated_at": "2026-10-24T22:46:52Z",
+  "command": "daily",
   "source": "all",
-  "requests": 22,
+  "requests": 53,
   "errors": [],
   "notes": [],
   "tables": {
@@ -19,7 +19,7 @@
       "files": 11
     },
     "operativa_snapshots": {
-      "rows": 5969,
+      "rows": 6016,
       "first_date": "2026-09-22",
       "last_date": "2026-10-24",
       "files": 1
