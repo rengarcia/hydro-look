@@ -1,6 +1,6 @@
 # Backtest — mazar level forecast
 
-Generated 2026-10-24T19:06:09Z from the committed tables; no network. Origins are the first of each month, each one refitting every model on the data before it. 106 origins scored per horizon, 94 of them with a calibrated band (the first twelve are the calibration's warm-up).
+Generated 2026-10-24T22:47:04Z from the committed tables; no network. Origins are the first of each month, each one refitting every model on the data before it. 106 origins scored per horizon, 94 of them with a calibrated band (the first twelve are the calibration's warm-up).
 
 Level history: 4417 days, 2014-09-20 → 2026-10-23.
 
@@ -247,7 +247,7 @@ The upper bound first. At each origin the analogue pool is narrowed to the half 
 |---|---|---|---|---|---|
 | M0-persistence | 2.292 (0.0%) | 3.609 (0.0%) | 5.955 (0.0%) | 9.779 (0.0%) | 11.265 (0.0%) |
 | M3-water-balance | 2.140 (6.7%) | 3.479 (3.6%) | 5.075 (14.8%) | 6.859 (29.9%) | 7.456 (33.8%) |
-| M3-water-balance-rain-pf | 2.123 (7.4%) | 3.426 (5.1%) | 5.393 (9.4%) | 7.140 (27.0%) | 7.424 (34.1%) |
+| M3-water-balance-rain-pf | 2.123 (7.4%) | 3.425 (5.1%) | 5.393 (9.4%) | 7.140 (27.0%) | 7.424 (34.1%) |
 
 MAE in metres, skill against persistence in brackets. Coverage of the calibrated p10–p90 band:
 
@@ -256,7 +256,7 @@ MAE in metres, skill against persistence in brackets. Coverage of the calibrated
 | M3-water-balance | 79.8% | 78.7% | 73.1% | 74.4% | 71.3% |
 | M3-water-balance-rain-pf | 79.8% | 81.9% | 76.3% | 72.2% | 73.6% |
 
-**Perfect foresight helps at 14 days** (3.426 m against 3.479 m). The next step is to replay Open-Meteo's previous-runs archive for the real forecast's skill before anything is published; nothing is wired until then.
+**Perfect foresight helps at 14 days** (3.425 m against 3.479 m). The next step is to replay Open-Meteo's previous-runs archive for the real forecast's skill before anything is published; nothing is wired until then.
 
 Scheduling note for when it does help: `covariates.yml` collects the forecast at 17:00 UTC, after both daily runs, so a model would read yesterday's vintage. The forecast fetch would have to move ahead of the 12:15 run, or into it.
 
