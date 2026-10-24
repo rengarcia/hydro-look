@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-24T05:07:39Z",
+  "generated_at": "2026-10-24T16:18:56Z",
   "data_date": "2026-10-23",
   "as_of": "2026-10-24",
   "ok": true,
@@ -34,7 +34,7 @@
       "id": "smec_balance",
       "label_es": "CENACE SMEC: balance nacional",
       "feed": "CENACE SMEC national balance",
-      "latest": "2026-10-22",
+      "latest": "2026-10-23",
       "limit_days": 4,
       "state": "current"
     },
@@ -105,13 +105,13 @@
   ],
   "tables": {
     "observations_daily": {
-      "rows": 91645
+      "rows": 91687
     },
     "national_balance_daily": {
-      "rows": 58579
+      "rows": 58594
     },
     "operativa_snapshots": {
-      "rows": 5875
+      "rows": 5922
     },
     "operating_bands": {
       "rows": 7
@@ -123,7 +123,7 @@
       "rows": 920
     },
     "forecast_runs": {
-      "rows": 40
+      "rows": 41
     },
     "adequacy_runs": {
       "rows": 35
@@ -132,7 +132,7 @@
       "rows": 175
     },
     "forecast_values": {
-      "rows": 200
+      "rows": 205
     },
     "narrative_snapshots": {
       "rows": 51
