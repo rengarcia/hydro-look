@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-23T23:36:19Z",
+  "generated_at": "2026-10-24T05:07:54Z",
   "data_date": "2026-10-22",
-  "run_id": "2026-10-22-mazar-4-6517394e",
+  "run_id": "2026-10-22-mazar-4-7ca29380",
   "origin_date": "2026-10-22",
   "site": "mazar",
   "variable": "cota_masl",
@@ -12,7 +12,7 @@
     "id": "M3-water-balance",
     "label": "Water balance with a fitted release rule and analogue inflow years",
     "version": "4",
-    "features_hash": "6517394ee81f081a",
+    "features_hash": "7ca293808abf081c",
     "backtest_origins": 106,
     "horizon_models": [
       {
@@ -618,7 +618,7 @@
       },
       {
         "site": "coca_codo_sinclair",
-        "origin_date": "2026-10-22",
+        "origin_date": "2026-10-23",
         "variable": "caudal_m3s",
         "target": "mean inflow over the horizon, m3/s",
         "precip_basin": "coca_ccs",
@@ -637,10 +637,10 @@
               "climatology_mae_m3s": 94.81,
               "coverage_p10_p90": 0.7791
             },
-            "target_date": "2026-10-29",
-            "p10": 133.9,
-            "p50": 236.8,
-            "p90": 391.6,
+            "target_date": "2026-10-30",
+            "p10": 119.9,
+            "p50": 222.9,
+            "p90": 377.6,
             "ensemble_years": 10,
             "rain_conditioned": false,
             "with_river_forecast": false
@@ -658,10 +658,10 @@
               "climatology_mae_m3s": 81.32,
               "coverage_p10_p90": 0.7757
             },
-            "target_date": "2026-11-05",
-            "p10": 102.4,
-            "p50": 207,
-            "p90": 339.5,
+            "target_date": "2026-11-06",
+            "p10": 98.6,
+            "p50": 203.2,
+            "p90": 335.7,
             "ensemble_years": 10,
             "rain_conditioned": false,
             "with_river_forecast": false
@@ -774,7 +774,7 @@
       },
       {
         "site": "minas_san_francisco",
-        "origin_date": "2026-10-22",
+        "origin_date": "2026-10-23",
         "variable": "caudal_m3s",
         "target": "mean inflow over the horizon, m3/s",
         "precip_basin": "jubones_msf",
@@ -793,13 +793,13 @@
               "climatology_mae_m3s": 29.74,
               "coverage_p10_p90": 0.7831
             },
-            "target_date": "2026-10-29",
+            "target_date": "2026-10-30",
             "p10": 0,
-            "p50": 22.9,
-            "p90": 74.4,
+            "p50": 18.8,
+            "p90": 70.3,
             "ensemble_years": 8,
             "rain_conditioned": false,
-            "with_river_forecast": true
+            "with_river_forecast": false
           },
           {
             "horizon_days": 14,
@@ -814,10 +814,10 @@
               "climatology_mae_m3s": 27.86,
               "coverage_p10_p90": 0.7984
             },
-            "target_date": "2026-11-05",
+            "target_date": "2026-11-06",
             "p10": 0,
-            "p50": 19.6,
-            "p90": 56.3,
+            "p50": 18.5,
+            "p90": 55.2,
             "ensemble_years": 8,
             "rain_conditioned": false,
             "with_river_forecast": false
@@ -826,7 +826,7 @@
       },
       {
         "site": "delsitanisagua",
-        "origin_date": "2026-10-22",
+        "origin_date": "2026-10-23",
         "variable": "caudal_m3s",
         "target": "mean inflow over the horizon, m3/s",
         "precip_basin": "zamora_delsitanisagua",
@@ -838,17 +838,17 @@
             "reason": "ensemble MAE 13.4 m3/s beats persistence 16.9 and climatology 16.0",
             "backtest": {
               "model": "ensemble",
-              "n": 266,
-              "mae_m3s": 13.4,
-              "analogue_mae_m3s": 15.31,
-              "persistence_mae_m3s": 16.94,
-              "climatology_mae_m3s": 16.01,
-              "coverage_p10_p90": 0.7677
+              "n": 267,
+              "mae_m3s": 13.38,
+              "analogue_mae_m3s": 15.28,
+              "persistence_mae_m3s": 16.89,
+              "climatology_mae_m3s": 15.99,
+              "coverage_p10_p90": 0.7686
             },
-            "target_date": "2026-10-29",
-            "p10": 11.2,
-            "p50": 30.4,
-            "p90": 49.7,
+            "target_date": "2026-10-30",
+            "p10": 10.3,
+            "p50": 29.4,
+            "p90": 48.7,
             "ensemble_years": 8,
             "rain_conditioned": false,
             "with_river_forecast": false
@@ -859,17 +859,17 @@
             "reason": "ensemble MAE 12.0 m3/s beats persistence 16.3 and climatology 14.3",
             "backtest": {
               "model": "ensemble",
-              "n": 265,
-              "mae_m3s": 12.03,
-              "analogue_mae_m3s": 14.31,
-              "persistence_mae_m3s": 16.32,
-              "climatology_mae_m3s": 14.27,
-              "coverage_p10_p90": 0.7826
+              "n": 266,
+              "mae_m3s": 12.01,
+              "analogue_mae_m3s": 14.26,
+              "persistence_mae_m3s": 16.27,
+              "climatology_mae_m3s": 14.25,
+              "coverage_p10_p90": 0.7835
             },
-            "target_date": "2026-11-05",
-            "p10": 12.2,
-            "p50": 30.2,
-            "p90": 44.4,
+            "target_date": "2026-11-06",
+            "p10": 10.9,
+            "p50": 29,
+            "p90": 43.1,
             "ensemble_years": 8,
             "rain_conditioned": false,
             "with_river_forecast": false
@@ -879,12 +879,12 @@
     ]
   },
   "scorecard": {
-    "generated_at": "2026-10-23T23:36:36Z",
+    "generated_at": "2026-10-24T05:08:08Z",
     "observed_through": "2026-10-22",
     "target": "level on the target day, m",
     "units": "m",
     "runs_considered": 34,
-    "runs_superseded": 6,
+    "runs_superseded": 7,
     "rows_scored": 50,
     "rows_pending": 120,
     "rows_excluded": 0,
