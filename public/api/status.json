@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-25T19:19:47Z",
+  "generated_at": "2026-10-25T19:46:19Z",
   "data_date": "2026-10-24",
   "as_of": "2026-10-25",
   "ok": true,
@@ -50,7 +50,7 @@
       "id": "era5",
       "label_es": "Open-Meteo ERA5",
       "feed": "Open-Meteo ERA5",
-      "latest": "2026-10-18",
+      "latest": "2026-10-19",
       "limit_days": 10,
       "state": "current"
     },
@@ -117,7 +117,7 @@
       "rows": 7
     },
     "weather_daily": {
-      "rows": 112016
+      "rows": 112152
     },
     "enso_monthly": {
       "rows": 920
