@@ -2305,6 +2305,9 @@ a:focus-visible .map-plant {
 .key-muted {
   border-top-color: var(--muted);
 }
+.key-ink {
+  border-top-color: var(--ink);
+}
 
 /* ---- small layout helpers -------------------------------------------------- */
 

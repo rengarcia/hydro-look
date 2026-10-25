@@ -17,7 +17,14 @@ import type { Metadata } from "next";
 import { Crumbs, MAIN_ID } from "../../../components/Chrome.tsx";
 import { Table } from "../../../components/DataTable.tsx";
 import { InflowPanel } from "../../../components/ReservoirParts.tsx";
-import { FloorsPanel, RecordSection, ReservoirHero, WhereSection, CascadeSection } from "../../../components/ReservoirPage.tsx";
+import {
+  DistributionSection,
+  FloorsPanel,
+  RecordSection,
+  ReservoirHero,
+  WhereSection,
+  CascadeSection,
+} from "../../../components/ReservoirPage.tsx";
 import { ReturnPeriodsSection } from "../../../components/ReturnPeriods.tsx";
 import { apiDocument, latest } from "../../../../lib/site/data.ts";
 import type { CrossingThreshold, ForecastDocument } from "../../../../lib/site/documents.ts";
@@ -61,6 +68,7 @@ export default function MazarPage() {
           <FloorsPanel reservoir={mazar} />
         </section>
       ) : null}
+      {mazar ? <DistributionSection reservoir={mazar} /> : null}
       {mazar ? <WhereSection reservoir={mazar} /> : null}
       {mazar ? <CascadeSection reservoir={mazar} /> : null}
       {mazar ? <ReturnPeriodsSection reservoir={mazar} /> : null}
