@@ -11,7 +11,11 @@ import { Table } from "./DataTable.tsx";
 import { MetresPerDay } from "./Fleet.tsx";
 import { CatchmentMap, Locator, WhereFacts, catchmentFor } from "./Maps.tsx";
 import { PAUTE_SITES, PauteCascade } from "./PauteCascade.tsx";
-import { latest, series } from "../../lib/site/data.ts";
+import { HistogramChart, HistogramLegend } from "./Histogram.tsx";
+import { percentBelow } from "../../lib/chart/histogram.ts";
+import { latest, series, window as windowOf } from "../../lib/site/data.ts";
+import { SITES, isSiteId } from "../../lib/registry.ts";
+import { median } from "../../lib/util/stats.ts";
 import type { ForecastDocument } from "../../lib/site/documents.ts";
 import { basinLabel, capitalise, dateWithYear, declarationLabel, longDate, num, pct, shortDate, signed } from "../../lib/site/format.ts";
 import { countWord, inflowWords, isOperational, monthYear, wholeYears } from "../../lib/site/story.ts";
@@ -257,4 +261,120 @@ export function CascadeSection({ reservoir }: { reservoir: ReservoirSnapshot }) 
       <PauteCascade reservoirs={latest()?.reservoirs ?? []} site={reservoir.site} />
     </section>
   );
+}
+
+/** Fewer days than this and a histogram is a handful of bars that say nothing about the river. */
+const HISTOGRAM_MIN_DAYS = 60;
+
+/** The days the outline over the bars covers. */
+const RECENT_DAYS = 365;
+
+/**
+ * The plant whose energy belongs with this reservoir: the reservoir itself where it is also a
+ * plant, and the plant it feeds where it is not — Amaluza's water is turbined at Molino.
+ */
+export function generationSiteOf(site: string): string | null {
+  if (!isSiteId(site)) return null;
+  const entry = SITES[site];
+  if (entry.kind === "reservoir_and_plant") return site;
+  return "plant" in entry ? entry.plant : null;
+}
+
+interface Distribution {
+  record: number[];
+  recent: number[] | null;
+  today: { date: string; value: number };
+  first: string;
+}
+
+/** A daily series as a histogram's inputs, scaled by `factor`, or null when it is too short. */
+function distributionOf(site: string, variable: string, factor = 1): Distribution | null {
+  const daily = series().get(site, variable);
+  if (daily.size < HISTOGRAM_MIN_DAYS) return null;
+  const record = [...daily.values()].map((v) => v * factor);
+  const recentPoints = windowOf(daily, RECENT_DAYS);
+  const recent = recentPoints.length < daily.size && recentPoints.length >= 30 ? recentPoints.map((p) => p.value * factor) : null;
+  const newest = recentPoints.at(-1)!;
+  return { record, recent, today: { date: newest.date, value: newest.value * factor }, first: [...daily.keys()][0]! };
+}
+
+/**
+ * How the reservoir's days are spread: the water that arrives and the energy its plant makes,
+ * each against its whole record, with the last year over it and today ruled across.
+ */
+export function DistributionSection({ reservoir }: { reservoir: ReservoirSnapshot }) {
+  const inflow = distributionOf(reservoir.site, "caudal_m3s");
+  const plant = generationSiteOf(reservoir.site);
+  const energy = plant ? distributionOf(plant, "produccion_mwh", 1 / 1000) : null;
+  if (inflow === null && energy === null) return null;
+  const plantLabel = plant && plant !== reservoir.site && isSiteId(plant) ? SITES[plant].label : null;
+
+  return (
+    <section className="shell section section-tight" aria-labelledby="reparto-title">
+      <div className="section-intro narrow">
+        <Kicker index="B">Cómo se reparten sus días</Kicker>
+        <h2 id="reparto-title" className="section-title">
+          Cuánta agua llega y cuánta energía sale, día por día.
+        </h2>
+        <p className="section-lede">
+          Cada barra es la parte de los días registrados en que el valor cayó en ese rango: las altas son lo habitual, las de los extremos,
+          lo raro. La línea encima es el último año, y la raya, el dato más reciente.
+        </p>
+      </div>
+      <div className={inflow && energy ? "split even" : undefined}>
+        {inflow ? (
+          <div className="panel tight">
+            <h3 className="panel-title">El agua que llega</h3>
+            <p className="panel-lede">{distributionWords(inflow, "m³/s", 1, "llegaron", "llegan")}</p>
+            <HistogramLegend recent={inflow.recent !== null} />
+            <HistogramChart
+              record={inflow.record}
+              recent={inflow.recent}
+              today={inflow.today.value}
+              unit="m³/s"
+              label={`Reparto del agua que llega a ${reservoir.label} cada día, desde el ${longDate(inflow.first)}`}
+              subject={`Agua que llega a ${reservoir.label}`}
+            />
+          </div>
+        ) : null}
+        {energy ? (
+          <div className="panel tight">
+            <h3 className="panel-title">{plantLabel ? `La energía de ${plantLabel}` : "La energía que genera"}</h3>
+            <p className="panel-lede">
+              {plantLabel ? `El agua de ${reservoir.label} se turbina en la central ${plantLabel}. ` : ""}
+              {distributionWords(energy, "GWh", 2, "generó", "genera")}
+              {zeroDaysWords(energy.record)}
+            </p>
+            <HistogramLegend recent={energy.recent !== null} />
+            <HistogramChart
+              record={energy.record}
+              recent={energy.recent}
+              today={energy.today.value}
+              unit="GWh"
+              label={`Reparto de la energía que genera ${plantLabel ?? reservoir.label} cada día, desde el ${longDate(energy.first)}`}
+              subject={`Energía diaria de ${plantLabel ?? reservoir.label}`}
+            />
+          </div>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+/** "El 24 de octubre de 2026 llegaron 27,9 m³/s: más que en el 14 % de los días desde el 10 de febrero de 2010. En la mitad de los días llegan menos de 60,5 m³/s." */
+function distributionWords(d: Distribution, unit: string, digits: number, past: string, present: string): string {
+  const below = percentBelow(d.record, d.today.value);
+  const half = median(d.record);
+  return (
+    `El ${longDate(d.today.date)} ${past} ${num(d.today.value, digits)} ${unit}` +
+    (below !== null ? `: más que en el ${num(below, 0)} % de los días desde el ${longDate(d.first)}.` : ".") +
+    (half !== null ? ` En la mitad de los días ${present} menos de ${num(half, digits)} ${unit}.` : "")
+  );
+}
+
+/** Days the plant made nothing, said once, because they are the first bar and otherwise look like a dry river. */
+function zeroDaysWords(record: number[]): string {
+  const zeros = record.filter((v) => v === 0).length;
+  if (zeros === 0) return "";
+  return ` En ${zeros === 1 ? "un día" : `${num(zeros, 0)} días`} (${pct((zeros / record.length) * 100, 1)}) no generó nada: ${zeros === 1 ? "está" : "están"} en la primera barra.`;
 }

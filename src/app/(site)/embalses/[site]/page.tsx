@@ -16,7 +16,14 @@ import { notFound } from "next/navigation";
 import { Crumbs, MAIN_ID } from "../../../components/Chrome.tsx";
 import { InflowPanel } from "../../../components/ReservoirParts.tsx";
 import { InflowForecastPanel, inflowPlantOf } from "../../../components/InflowForecast.tsx";
-import { FloorsPanel, RecordSection, ReservoirHero, WhereSection, CascadeSection } from "../../../components/ReservoirPage.tsx";
+import {
+  DistributionSection,
+  FloorsPanel,
+  RecordSection,
+  ReservoirHero,
+  WhereSection,
+  CascadeSection,
+} from "../../../components/ReservoirPage.tsx";
 import { ReturnPeriodsSection } from "../../../components/ReturnPeriods.tsx";
 import { apiDocument, latest } from "../../../../lib/site/data.ts";
 import type { ForecastDocument } from "../../../../lib/site/documents.ts";
@@ -79,6 +86,7 @@ export default async function ReservoirPage({ params }: { params: Promise<{ site
         <InflowPanel reservoir={reservoir} heading="El agua que llega, frente a otros años" />
         <FloorsPanel reservoir={reservoir} />
       </section>
+      <DistributionSection reservoir={reservoir} />
       <WhereSection reservoir={reservoir} />
       <CascadeSection reservoir={reservoir} />
       <ReturnPeriodsSection reservoir={reservoir} />

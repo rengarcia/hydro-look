@@ -365,6 +365,14 @@ describe("Mazar's page, from fixtures", () => {
     expect(text).toContain(`según el INAMHI, ${returnPeriodReachedWords(periods.geoglows!.reached_years, model)}`);
   });
 
+  it("spreads its days in a histogram of the water that arrives, with the data folded under it", () => {
+    const text = textOf(mazar);
+    expect(text).toContain("Cómo se reparten sus días");
+    expect(text).toContain("El agua que llega");
+    expect(text).toMatch(/más que en el \d+ % de los días desde el \d+ de \p{L}+ de \d{4}\./u);
+    expect(mazar).toContain("Agua que llega a Mazar: parte de los días en cada rango, en m³/s");
+  });
+
   it("draws the analogue-year strip as one image with its count as its name", () => {
     expect(mazar).toMatch(/class="years" role="img" aria-label="En \d+ de \d+ años de lluvias el nivel baja de/);
   });
