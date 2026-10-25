@@ -1,8 +1,8 @@
 # Backtest — mazar level forecast
 
-Generated 2026-10-24T22:47:04Z from the committed tables; no network. Origins are the first of each month, each one refitting every model on the data before it. 106 origins scored per horizon, 94 of them with a calibrated band (the first twelve are the calibration's warm-up).
+Generated 2026-10-25T05:25:06Z from the committed tables; no network. Origins are the first of each month, each one refitting every model on the data before it. 106 origins scored per horizon, 94 of them with a calibrated band (the first twelve are the calibration's warm-up).
 
-Level history: 4417 days, 2014-09-20 → 2026-10-23.
+Level history: 4418 days, 2014-09-20 → 2026-10-24.
 
 ## Verdict
 
@@ -371,11 +371,11 @@ False alarms: across 106 origins, the P50 named a crossing within thirty days th
 |---|---|---|
 | area-elevation exponent | 2.50 | fitted |
 | area-elevation datum | 2036.7 m | fitted |
-| fit residual | 0.693 m/day over 2029 days | fitted |
+| fit residual | 0.693 m/day over 2030 days | fitted |
 | turbined flow per MW | 0.668 m³/s | fitted jointly with the curve |
-| storage, lowest declared minimum → crest | 229.4 hm³ | integral of the fitted curve |
-| release rule points | 19 | median implied release over 4328 days |
-| operator's current stance | 12.6 m³/s vs the rule | trailing 30 days |
+| storage, lowest declared minimum → crest | 229.5 hm³ | integral of the fitted curve |
+| release rule points | 19 | median implied release over 4329 days |
+| operator's current stance | 10.4 m³/s vs the rule | trailing 30 days |
 | crest used as the spill cap | 2155.83 m | highest level in the record |
 
 The 410 hm³ in `plants.csv` is marked `unverified` and came from press; the storage above is the integral of a curve fitted to this repository's own readings, and the two disagree by about a factor of two. That gap cannot be closed by preferring the bigger number: the area curve and the turbine's flow-per-MW are fitted *together*, and doubling the area drives the flow-per-MW down through zero — a turbine that consumes no water. The balance closes at one scale. The check that does pass is `repDiaPotQTurb`'s 113 days of turbined flow, whose maximum is about 129 m³/s, against the fitted 114 m³/s at Mazar's rated 170 MW.
@@ -391,15 +391,15 @@ The bias table above shows this model forecasting high at the long horizons, so 
 | 2115.0 | 29.8 |
 | 2117.5 | 28.0 |
 | 2120.0 | 35.4 |
-| 2122.5 | 38.1 |
+| 2122.5 | 36.7 |
 | 2125.0 | 35.8 |
-| 2127.5 | 48.5 |
+| 2127.5 | 48.6 |
 | 2130.0 | 55.5 |
 | 2132.5 | 62.2 |
 | 2135.0 | 69.8 |
 | 2137.5 | 53.7 |
 | 2140.0 | 53.5 |
-| 2142.5 | 54.0 |
+| 2142.5 | 54.1 |
 | 2145.0 | 57.9 |
 | 2147.5 | 59.9 |
 | 2150.0 | 60.7 |
