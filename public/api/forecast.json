@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-25T05:25:18Z",
+  "generated_at": "2026-10-25T16:53:38Z",
   "data_date": "2026-10-24",
   "run_id": "2026-10-24-mazar-4-33bac31b",
   "origin_date": "2026-10-24",
@@ -690,12 +690,12 @@
               "coverage_p10_p90": 0.819
             },
             "target_date": "2026-10-31",
-            "p10": 23.5,
-            "p50": 67.4,
-            "p90": 126.3,
+            "p10": 24.6,
+            "p50": 68.5,
+            "p90": 127.4,
             "ensemble_years": 9,
             "rain_conditioned": false,
-            "with_river_forecast": false
+            "with_river_forecast": true
           },
           {
             "horizon_days": 14,
@@ -722,7 +722,7 @@
       },
       {
         "site": "manduriacu",
-        "origin_date": "2026-10-23",
+        "origin_date": "2026-10-24",
         "variable": "caudal_m3s",
         "target": "mean inflow over the horizon, m3/s",
         "precip_basin": "guayllabamba_manduriacu",
@@ -741,10 +741,10 @@
               "climatology_mae_m3s": 56.99,
               "coverage_p10_p90": 0.8333
             },
-            "target_date": "2026-10-30",
-            "p10": 154.9,
-            "p50": 197.3,
-            "p90": 285.8,
+            "target_date": "2026-10-31",
+            "p10": 127.3,
+            "p50": 169.6,
+            "p90": 258.2,
             "ensemble_years": 8,
             "rain_conditioned": false,
             "with_river_forecast": true
@@ -762,10 +762,10 @@
               "climatology_mae_m3s": 52.72,
               "coverage_p10_p90": 0.8095
             },
-            "target_date": "2026-11-06",
-            "p10": 135.5,
-            "p50": 180.5,
-            "p90": 256.6,
+            "target_date": "2026-11-07",
+            "p10": 128.5,
+            "p50": 173.6,
+            "p90": 249.7,
             "ensemble_years": 8,
             "rain_conditioned": false,
             "with_river_forecast": false
@@ -795,11 +795,11 @@
             },
             "target_date": "2026-10-31",
             "p10": 0,
-            "p50": 18.8,
-            "p90": 70.4,
+            "p50": 23.6,
+            "p90": 75.2,
             "ensemble_years": 8,
             "rain_conditioned": false,
-            "with_river_forecast": false
+            "with_river_forecast": true
           },
           {
             "horizon_days": 14,
@@ -879,7 +879,7 @@
     ]
   },
   "scorecard": {
-    "generated_at": "2026-10-25T05:25:35Z",
+    "generated_at": "2026-10-25T16:53:55Z",
     "observed_through": "2026-10-24",
     "target": "level on the target day, m",
     "units": "m",
