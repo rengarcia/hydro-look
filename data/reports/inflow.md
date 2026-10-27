@@ -1,11 +1,11 @@
 # Inflow forecasts — the plants whose level is not the question
 
-Generated 2026-10-27T05:42:42Z by `npm run forecast` from the committed tables; no network. For the run-of-river and daily-storage plants the level is an operating decision taken within the day, so the target is the water arriving: the mean inflow over the next 7 and 14 days, in m³/s. Origins every 7 days from 2018-01-01, once a plant has 730 days of inflow; each rung sees only data up to its origin.
+Generated 2026-10-27T18:23:18Z by `npm run forecast` from the committed tables; no network. For the run-of-river and daily-storage plants the level is an operating decision taken within the day, so the target is the water arriving: the mean inflow over the next 7 and 14 days, in m³/s. Origins every 7 days from 2018-01-01, once a plant has 730 days of inflow; each rung sees only data up to its origin.
 
 - **persistence** holds the origin day's inflow.
 - **climatology** is the median of the same calendar window's mean over every earlier year.
 - **analogue** takes each earlier year's window mean scaled by today's 7-day flow over that year's (clamped to 0.33–3), and, where the plant's catchment centroid has adequate ERA5, first keeps the 50% of years whose 16 days of rain before the origin were nearest today's.
-- **ensemble**, the published rung since 2026-09-25, is the mean of the analogue and climatology rungs — and of a short-range river forecast's anomaly where one is supplied. The two rungs err in different directions, and their average beat the analogue alone at every plant and both horizons (`data/reports/geoglows-experiment.md`). A river forecast was a member in amaluza 0%, coca_codo_sinclair 0%, agoyan 17%, manduriacu 22%, minas_san_francisco 23%, delsitanisagua 0% of the scored cases.
+- **ensemble**, the published rung since 2026-09-25, is the mean of the analogue and climatology rungs — and of a short-range river forecast's anomaly where one is supplied. The two rungs err in different directions, and their average beat the analogue alone at every plant and both horizons (`data/reports/geoglows-experiment.md`). A river forecast was a member in amaluza 0%, coca_codo_sinclair 0%, agoyan 17%, manduriacu 23%, minas_san_francisco 23%, delsitanisagua 0% of the scored cases.
 
 A plant's forecast is published at a horizon only where the ensemble's MAE beats *both* persistence and climatology over the same origins. Its band is the ensemble median widened by its own out-of-sample residual quantiles, as every forecast here is.
 
@@ -19,8 +19,8 @@ A plant's forecast is published at a horizon only where the ensemble's MAE beats
 | Coca Codo Sinclair | 348 | 14 d | 78.0 | 101.1 | 120.6 | 81.2 | 78% | **yes** |
 | Agoyán | 361 | 7 d | 33.8 | 40.2 | 41.4 | 40.6 | 82% | **yes** |
 | Agoyán | 361 | 14 d | 32.8 | 41.3 | 43.2 | 37.6 | 80% | **yes** |
-| Manduriacu | 264 | 7 d | 42.3 | 50.5 | 43.9 | 57.0 | 83% | **yes** |
-| Manduriacu | 264 | 14 d | 41.3 | 49.3 | 48.8 | 52.7 | 81% | **yes** |
+| Manduriacu | 265 | 7 d | 42.5 | 50.5 | 44.1 | 57.4 | 83% | **yes** |
+| Manduriacu | 265 | 14 d | 41.4 | 49.1 | 48.7 | 53.0 | 81% | **yes** |
 | Minas San Francisco | 261 | 7 d | 23.6 | 27.2 | 28.3 | 29.7 | 78% | **yes** |
 | Minas San Francisco | 261 | 14 d | 22.8 | 26.7 | 31.1 | 27.9 | 80% | **yes** |
 | Delsitanisagua | 267 | 7 d | 13.4 | 15.3 | 16.9 | 16.0 | 77% | **yes** |
@@ -35,7 +35,7 @@ At the plants where GEOGLOWS' forecast earned a place (Agoyán, Manduriacu, Mina
 | plant | horizon | cases | MAE with | MAE without |
 |---|---:|---:|---:|---:|
 | agoyan | 7 d | 121 | 31.8 | 34.8 |
-| manduriacu | 7 d | 114 | 34.6 | 40.3 |
+| manduriacu | 7 d | 115 | 35.1 | 40.9 |
 | minas_san_francisco | 7 d | 120 | 24.1 | 25.2 |
 
 ## Rain conditioning
@@ -77,14 +77,14 @@ The conditioner is the rain that had already fallen, read with ERA5's five-day l
 | agoyan | 14 d | climatology | 351 | 37.6 | 1.0 | 74% (339) | 12.2 |
 | agoyan | 14 d | analogue | 351 | 41.3 | -3.9 | 80% (339) | 14.8 |
 | agoyan | 14 d | ensemble | 351 | 32.8 | -1.5 | 80% (339) | 11.3 |
-| manduriacu | 7 d | persistence | 264 | 43.9 | -3.8 | 78% (252) | 16.4 |
-| manduriacu | 7 d | climatology | 264 | 57.0 | 24.9 | 77% (252) | 19.7 |
-| manduriacu | 7 d | analogue | 264 | 50.5 | 0.5 | 83% (252) | 17.4 |
-| manduriacu | 7 d | ensemble | 264 | 42.3 | 16.8 | 83% (252) | 14.6 |
-| manduriacu | 14 d | persistence | 243 | 48.8 | -3.4 | 77% (231) | 18.4 |
-| manduriacu | 14 d | climatology | 243 | 52.7 | 20.9 | 77% (231) | 18.4 |
-| manduriacu | 14 d | analogue | 243 | 49.3 | -1.0 | 84% (231) | 17.2 |
-| manduriacu | 14 d | ensemble | 243 | 41.3 | 10.0 | 81% (231) | 14.2 |
+| manduriacu | 7 d | persistence | 265 | 44.1 | -3.5 | 77% (253) | 16.4 |
+| manduriacu | 7 d | climatology | 265 | 57.4 | 25.4 | 76% (253) | 19.8 |
+| manduriacu | 7 d | analogue | 265 | 50.5 | 0.7 | 83% (253) | 17.3 |
+| manduriacu | 7 d | ensemble | 265 | 42.5 | 17.1 | 83% (253) | 14.6 |
+| manduriacu | 14 d | persistence | 244 | 48.7 | -3.3 | 77% (232) | 18.4 |
+| manduriacu | 14 d | climatology | 244 | 53.0 | 21.4 | 77% (232) | 18.4 |
+| manduriacu | 14 d | analogue | 244 | 49.1 | -1.0 | 84% (232) | 17.2 |
+| manduriacu | 14 d | ensemble | 244 | 41.4 | 10.2 | 81% (232) | 14.2 |
 | minas_san_francisco | 7 d | persistence | 261 | 28.3 | -4.3 | 80% (249) | 12.0 |
 | minas_san_francisco | 7 d | climatology | 261 | 29.7 | 8.5 | 76% (249) | 11.3 |
 | minas_san_francisco | 7 d | analogue | 261 | 27.2 | 0.2 | 81% (249) | 10.5 |

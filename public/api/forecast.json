@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-27T05:42:48Z",
+  "generated_at": "2026-10-27T18:23:27Z",
   "data_date": "2026-10-26",
   "run_id": "2026-10-26-mazar-4-5a58addd",
   "origin_date": "2026-10-26",
@@ -690,12 +690,12 @@
               "coverage_p10_p90": 0.8195
             },
             "target_date": "2026-11-02",
-            "p10": 22.7,
-            "p50": 66.6,
-            "p90": 125.4,
+            "p10": 30.1,
+            "p50": 74,
+            "p90": 132.9,
             "ensemble_years": 8,
             "rain_conditioned": false,
-            "with_river_forecast": false
+            "with_river_forecast": true
           },
           {
             "horizon_days": 14,
@@ -722,7 +722,7 @@
       },
       {
         "site": "manduriacu",
-        "origin_date": "2026-10-25",
+        "origin_date": "2026-10-26",
         "variable": "caudal_m3s",
         "target": "mean inflow over the horizon, m3/s",
         "precip_basin": "guayllabamba_manduriacu",
@@ -731,20 +731,20 @@
           {
             "horizon_days": 7,
             "published": true,
-            "reason": "ensemble MAE 42.3 m3/s beats persistence 43.9 and climatology 57.0",
+            "reason": "ensemble MAE 42.5 m3/s beats persistence 44.1 and climatology 57.4",
             "backtest": {
               "model": "ensemble",
-              "n": 264,
-              "mae_m3s": 42.31,
-              "analogue_mae_m3s": 50.48,
-              "persistence_mae_m3s": 43.93,
-              "climatology_mae_m3s": 56.99,
-              "coverage_p10_p90": 0.8333
+              "n": 265,
+              "mae_m3s": 42.52,
+              "analogue_mae_m3s": 50.46,
+              "persistence_mae_m3s": 44.1,
+              "climatology_mae_m3s": 57.39,
+              "coverage_p10_p90": 0.83
             },
-            "target_date": "2026-11-01",
-            "p10": 124.3,
-            "p50": 166.6,
-            "p90": 255.2,
+            "target_date": "2026-11-02",
+            "p10": 152,
+            "p50": 194.3,
+            "p90": 287.7,
             "ensemble_years": 8,
             "rain_conditioned": false,
             "with_river_forecast": true
@@ -752,20 +752,20 @@
           {
             "horizon_days": 14,
             "published": true,
-            "reason": "ensemble MAE 41.3 m3/s beats persistence 48.8 and climatology 52.7",
+            "reason": "ensemble MAE 41.4 m3/s beats persistence 48.7 and climatology 53.0",
             "backtest": {
               "model": "ensemble",
-              "n": 243,
-              "mae_m3s": 41.31,
-              "analogue_mae_m3s": 49.29,
-              "persistence_mae_m3s": 48.79,
-              "climatology_mae_m3s": 52.72,
-              "coverage_p10_p90": 0.8095
+              "n": 244,
+              "mae_m3s": 41.41,
+              "analogue_mae_m3s": 49.13,
+              "persistence_mae_m3s": 48.69,
+              "climatology_mae_m3s": 53,
+              "coverage_p10_p90": 0.8103
             },
-            "target_date": "2026-11-08",
-            "p10": 120.5,
-            "p50": 165.5,
-            "p90": 241.6,
+            "target_date": "2026-11-09",
+            "p10": 122.1,
+            "p50": 167,
+            "p90": 243,
             "ensemble_years": 8,
             "rain_conditioned": false,
             "with_river_forecast": false
@@ -795,11 +795,11 @@
             },
             "target_date": "2026-11-02",
             "p10": 0,
-            "p50": 18.1,
-            "p90": 69.7,
+            "p50": 21.5,
+            "p90": 73.1,
             "ensemble_years": 8,
             "rain_conditioned": false,
-            "with_river_forecast": false
+            "with_river_forecast": true
           },
           {
             "horizon_days": 14,
@@ -879,7 +879,7 @@
     ]
   },
   "scorecard": {
-    "generated_at": "2026-10-27T05:42:59Z",
+    "generated_at": "2026-10-27T18:23:41Z",
     "observed_through": "2026-10-26",
     "target": "level on the target day, m",
     "units": "m",
