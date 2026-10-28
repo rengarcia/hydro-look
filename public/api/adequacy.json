@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-28T18:34:31Z",
+  "generated_at": "2026-10-28T21:24:25Z",
   "data_date": "2026-10-27",
   "run_id": "2026-10-27-adequacy-2-64fc0b2e",
   "origin_date": "2026-10-27",
@@ -504,7 +504,7 @@
     ]
   },
   "scorecard": {
-    "generated_at": "2026-10-28T18:34:32Z",
+    "generated_at": "2026-10-28T21:24:26Z",
     "observed_through": "2026-10-27",
     "target": "net requirement (demand − hydro), mean over the horizon window, GWh/day",
     "units": "GWh/day",
