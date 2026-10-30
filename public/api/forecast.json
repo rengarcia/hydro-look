@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-29T21:29:36Z",
+  "generated_at": "2026-10-30T00:29:32Z",
   "data_date": "2026-10-28",
   "run_id": "2026-10-28-mazar-4-c9b567e8",
   "origin_date": "2026-10-28",
@@ -555,7 +555,7 @@
   "precipitation_basin": {
     "basin": "paute_mazar",
     "verified_centroid": true,
-    "era5_days": 13443,
+    "era5_days": 13444,
     "share_since_1990": 1,
     "fallback_reason": null
   },
@@ -878,7 +878,7 @@
     ]
   },
   "scorecard": {
-    "generated_at": "2026-10-29T21:29:53Z",
+    "generated_at": "2026-10-30T00:29:42Z",
     "observed_through": "2026-10-28",
     "target": "level on the target day, m",
     "units": "m",
