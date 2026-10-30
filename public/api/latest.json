@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-30T06:34:11Z",
+  "generated_at": "2026-10-30T18:17:35Z",
   "data_date": "2026-10-29",
   "as_of": "2026-10-30",
   "disclaimer": "No es una fuente oficial. Cada número es una copia de lo que publicaron CELEC o CENACE, con la respuesta que lo produjo archivada junto a él.",
@@ -1360,79 +1360,79 @@
     }
   ],
   "national": {
-    "date": "2026-10-28",
+    "date": "2026-10-29",
     "supply_gwh": [
       {
         "concept": "generacion_hidraulica",
-        "gwh": 76.261,
-        "pct": 76.4
+        "gwh": 75.877,
+        "pct": 74.75
       },
       {
         "concept": "generacion_motores_bunker",
-        "gwh": 10.283,
-        "pct": 10.3
+        "gwh": 10.64,
+        "pct": 10.48
       },
       {
         "concept": "generacion_vapor_bunker",
-        "gwh": 7.189,
-        "pct": 7.2
+        "gwh": 8.004,
+        "pct": 7.89
       },
       {
         "concept": "generacion_turbinas_diesel",
-        "gwh": 4.36,
-        "pct": 4.37
+        "gwh": 4.405,
+        "pct": 4.34
       },
       {
         "concept": "generacion_turbinas_gas",
-        "gwh": 1.434,
-        "pct": 1.44
+        "gwh": 2.211,
+        "pct": 2.18
       },
       {
         "concept": "generacion_otros_tipos",
-        "gwh": 0.172,
-        "pct": 0.17
+        "gwh": 0.24,
+        "pct": 0.24
       },
       {
         "concept": "total_importacion",
-        "gwh": 0.124,
-        "pct": 0.12
+        "gwh": 0.131,
+        "pct": 0.13
       }
     ],
-    "total_generation_gwh": 99.699,
-    "total_import_gwh": 0.124,
-    "total_export_gwh": 0.111,
-    "distribution_demand_gwh": 86.791,
-    "transport_losses_gwh": 2.465,
-    "hydro_share_pct": 76.4,
-    "thermal_share_pct": 23.31,
-    "import_share_pct": 0.12,
+    "total_generation_gwh": 101.377,
+    "total_import_gwh": 0.131,
+    "total_export_gwh": 0.109,
+    "distribution_demand_gwh": 89.724,
+    "transport_losses_gwh": 0.796,
+    "hydro_share_pct": 74.75,
+    "thermal_share_pct": 24.88,
+    "import_share_pct": 0.13,
     "previous": {
-      "date": "2026-10-27",
-      "total_generation_gwh": 102.078,
-      "total_import_gwh": 0.104,
-      "hydro_share_pct": 78.22,
-      "thermal_share_pct": 21.5,
-      "import_share_pct": 0.1
+      "date": "2026-10-28",
+      "total_generation_gwh": 99.699,
+      "total_import_gwh": 0.124,
+      "hydro_share_pct": 76.4,
+      "thermal_share_pct": 23.31,
+      "import_share_pct": 0.12
     },
     "delta_1d": {
-      "hydro_share_pct_points": -1.82,
-      "thermal_share_pct_points": 1.81,
-      "import_share_pct_points": 0.02,
-      "total_generation_gwh": -2.379
+      "hydro_share_pct_points": -1.65,
+      "thermal_share_pct_points": 1.57,
+      "import_share_pct_points": 0.01,
+      "total_generation_gwh": 1.678
     }
   },
   "live": {
     "date": "2026-10-30",
-    "fetched_at": "2026-10-30T06:33:02Z",
-    "total_production_gwh": 7.782,
-    "hydro_gwh": 5.358,
-    "thermal_gwh": 2.38,
-    "nonconventional_gwh": 0.031,
-    "import_gwh": 0.003,
-    "export_gwh": 0.007,
-    "hydro_share_pct": 68.82,
-    "thermal_share_pct": 30.57,
-    "import_share_pct": 0.04
+    "fetched_at": "2026-10-30T18:16:47Z",
+    "total_production_gwh": 51.489,
+    "hydro_gwh": 35.234,
+    "thermal_gwh": 15.764,
+    "nonconventional_gwh": 0.382,
+    "import_gwh": 0.024,
+    "export_gwh": 0.039,
+    "hydro_share_pct": 68.4,
+    "thermal_share_pct": 30.6,
+    "import_share_pct": 0.05
   },
   "adequacy": {
     "origin_date": "2026-10-28",
