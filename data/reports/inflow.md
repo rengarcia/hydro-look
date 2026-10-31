@@ -1,6 +1,6 @@
 # Inflow forecasts — the plants whose level is not the question
 
-Generated 2026-10-31T00:11:03Z by `npm run forecast` from the committed tables; no network. For the run-of-river and daily-storage plants the level is an operating decision taken within the day, so the target is the water arriving: the mean inflow over the next 7 and 14 days, in m³/s. Origins every 7 days from 2018-01-01, once a plant has 730 days of inflow; each rung sees only data up to its origin.
+Generated 2026-10-31T06:24:10Z by `npm run forecast` from the committed tables; no network. For the run-of-river and daily-storage plants the level is an operating decision taken within the day, so the target is the water arriving: the mean inflow over the next 7 and 14 days, in m³/s. Origins every 7 days from 2018-01-01, once a plant has 730 days of inflow; each rung sees only data up to its origin.
 
 - **persistence** holds the origin day's inflow.
 - **climatology** is the median of the same calendar window's mean over every earlier year.
@@ -23,8 +23,8 @@ A plant's forecast is published at a horizon only where the ensemble's MAE beats
 | Manduriacu | 265 | 14 d | 41.4 | 49.1 | 48.7 | 53.0 | 81% | **yes** |
 | Minas San Francisco | 262 | 7 d | 23.6 | 27.1 | 28.2 | 29.7 | 78% | **yes** |
 | Minas San Francisco | 262 | 14 d | 22.7 | 26.6 | 31.1 | 27.8 | 80% | **yes** |
-| Delsitanisagua | 267 | 7 d | 13.4 | 15.3 | 16.9 | 16.0 | 77% | **yes** |
-| Delsitanisagua | 267 | 14 d | 12.0 | 14.3 | 16.3 | 14.3 | 78% | **yes** |
+| Delsitanisagua | 268 | 7 d | 13.3 | 15.2 | 16.9 | 15.9 | 77% | **yes** |
+| Delsitanisagua | 268 | 14 d | 12.0 | 14.2 | 16.2 | 14.2 | 78% | **yes** |
 
 Published: amaluza 7 d, amaluza 14 d, coca_codo_sinclair 7 d, coca_codo_sinclair 14 d, agoyan 7 d, agoyan 14 d, manduriacu 7 d, manduriacu 14 d, minas_san_francisco 7 d, minas_san_francisco 14 d, delsitanisagua 7 d, delsitanisagua 14 d. Recorded negatives: none. Where climatology wins at 14 days the rivers are forgetting today's flow within a fortnight, and the honest forecast is the calendar; where persistence wins the flow is regulated upstream enough that today's number is the best guess for next week. Neither is published as an inflow forecast, because neither is a forecast this repository made.
 
@@ -93,14 +93,14 @@ The conditioner is the rain that had already fallen, read with ERA5's five-day l
 | minas_san_francisco | 14 d | climatology | 261 | 27.8 | 6.6 | 75% (249) | 10.3 |
 | minas_san_francisco | 14 d | analogue | 261 | 26.6 | -4.1 | 80% (249) | 10.5 |
 | minas_san_francisco | 14 d | ensemble | 261 | 22.7 | 1.3 | 80% (249) | 8.5 |
-| delsitanisagua | 7 d | persistence | 267 | 16.9 | 0.4 | 75% (255) | 6.6 |
-| delsitanisagua | 7 d | climatology | 267 | 16.0 | -2.2 | 77% (255) | 5.4 |
-| delsitanisagua | 7 d | analogue | 267 | 15.3 | 0.1 | 75% (255) | 5.8 |
-| delsitanisagua | 7 d | ensemble | 267 | 13.4 | -1.0 | 77% (255) | 4.9 |
-| delsitanisagua | 14 d | persistence | 266 | 16.3 | 0.3 | 74% (254) | 6.1 |
-| delsitanisagua | 14 d | climatology | 266 | 14.3 | -2.7 | 78% (254) | 4.7 |
-| delsitanisagua | 14 d | analogue | 266 | 14.3 | -0.2 | 78% (254) | 5.3 |
-| delsitanisagua | 14 d | ensemble | 266 | 12.0 | -1.5 | 78% (254) | 4.3 |
+| delsitanisagua | 7 d | persistence | 268 | 16.9 | 0.3 | 75% (256) | 6.6 |
+| delsitanisagua | 7 d | climatology | 268 | 15.9 | -2.2 | 77% (256) | 5.3 |
+| delsitanisagua | 7 d | analogue | 268 | 15.2 | 0.1 | 75% (256) | 5.7 |
+| delsitanisagua | 7 d | ensemble | 268 | 13.3 | -1.0 | 77% (256) | 4.8 |
+| delsitanisagua | 14 d | persistence | 267 | 16.2 | 0.3 | 74% (255) | 6.0 |
+| delsitanisagua | 14 d | climatology | 267 | 14.2 | -2.7 | 78% (255) | 4.7 |
+| delsitanisagua | 14 d | analogue | 267 | 14.2 | -0.2 | 78% (255) | 5.3 |
+| delsitanisagua | 14 d | ensemble | 267 | 12.0 | -1.5 | 78% (255) | 4.3 |
 
 ## Amaluza's level: not forecast, and why
 
