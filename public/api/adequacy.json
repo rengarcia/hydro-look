@@ -1,25 +1,25 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-31T06:24:25Z",
-  "data_date": "2026-10-29",
-  "run_id": "2026-10-29-adequacy-2-0ee1fcf7",
-  "origin_date": "2026-10-29",
+  "generated_at": "2026-10-31T17:26:24Z",
+  "data_date": "2026-10-30",
+  "run_id": "2026-10-30-adequacy-2-3c9214e2",
+  "origin_date": "2026-10-30",
   "units": "GWh per day",
   "disclaimer": "No es una fuente oficial. Cálculo estadístico de suficiencia a partir de datos públicos de CELEC y CENACE; no representa la posición de ninguna institución ni sustituye la programación del operador.",
   "model": {
     "id": "adequacy-v1",
     "label": "Demanda no suprimida (tendencia log-lineal con factores de día de semana y estación) menos hidroeléctrica normalizada por esa tendencia, contra techos térmico e de importación demostrados",
     "version": "2",
-    "features_hash": "0ee1fcf730a29a8e",
+    "features_hash": "3c9214e2712b0efd",
     "backtest_origins": 100
   },
   "data": {
-    "usable_days": 3762,
+    "usable_days": 3763,
     "rejected_days": 57,
-    "demand_fit_days": 1210,
-    "demand_growth_pct_per_year": 6.36,
-    "hydro_fit_days": 3762,
-    "hydro_anomaly": 0.9361,
+    "demand_fit_days": 1209,
+    "demand_growth_pct_per_year": 6.34,
+    "hydro_fit_days": 3763,
+    "hydro_anomaly": 0.9438,
     "hydro_anomaly_note": "Hidroeléctrica de los últimos 14 días dividida por su propia climatología del mismo período. 1,00 es una quincena normal; por debajo de 1 el sistema llega seco."
   },
   "assumptions": {
@@ -30,13 +30,13 @@
     "basis": "thermal = 25.831 (largest thermal day in the 1081 usable balance days from 2023-09-21 to 2026-09-20; a demonstrated maximum, not an availability declaration — no source this project reaches publishes planned outages); import = 10.779 (largest import day in the same window (2024-08-15). About 449 MW sustained, consistent with the Colombian interconnection's usual limit); import_stressed = 0.122 (median daily import 2024-10-01 to 2024-11-10, while Ecuador rationed 14 h/day and Colombia was short of water at the same time. Not an outlier: imports ran below 1 GWh/day for 398 consecutive days from 2019-07-06); other = 1.132 (median of generación de otros tipos over the same window. Solar, wind and biomass are not dispatchable, so the median is used rather than the maximum)",
     "import_regime": {
       "state": "cutoff",
-      "central_import_gwh_day": 0.181,
-      "trailing_gwh_day": 0.181,
-      "trailing_thermal_gwh_day": 26.035,
+      "central_import_gwh_day": 0.129,
+      "trailing_gwh_day": 0.129,
+      "trailing_thermal_gwh_day": 25.956,
       "window_days": 14,
       "cutoff_below_gwh_day": 1,
       "cutoff_thermal_share": 0.7,
-      "note": "Las importaciones desde Colombia promediaron 0.18 GWh/día en los últimos 14 días mientras la térmica generaba 26 GWh/día: no llegan aunque se necesitan. El caso central usa lo que está llegando, no el máximo demostrado, y lo mantiene durante el horizonte."
+      "note": "Las importaciones desde Colombia promediaron 0.13 GWh/día en los últimos 14 días mientras la térmica generaba 26 GWh/día: no llegan aunque se necesitan. El caso central usa lo que está llegando, no el máximo demostrado, y lo mantiene durante el horizonte."
     },
     "editable_at": "data/reference/adequacy_assumptions.csv",
     "rules": {
@@ -52,7 +52,7 @@
     "tier": "deficit",
     "worst_tier": "deficit",
     "worst_tier_horizon_days": 7,
-    "worst_deficit_gwh_day": 6.187,
+    "worst_deficit_gwh_day": 5.606,
     "tier_code": "deficit",
     "tier_label_es": "Déficit",
     "worst_tier_code": "deficit",
@@ -62,19 +62,19 @@
   "horizons": [
     {
       "horizon_days": 7,
-      "target_date": "2026-11-05",
-      "demand_gwh_day": 105.7,
-      "hydro_gwh_day": 72.368,
-      "hydro_p10": 61.98,
-      "hydro_p90": 77.44,
-      "requirement_gwh_day": 33.331,
-      "requirement_p10": 28.601,
-      "requirement_p90": 43.13,
-      "deficit_gwh_day": 6.187,
-      "deficit_p10": 1.457,
-      "deficit_p90": 15.987,
-      "stressed_deficit_gwh_day": 6.246,
-      "margin_pct": -5.85,
+      "target_date": "2026-11-06",
+      "demand_gwh_day": 105.697,
+      "hydro_gwh_day": 72.999,
+      "hydro_p10": 62.611,
+      "hydro_p90": 78.071,
+      "requirement_gwh_day": 32.698,
+      "requirement_p10": 27.968,
+      "requirement_p90": 42.497,
+      "deficit_gwh_day": 5.606,
+      "deficit_p10": 0.876,
+      "deficit_p90": 15.405,
+      "stressed_deficit_gwh_day": 5.613,
+      "margin_pct": -5.3,
       "tier": "deficit",
       "backtest": {
         "demand_mae_gwh_day": 1.776,
@@ -92,20 +92,20 @@
     },
     {
       "horizon_days": 14,
-      "target_date": "2026-11-12",
-      "demand_gwh_day": 106.212,
-      "hydro_gwh_day": 73.827,
-      "hydro_p10": 63.608,
-      "hydro_p90": 80.606,
-      "requirement_gwh_day": 32.385,
-      "requirement_p10": 25.812,
-      "requirement_p90": 42.318,
-      "deficit_gwh_day": 5.241,
-      "deficit_p10": -1.332,
-      "deficit_p90": 15.175,
-      "stressed_deficit_gwh_day": 5.3,
-      "margin_pct": -4.93,
-      "tier": "deficit",
+      "target_date": "2026-11-13",
+      "demand_gwh_day": 106.434,
+      "hydro_gwh_day": 74.568,
+      "hydro_p10": 64.348,
+      "hydro_p90": 81.346,
+      "requirement_gwh_day": 31.867,
+      "requirement_p10": 25.294,
+      "requirement_p90": 41.8,
+      "deficit_gwh_day": 4.775,
+      "deficit_p10": -1.798,
+      "deficit_p90": 14.708,
+      "stressed_deficit_gwh_day": 4.782,
+      "margin_pct": -4.49,
+      "tier": "ajustado",
       "backtest": {
         "demand_mae_gwh_day": 1.81,
         "demand_skill_vs_persistence": -0.0394,
@@ -117,24 +117,24 @@
         "requirement_coverage_p10_p90": 0.8194,
         "n": 84
       },
-      "tier_code": "deficit",
-      "tier_label_es": "Déficit"
+      "tier_code": "tight",
+      "tier_label_es": "Ajustado"
     },
     {
       "horizon_days": 30,
-      "target_date": "2026-11-28",
-      "demand_gwh_day": 108.353,
-      "hydro_gwh_day": 76.364,
-      "hydro_p10": 59.51,
-      "hydro_p90": 86.815,
-      "requirement_gwh_day": 31.989,
-      "requirement_p10": 23.546,
-      "requirement_p90": 43.56,
-      "deficit_gwh_day": 4.845,
-      "deficit_p10": -3.598,
-      "deficit_p90": 16.416,
-      "stressed_deficit_gwh_day": 4.904,
-      "margin_pct": -4.47,
+      "target_date": "2026-11-29",
+      "demand_gwh_day": 108.066,
+      "hydro_gwh_day": 76.624,
+      "hydro_p10": 59.77,
+      "hydro_p90": 87.075,
+      "requirement_gwh_day": 31.442,
+      "requirement_p10": 22.999,
+      "requirement_p90": 43.014,
+      "deficit_gwh_day": 4.351,
+      "deficit_p10": -4.093,
+      "deficit_p90": 15.922,
+      "stressed_deficit_gwh_day": 4.357,
+      "margin_pct": -4.03,
       "tier": "ajustado",
       "backtest": {
         "demand_mae_gwh_day": 2.047,
@@ -152,19 +152,19 @@
     },
     {
       "horizon_days": 60,
-      "target_date": "2026-12-28",
-      "demand_gwh_day": 108.406,
-      "hydro_gwh_day": 78.402,
-      "hydro_p10": 68.556,
-      "hydro_p90": 90.704,
-      "requirement_gwh_day": 30.004,
-      "requirement_p10": 19.198,
-      "requirement_p90": 39.086,
-      "deficit_gwh_day": 2.86,
-      "deficit_p10": -7.946,
-      "deficit_p90": 11.942,
-      "stressed_deficit_gwh_day": 2.919,
-      "margin_pct": -2.64,
+      "target_date": "2026-12-29",
+      "demand_gwh_day": 108.445,
+      "hydro_gwh_day": 78.93,
+      "hydro_p10": 69.084,
+      "hydro_p90": 91.232,
+      "requirement_gwh_day": 29.515,
+      "requirement_p10": 18.708,
+      "requirement_p90": 38.597,
+      "deficit_gwh_day": 2.423,
+      "deficit_p10": -8.383,
+      "deficit_p90": 11.505,
+      "stressed_deficit_gwh_day": 2.43,
+      "margin_pct": -2.23,
       "tier": "ajustado",
       "backtest": {
         "demand_mae_gwh_day": 2.098,
@@ -182,19 +182,19 @@
     },
     {
       "horizon_days": 90,
-      "target_date": "2027-01-27",
-      "demand_gwh_day": 110.131,
-      "hydro_gwh_day": 82.092,
-      "hydro_p10": 71.917,
-      "hydro_p90": 94.781,
-      "requirement_gwh_day": 28.04,
-      "requirement_p10": 16.747,
-      "requirement_p90": 35.551,
-      "deficit_gwh_day": 0.896,
-      "deficit_p10": -10.396,
-      "deficit_p90": 8.407,
-      "stressed_deficit_gwh_day": 0.955,
-      "margin_pct": -0.81,
+      "target_date": "2027-01-28",
+      "demand_gwh_day": 110.257,
+      "hydro_gwh_day": 82.666,
+      "hydro_p10": 72.491,
+      "hydro_p90": 95.355,
+      "requirement_gwh_day": 27.591,
+      "requirement_p10": 16.299,
+      "requirement_p90": 35.102,
+      "deficit_gwh_day": 0.5,
+      "deficit_p10": -10.793,
+      "deficit_p90": 8.01,
+      "stressed_deficit_gwh_day": 0.506,
+      "margin_pct": -0.45,
       "tier": "ajustado",
       "backtest": {
         "demand_mae_gwh_day": 2.294,
@@ -319,15 +319,15 @@
       },
       {
         "start": "2026-09-22",
-        "end": "2026-10-29",
-        "days": 38,
-        "modelled_demand_gwh_day": 109.24,
-        "measured_load_gwh_day": 101.54,
-        "measured_suppression_gwh_day": 7.7,
-        "measured_hydro_gwh_day": 76.45,
-        "measured_import_gwh_day": 0.142,
-        "implied_deficit_gwh_day": 5.68,
-        "deficit_at_demonstrated_imports_gwh_day": -4.95
+        "end": "2026-10-30",
+        "days": 39,
+        "modelled_demand_gwh_day": 109.27,
+        "measured_load_gwh_day": 101.5,
+        "measured_suppression_gwh_day": 7.77,
+        "measured_hydro_gwh_day": 76.37,
+        "measured_import_gwh_day": 0.144,
+        "implied_deficit_gwh_day": 5.79,
+        "deficit_at_demonstrated_imports_gwh_day": -4.85
       }
     ]
   },
@@ -343,32 +343,32 @@
         "horizons": [
           {
             "horizon_days": 7,
-            "deficit_gwh_day": -4.411,
-            "deficit_p90": 5.388,
+            "deficit_gwh_day": -5.044,
+            "deficit_p90": 4.755,
             "tier": "vigilancia"
           },
           {
             "horizon_days": 14,
-            "deficit_gwh_day": -5.357,
-            "deficit_p90": 4.576,
+            "deficit_gwh_day": -5.875,
+            "deficit_p90": 4.058,
             "tier": "vigilancia"
           },
           {
             "horizon_days": 30,
-            "deficit_gwh_day": -5.753,
-            "deficit_p90": 5.818,
+            "deficit_gwh_day": -6.3,
+            "deficit_p90": 5.272,
             "tier": "vigilancia"
           },
           {
             "horizon_days": 60,
-            "deficit_gwh_day": -7.738,
-            "deficit_p90": 1.344,
+            "deficit_gwh_day": -8.227,
+            "deficit_p90": 0.855,
             "tier": "vigilancia"
           },
           {
             "horizon_days": 90,
-            "deficit_gwh_day": -9.702,
-            "deficit_p90": -2.191,
+            "deficit_gwh_day": -10.151,
+            "deficit_p90": -2.64,
             "tier": "holgado"
           }
         ]
@@ -381,70 +381,70 @@
         "horizons": [
           {
             "horizon_days": 7,
-            "deficit_gwh_day": 6.246,
-            "deficit_p90": 16.045,
+            "deficit_gwh_day": 5.613,
+            "deficit_p90": 15.412,
             "tier": "deficit"
           },
           {
             "horizon_days": 14,
-            "deficit_gwh_day": 5.3,
-            "deficit_p90": 15.233,
-            "tier": "deficit"
+            "deficit_gwh_day": 4.782,
+            "deficit_p90": 14.715,
+            "tier": "ajustado"
           },
           {
             "horizon_days": 30,
-            "deficit_gwh_day": 4.904,
-            "deficit_p90": 16.475,
+            "deficit_gwh_day": 4.357,
+            "deficit_p90": 15.929,
             "tier": "ajustado"
           },
           {
             "horizon_days": 60,
-            "deficit_gwh_day": 2.919,
-            "deficit_p90": 12.001,
+            "deficit_gwh_day": 2.43,
+            "deficit_p90": 11.512,
             "tier": "ajustado"
           },
           {
             "horizon_days": 90,
-            "deficit_gwh_day": 0.955,
-            "deficit_p90": 8.466,
+            "deficit_gwh_day": 0.506,
+            "deficit_p90": 8.017,
             "tier": "ajustado"
           }
         ]
       },
       {
         "case": "current_regime",
-        "import_gwh_day": 0.181,
+        "import_gwh_day": 0.129,
         "worst_tier": "deficit",
         "worst_tier_horizon_days": 7,
         "horizons": [
           {
             "horizon_days": 7,
-            "deficit_gwh_day": 6.187,
-            "deficit_p90": 15.987,
+            "deficit_gwh_day": 5.606,
+            "deficit_p90": 15.405,
             "tier": "deficit"
           },
           {
             "horizon_days": 14,
-            "deficit_gwh_day": 5.241,
-            "deficit_p90": 15.175,
-            "tier": "deficit"
+            "deficit_gwh_day": 4.775,
+            "deficit_p90": 14.708,
+            "tier": "ajustado"
           },
           {
             "horizon_days": 30,
-            "deficit_gwh_day": 4.845,
-            "deficit_p90": 16.416,
+            "deficit_gwh_day": 4.351,
+            "deficit_p90": 15.922,
             "tier": "ajustado"
           },
           {
             "horizon_days": 60,
-            "deficit_gwh_day": 2.86,
-            "deficit_p90": 11.942,
+            "deficit_gwh_day": 2.423,
+            "deficit_p90": 11.505,
             "tier": "ajustado"
           },
           {
             "horizon_days": 90,
-            "deficit_gwh_day": 0.896,
-            "deficit_p90": 8.407,
+            "deficit_gwh_day": 0.5,
+            "deficit_p90": 8.01,
             "tier": "ajustado"
           }
         ]
@@ -455,64 +455,64 @@
     "note": "El déficit y el nivel de riesgo si Coca Codo Sinclair saliera de servicio durante todo el horizonte. No es un pronóstico: es cuánto del margen depende de una sola central. Se resta su participación reciente en la generación hidroeléctrica nacional; importaciones y térmica quedan como en el caso central.",
     "site": "coca_codo_sinclair",
     "available": true,
-    "share_of_hydro": 0.2245,
-    "plant_gwh_day": 16.836,
+    "share_of_hydro": 0.2277,
+    "plant_gwh_day": 17.089,
     "share_days": 28,
-    "share_from": "2026-10-02",
-    "share_to": "2026-10-29",
+    "share_from": "2026-10-03",
+    "share_to": "2026-10-30",
     "horizons": [
       {
         "horizon_days": 7,
-        "lost_gwh_day": 16.25,
-        "hydro_gwh_day": 56.119,
-        "deficit_gwh_day": 22.437,
-        "deficit_p90": 32.236,
+        "lost_gwh_day": 16.618,
+        "hydro_gwh_day": 56.381,
+        "deficit_gwh_day": 22.225,
+        "deficit_p90": 32.024,
         "tier": "deficit"
       },
       {
         "horizon_days": 14,
-        "lost_gwh_day": 16.577,
-        "hydro_gwh_day": 57.25,
-        "deficit_gwh_day": 21.818,
-        "deficit_p90": 31.752,
+        "lost_gwh_day": 16.976,
+        "hydro_gwh_day": 57.592,
+        "deficit_gwh_day": 21.75,
+        "deficit_p90": 31.684,
         "tier": "deficit"
       },
       {
         "horizon_days": 30,
-        "lost_gwh_day": 17.147,
-        "hydro_gwh_day": 59.217,
-        "deficit_gwh_day": 21.992,
-        "deficit_p90": 33.563,
+        "lost_gwh_day": 17.444,
+        "hydro_gwh_day": 59.18,
+        "deficit_gwh_day": 21.794,
+        "deficit_p90": 33.365,
         "tier": "deficit"
       },
       {
         "horizon_days": 60,
-        "lost_gwh_day": 17.604,
-        "hydro_gwh_day": 60.798,
-        "deficit_gwh_day": 20.465,
-        "deficit_p90": 29.547,
+        "lost_gwh_day": 17.969,
+        "hydro_gwh_day": 60.961,
+        "deficit_gwh_day": 20.391,
+        "deficit_p90": 29.473,
         "tier": "deficit"
       },
       {
         "horizon_days": 90,
-        "lost_gwh_day": 18.433,
-        "hydro_gwh_day": 63.659,
-        "deficit_gwh_day": 19.329,
-        "deficit_p90": 26.84,
+        "lost_gwh_day": 18.819,
+        "hydro_gwh_day": 63.847,
+        "deficit_gwh_day": 19.319,
+        "deficit_p90": 26.83,
         "tier": "deficit"
       }
     ]
   },
   "scorecard": {
-    "generated_at": "2026-10-31T06:24:26Z",
-    "observed_through": "2026-10-29",
+    "generated_at": "2026-10-31T17:26:24Z",
+    "observed_through": "2026-10-30",
     "target": "net requirement (demand − hydro), mean over the horizon window, GWh/day",
     "units": "GWh/day",
-    "runs_considered": 41,
+    "runs_considered": 42,
     "runs_superseded": 1,
     "rows_scored": 0,
-    "rows_pending": 133,
-    "rows_excluded": 72,
+    "rows_pending": 135,
+    "rows_excluded": 75,
     "method": "Every published run whose horizon has passed, scored under the model and version that made it; the last run generated for each origin and version only. Pending rows have not reached their target date yet; excluded rows fall on a missing or rationed day.",
     "by_horizon": [],
     "recent": []
