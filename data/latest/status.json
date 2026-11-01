@@ -1,31 +1,19 @@
 {
-  "generated_at": "2026-11-01T21:34:32Z",
-  "command": "xm",
+  "generated_at": "2026-11-01T23:59:02Z",
+  "command": "daily",
   "source": "all",
-  "requests": 80,
-  "errors": [
-    "xm exchange 2026-09-27..2026-09-30: Error: ExpoEner:Enlace:2026-09-27:2026-09-30: gave up after 4 attempts in 48575 ms: ConnectTimeoutError: Connect Timeout Error (attempted addresses: 179.1.12.119:443, 191.97.49.119:443, timeout: 10000ms)",
-    "xm PorcVoluUtilDiar 2026-09-27..2026-09-30: Error: PorcVoluUtilDiar:Sistema:2026-09-27:2026-09-30: gave up after 4 attempts in 46965 ms: ConnectTimeoutError: Connect Timeout Error (attempted addresses: 191.97.49.119:443, 179.1.12.119:443, timeout: 10000ms)",
-    "xm VoluUtilDiarEner 2026-09-27..2026-09-30: Error: VoluUtilDiarEner:Sistema:2026-09-27:2026-09-30: gave up after 4 attempts in 46906 ms: ConnectTimeoutError: Connect Timeout Error (attempted addresses: 179.1.12.119:443, 191.97.49.119:443, timeout: 10000ms)",
-    "xm CapaUtilDiarEner 2026-09-27..2026-09-30: Error: CapaUtilDiarEner:Sistema:2026-09-27:2026-09-30: gave up after 4 attempts in 48652 ms: ConnectTimeoutError: Connect Timeout Error (attempted addresses: 179.1.12.119:443, 191.97.49.119:443, timeout: 10000ms)",
-    "xm AporEner 2026-09-27..2026-09-30: Error: AporEner:Sistema:2026-09-27:2026-09-30: gave up after 4 attempts in 50560 ms: ConnectTimeoutError: Connect Timeout Error (attempted addresses: 179.1.12.119:443, 191.97.49.119:443, timeout: 10000ms)",
-    "xm AporEnerMediHist 2026-09-27..2026-09-30: Error: AporEnerMediHist:Sistema:2026-09-27:2026-09-30: gave up after 4 attempts in 49338 ms: ConnectTimeoutError: Connect Timeout Error (attempted addresses: 191.97.49.119:443, 179.1.12.119:443, timeout: 10000ms)",
-    "xm PorcApor 2026-09-27..2026-09-30: Error: PorcApor:Sistema:2026-09-27:2026-09-30: gave up after 4 attempts in 48840 ms: ConnectTimeoutError: Connect Timeout Error (attempted addresses: 191.97.49.119:443, 179.1.12.119:443, timeout: 10000ms)",
-    "xm DemaSIN 2026-09-27..2026-09-30: Error: DemaSIN:Sistema:2026-09-27:2026-09-30: gave up after 4 attempts in 48538 ms: ConnectTimeoutError: Connect Timeout Error (attempted addresses: 179.1.12.119:443, 191.97.49.119:443, timeout: 10000ms)",
-    "xm PrecEscaAct 2026-09-27..2026-09-30: Error: PrecEscaAct:Sistema:2026-09-27:2026-09-30: gave up after 4 attempts in 48727 ms: ConnectTimeoutError: Connect Timeout Error (attempted addresses: 179.1.5.120:443, 190.90.250.249:443, timeout: 10000ms)",
-    "xm PrecBolsNaci 2026-09-27..2026-09-30: Error: PrecBolsNaci:Sistema:2026-09-27:2026-09-30: gave up after 4 attempts in 47415 ms: ConnectTimeoutError: Connect Timeout Error (attempted addresses: 179.1.12.119:443, 191.97.49.119:443, timeout: 10000ms)",
-    "xm exchange 2026-10-01..2026-10-31: Error: ExpoEner:Enlace:2026-10-01:2026-10-31: gave up after 4 attempts in 47627 ms: ConnectTimeoutError: Connect Timeout Error (attempted addresses: 179.1.12.119:443, 191.97.49.119:443, timeout: 10000ms)",
-    "xm PorcVoluUtilDiar 2026-10-01..2026-10-31: Error: PorcVoluUtilDiar:Sistema:2026-10-01:2026-10-31: gave up after 4 attempts in 50568 ms: ConnectTimeoutError: Connect Timeout Error (attempted addresses: 190.90.250.249:443, 179.1.5.120:443, timeout: 10000ms)",
-    "xm VoluUtilDiarEner 2026-10-01..2026-10-31: Error: VoluUtilDiarEner:Sistema:2026-10-01:2026-10-31: gave up after 4 attempts in 46774 ms: ConnectTimeoutError: Connect Timeout Error (attempted addresses: 179.1.12.119:443, 191.97.49.119:443, timeout: 10000ms)",
-    "xm CapaUtilDiarEner 2026-10-01..2026-10-31: Error: CapaUtilDiarEner:Sistema:2026-10-01:2026-10-31: gave up after 4 attempts in 47669 ms: ConnectTimeoutError: Connect Timeout Error (attempted addresses: 190.90.250.249:443, 179.1.5.120:443, timeout: 10000ms)",
-    "xm AporEner 2026-10-01..2026-10-31: Error: AporEner:Sistema:2026-10-01:2026-10-31: gave up after 4 attempts in 48033 ms: ConnectTimeoutError: Connect Timeout Error (attempted addresses: 179.1.5.120:443, 190.90.250.249:443, timeout: 10000ms)",
-    "xm AporEnerMediHist 2026-10-01..2026-10-31: Error: AporEnerMediHist:Sistema:2026-10-01:2026-10-31: gave up after 4 attempts in 50635 ms: ConnectTimeoutError: Connect Timeout Error (attempted addresses: 179.1.12.119:443, 191.97.49.119:443, timeout: 10000ms)",
-    "xm PorcApor 2026-10-01..2026-10-31: Error: PorcApor:Sistema:2026-10-01:2026-10-31: gave up after 4 attempts in 48489 ms: ConnectTimeoutError: Connect Timeout Error (attempted addresses: 179.1.5.120:443, 190.90.250.249:443, timeout: 10000ms)",
-    "xm DemaSIN 2026-10-01..2026-10-31: Error: DemaSIN:Sistema:2026-10-01:2026-10-31: gave up after 4 attempts in 49726 ms: ConnectTimeoutError: Connect Timeout Error (attempted addresses: 179.1.5.120:443, 190.90.250.249:443, timeout: 10000ms)",
-    "xm PrecEscaAct 2026-10-01..2026-10-31: Error: PrecEscaAct:Sistema:2026-10-01:2026-10-31: gave up after 4 attempts in 47808 ms: ConnectTimeoutError: Connect Timeout Error (attempted addresses: 190.90.250.249:443, 179.1.5.120:443, timeout: 10000ms)",
-    "xm PrecBolsNaci 2026-10-01..2026-10-31: Error: PrecBolsNaci:Sistema:2026-10-01:2026-10-31: gave up after 4 attempts in 49894 ms: ConnectTimeoutError: Connect Timeout Error (attempted addresses: 179.1.5.120:443, 190.90.250.249:443, timeout: 10000ms)"
+  "requests": 61,
+  "errors": [],
+  "notes": [
+    "ords:pointValues mrid=30031: all 30 points are null (known open issue)",
+    "ords:pointValues mrid=30538: all 30 points are null (known open issue)",
+    "ords:pointValues mrid=100540: all 30 points are null (known open issue)",
+    "ords:pointValues mrid=100037: all 30 points are null (known open issue)",
+    "ords:pointValues mrid=140031: all 30 points are null (known open issue)",
+    "ords:pointValues mrid=140537: all 30 points are null (known open issue)",
+    "ords:pointValues mrid=110031: all 30 points are null (known open issue)",
+    "ords:pointValues mrid=110537: all 30 points are null (known open issue)"
   ],
-  "notes": [],
   "tables": {
     "observations_daily": {
       "rows": 92327,
@@ -40,7 +28,7 @@
       "files": 11
     },
     "operativa_snapshots": {
-      "rows": 7473,
+      "rows": 7520,
       "first_date": "2026-09-22",
       "last_date": "2026-11-01",
       "files": 1
