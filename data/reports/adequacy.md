@@ -1,6 +1,6 @@
 # Energy adequacy — what the model is, and what it was measured at
 
-Generated 2026-11-02T06:59:52Z from 3764 usable national-balance days, 2016-05-01 → 2026-10-31. Origin 2026-10-31.
+Generated 2026-11-02T22:01:18Z from 3765 usable national-balance days, 2016-05-01 → 2026-11-01. Origin 2026-11-01.
 
 This is section 7's target 3: expected deficit in GWh per day over the horizon, and the risk
 tiers read off it. It is the number the site's adequacy tile shows, and the `risk_tier` the
@@ -35,7 +35,7 @@ and in each case the obvious quantity is wrong:
 
 ## Which days the model is allowed to see
 
-3764 of 3821 balance days are usable (98.51%).
+3765 of 3822 balance days are usable (98.51%).
 
 `parse/smec.ts` already rejects pages served before their metering arrived, by requiring
 distribution demand to be at least 20% of generation. That gate is one-sided: it catches a
@@ -85,7 +85,7 @@ inventing precision. This is a recorded negative, not a to-do.
 
 ## Backtest
 
-Rolling monthly origins from 2018-07-01 to 2026-10-01, 100 of them, on the same three rules the level forecast uses: every model
+Rolling monthly origins from 2018-07-01 to 2026-11-01, 101 of them, on the same three rules the level forecast uses: every model
 sees only its own past, the band is calibrated from residuals at strictly earlier origins, and
 the components are scored on the origins they all reached. Targets falling inside a rationing
 episode are dropped rather than scored — on a day of rationing the realised load is the load
@@ -102,7 +102,7 @@ cuts.
 | 60 d | 67 | 2.10 | -0.56 | 2.19 | 4.3% |
 | 90 d | 57 | 2.29 | -0.55 | 2.34 | 1.9% |
 
-Growth fitted at the live origin: 6.34% a year, over 1208 unsuppressed days, anchored on the last 14 of them at a factor of 1.0780.
+Growth fitted at the live origin: 6.33% a year, over 1207 unsuppressed days, anchored on the last 14 of them at a factor of 1.0780.
 
 **This rung does not beat the baseline, and the comparison is not the point.** Over a window
 mean a trailing 28-day mean is a very strong predictor of load — load is that persistent at
@@ -223,7 +223,7 @@ interconnection is firm is invited to look at the stressed column before believi
 
 ### When the central case stops assuming the interconnection
 
-At this origin the interconnection is treated as **cut**: imports averaged 0.13 GWh/day over the last 14 usable days while thermal ran at 25.82, so the central case assumes 0.13 GWh/day of imports.
+At this origin the interconnection is treated as **cut**: imports averaged 0.13 GWh/day over the last 14 usable days while thermal ran at 25.72, so the central case assumes 0.13 GWh/day of imports.
 
 The rule: 14 days of imports below 1 GWh/day *while* thermal runs at 70% or more of its ceiling means the imports are not arriving rather than
 not wanted, and the central case then uses what is arriving, held for the horizon. Low imports
@@ -245,9 +245,9 @@ Published in `adequacy.json` as `import_sensitivity`; the central case above is 
 
 | Imports | GWh/day | 7 d | 14 d | 30 d | 60 d | 90 d | Worst tier |
 |---|---:|---|---|---|---|---|---|
-| demonstrated ceiling | 10.78 | -5.52 `vigilancia` | -6.32 `vigilancia` | -6.64 `vigilancia` | -8.61 `vigilancia` | -10.51 `holgado` | `vigilancia` (7 d) |
-| stressed (2024) | 0.12 | +5.14 `deficit` | +4.34 `ajustado` | +4.02 `ajustado` | +2.05 `ajustado` | +0.15 `ajustado` | `deficit` (7 d) |
-| current regime (trailing) | 0.13 | +5.13 `deficit` | +4.33 `ajustado` | +4.01 `ajustado` | +2.04 `ajustado` | +0.14 `ajustado` | `deficit` (7 d) |
+| demonstrated ceiling | 10.78 | -5.47 `vigilancia` | -6.17 `vigilancia` | -6.40 `vigilancia` | -8.54 `vigilancia` | -10.48 `holgado` | `vigilancia` (7 d) |
+| stressed (2024) | 0.12 | +5.18 `deficit` | +4.48 `ajustado` | +4.25 `ajustado` | +2.12 `ajustado` | +0.17 `ajustado` | `deficit` (7 d) |
+| current regime (trailing) | 0.13 | +5.17 `deficit` | +4.47 `ajustado` | +4.24 `ajustado` | +2.11 `ajustado` | +0.16 `ajustado` | `deficit` (7 d) |
 
 Deficit in GWh/day, positive meaning short. The spread between the rows is the part of the tier that rests on
 Colombia rather than on water.
@@ -264,7 +264,7 @@ identity is right, that gap and the computed deficit should be about the same si
 | 2023-10-27 → 2023-12-17 | 52 | 87.95 | 85.31 | 2.64 | 54.00 | 6.654 | 0.34 | -3.79 |
 | 2024-04-15 → 2024-04-30 | 16 | 97.96 | 83.96 | 14.00 | 63.30 | 0.401 | 7.29 | -3.09 |
 | 2024-09-23 → 2024-12-19 | 88 | 88.70 | 68.16 | 20.53 | 40.39 | 4.150 | 17.19 | 10.56 |
-| 2026-09-22 → 2026-10-31 | 40 | 109.12 | 101.42 | 7.71 | 76.30 | 0.143 | 5.72 | -4.92 |
+| 2026-09-22 → 2026-11-01 | 41 | 108.83 | 101.22 | 7.61 | 76.08 | 0.143 | 5.65 | -4.99 |
 
 All figures GWh/day. **Suppression** and **implied deficit** are the two columns to compare:
 they are computed from different sides of the identity and agreeing is the whole test.
@@ -293,11 +293,11 @@ dispatch and starts being visible to consumers.
 |---|---:|---:|
 | `holgado` | 88 | 2 |
 | `vigilancia` | 8 | 4 |
-| `ajustado` | 1 | 1 |
+| `ajustado` | 2 | 2 |
 | `deficit` | 3 | 3 |
 
-Over 100 monthly origins, 10 were followed by rationing inside thirty days and 4 were flagged `ajustado` or `deficit`. 4 of those 4 were followed by rationing —
-so of the origins this model flagged, 100% preceded cuts, and of the origins that preceded cuts it flagged 40%. It does not cry wolf and it misses most
+Over 101 monthly origins, 11 were followed by rationing inside thirty days and 5 were flagged `ajustado` or `deficit`. 5 of those 5 were followed by rationing —
+so of the origins this model flagged, 100% preceded cuts, and of the origins that preceded cuts it flagged 45%. It does not cry wolf and it misses most
 of the wolves, which is the shape you would expect from a model whose weakest term is the
 one that decides how much water there is.
 
