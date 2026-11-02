@@ -1,8 +1,8 @@
 # Backtest — mazar level forecast
 
-Generated 2026-11-01T23:59:15Z from the committed tables; no network. Origins are the first of each month, each one refitting every model on the data before it. 106 origins scored per horizon, 94 of them with a calibrated band (the first twelve are the calibration's warm-up).
+Generated 2026-11-02T06:59:23Z from the committed tables; no network. Origins are the first of each month, each one refitting every model on the data before it. 106 origins scored per horizon, 94 of them with a calibrated band (the first twelve are the calibration's warm-up).
 
-Level history: 4425 days, 2014-09-20 → 2026-10-31.
+Level history: 4426 days, 2014-09-20 → 2026-11-01.
 
 ## Verdict
 
@@ -320,8 +320,8 @@ The crisis check against 2115 m, on the daily 365-day simulation, for both:
 
 | model | lead time to each crossing | false alarms at P50 |
 |---|---|---|
-| M3-water-balance-replayed | 2024-04-11: P50 never, P10 never; 2024-10-08: P50 never, P10 7 d | 1 of 106 |
-| M3-water-balance | 2024-04-11: P50 never, P10 never; 2024-10-08: P50 7 d, P10 7 d | 1 of 106 |
+| M3-water-balance-replayed | 2024-04-11: P50 never, P10 never; 2024-10-08: P50 never, P10 7 d | 1 of 107 |
+| M3-water-balance | 2024-04-11: P50 never, P10 never; 2024-10-08: P50 7 d, P10 7 d | 1 of 107 |
 
 **Adopted, and it does not meet the ladder's rule outright: band further from 80% (73.4% against 80.9%) at 30 d; higher MAE (paired +0.08 m, [−0.23, +0.39]) at 90 d.** Read the paired row before the MAE row: the adoption (2026-10-13) rested on a thirty-day gain whose interval lay below zero against a ninety-day loss whose interval straddled it, a band a few origins in about ninety short of the replayed years' at thirty days, the fourteen- and thirty-day optimism halved, and a P50 that called the October 2024 crossing where the replayed years' never did. Setting `DEFAULT_WATER_BALANCE.inflowState` to null restores the replayed years everywhere, M4's M3 features included.
 
@@ -363,7 +363,7 @@ Section 7 asks for the lead time at which the P50 first predicted a crossing of 
 Clean misses at every quantile: 2024-04-11. In the run-up to those, not one analogue year reached the level — the inflow ensemble is made of years that happened, and the year being forecast was drier than all of them at that moment. Nothing in this model can know that in advance, and no amount of widening the band fixes it; an analogue method cannot draw a year it has never seen.
 
 
-False alarms: across 106 origins, the P50 named a crossing within thirty days that did not happen on 1 of them. A lead time means nothing without this number — a model that predicts a crossing every month has perfect lead time and no information.
+False alarms: across 107 origins, the P50 named a crossing within thirty days that did not happen on 1 of them. A lead time means nothing without this number — a model that predicts a crossing every month has perfect lead time and no information.
 
 ## What the model fitted, at the last origin
 
@@ -371,11 +371,11 @@ False alarms: across 106 origins, the P50 named a crossing within thirty days th
 |---|---|---|
 | area-elevation exponent | 2.50 | fitted |
 | area-elevation datum | 2036.7 m | fitted |
-| fit residual | 0.693 m/day over 2037 days | fitted |
+| fit residual | 0.693 m/day over 2038 days | fitted |
 | turbined flow per MW | 0.668 m³/s | fitted jointly with the curve |
 | storage, lowest declared minimum → crest | 229.3 hm³ | integral of the fitted curve |
-| release rule points | 19 | median implied release over 4336 days |
-| operator's current stance | 6.7 m³/s vs the rule | trailing 30 days |
+| release rule points | 19 | median implied release over 4337 days |
+| operator's current stance | 7.0 m³/s vs the rule | trailing 30 days |
 | crest used as the spill cap | 2155.83 m | highest level in the record |
 
 The 410 hm³ in `plants.csv` is marked `unverified` and came from press; the storage above is the integral of a curve fitted to this repository's own readings, and the two disagree by about a factor of two. That gap cannot be closed by preferring the bigger number: the area curve and the turbine's flow-per-MW are fitted *together*, and doubling the area drives the flow-per-MW down through zero — a turbine that consumes no water. The balance closes at one scale. The check that does pass is `repDiaPotQTurb`'s 113 days of turbined flow, whose maximum is about 129 m³/s, against the fitted 114 m³/s at Mazar's rated 170 MW.
@@ -392,7 +392,7 @@ The bias table above shows this model forecasting high at the long horizons, so 
 | 2117.5 | 28.0 |
 | 2120.0 | 35.4 |
 | 2122.5 | 35.5 |
-| 2125.0 | 35.8 |
+| 2125.0 | 35.1 |
 | 2127.5 | 48.5 |
 | 2130.0 | 55.5 |
 | 2132.5 | 62.1 |
