@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-03T02:43:56Z",
-  "data_date": "2026-11-01",
-  "run_id": "2026-11-01-mazar-4-aadb600c",
-  "origin_date": "2026-11-01",
+  "generated_at": "2026-11-03T07:21:18Z",
+  "data_date": "2026-11-02",
+  "run_id": "2026-11-02-mazar-4-3e4f187b",
+  "origin_date": "2026-11-02",
   "site": "mazar",
   "variable": "cota_masl",
   "units": "metres above sea level",
@@ -12,7 +12,7 @@
     "id": "M3-water-balance",
     "label": "Water balance with a fitted release rule and analogue inflow years",
     "version": "4",
-    "features_hash": "aadb600c74435dc4",
+    "features_hash": "3e4f187b092e74b5",
     "backtest_origins": 106,
     "horizon_models": [
       {
@@ -50,18 +50,18 @@
     "precip_basin_fallback_reason": null
   },
   "current": {
-    "level_masl": 2125.92,
-    "observed_on": "2026-11-01",
+    "level_masl": 2126.82,
+    "observed_on": "2026-11-02",
     "sources": [
       "ords:repDiaHid12m",
       "ords:repDiaNivQIng"
     ],
-    "storage_above_lowest_threshold_hm3": 67.58,
-    "surface_area_km2": 3.625,
-    "slope_7d_m_per_day": 0.3147,
-    "slope_14d_m_per_day": 0.2399,
-    "slope_30d_m_per_day": -0.1513,
-    "release_stance_m3s": 7.03
+    "storage_above_lowest_threshold_hm3": 70.89,
+    "surface_area_km2": 3.718,
+    "slope_7d_m_per_day": 0.4936,
+    "slope_14d_m_per_day": 0.3796,
+    "slope_30d_m_per_day": -0.1436,
+    "release_stance_m3s": 7.32
   },
   "thresholds": [
     {
@@ -70,7 +70,7 @@
       "source": "celec sur via press",
       "status": "published",
       "note": "Observed 2024-04-16 → 2026-10-09. The floor CELEC operates the plant to; lower floors are design figures.",
-      "metres_above": 10.92
+      "metres_above": 11.82
     },
     {
       "name": "declared minimum (report endpoint)",
@@ -78,7 +78,7 @@
       "source": "ords:repDiaHid12m",
       "status": "published",
       "note": "Observed 2014-09-20 → 2026-09-20.",
-      "metres_above": 25.92
+      "metres_above": 26.82
     },
     {
       "name": "declared minimum (dashboard chart title)",
@@ -86,19 +86,19 @@
       "source": "celec dashboard bundle",
       "status": "published",
       "note": "Observed 2026-09-21 → 2026-09-21.",
-      "metres_above": 27.92
+      "metres_above": 28.82
     }
   ],
   "forecast": [
     {
       "horizon_days": 7,
-      "target_date": "2026-11-08",
-      "p10": 2121.74,
-      "p50": 2125.02,
-      "p90": 2128.32,
+      "target_date": "2026-11-09",
+      "p10": 2122.33,
+      "p50": 2125.6,
+      "p90": 2128.9,
       "ensemble": {
-        "p10": 2123.07,
-        "p90": 2128.77,
+        "p10": 2124.03,
+        "p90": 2129.22,
         "n": 16,
         "years": [
           2010,
@@ -125,13 +125,13 @@
     },
     {
       "horizon_days": 14,
-      "target_date": "2026-11-15",
-      "p10": 2119.63,
-      "p50": 2126.95,
-      "p90": 2131.05,
+      "target_date": "2026-11-16",
+      "p10": 2120.34,
+      "p50": 2127.66,
+      "p90": 2131.76,
       "ensemble": {
-        "p10": 2120.01,
-        "p90": 2129.98,
+        "p10": 2121.67,
+        "p90": 2131.54,
         "n": 16,
         "years": [
           2010,
@@ -158,13 +158,13 @@
     },
     {
       "horizon_days": 30,
-      "target_date": "2026-12-01",
-      "p10": 2114.41,
-      "p50": 2126.55,
-      "p90": 2132.72,
+      "target_date": "2026-12-02",
+      "p10": 2115.87,
+      "p50": 2128.01,
+      "p90": 2134.18,
       "ensemble": {
-        "p10": 2120.08,
-        "p90": 2141.32,
+        "p10": 2122.38,
+        "p90": 2141.85,
         "n": 15,
         "years": [
           2010,
@@ -190,13 +190,13 @@
     },
     {
       "horizon_days": 60,
-      "target_date": "2026-12-31",
-      "p10": 2109.83,
-      "p50": 2126.93,
-      "p90": 2131.57,
+      "target_date": "2027-01-01",
+      "p10": 2109.91,
+      "p50": 2127,
+      "p90": 2131.65,
       "ensemble": {
-        "p10": 2119.5,
-        "p90": 2146.94,
+        "p10": 2120.16,
+        "p90": 2147.36,
         "n": 15,
         "years": [
           2010,
@@ -222,13 +222,13 @@
     },
     {
       "horizon_days": 90,
-      "target_date": "2027-01-30",
-      "p10": 2117.75,
-      "p50": 2136.72,
-      "p90": 2142.84,
+      "target_date": "2027-01-31",
+      "p10": 2116.88,
+      "p50": 2135.85,
+      "p90": 2141.97,
       "ensemble": {
-        "p10": 2126.13,
-        "p90": 2149.74,
+        "p10": 2126.19,
+        "p90": 2149.7,
         "n": 15,
         "years": [
           2010,
@@ -266,7 +266,7 @@
         "across_all_analogue_years": {
           "analogue_years": 15,
           "years_that_cross": 4,
-          "p10_days": 53,
+          "p10_days": 54.8,
           "p50_days": null,
           "p90_days": null
         },
@@ -274,29 +274,29 @@
           {
             "scenario": "dry",
             "analogYear": 2022,
-            "inflowMeanM3s": 60.7,
-            "inflowTotalHm3": 1914.1,
-            "crossesOn": "2027-01-05",
+            "inflowMeanM3s": 60.67,
+            "inflowTotalHm3": 1913.4,
+            "crossesOn": "2027-01-06",
             "days": 65,
-            "minimumLevelMasl": 2113.95
+            "minimumLevelMasl": 2114.19
           },
           {
             "scenario": "median",
-            "analogYear": 2015,
-            "inflowMeanM3s": 88.86,
-            "inflowTotalHm3": 2802.4,
+            "analogYear": 2021,
+            "inflowMeanM3s": 89.06,
+            "inflowTotalHm3": 2808.7,
             "crossesOn": null,
             "days": null,
-            "minimumLevelMasl": 2117.47
+            "minimumLevelMasl": 2124.51
           },
           {
             "scenario": "wet",
             "analogYear": 2010,
-            "inflowMeanM3s": 104.08,
-            "inflowTotalHm3": 3282.4,
+            "inflowMeanM3s": 103.96,
+            "inflowTotalHm3": 3278.6,
             "crossesOn": null,
             "days": null,
-            "minimumLevelMasl": 2122.58
+            "minimumLevelMasl": 2122.84
           }
         ]
       },
@@ -317,29 +317,29 @@
           {
             "scenario": "dry",
             "analogYear": 2022,
-            "inflowMeanM3s": 60.7,
-            "inflowTotalHm3": 1914.1,
+            "inflowMeanM3s": 60.67,
+            "inflowTotalHm3": 1913.4,
             "crossesOn": null,
             "days": null,
-            "minimumLevelMasl": 2113.95
+            "minimumLevelMasl": 2114.19
           },
           {
             "scenario": "median",
-            "analogYear": 2015,
-            "inflowMeanM3s": 88.86,
-            "inflowTotalHm3": 2802.4,
+            "analogYear": 2021,
+            "inflowMeanM3s": 89.06,
+            "inflowTotalHm3": 2808.7,
             "crossesOn": null,
             "days": null,
-            "minimumLevelMasl": 2117.47
+            "minimumLevelMasl": 2124.51
           },
           {
             "scenario": "wet",
             "analogYear": 2010,
-            "inflowMeanM3s": 104.08,
-            "inflowTotalHm3": 3282.4,
+            "inflowMeanM3s": 103.96,
+            "inflowTotalHm3": 3278.6,
             "crossesOn": null,
             "days": null,
-            "minimumLevelMasl": 2122.58
+            "minimumLevelMasl": 2122.84
           }
         ]
       },
@@ -360,29 +360,29 @@
           {
             "scenario": "dry",
             "analogYear": 2022,
-            "inflowMeanM3s": 60.7,
-            "inflowTotalHm3": 1914.1,
+            "inflowMeanM3s": 60.67,
+            "inflowTotalHm3": 1913.4,
             "crossesOn": null,
             "days": null,
-            "minimumLevelMasl": 2113.95
+            "minimumLevelMasl": 2114.19
           },
           {
             "scenario": "median",
-            "analogYear": 2015,
-            "inflowMeanM3s": 88.86,
-            "inflowTotalHm3": 2802.4,
+            "analogYear": 2021,
+            "inflowMeanM3s": 89.06,
+            "inflowTotalHm3": 2808.7,
             "crossesOn": null,
             "days": null,
-            "minimumLevelMasl": 2117.47
+            "minimumLevelMasl": 2124.51
           },
           {
             "scenario": "wet",
             "analogYear": 2010,
-            "inflowMeanM3s": 104.08,
-            "inflowTotalHm3": 3282.4,
+            "inflowMeanM3s": 103.96,
+            "inflowTotalHm3": 3278.6,
             "crossesOn": null,
             "days": null,
-            "minimumLevelMasl": 2122.58
+            "minimumLevelMasl": 2122.84
           }
         ]
       }
@@ -393,13 +393,13 @@
     "crest_basis": "highest level in the record; the declared maximum is operational, not physical",
     "area_elevation": {
       "form": "A(level) = coefficient * (level - datum)^exponent, m2",
-      "coefficient": 48.154945,
+      "coefficient": 48.177589,
       "exponent": 2.5,
       "datum_m": 2036.66,
-      "fit_rmse_level_m": 0.692522,
-      "fit_days": 2038
+      "fit_rmse_level_m": 0.692158,
+      "fit_days": 2039
     },
-    "turbine_m3s_per_mw": 0.668265,
+    "turbine_m3s_per_mw": 0.668326,
     "release_rule_m3s": [
       {
         "level_masl": 2110,
@@ -415,7 +415,7 @@
       },
       {
         "level_masl": 2117.5,
-        "release_m3s": 27.99
+        "release_m3s": 27.98
       },
       {
         "level_masl": 2120,
@@ -423,51 +423,51 @@
       },
       {
         "level_masl": 2122.5,
-        "release_m3s": 35.46
+        "release_m3s": 35.45
       },
       {
         "level_masl": 2125,
-        "release_m3s": 35.08
+        "release_m3s": 34.33
       },
       {
         "level_masl": 2127.5,
-        "release_m3s": 48.53
+        "release_m3s": 48.55
       },
       {
         "level_masl": 2130,
-        "release_m3s": 55.52
+        "release_m3s": 55.53
       },
       {
         "level_masl": 2132.5,
-        "release_m3s": 62.13
+        "release_m3s": 62.15
       },
       {
         "level_masl": 2135,
-        "release_m3s": 69.81
+        "release_m3s": 69.82
       },
       {
         "level_masl": 2137.5,
-        "release_m3s": 53.76
+        "release_m3s": 53.73
       },
       {
         "level_masl": 2140,
-        "release_m3s": 53.52
+        "release_m3s": 53.54
       },
       {
         "level_masl": 2142.5,
-        "release_m3s": 54.03
+        "release_m3s": 54.05
       },
       {
         "level_masl": 2145,
-        "release_m3s": 57.86
+        "release_m3s": 57.87
       },
       {
         "level_masl": 2147.5,
-        "release_m3s": 59.88
+        "release_m3s": 59.89
       },
       {
         "level_masl": 2150,
-        "release_m3s": 60.72
+        "release_m3s": 60.73
       },
       {
         "level_masl": 2152.5,
@@ -475,10 +475,10 @@
       },
       {
         "level_masl": 2155,
-        "release_m3s": 222.71
+        "release_m3s": 222.72
       }
     ],
-    "release_rule_days": 4337
+    "release_rule_days": 4338
   },
   "backtest": {
     "report": "data/reports/backtest.md",
@@ -565,7 +565,7 @@
     "plants": [
       {
         "site": "amaluza",
-        "origin_date": "2026-11-01",
+        "origin_date": "2026-11-02",
         "variable": "caudal_m3s",
         "target": "mean inflow over the horizon, m3/s",
         "precip_basin": "paute_mazar",
@@ -577,17 +577,17 @@
             "reason": "ensemble MAE 39.2 m3/s beats persistence 51.2 and climatology 47.6",
             "backtest": {
               "model": "ensemble",
-              "n": 460,
+              "n": 461,
               "mae_m3s": 39.24,
-              "analogue_mae_m3s": 43.54,
-              "persistence_mae_m3s": 51.15,
-              "climatology_mae_m3s": 47.55,
-              "coverage_p10_p90": 0.8415
+              "analogue_mae_m3s": 43.49,
+              "persistence_mae_m3s": 51.22,
+              "climatology_mae_m3s": 47.58,
+              "coverage_p10_p90": 0.8419
             },
-            "target_date": "2026-11-08",
-            "p10": 29,
-            "p50": 90.9,
-            "p90": 137.3,
+            "target_date": "2026-11-09",
+            "p10": 17.1,
+            "p50": 79,
+            "p90": 125.4,
             "ensemble_years": 12,
             "rain_conditioned": false,
             "with_river_forecast": false
@@ -598,17 +598,17 @@
             "reason": "ensemble MAE 36.8 m3/s beats persistence 52.6 and climatology 42.1",
             "backtest": {
               "model": "ensemble",
-              "n": 459,
-              "mae_m3s": 36.8,
-              "analogue_mae_m3s": 43.94,
-              "persistence_mae_m3s": 52.59,
-              "climatology_mae_m3s": 42.1,
-              "coverage_p10_p90": 0.8367
+              "n": 460,
+              "mae_m3s": 36.77,
+              "analogue_mae_m3s": 43.89,
+              "persistence_mae_m3s": 52.62,
+              "climatology_mae_m3s": 42.06,
+              "coverage_p10_p90": 0.8371
             },
-            "target_date": "2026-11-15",
-            "p10": 17.9,
-            "p50": 75.8,
-            "p90": 117.1,
+            "target_date": "2026-11-16",
+            "p10": 11.1,
+            "p50": 68.9,
+            "p90": 110.2,
             "ensemble_years": 12,
             "rain_conditioned": false,
             "with_river_forecast": false
@@ -617,7 +617,7 @@
       },
       {
         "site": "coca_codo_sinclair",
-        "origin_date": "2026-11-01",
+        "origin_date": "2026-11-02",
         "variable": "caudal_m3s",
         "target": "mean inflow over the horizon, m3/s",
         "precip_basin": "coca_ccs",
@@ -626,20 +626,20 @@
           {
             "horizon_days": 7,
             "published": true,
-            "reason": "ensemble MAE 86.2 m3/s beats persistence 118.3 and climatology 94.6",
+            "reason": "ensemble MAE 85.9 m3/s beats persistence 118.0 and climatology 94.4",
             "backtest": {
               "model": "ensemble",
-              "n": 348,
-              "mae_m3s": 86.16,
-              "analogue_mae_m3s": 103.04,
-              "persistence_mae_m3s": 118.3,
-              "climatology_mae_m3s": 94.57,
-              "coverage_p10_p90": 0.7798
+              "n": 349,
+              "mae_m3s": 85.95,
+              "analogue_mae_m3s": 102.77,
+              "persistence_mae_m3s": 118.02,
+              "climatology_mae_m3s": 94.4,
+              "coverage_p10_p90": 0.7804
             },
-            "target_date": "2026-11-08",
-            "p10": 65.7,
-            "p50": 168.6,
-            "p90": 323.3,
+            "target_date": "2026-11-09",
+            "p10": 71.9,
+            "p50": 174.9,
+            "p90": 329.5,
             "ensemble_years": 10,
             "rain_conditioned": false,
             "with_river_forecast": false
@@ -647,20 +647,20 @@
           {
             "horizon_days": 14,
             "published": true,
-            "reason": "ensemble MAE 78.0 m3/s beats persistence 120.6 and climatology 81.2",
+            "reason": "ensemble MAE 77.9 m3/s beats persistence 120.5 and climatology 81.0",
             "backtest": {
               "model": "ensemble",
-              "n": 334,
-              "mae_m3s": 78.04,
-              "analogue_mae_m3s": 101.12,
-              "persistence_mae_m3s": 120.57,
-              "climatology_mae_m3s": 81.23,
-              "coverage_p10_p90": 0.7764
+              "n": 335,
+              "mae_m3s": 77.91,
+              "analogue_mae_m3s": 101,
+              "persistence_mae_m3s": 120.49,
+              "climatology_mae_m3s": 81.03,
+              "coverage_p10_p90": 0.7771
             },
-            "target_date": "2026-11-15",
-            "p10": 83.4,
-            "p50": 187.9,
-            "p90": 320.2,
+            "target_date": "2026-11-16",
+            "p10": 102.4,
+            "p50": 206.7,
+            "p90": 338.9,
             "ensemble_years": 10,
             "rain_conditioned": false,
             "with_river_forecast": false
@@ -669,7 +669,7 @@
       },
       {
         "site": "agoyan",
-        "origin_date": "2026-11-01",
+        "origin_date": "2026-11-02",
         "variable": "caudal_m3s",
         "target": "mean inflow over the horizon, m3/s",
         "precip_basin": "pastaza_agoyan",
@@ -678,41 +678,41 @@
           {
             "horizon_days": 7,
             "published": true,
-            "reason": "ensemble MAE 33.8 m3/s beats persistence 41.4 and climatology 40.6",
+            "reason": "ensemble MAE 33.7 m3/s beats persistence 41.3 and climatology 40.5",
             "backtest": {
               "model": "ensemble",
-              "n": 361,
-              "mae_m3s": 33.76,
-              "analogue_mae_m3s": 40.23,
-              "persistence_mae_m3s": 41.41,
-              "climatology_mae_m3s": 40.63,
-              "coverage_p10_p90": 0.8195
+              "n": 362,
+              "mae_m3s": 33.67,
+              "analogue_mae_m3s": 40.16,
+              "persistence_mae_m3s": 41.32,
+              "climatology_mae_m3s": 40.53,
+              "coverage_p10_p90": 0.82
             },
-            "target_date": "2026-11-08",
-            "p10": 14.1,
-            "p50": 58,
-            "p90": 116.8,
+            "target_date": "2026-11-09",
+            "p10": 14.4,
+            "p50": 58.3,
+            "p90": 117.2,
             "ensemble_years": 8,
             "rain_conditioned": false,
-            "with_river_forecast": true
+            "with_river_forecast": false
           },
           {
             "horizon_days": 14,
             "published": true,
-            "reason": "ensemble MAE 32.8 m3/s beats persistence 43.2 and climatology 37.6",
+            "reason": "ensemble MAE 32.8 m3/s beats persistence 43.1 and climatology 37.6",
             "backtest": {
               "model": "ensemble",
-              "n": 351,
-              "mae_m3s": 32.83,
-              "analogue_mae_m3s": 41.3,
-              "persistence_mae_m3s": 43.16,
-              "climatology_mae_m3s": 37.58,
-              "coverage_p10_p90": 0.7965
+              "n": 352,
+              "mae_m3s": 32.78,
+              "analogue_mae_m3s": 41.21,
+              "persistence_mae_m3s": 43.07,
+              "climatology_mae_m3s": 37.55,
+              "coverage_p10_p90": 0.7971
             },
-            "target_date": "2026-11-15",
-            "p10": 12.9,
-            "p50": 64.9,
-            "p90": 112.1,
+            "target_date": "2026-11-16",
+            "p10": 12.1,
+            "p50": 64.1,
+            "p90": 111.3,
             "ensemble_years": 8,
             "rain_conditioned": false,
             "with_river_forecast": false
@@ -721,7 +721,7 @@
       },
       {
         "site": "manduriacu",
-        "origin_date": "2026-11-01",
+        "origin_date": "2026-11-02",
         "variable": "caudal_m3s",
         "target": "mean inflow over the horizon, m3/s",
         "precip_basin": "guayllabamba_manduriacu",
@@ -730,41 +730,41 @@
           {
             "horizon_days": 7,
             "published": true,
-            "reason": "ensemble MAE 42.5 m3/s beats persistence 44.1 and climatology 57.4",
+            "reason": "ensemble MAE 42.7 m3/s beats persistence 44.2 and climatology 57.8",
             "backtest": {
               "model": "ensemble",
-              "n": 265,
-              "mae_m3s": 42.52,
-              "analogue_mae_m3s": 50.46,
-              "persistence_mae_m3s": 44.1,
-              "climatology_mae_m3s": 57.39,
-              "coverage_p10_p90": 0.83
+              "n": 266,
+              "mae_m3s": 42.69,
+              "analogue_mae_m3s": 50.29,
+              "persistence_mae_m3s": 44.2,
+              "climatology_mae_m3s": 57.84,
+              "coverage_p10_p90": 0.8307
             },
-            "target_date": "2026-11-08",
-            "p10": 125.4,
-            "p50": 167.7,
-            "p90": 261.1,
+            "target_date": "2026-11-09",
+            "p10": 112.8,
+            "p50": 155.1,
+            "p90": 247.8,
             "ensemble_years": 9,
             "rain_conditioned": false,
-            "with_river_forecast": true
+            "with_river_forecast": false
           },
           {
             "horizon_days": 14,
             "published": true,
-            "reason": "ensemble MAE 41.4 m3/s beats persistence 48.7 and climatology 53.0",
+            "reason": "ensemble MAE 41.7 m3/s beats persistence 48.9 and climatology 53.4",
             "backtest": {
               "model": "ensemble",
-              "n": 244,
-              "mae_m3s": 41.41,
-              "analogue_mae_m3s": 49.13,
-              "persistence_mae_m3s": 48.69,
-              "climatology_mae_m3s": 53,
-              "coverage_p10_p90": 0.8103
+              "n": 245,
+              "mae_m3s": 41.66,
+              "analogue_mae_m3s": 49.09,
+              "persistence_mae_m3s": 48.86,
+              "climatology_mae_m3s": 53.45,
+              "coverage_p10_p90": 0.8069
             },
-            "target_date": "2026-11-15",
-            "p10": 104.2,
-            "p50": 149.1,
-            "p90": 225.1,
+            "target_date": "2026-11-16",
+            "p10": 100.9,
+            "p50": 145.7,
+            "p90": 223.6,
             "ensemble_years": 9,
             "rain_conditioned": false,
             "with_river_forecast": false
@@ -773,7 +773,7 @@
       },
       {
         "site": "minas_san_francisco",
-        "origin_date": "2026-11-01",
+        "origin_date": "2026-11-02",
         "variable": "caudal_m3s",
         "target": "mean inflow over the horizon, m3/s",
         "precip_basin": "jubones_msf",
@@ -792,13 +792,13 @@
               "climatology_mae_m3s": 29.67,
               "coverage_p10_p90": 0.784
             },
-            "target_date": "2026-11-08",
+            "target_date": "2026-11-09",
             "p10": 0,
-            "p50": 20.5,
-            "p90": 71.5,
+            "p50": 22.9,
+            "p90": 73.9,
             "ensemble_years": 8,
             "rain_conditioned": false,
-            "with_river_forecast": true
+            "with_river_forecast": false
           },
           {
             "horizon_days": 14,
@@ -813,10 +813,10 @@
               "climatology_mae_m3s": 27.76,
               "coverage_p10_p90": 0.7992
             },
-            "target_date": "2026-11-15",
+            "target_date": "2026-11-16",
             "p10": 0,
-            "p50": 25.2,
-            "p90": 61.6,
+            "p50": 32.9,
+            "p90": 69.3,
             "ensemble_years": 8,
             "rain_conditioned": false,
             "with_river_forecast": false
@@ -825,7 +825,7 @@
       },
       {
         "site": "delsitanisagua",
-        "origin_date": "2026-11-01",
+        "origin_date": "2026-11-02",
         "variable": "caudal_m3s",
         "target": "mean inflow over the horizon, m3/s",
         "precip_basin": "zamora_delsitanisagua",
@@ -844,9 +844,9 @@
               "climatology_mae_m3s": 15.95,
               "coverage_p10_p90": 0.7695
             },
-            "target_date": "2026-11-08",
+            "target_date": "2026-11-09",
             "p10": 9.7,
-            "p50": 28.8,
+            "p50": 28.7,
             "p90": 48,
             "ensemble_years": 8,
             "rain_conditioned": false,
@@ -865,10 +865,10 @@
               "climatology_mae_m3s": 14.23,
               "coverage_p10_p90": 0.7843
             },
-            "target_date": "2026-11-15",
-            "p10": 11,
-            "p50": 29,
-            "p90": 43.2,
+            "target_date": "2026-11-16",
+            "p10": 13.4,
+            "p50": 31.4,
+            "p90": 45.6,
             "ensemble_years": 8,
             "rain_conditioned": false,
             "with_river_forecast": false
@@ -878,14 +878,14 @@
     ]
   },
   "scorecard": {
-    "generated_at": "2026-11-03T02:44:13Z",
-    "observed_through": "2026-11-01",
+    "generated_at": "2026-11-03T07:21:34Z",
+    "observed_through": "2026-11-02",
     "target": "level on the target day, m",
     "units": "m",
-    "runs_considered": 44,
+    "runs_considered": 45,
     "runs_superseded": 7,
-    "rows_scored": 81,
-    "rows_pending": 139,
+    "rows_scored": 84,
+    "rows_pending": 141,
     "rows_excluded": 0,
     "method": "Every published run whose horizon has passed, scored under the model and version that made it; the last run generated for each origin and version only. Pending rows have not reached their target date yet; excluded rows have no observation on the target day.",
     "by_horizon": [
@@ -997,14 +997,14 @@
         "model_id": "M3-water-balance",
         "model_version": "3",
         "horizon_days": 30,
-        "n": 1,
-        "mae": 0.227,
-        "bias": -0.227,
-        "n_band": 1,
+        "n": 2,
+        "mae": 0.741,
+        "bias": 0.514,
+        "n_band": 2,
         "coverage_p10_p90": 1,
-        "pinball_mean": 0.619,
+        "pinball_mean": 0.705,
         "first_origin": "2026-10-02",
-        "last_origin": "2026-10-02"
+        "last_origin": "2026-10-03"
       },
       {
         "model_id": "M4-gbm-direct",
@@ -1023,30 +1023,72 @@
         "model_id": "M3-water-balance",
         "model_version": "4",
         "horizon_days": 7,
-        "n": 14,
-        "mae": 3.757,
-        "bias": 2.731,
-        "n_band": 14,
-        "coverage_p10_p90": 0.2857,
-        "pinball_mean": 1.13,
+        "n": 15,
+        "mae": 3.857,
+        "bias": 2.9,
+        "n_band": 15,
+        "coverage_p10_p90": 0.2667,
+        "pinball_mean": 1.172,
         "first_origin": "2026-10-12",
-        "last_origin": "2026-10-25"
+        "last_origin": "2026-10-26"
       },
       {
         "model_id": "M3-water-balance",
         "model_version": "4",
         "horizon_days": 14,
-        "n": 7,
-        "mae": 4.822,
-        "bias": 4.651,
-        "n_band": 7,
-        "coverage_p10_p90": 0.4286,
-        "pinball_mean": 1.886,
+        "n": 8,
+        "mae": 5.919,
+        "bias": 5.769,
+        "n_band": 8,
+        "coverage_p10_p90": 0.375,
+        "pinball_mean": 2.377,
         "first_origin": "2026-10-12",
-        "last_origin": "2026-10-18"
+        "last_origin": "2026-10-19"
       }
     ],
     "recent": [
+      {
+        "run_id": "2026-10-26-mazar-4-5a58addd",
+        "model_id": "M3-water-balance",
+        "model_version": "4",
+        "origin_date": "2026-10-26",
+        "horizon_days": 7,
+        "target_date": "2026-11-02",
+        "p10": 2118.28,
+        "p50": 2121.55,
+        "p90": 2124.85,
+        "observed": 2126.815,
+        "error": 5.265,
+        "in_band": false
+      },
+      {
+        "run_id": "2026-10-19-mazar-4-77c3d478",
+        "model_id": "M3-water-balance",
+        "model_version": "4",
+        "origin_date": "2026-10-19",
+        "horizon_days": 14,
+        "target_date": "2026-11-02",
+        "p10": 2105.89,
+        "p50": 2113.22,
+        "p90": 2117.31,
+        "observed": 2126.815,
+        "error": 13.595,
+        "in_band": false
+      },
+      {
+        "run_id": "2026-10-03-mazar-3-05473ff8",
+        "model_id": "M3-water-balance",
+        "model_version": "3",
+        "origin_date": "2026-10-03",
+        "horizon_days": 30,
+        "target_date": "2026-11-02",
+        "p10": 2112.77,
+        "p50": 2125.56,
+        "p90": 2130.21,
+        "observed": 2126.815,
+        "error": 1.255,
+        "in_band": true
+      },
       {
         "run_id": "2026-10-25-mazar-4-95f940fb",
         "model_id": "M3-water-balance",
@@ -1143,48 +1185,6 @@
         "p90": 2131.53,
         "observed": 2124.504,
         "error": -2.366,
-        "in_band": true
-      },
-      {
-        "run_id": "2026-10-23-mazar-4-54c3c717",
-        "model_id": "M3-water-balance",
-        "model_version": "4",
-        "origin_date": "2026-10-23",
-        "horizon_days": 7,
-        "target_date": "2026-10-30",
-        "p10": 2116.69,
-        "p50": 2119.96,
-        "p90": 2123.26,
-        "observed": 2123.589,
-        "error": 3.629,
-        "in_band": false
-      },
-      {
-        "run_id": "2026-10-16-mazar-4-d7532b1d",
-        "model_id": "M3-water-balance",
-        "model_version": "4",
-        "origin_date": "2026-10-16",
-        "horizon_days": 14,
-        "target_date": "2026-10-30",
-        "p10": 2110.62,
-        "p50": 2117.95,
-        "p90": 2122.04,
-        "observed": 2123.589,
-        "error": 5.639,
-        "in_band": false
-      },
-      {
-        "run_id": "2026-09-30-mazar-2-a90f27d5",
-        "model_id": "M3-water-balance",
-        "model_version": "2",
-        "origin_date": "2026-09-30",
-        "horizon_days": 30,
-        "target_date": "2026-10-30",
-        "p10": 2114.72,
-        "p50": 2127.56,
-        "p90": 2132.24,
-        "observed": 2123.589,
-        "error": -3.971,
         "in_band": true
       }
     ]
