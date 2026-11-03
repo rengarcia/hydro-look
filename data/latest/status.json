@@ -1,27 +1,25 @@
 {
-  "generated_at": "2026-11-03T07:20:54Z",
+  "generated_at": "2026-11-03T19:54:35Z",
   "command": "daily",
   "source": "all",
   "requests": 61,
   "errors": [],
-  "notes": [
-    "smec 2026-11-02: report is incomplete (missing generacion_hidraulica, total_generacion, demanda_distribucion); the running day fills in at D+1, but a stored-as-missing day has come back identical on every retry"
-  ],
+  "notes": [],
   "tables": {
     "observations_daily": {
-      "rows": 92486,
+      "rows": 92487,
       "first_date": "2009-01-01",
       "last_date": "2026-11-03",
       "files": 18
     },
     "national_balance_daily": {
-      "rows": 58729,
+      "rows": 58744,
       "first_date": "2016-05-01",
-      "last_date": "2026-11-01",
+      "last_date": "2026-11-02",
       "files": 11
     },
     "operativa_snapshots": {
-      "rows": 7755,
+      "rows": 7802,
       "first_date": "2026-09-22",
       "last_date": "2026-11-03",
       "files": 1
@@ -58,19 +56,19 @@
     }
   },
   "narrative": {
-    "calls": 61,
+    "calls": 62,
     "by_status": {
       "failed": 1,
       "rejected": 14,
-      "ok": 46
+      "ok": 47
     },
-    "spend_usd": 2.5442,
+    "spend_usd": 2.6222,
     "calls_without_cost": 13,
     "by_month": {
       "2026-09": 0.4394,
       "2026-10": 1.9217,
-      "2026-11": 0.1832
+      "2026-11": 0.2612
     },
-    "last_call_at": "2026-11-02T07:00:02Z"
+    "last_call_at": "2026-11-03T07:21:42Z"
   }
 }
