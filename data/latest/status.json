@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-02T23:58:35Z",
-  "command": "xm",
+  "generated_at": "2026-11-03T02:43:30Z",
+  "command": "daily",
   "source": "all",
-  "requests": 33,
+  "requests": 61,
   "errors": [],
   "notes": [],
   "tables": {
@@ -19,9 +19,9 @@
       "files": 11
     },
     "operativa_snapshots": {
-      "rows": 7661,
+      "rows": 7708,
       "first_date": "2026-09-22",
-      "last_date": "2026-11-02",
+      "last_date": "2026-11-03",
       "files": 1
     },
     "operating_bands": {
