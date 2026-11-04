@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-04T07:03:25Z",
+  "generated_at": "2026-11-04T20:07:44Z",
   "data_date": "2026-11-03",
   "as_of": "2026-11-04",
   "ok": true,
@@ -34,7 +34,7 @@
       "id": "smec_balance",
       "label_es": "CENACE SMEC: balance nacional",
       "feed": "CENACE SMEC national balance",
-      "latest": "2026-11-02",
+      "latest": "2026-11-03",
       "limit_days": 4,
       "state": "current"
     },
@@ -90,7 +90,7 @@
       "id": "mazar_forecast",
       "label_es": "Pronóstico de cota de Mazar",
       "feed": "Mazar level forecast",
-      "latest": "2026-11-02",
+      "latest": "2026-11-03",
       "limit_days": 3,
       "state": "current"
     },
@@ -105,13 +105,13 @@
   ],
   "tables": {
     "observations_daily": {
-      "rows": 92561
+      "rows": 92564
     },
     "national_balance_daily": {
-      "rows": 58744
+      "rows": 58759
     },
     "operativa_snapshots": {
-      "rows": 7943
+      "rows": 7990
     },
     "operating_bands": {
       "rows": 7
@@ -123,7 +123,7 @@
       "rows": 920
     },
     "forecast_runs": {
-      "rows": 52
+      "rows": 53
     },
     "adequacy_runs": {
       "rows": 46
@@ -132,10 +132,10 @@
       "rows": 230
     },
     "forecast_values": {
-      "rows": 260
+      "rows": 265
     },
     "narrative_snapshots": {
-      "rows": 62
+      "rows": 63
     },
     "xm_exchange_daily": {
       "rows": 4044
