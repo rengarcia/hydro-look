@@ -1,6 +1,6 @@
 # Energy adequacy — what the model is, and what it was measured at
 
-Generated 2026-11-05T07:30:06Z from 3767 usable national-balance days, 2016-05-01 → 2026-11-03. Origin 2026-11-03.
+Generated 2026-11-05T20:21:41Z from 3768 usable national-balance days, 2016-05-01 → 2026-11-04. Origin 2026-11-04.
 
 This is section 7's target 3: expected deficit in GWh per day over the horizon, and the risk
 tiers read off it. It is the number the site's adequacy tile shows, and the `risk_tier` the
@@ -35,7 +35,7 @@ and in each case the obvious quantity is wrong:
 
 ## Which days the model is allowed to see
 
-3767 of 3824 balance days are usable (98.51%).
+3768 of 3825 balance days are usable (98.51%).
 
 `parse/smec.ts` already rejects pages served before their metering arrived, by requiring
 distribution demand to be at least 20% of generation. That gate is one-sided: it catches a
@@ -102,7 +102,7 @@ cuts.
 | 60 d | 67 | 2.10 | -0.56 | 2.19 | 4.3% |
 | 90 d | 57 | 2.29 | -0.55 | 2.34 | 1.9% |
 
-Growth fitted at the live origin: 6.30% a year, over 1205 unsuppressed days, anchored on the last 14 of them at a factor of 1.0785.
+Growth fitted at the live origin: 6.28% a year, over 1204 unsuppressed days, anchored on the last 14 of them at a factor of 1.0787.
 
 **This rung does not beat the baseline, and the comparison is not the point.** Over a window
 mean a trailing 28-day mean is a very strong predictor of load — load is that persistent at
@@ -223,7 +223,7 @@ interconnection is firm is invited to look at the stressed column before believi
 
 ### When the central case stops assuming the interconnection
 
-At this origin the interconnection is treated as **cut**: imports averaged 0.24 GWh/day over the last 14 usable days while thermal ran at 25.27, so the central case assumes 0.24 GWh/day of imports.
+At this origin the interconnection is treated as **cut**: imports averaged 0.24 GWh/day over the last 14 usable days while thermal ran at 25.16, so the central case assumes 0.24 GWh/day of imports.
 
 The rule: 14 days of imports below 1 GWh/day *while* thermal runs at 70% or more of its ceiling means the imports are not arriving rather than
 not wanted, and the central case then uses what is arriving, held for the horizon. Low imports
@@ -245,9 +245,9 @@ Published in `adequacy.json` as `import_sensitivity`; the central case above is 
 
 | Imports | GWh/day | 7 d | 14 d | 30 d | 60 d | 90 d | Worst tier |
 |---|---:|---|---|---|---|---|---|
-| demonstrated ceiling | 10.78 | -5.52 `vigilancia` | -5.78 `vigilancia` | -6.17 `vigilancia` | -8.61 `vigilancia` | -10.59 `holgado` | `vigilancia` (7 d) |
-| stressed (2024) | 0.12 | +5.14 `deficit` | +4.88 `ajustado` | +4.49 `ajustado` | +2.05 `ajustado` | +0.06 `ajustado` | `deficit` (7 d) |
-| current regime (trailing) | 0.24 | +5.02 `deficit` | +4.76 `ajustado` | +4.37 `ajustado` | +1.94 `ajustado` | -0.05 `vigilancia` | `deficit` (7 d) |
+| demonstrated ceiling | 10.78 | -6.17 `vigilancia` | -6.27 `vigilancia` | -6.86 `vigilancia` | -9.37 `holgado` | -11.26 `holgado` | `vigilancia` (7 d) |
+| stressed (2024) | 0.12 | +4.48 `ajustado` | +4.39 `ajustado` | +3.80 `ajustado` | +1.29 `ajustado` | -0.61 `vigilancia` | `ajustado` (7 d) |
+| current regime (trailing) | 0.24 | +4.36 `ajustado` | +4.27 `ajustado` | +3.68 `ajustado` | +1.17 `ajustado` | -0.73 `vigilancia` | `ajustado` (7 d) |
 
 Deficit in GWh/day, positive meaning short. The spread between the rows is the part of the tier that rests on
 Colombia rather than on water.
@@ -264,7 +264,7 @@ identity is right, that gap and the computed deficit should be about the same si
 | 2023-10-27 → 2023-12-17 | 52 | 87.95 | 85.31 | 2.64 | 54.00 | 6.654 | 0.34 | -3.79 |
 | 2024-04-15 → 2024-04-30 | 16 | 97.96 | 83.96 | 14.00 | 63.30 | 0.401 | 7.29 | -3.09 |
 | 2024-09-23 → 2024-12-19 | 88 | 88.70 | 68.16 | 20.53 | 40.39 | 4.150 | 17.19 | 10.56 |
-| 2026-09-22 → 2026-11-03 | 43 | 108.82 | 101.08 | 7.74 | 75.95 | 0.176 | 5.73 | -4.87 |
+| 2026-09-22 → 2026-11-04 | 44 | 108.88 | 101.13 | 7.75 | 75.97 | 0.179 | 5.77 | -4.83 |
 
 All figures GWh/day. **Suppression** and **implied deficit** are the two columns to compare:
 they are computed from different sides of the identity and agreeing is the whole test.
