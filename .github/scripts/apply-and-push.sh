@@ -30,7 +30,7 @@ if [ ! -f "$BATCH_DIR/batch.json" ]; then
   exit 0
 fi
 
-# shellcheck disable=SC2317  # invoked by the EXIT trap
+# shellcheck disable=SC2317,SC2329  # invoked by the EXIT trap
 publish_summary() {
   if [ -n "$SUMMARY" ] && [ -f "$SUMMARY" ] && [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
     cat "$SUMMARY" >> "$GITHUB_STEP_SUMMARY"

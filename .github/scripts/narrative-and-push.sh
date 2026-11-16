@@ -32,7 +32,7 @@ source "$(dirname "$0")/push-loop.sh"
 # tokens and cost but not time.
 STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 LATENCY_MS=""
-# shellcheck disable=SC2317  # invoked by the EXIT trap
+# shellcheck disable=SC2317,SC2329  # invoked by the EXIT trap
 summarise() {
   if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
     npx tsx scripts/narrative-summary.ts --since "$STARTED_AT" ${LATENCY_MS:+--latency-ms "$LATENCY_MS"} >> "$GITHUB_STEP_SUMMARY" || true
@@ -58,7 +58,7 @@ if [ ! -f "$STAGE_DIR/snapshot.json" ]; then
   exit "$NARRATIVE_STATUS"
 fi
 
-# shellcheck disable=SC2317  # invoked by push_with_retry
+# shellcheck disable=SC2317,SC2329  # invoked by push_with_retry
 apply_staged() {
   npm run narrative -- apply --in "$STAGE_DIR" 2>&1 | tee -a "$LOG"
 }
