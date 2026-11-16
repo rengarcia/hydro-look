@@ -36,7 +36,7 @@ with the response that produced it archived alongside it.
 | GEOGLOWS v2 river forecast (`geoglows-v2-forecasts`) | Each 00 UTC issue's high-resolution member, as daily means at leads 1–10, for the rivers of Agoyán, Manduriacu and Minas San Francisco: the third member of the inflow forecast at those plants (`data/curated/geoglows_forecasts`, `npm run geoglows:daily`). Reported in `status.json` as `geoglows_forecast`. **CC BY 4.0**, with ECMWF's copyright, source and disclaimer, which `attribution` carries (`s3://geoglows-v2/licenses.md`) | daily, from 2024-07-01 |
 | Natural Earth 1:10m and Copernicus GLO-90 (`npm run basemap`) | the base layers of the site's maps, in `data/reference/basemap.geojson`: mainland Ecuador and its neighbours, three cities, relief bands at 1,000 m steps and rivers traced from the DEM by the same routing as the catchments. The plants on them are `data/reference/plant_locations.csv`: every plant over 100 MW in Sterl et al. (2026, *Nature Water* 4, 571–585, Fig. 1) and Manduriacu, with the paper's capacity, year and storage class and a cited source for each coordinate. Natural Earth is public domain; the DEM is © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018, provided under COPERNICUS by the European Union and ESA | reference |
 
-Six things worth knowing before using any of it:
+Seven things worth knowing before using any of it:
 
 - **`repDiaNivQIng` answers with the previous day's numbers.** Asked for date D it returns rows
   stamped D whose level and inflow are D−1's, identical to what `repDiaHid12m` publishes for D−1 —
@@ -61,6 +61,21 @@ Six things worth knowing before using any of it:
   `repDiaHid12m` published 0 for Mazar and the historian published 0.142 for the same day. Those are
   kept. An inflow above 10,000 m³/s is dropped on both routes — the historian published 23,221.10
   for Mazar on 2013-11-27, between neighbours of 34.31 and 0.00.
+- **When SMEC stops answering, the balance falls back to Información Operativa, flagged.** From
+  2026-11-06 SMEC answered every date, old ones included, with a JBoss 500 ("Cannot find bean
+  informeBean in any scope"). A date with no usable SMEC day is now rebuilt from Información
+  Operativa's "diaria" block (`features/provisional-balance.ts`): each component is scaled by the
+  median SMEC/Operativa ratio over the most recent days both served (on 2026-09-19 → 11-04 the page
+  ran 7% low on hydro and 6% high on thermal), thermal is one concept (`generacion_termica`), and
+  distribution demand is estimated only so the day passes the balance gate. These rows are computed
+  on read and never written to `national_balance_daily`, so SMEC's own day replaces them the moment
+  it is served. `latest.json` marks the day `national.provisional` and nulls its demand and losses;
+  `adequacy.json` lists the provisional days under `balance_basis`, and adequacy is scored against
+  SMEC only. While provisional days are current, a stale SMEC is a `warn` in `status.json` rather
+  than a failed run. The page shows only its newest day, so 2026-11-05 → 11, which no run saw, were
+  filled once from [jp1309/cenace-operacion](https://github.com/jp1309/cenace-operacion), an
+  archive of the same page whose overlapping days match ours exactly
+  (`scripts/import-operativa-archive.ts`, archived under `data/raw/jp1309_cenace_operacion/`).
 - **The SMEC completeness gate is one-sided, and 57 balance days are not days.** `parse/smec.ts`
   rejects a page served before its metering arrived by requiring distribution demand to be at least
   20% of generation, which catches a page whose *demand* has not landed and passes one whose

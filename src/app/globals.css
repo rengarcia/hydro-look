@@ -2275,6 +2275,10 @@ a:focus-visible .map-plant {
 .mix-generacion_turbinas_diesel {
   background: var(--t4);
 }
+/* A provisional day's undivided thermal total (Información Operativa, while SMEC is down). */
+.mix-generacion_termica {
+  background: var(--t2);
+}
 .mix-generacion_otros_tipos {
   background: var(--sage);
 }

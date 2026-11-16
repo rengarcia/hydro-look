@@ -528,6 +528,10 @@
             "null"
           ]
         },
+        "provisional": {
+          "type": "boolean",
+          "description": "True when SMEC had not served this day and it was rebuilt from CENACE Información Operativa: preliminary SCADA, scaled against SMEC, with distribution demand and losses left null. Absent in documents written before 2026-11-16."
+        },
         "previous": {
           "type": [
             "object",

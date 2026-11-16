@@ -47,7 +47,14 @@ export const THERMAL_CONCEPTS = [
   "generacion_turbinas_diesel",
   "generacion_turbinas_nafta",
   "generacion_motores_diesel",
+  // Not a SMEC concept: a provisional day's whole thermal total (see `provisional-balance.ts`).
+  "generacion_termica",
 ] as const;
+
+/** `source` of the rows `provisional-balance.ts` builds from Información Operativa. */
+export const PROVISIONAL_BALANCE_SOURCE = "cenace:operativa-provisional";
+/** The one thermal concept a provisional day carries: the page does not split it by technology. */
+export const PROVISIONAL_THERMAL_CONCEPT = "generacion_termica";
 
 /**
  * A day is usable when served load divided by distribution demand lands in this half-open
@@ -67,6 +74,11 @@ export interface BalanceDay {
   exportGwh: number;
   generationGwh: number;
   distributionDemandGwh: number;
+  /**
+   * True when the day was rebuilt from Información Operativa because SMEC did not serve it: its
+   * figures are bias-corrected preliminary SCADA and its distribution demand is an estimate.
+   */
+  provisional?: boolean;
 }
 
 export interface RejectedDay {
@@ -86,6 +98,7 @@ export interface BalanceCsvRow {
   date: string;
   concepto: string;
   dia_kwh: string;
+  source?: string;
 }
 
 /** `date -> concept -> GWh`, from the long table. A non-numeric `dia_kwh` is a missing concept. */
@@ -107,6 +120,7 @@ export function balanceByDate(rows: readonly BalanceCsvRow[]): Map<IsoDate, Map<
  */
 export function readBalance(rows: readonly BalanceCsvRow[]): BalanceRead {
   const byDate = balanceByDate(rows);
+  const provisional = new Set(rows.filter((r) => r.source === PROVISIONAL_BALANCE_SOURCE).map((r) => r.date));
   const days: BalanceDay[] = [];
   const rejected: RejectedDay[] = [];
   const incomplete: IsoDate[] = [];
@@ -147,6 +161,7 @@ export function readBalance(rows: readonly BalanceCsvRow[]): BalanceRead {
       exportGwh: exports,
       generationGwh: generation,
       distributionDemandGwh: demand,
+      ...(provisional.has(date) ? { provisional: true } : {}),
     });
   }
 

@@ -32,6 +32,8 @@ export const MIX_SERIES: { concept: string; token: string }[] = [
   { concept: "generacion_motores_bunker", token: "var(--t2)" },
   { concept: "generacion_vapor_bunker", token: "var(--t3)" },
   { concept: "generacion_turbinas_diesel", token: "var(--t4)" },
+  // Only on provisional days, which carry thermal as one total; see features/provisional-balance.ts.
+  { concept: "generacion_termica", token: "var(--t2)" },
   { concept: "generacion_otros_tipos", token: "var(--sage)" },
   { concept: "total_importacion", token: "var(--import)" },
 ];

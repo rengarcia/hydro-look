@@ -161,6 +161,10 @@ export const FEEDS: Record<string, { id: string; label_es: string }> = {
   "ORDS CELEC Sur energy (repDiaEner12m)": { id: "ords_energy", label_es: "ORDS: energía CELEC Sur" },
   "ORDS historian (pointValues)": { id: "ords_historian", label_es: "ORDS: historiador" },
   "CENACE SMEC national balance": { id: "smec_balance", label_es: "CENACE SMEC: balance nacional" },
+  "National balance, provisional (Información Operativa)": {
+    id: "national_balance_provisional",
+    label_es: "Balance nacional preliminar (Información Operativa)",
+  },
   "CENACE Información Operativa": { id: "cenace_operativa", label_es: "CENACE: Información Operativa" },
   "Open-Meteo ERA5": { id: "era5", label_es: "Open-Meteo ERA5" },
   "NOAA ONI": { id: "oni", label_es: "NOAA ONI" },
@@ -172,7 +176,7 @@ export const FEEDS: Record<string, { id: string; label_es: string }> = {
 };
 
 /** Feeds whose newest day is a reading of the fleet or the grid, which is what `data_date` means. */
-const READING_FEEDS = new Set(["ords_levels", "ords_historian", "smec_balance"]);
+const READING_FEEDS = new Set(["ords_levels", "ords_historian", "smec_balance", "national_balance_provisional"]);
 
 /** `"ORDS levels and inflows"` -> `ords_levels_and_inflows`, for a label nobody has coded yet. */
 export function slug(text: string): string {

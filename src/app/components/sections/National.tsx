@@ -29,7 +29,14 @@ export function National({ now }: { now: LatestDocument | null }) {
             <span>
               {dateWithYear(national.date)} · {num(supply, 1)} GWh en total
             </span>
-            <span className="meta">entregados a las distribuidoras: {num(national.distribution_demand_gwh, 1)} GWh</span>
+            {national.provisional ? (
+              <span className="meta">
+                cifra preliminar: el balance oficial de CENACE (SMEC) no se ha publicado para este día, así que se usa su Información
+                Operativa, corregida contra días anteriores
+              </span>
+            ) : (
+              <span className="meta">entregados a las distribuidoras: {num(national.distribution_demand_gwh, 1)} GWh</span>
+            )}
           </div>
           <div
             className="supply"

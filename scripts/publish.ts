@@ -20,9 +20,10 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { parseArgs } from "node:util";
-import { buildLatest, type BalanceRow, type OperativaRow, type ThresholdRow } from "../src/lib/publish/latest.ts";
+import { buildLatest, type OperativaRow, type ThresholdRow } from "../src/lib/publish/latest.ts";
 import { loadSeries } from "../src/lib/features/series.ts";
 import { NATIONAL_BALANCE_DAILY, OPERATIVA_SNAPSHOTS } from "../src/lib/contracts/tables.ts";
+import { withProvisionalBalance } from "../src/lib/features/provisional-balance.ts";
 import { parseCsv } from "../src/lib/store/csv.ts";
 import { SITES, type SiteId } from "../src/lib/registry.ts";
 import { DATA_CURATED, DATA_REFERENCE, repoPath } from "../src/lib/util/paths.ts";
@@ -71,16 +72,18 @@ function main(): void {
   const adequacyPath = repoPath("public", "api", "adequacy.json");
   const adequacy: unknown = existsSync(adequacyPath) ? JSON.parse(readFileSync(adequacyPath, "utf8")) : null;
 
+  const operativa = readTable(OPERATIVA_SNAPSHOTS.name) as unknown as OperativaRow[];
   const document = buildLatest({
     series: loadSeries(),
     thresholds: readReference("thresholds.csv") as unknown as ThresholdRow[],
     geoglows: readReference("geoglows_return_periods.csv"),
-    balance: readTable(NATIONAL_BALANCE_DAILY.name) as unknown as BalanceRow[],
+    // SMEC, with the days it has not served filled from Información Operativa and flagged.
+    balance: withProvisionalBalance(readTable(NATIONAL_BALANCE_DAILY.name) as never, operativa as never).rows,
     sites: reservoirSites(),
     generatedAt: nowUtc(),
     asOf: todayEc(),
     adequacy,
-    operativa: readTable(OPERATIVA_SNAPSHOTS.name) as unknown as OperativaRow[],
+    operativa,
   });
 
   const withLevel = document.reservoirs.filter((r) => r.level !== null).length;
@@ -101,7 +104,7 @@ function main(): void {
   const national = document.national;
   console.log(
     national
-      ? `national ${national.date}: hydro ${national.hydro_share_pct ?? "?"}%, thermal ${national.thermal_share_pct ?? "?"}%, imports ${national.import_share_pct ?? "?"}%`
+      ? `national ${national.date}${national.provisional ? " (provisional, Información Operativa)" : ""}: hydro ${national.hydro_share_pct ?? "?"}%, thermal ${national.thermal_share_pct ?? "?"}%, imports ${national.import_share_pct ?? "?"}%`
       : "national: no closed day",
   );
   const live = document.live;

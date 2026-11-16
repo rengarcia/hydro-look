@@ -50,6 +50,7 @@ import {
   type Rows,
 } from "../src/lib/quality/checks.ts";
 import { RawArchive, isLegacyRef } from "../src/lib/store/archive.ts";
+import { withProvisionalBalance } from "../src/lib/features/provisional-balance.ts";
 import { parseCsv } from "../src/lib/store/csv.ts";
 import { DATA_QUARANTINE } from "../src/lib/store/curated.ts";
 import { writeJsonUnlessOnlyStamped } from "../src/lib/store/files.ts";
@@ -79,6 +80,10 @@ const FRESHNESS_LIMIT_DAYS: Record<string, number> = {
   "ORDS CELEC Sur energy (repDiaEner12m)": 3,
   "ORDS historian (pointValues)": 3,
   "CENACE SMEC national balance": 4,
+  // Información Operativa shows a closed day two to four days late, and only the newest one; six
+  // days is that lag plus a missed run. Only the days SMEC has not served count, so this feed
+  // has no rows at all while SMEC is healthy, and is reported, not failed, in that state.
+  "National balance, provisional (Información Operativa)": 6,
   "CENACE Información Operativa": 3,
   "Open-Meteo ERA5": 10,
   "NOAA ONI": 110,
@@ -227,11 +232,24 @@ function main(): void {
   findings.push(...checkQuarantine(quarantineFiles()));
 
   const bySource = (source: string) => (row: Record<string, string>) => row["source"] === source;
+  // The days SMEC has not served that Información Operativa covers (features/provisional-balance.ts).
+  // While the newest of them is within its own limit, a stale SMEC is a warning: the outage is
+  // still on the status page, but the adequacy model and the site are standing on current data.
+  const provisional = withProvisionalBalance(national.rows as never, operativa.rows as never).provisionalDates;
+  const provisionalLatest = provisional.at(-1) ?? null;
+  const provisionalLabel = "National balance, provisional (Información Operativa)";
+  const provisionalCovers = checkFreshness(
+    [{ label: provisionalLabel, latest: provisionalLatest, maxAgeDays: FRESHNESS_LIMIT_DAYS[provisionalLabel]! }],
+    todayEc(),
+  ).every((f) => f.level === "info" && provisionalLatest !== null);
+  const smecLabel = "CENACE SMEC national balance";
+
   const rules: FreshnessRule[] = [
     ["ORDS levels and inflows (repDiaHid12m)", latestWhere(observations.rows, "date", bySource("ords:repDiaHid12m"))],
     ["ORDS CELEC Sur energy (repDiaEner12m)", latestWhere(observations.rows, "date", bySource("ords:repDiaEner12m"))],
     ["ORDS historian (pointValues)", latestWhere(observations.rows, "date", bySource("ords:pointValues"))],
-    ["CENACE SMEC national balance", latestWhere(national.rows, "date", () => true)],
+    [smecLabel, latestWhere(national.rows, "date", () => true)],
+    [provisionalLabel, provisionalLatest],
     ["CENACE Información Operativa", latestWhere(operativa.rows, "fetched_at", () => true)],
     ["Open-Meteo ERA5", latestWhere(weather.rows, "date", (row) => row["kind"] === "era5")],
     // ONI is a month, not a day; its first day stands in for it so the arithmetic is uniform.
@@ -248,7 +266,15 @@ function main(): void {
     ["GEOGLOWS river forecast", latestWhere(geoglowsForecasts.rows, "issued", () => true)],
     ["Mazar level forecast", latestWhere(forecastRuns.rows, "origin_date", (row) => row["site"] === "mazar")],
     ["National adequacy", latestWhere(adequacyRuns.rows, "origin_date", () => true)],
-  ].map(([label, latest]) => ({ label: label!, latest: latest ?? null, maxAgeDays: FRESHNESS_LIMIT_DAYS[label!] ?? 7 }));
+  ].map(([label, latest]) => ({
+    label: label!,
+    latest: latest ?? null,
+    // While provisional days cover SMEC, the adequacy model's origin is the newest of them, which
+    // Información Operativa publishes two to four days late: its limit is theirs, not SMEC's.
+    maxAgeDays:
+      label === "National adequacy" && provisionalCovers ? FRESHNESS_LIMIT_DAYS[provisionalLabel]! : (FRESHNESS_LIMIT_DAYS[label!] ?? 7),
+    ...(label === smecLabel && provisionalCovers ? { staleLevel: "warn" as const } : {}),
+  }));
 
   const freshness = checkFreshness(rules, todayEc());
   if (wantFreshness) findings.push(...freshness);
@@ -277,7 +303,7 @@ function main(): void {
           feed: rule.label,
           latest: rule.latest,
           limit_days: rule.maxAgeDays,
-          state: rule.latest === null ? "not_ingested" : finding?.level === "fail" ? "stale" : "current",
+          state: rule.latest === null ? "not_ingested" : finding !== undefined && finding.level !== "info" ? "stale" : "current",
         };
       }),
       tables: Object.fromEntries(tables.map(([spec, table]) => [spec.name, { rows: table.rows.length }])),

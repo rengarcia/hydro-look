@@ -364,6 +364,11 @@ export interface FreshnessRule {
   latest: string | null;
   /** Days after which the feed counts as stale. */
   maxAgeDays: number;
+  /**
+   * How loud a stale feed is. `fail` by default; `warn` for a feed whose absence another feed is
+   * currently covering, so the outage is still reported without failing every run over it.
+   */
+  staleLevel?: "fail" | "warn";
 }
 
 /**
@@ -383,7 +388,7 @@ export function checkFreshness(rules: FreshnessRule[], today: string): Finding[]
     if (age > rule.maxAgeDays) {
       return {
         check: "freshness",
-        level: "fail",
+        level: rule.staleLevel ?? "fail",
         message: `${rule.label} is ${age} days old (limit ${rule.maxAgeDays}), latest ${rule.latest}`,
       };
     }

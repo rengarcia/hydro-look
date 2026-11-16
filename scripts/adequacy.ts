@@ -53,12 +53,14 @@ import { scoreAdequacyRuns, scorecardBlock } from "../src/lib/models/scorecard.t
 import { OUTAGE_MIN_DAYS, OUTAGE_SITE, outageBlock, outageScenario, plantEnergy, plantShare } from "../src/lib/models/outage.ts";
 import { readOni } from "../src/lib/features/enso.ts";
 import { readBalance, rationingEpisodes } from "../src/lib/features/balance.ts";
+import { withProvisionalBalance } from "../src/lib/features/provisional-balance.ts";
 import { CuratedStore } from "../src/lib/store/curated.ts";
 import {
   ADEQUACY_RUNS,
   ADEQUACY_VALUES,
   NATIONAL_BALANCE_DAILY,
   OBSERVATIONS_DAILY,
+  OPERATIVA_SNAPSHOTS,
   XM_SYSTEM_DAILY,
 } from "../src/lib/contracts/tables.ts";
 import { parseCsv } from "../src/lib/store/csv.ts";
@@ -99,7 +101,11 @@ function main(): void {
   const apiPath = values.api?.trim() || repoPath("public", "api", "adequacy.json");
   const reportPath = values.report?.trim() || repoPath("data", "reports", "adequacy.md");
 
-  const balance = readBalance(readTable(NATIONAL_BALANCE_DAILY.name) as never);
+  // SMEC first; the days it has not served are filled from Información Operativa, bias-corrected
+  // and flagged provisional (see features/provisional-balance.ts), so the model does not freeze on
+  // the last day SMEC answered when SMEC stops answering.
+  const merged = withProvisionalBalance(readTable(NATIONAL_BALANCE_DAILY.name) as never, readTable(OPERATIVA_SNAPSHOTS.name) as never);
+  const balance = readBalance(merged.rows);
   if (balance.days.length === 0) {
     console.error("no usable national balance days: nothing to compute");
     process.exitCode = 1;
@@ -115,6 +121,16 @@ function main(): void {
   for (const reason of ["load below distribution demand", "load above twice distribution demand"] as const) {
     const hits = balance.rejected.filter((r) => r.reason === reason);
     if (hits.length > 0) console.log(`  rejected, ${reason}: ${hits.length} (worst ${hits[0]!.date})`);
+  }
+  if (merged.calibration === null) console.log("provisional: too few days shared with Información Operativa to calibrate; SMEC only");
+  else {
+    const c = merged.calibration;
+    console.log(
+      `provisional: ${merged.provisionalDates.length} day(s) from Información Operativa` +
+        `${merged.provisionalDates.length > 0 ? ` (${merged.provisionalDates[0]} → ${merged.provisionalDates.at(-1)})` : ""}, ` +
+        `scaled hydro ×${c.hydro.toFixed(3)}, thermal ×${c.thermal.toFixed(3)}, other ×${c.other.toFixed(3)} ` +
+        `on ${c.overlapDays} shared days ${c.first} → ${c.last}`,
+    );
   }
   console.log(`episodes: ${episodes.map((e) => `${e.start}..${e.end || "open"}`).join(", ") || "none"}`);
 
@@ -245,6 +261,23 @@ function main(): void {
     rejectedDays: balance.rejected.length,
     generatedAt,
   });
+  document["balance_basis"] = {
+    // True when the day the forecast stands on came from Información Operativa rather than SMEC.
+    origin_provisional: balance.days.at(-1)!.provisional === true,
+    provisional_source: "CENACE Información Operativa (preliminar SCADA, corregido contra SMEC)",
+    provisional_dates: balance.days.filter((d) => d.provisional).map((d) => d.date),
+    calibration:
+      merged.calibration === null
+        ? null
+        : {
+            hydro: roundTo(merged.calibration.hydro, 4),
+            thermal: roundTo(merged.calibration.thermal, 4),
+            other: roundTo(merged.calibration.other, 4),
+            shared_days: merged.calibration.overlapDays,
+            first: merged.calibration.first,
+            last: merged.calibration.last,
+          },
+  };
   document["import_sensitivity"] = sensitivityBlock(forecast, sensitivity);
   document["plant_outage"] = outageBlock(
     outage,
@@ -314,7 +347,14 @@ function main(): void {
 
   // §5.1, read back from the tables this run has just written to, so today's rows count as pending.
   document["scorecard"] = scorecardBlock(
-    scoreAdequacyRuns(readTable(ADEQUACY_RUNS.name), readTable(ADEQUACY_VALUES.name), balance.days, episodes),
+    scoreAdequacyRuns(
+      readTable(ADEQUACY_RUNS.name),
+      readTable(ADEQUACY_VALUES.name),
+      // Scored against SMEC only: a forecast is judged on the measurement of record, and a score
+      // taken on a provisional day would move when SMEC's own figure replaced it.
+      balance.days.filter((d) => !d.provisional),
+      episodes,
+    ),
     generatedAt,
   );
 
