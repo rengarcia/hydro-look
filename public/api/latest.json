@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-16T22:36:38Z",
+  "generated_at": "2026-11-16T22:37:15Z",
   "data_date": "2026-11-15",
   "as_of": "2026-11-16",
   "disclaimer": "No es una fuente oficial. Cada número es una copia de lo que publicaron CELEC o CENACE, con la respuesta que lo produjo archivada junto a él.",
@@ -1421,7 +1421,7 @@
     "import_share_pct": 0.4
   },
   "adequacy": {
-    "origin_date": "2026-11-04",
+    "origin_date": "2026-11-15",
     "tier": "ajustado",
     "tier_code": "tight",
     "tier_label_es": "Ajustado",
@@ -1430,8 +1430,8 @@
     "worst_tier_label_es": "Ajustado",
     "worst_tier_horizon_days": 7,
     "narrative_tier_field": "worst_tier",
-    "worst_deficit_gwh_day": 4.361,
-    "run_id": "2026-11-04-adequacy-2-4ab53548"
+    "worst_deficit_gwh_day": 4.314,
+    "run_id": "2026-11-15-adequacy-2-bf09d558"
   },
   "deprecated": {
     "as_of": "data_date; as_of is the day the job ran, not the day the readings describe. Removed in schema_version 2."
