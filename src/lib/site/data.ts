@@ -25,6 +25,7 @@ import { parseCsv } from "../store/csv.ts";
 import { dayOfYear } from "../util/stats.ts";
 import { addDays, type IsoDate } from "../util/dates.ts";
 import { dataDateOf, type LatestDocument } from "../publish/latest.ts";
+import { withProvisionalBalance } from "../features/provisional-balance.ts";
 import { daysFrom, firstPendingTarget, type DayRecord } from "./days.ts";
 import {
   BASEMAP_FILE,
@@ -175,7 +176,9 @@ export interface MixDay {
  */
 export function mix(days: number): MixDay[] {
   const byDate = new Map<IsoDate, Record<string, number>>();
-  for (const row of readTable("national_balance_daily")) {
+  // SMEC with its unserved days filled from Información Operativa, as `latest.json` has them.
+  const rows = withProvisionalBalance(readTable("national_balance_daily") as never, readTable("operativa_snapshots") as never).rows;
+  for (const row of rows as unknown as Record<string, string>[]) {
     const date = row["date"] ?? "";
     const concept = row["concepto"] ?? "";
     const kwh = Number(row["dia_kwh"] ?? "");

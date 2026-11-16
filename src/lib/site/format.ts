@@ -83,6 +83,7 @@ export const CONCEPT_LABELS: Record<string, string> = {
   generacion_motores_bunker: "Motores de búnker",
   generacion_vapor_bunker: "Vapor de búnker",
   generacion_turbinas_diesel: "Turbinas diésel",
+  generacion_termica: "Térmica (preliminar)",
   generacion_otros_tipos: "Otras fuentes",
   total_importacion: "Importación",
   total_exportacion: "Exportación",

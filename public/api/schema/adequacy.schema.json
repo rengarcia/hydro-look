@@ -382,6 +382,67 @@
         "stretch_by_horizon"
       ]
     },
+    "balance_basis": {
+      "type": "object",
+      "description": "Which balance days the run stood on. A day SMEC did not serve is rebuilt from CENACE Información Operativa, scaled by the median SMEC/Operativa ratio per component over the most recent days both served, and listed in provisional_dates; origin_provisional says whether the forecast's own origin is one of them.",
+      "properties": {
+        "origin_provisional": {
+          "type": "boolean"
+        },
+        "provisional_source": {
+          "type": "string"
+        },
+        "provisional_dates": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          }
+        },
+        "calibration": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "hydro": {
+              "type": "number"
+            },
+            "thermal": {
+              "type": "number"
+            },
+            "other": {
+              "type": "number"
+            },
+            "shared_days": {
+              "type": "integer"
+            },
+            "first": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "last": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            }
+          },
+          "required": [
+            "hydro",
+            "thermal",
+            "other",
+            "shared_days",
+            "first",
+            "last"
+          ]
+        }
+      },
+      "required": [
+        "origin_provisional",
+        "provisional_source",
+        "provisional_dates",
+        "calibration"
+      ]
+    },
     "import_sensitivity": {
       "type": "object",
       "description": "The deficit and tier under each import assumption from Colombia (ENHANCEMENTS §5.5), so a reader sees how much the tier rests on it. The central case is one of these rows. Additive; absent before 2026-09-23.",

@@ -27,6 +27,7 @@ import { roundOrNull, roundTo } from "../util/numbers.ts";
 import { addDays, type IsoDate } from "../util/dates.ts";
 import { SITES, type SiteId } from "../registry.ts";
 import { bandForDayOfYear, binByDayOfYear, sampleForDate } from "../features/climatology.ts";
+import { PROVISIONAL_BALANCE_SOURCE } from "../features/balance.ts";
 import { dayOfYear } from "../util/stats.ts";
 import type { DailySeries, SeriesSet } from "../features/series.ts";
 import { declarationCode, tierCode, withContract, NARRATIVE_TIER_FIELD, TIER_CODES, type ContractFields } from "./contract.ts";
@@ -189,6 +190,11 @@ export interface NationalSnapshot {
   thermal_share_pct: number | null;
   /** Share imported from Colombia and Peru, 0–100. */
   import_share_pct: number | null;
+  /**
+   * True when SMEC had not served `date` and the day was rebuilt from CENACE's Información
+   * Operativa: preliminary SCADA, corrected against SMEC, with no demand or losses of its own.
+   */
+  provisional: boolean;
   /** The closed day before `date`, when SMEC published it, and the change since. */
   previous: NationalPrevious | null;
   delta_1d: {
@@ -527,6 +533,8 @@ export const GENERATION_CONCEPTS = [
   "generacion_motores_bunker",
   "generacion_vapor_bunker",
   "generacion_turbinas_diesel",
+  // A provisional day's undivided thermal total; SMEC itself never files under it.
+  "generacion_termica",
   "generacion_otros_tipos",
 ] as const;
 
@@ -535,12 +543,15 @@ const THERMAL_CONCEPTS = new Set<string>([
   "generacion_motores_bunker",
   "generacion_vapor_bunker",
   "generacion_turbinas_diesel",
+  "generacion_termica",
 ]);
 
 export interface BalanceRow {
   date: string;
   concepto: string;
   dia_kwh: string;
+  /** `PROVISIONAL_BALANCE_SOURCE` on the rows rebuilt from Información Operativa. */
+  source?: string;
 }
 
 /** `date -> concept -> GWh`, from the long national table. */
@@ -556,11 +567,15 @@ export function balanceByDay(rows: readonly BalanceRow[]): Map<IsoDate, Map<stri
 }
 
 /** The most recent day SMEC has closed, as a supply mix, with the day before it beside it. */
-export function nationalSnapshot(byDay: Map<IsoDate, Map<string, number>>): NationalSnapshot | null {
+export function nationalSnapshot(
+  byDay: Map<IsoDate, Map<string, number>>,
+  provisionalDates: ReadonlySet<IsoDate> = new Set(),
+): NationalSnapshot | null {
   let latest: IsoDate | null = null;
   for (const date of byDay.keys()) if (latest === null || date > latest) latest = date;
   if (latest === null) return null;
 
+  const provisional = provisionalDates.has(latest);
   const today = dayOf(byDay.get(latest)!);
   // Only the calendar day before counts as "yesterday": after a gap in SMEC's record, the
   // previous closed day could be a week back, and a delta across a week is not "since yesterday".
@@ -575,8 +590,10 @@ export function nationalSnapshot(byDay: Map<IsoDate, Map<string, number>>): Nati
     total_generation_gwh: today.totalGeneration,
     total_import_gwh: today.totalImport,
     total_export_gwh: today.totalExport,
-    distribution_demand_gwh: today.demand,
-    transport_losses_gwh: today.losses,
+    // A provisional day's demand is an estimate made to pass the balance gate, not a reading.
+    distribution_demand_gwh: provisional ? null : today.demand,
+    transport_losses_gwh: provisional ? null : today.losses,
+    provisional,
     hydro_share_pct: today.hydro,
     thermal_share_pct: today.thermal,
     import_share_pct: today.imports,
@@ -757,7 +774,8 @@ export function dataDateOf(reservoirs: readonly ReservoirSnapshot[], national: N
 
 export function buildLatest(inputs: LatestInputs): LatestDocument {
   const reservoirs = inputs.sites.map((site) => reservoirSnapshot(inputs.series, site, inputs.thresholds, inputs.geoglows));
-  const national = nationalSnapshot(balanceByDay(inputs.balance));
+  const provisional = new Set(inputs.balance.filter((r) => r.source === PROVISIONAL_BALANCE_SOURCE).map((r) => r.date));
+  const national = nationalSnapshot(balanceByDay(inputs.balance), provisional);
   return withContract("latest", {
     generated_at: inputs.generatedAt,
     data_date: dataDateOf(reservoirs, national),

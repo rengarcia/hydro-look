@@ -103,8 +103,9 @@ export function SinceYesterday({ now }: { now: LatestDocument | null }) {
         change: changeWord(national.delta_1d?.total_generation_gwh, 1, ""),
         unit: "GWh",
         sign: signOf(national.delta_1d?.total_generation_gwh, 1),
-        context:
-          national.distribution_demand_gwh != null
+        context: national.provisional
+          ? "Cifra preliminar de CENACE: el balance oficial (SMEC) aún no se publica"
+          : national.distribution_demand_gwh != null
             ? `Demanda de las distribuidoras: ${num(national.distribution_demand_gwh, 1)} GWh`
             : null,
       },
