@@ -2,12 +2,15 @@ import { describe, expect, it } from "vitest";
 import { OBSERVATIONS_DAILY } from "../src/lib/contracts/tables.ts";
 import {
   checkFreshness,
+  freshnessOutsideGate,
+  parseFreshnessGate,
   checkObservationRanges,
   checkReference,
   checkTableShape,
   widestBands,
   worstLevel,
   type Rows,
+  type FreshnessRule,
 } from "../src/lib/quality/checks.ts";
 
 const observation = (over: Record<string, string>): Record<string, string> => ({
@@ -202,6 +205,41 @@ describe("freshness", () => {
     const [finding] = checkFreshness([{ label: "NOAA ONI", latest: "2026-07-01", maxAgeDays: 110 }], "2026-09-22");
     expect(finding!.level).toBe("info");
     expect(finding!.message).toMatch(/83 days old/);
+  });
+
+  // The state of 2026-11-16, after ten days without runners: the daily feeds had just caught up,
+  // the covariates had not, and every ingest workflow was failing on the other's feeds.
+  const rules: FreshnessRule[] = [
+    { label: "levels", scope: "daily", latest: "2026-11-15", maxAgeDays: 3 },
+    { label: "era5", scope: "weather", latest: "2026-10-30", maxAgeDays: 10 },
+    { label: "xm", scope: "xm", latest: "2026-11-02", maxAgeDays: 7 },
+    { label: "forecast", scope: "models", latest: "2026-11-05", maxAgeDays: 3 },
+    { label: "unowned", latest: "2026-11-01", maxAgeDays: 3 },
+  ];
+  const stale = checkFreshness(rules, "2026-11-16");
+  const outside = (gate: string) => freshnessOutsideGate(rules, stale, parseFreshnessGate(gate)).map((f) => f.message.split(" ")[0]);
+
+  it("holds a run to the feeds its own batch carries", () => {
+    expect(outside("daily")).toEqual(["era5", "xm", "forecast"]);
+    expect(outside("weather")).toEqual(["xm", "forecast"]);
+    expect(outside("weather, xm")).toEqual(["forecast"]);
+  });
+
+  it("never excuses a feed the run answers for, a feed nobody owns, or anything but a failure", () => {
+    const late: FreshnessRule[] = [
+      { label: "levels", scope: "daily", latest: "2026-11-01", maxAgeDays: 3 },
+      { label: "smec", scope: "daily", latest: "2026-11-01", maxAgeDays: 4, staleLevel: "warn" },
+      { label: "unowned", latest: "2026-11-01", maxAgeDays: 3 },
+    ];
+    const findings = checkFreshness(late, "2026-11-16");
+    expect(freshnessOutsideGate(late, findings, ["daily"])).toEqual([]);
+    // Another run's gate excuses the failure it does not own; the warning was never failing.
+    expect(freshnessOutsideGate(late, findings, ["xm"]).map((f) => f.message.split(" ")[0])).toEqual(["levels"]);
+  });
+
+  it("rejects a gate it does not know rather than gating on nothing", () => {
+    expect(() => parseFreshnessGate("dialy")).toThrow(/--gate takes one or more of daily, weather, xm, models/);
+    expect(() => parseFreshnessGate("")).toThrow(/--gate/);
   });
 });
 

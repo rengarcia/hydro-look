@@ -137,6 +137,7 @@ npm run adequacy -- --ceilings             # print the demonstrated thermal and 
 
 npm run check                              # shape, ranges, reference integrity, raw_refs, quarantine
 npm run check -- --freshness               # also fail when a feed has stopped arriving
+npm run check -- --freshness --gate daily  # …but only for one write's feeds (daily, weather, xm, models)
 npm run check -- --out public/api/status.json
 npx tsx scripts/tls-expiry.ts --live       # certificate expiry and pin drift, as tls-expiry.yml runs it
 
@@ -236,7 +237,11 @@ The scripts owned by the models write their documents through the same stamp (`p
 shape and range checks are a function of the files alone, so they hold for as long as the commit
 does, while freshness is a function of the clock and would turn every pull request red as the data
 aged. A feed that has never produced a row is reported rather than failed, so a source that has
-not had its first run yet does not block the gate.
+not had its first run yet does not block the gate. After an ingest the gate is narrowed with
+`--gate` to the feeds that batch carries (`daily` for `daily.yml` and `backfill.yml`, `weather`
+and `xm` for the two batches of `covariates.yml`), so a run goes red for its own feed stopping and
+not for another workflow's; `status.json` lists every stale feed whichever run wrote it, and
+`freshness.yml`, which passes no gate, files the issue.
 
 The sources are unreachable from most sandboxes; ingestion runs in GitHub Actions
 (`daily.yml` at 12:47, 16:53, 20:47 and 00:47 UTC, `backfill.yml` by dispatch). Every backfill is resumable —

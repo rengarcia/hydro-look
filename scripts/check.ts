@@ -5,6 +5,7 @@
  *   npm run check                       shape, ranges, reference integrity, raw_ref resolution
  *                                       and the quarantine; writes nothing
  *   npm run check -- --freshness        also fail when a feed has stopped arriving
+ *   npm run check -- --freshness --gate daily   …but only for the feeds that write carries
  *   npm run check -- --out public/api/status.json   write the public status document
  *
  * The split matters. Everything but `--freshness` is a function of the files alone, so it runs
@@ -12,6 +13,10 @@
  * the clock: in CI it would turn every pull request red the moment the data aged a few days,
  * which teaches people to ignore a red build. It runs after an ingest instead, where a stale
  * feed is news.
+ *
+ * `--gate` narrows which stale feeds fail the run to the ones the caller fetches (`daily`,
+ * `weather`, `xm`, `models`; see `freshnessOutsideGate`). It changes the exit code and nothing
+ * else: the log and the status document report every stale feed whoever is asking.
  *
  * Exit code is 1 if anything failed, so both CI and the ingest job can gate on it.
  */
@@ -43,10 +48,13 @@ import {
   checkRawRefs,
   checkReference,
   checkTableShape,
+  freshnessOutsideGate,
+  parseFreshnessGate,
   widestBands,
   worstLevel,
   type Finding,
   type FreshnessRule,
+  type FreshnessScope,
   type Rows,
 } from "../src/lib/quality/checks.ts";
 import { RawArchive, isLegacyRef } from "../src/lib/store/archive.ts";
@@ -161,6 +169,9 @@ function quarantineFiles(): string[] {
 function main(): void {
   const argv = process.argv.slice(2);
   const wantFreshness = argv.includes("--freshness");
+  const gateIndex = argv.indexOf("--gate");
+  const gate = gateIndex >= 0 ? parseFreshnessGate(argv[gateIndex + 1] ?? "") : null;
+  if (gate !== null && !wantFreshness) throw new Error("--gate narrows --freshness and means nothing without it");
   const outIndex = argv.indexOf("--out");
   const outPath = outIndex >= 0 ? argv[outIndex + 1] : undefined;
 
@@ -244,48 +255,60 @@ function main(): void {
   ).every((f) => f.level === "info" && provisionalLatest !== null);
   const smecLabel = "CENACE SMEC national balance";
 
-  const rules: FreshnessRule[] = [
-    ["ORDS levels and inflows (repDiaHid12m)", latestWhere(observations.rows, "date", bySource("ords:repDiaHid12m"))],
-    ["ORDS CELEC Sur energy (repDiaEner12m)", latestWhere(observations.rows, "date", bySource("ords:repDiaEner12m"))],
-    ["ORDS historian (pointValues)", latestWhere(observations.rows, "date", bySource("ords:pointValues"))],
-    [smecLabel, latestWhere(national.rows, "date", () => true)],
-    [provisionalLabel, provisionalLatest],
-    ["CENACE Información Operativa", latestWhere(operativa.rows, "fetched_at", () => true)],
-    ["Open-Meteo ERA5", latestWhere(weather.rows, "date", (row) => row["kind"] === "era5")],
+  // Each feed with the write it arrives through, which is the run that answers for it (`--gate`).
+  const feeds: [string, FreshnessScope, string | null][] = [
+    ["ORDS levels and inflows (repDiaHid12m)", "daily", latestWhere(observations.rows, "date", bySource("ords:repDiaHid12m"))],
+    ["ORDS CELEC Sur energy (repDiaEner12m)", "daily", latestWhere(observations.rows, "date", bySource("ords:repDiaEner12m"))],
+    ["ORDS historian (pointValues)", "daily", latestWhere(observations.rows, "date", bySource("ords:pointValues"))],
+    [smecLabel, "daily", latestWhere(national.rows, "date", () => true)],
+    [provisionalLabel, "daily", provisionalLatest],
+    ["CENACE Información Operativa", "daily", latestWhere(operativa.rows, "fetched_at", () => true)],
+    ["Open-Meteo ERA5", "weather", latestWhere(weather.rows, "date", (row) => row["kind"] === "era5")],
     // ONI is a month, not a day; its first day stands in for it so the arithmetic is uniform.
     [
       "NOAA ONI",
+      "weather",
       latestWhere(
         enso.rows.map((r) => ({ ...r, month: `${r["month"]}-01` })),
         "month",
         () => true,
       ),
     ],
-    ["XM exchanges with Colombia", latestWhere(xmExchange.rows, "date", () => true)],
-    ["XM Colombian storage", latestWhere(xmSystem.rows, "date", (row) => row["metric"] === "PorcVoluUtilDiar")],
-    ["GEOGLOWS river forecast", latestWhere(geoglowsForecasts.rows, "issued", () => true)],
-    ["Mazar level forecast", latestWhere(forecastRuns.rows, "origin_date", (row) => row["site"] === "mazar")],
-    ["National adequacy", latestWhere(adequacyRuns.rows, "origin_date", () => true)],
-  ].map(([label, latest]) => ({
-    label: label!,
-    latest: latest ?? null,
+    ["XM exchanges with Colombia", "xm", latestWhere(xmExchange.rows, "date", () => true)],
+    ["XM Colombian storage", "xm", latestWhere(xmSystem.rows, "date", (row) => row["metric"] === "PorcVoluUtilDiar")],
+    // The model step's, which runs after the daily apply has pushed: at apply time these describe
+    // the previous run, so the apply does not gate on them and a failed model step has its own issue.
+    ["GEOGLOWS river forecast", "models", latestWhere(geoglowsForecasts.rows, "issued", () => true)],
+    ["Mazar level forecast", "models", latestWhere(forecastRuns.rows, "origin_date", (row) => row["site"] === "mazar")],
+    ["National adequacy", "models", latestWhere(adequacyRuns.rows, "origin_date", () => true)],
+  ];
+  const rules: FreshnessRule[] = feeds.map(([label, scope, latest]) => ({
+    label,
+    scope,
+    latest,
     // While provisional days cover SMEC, the adequacy model's origin is the newest of them, which
     // Información Operativa publishes two to four days late: its limit is theirs, not SMEC's.
     maxAgeDays:
-      label === "National adequacy" && provisionalCovers ? FRESHNESS_LIMIT_DAYS[provisionalLabel]! : (FRESHNESS_LIMIT_DAYS[label!] ?? 7),
+      label === "National adequacy" && provisionalCovers ? FRESHNESS_LIMIT_DAYS[provisionalLabel]! : (FRESHNESS_LIMIT_DAYS[label] ?? 7),
     ...(label === smecLabel && provisionalCovers ? { staleLevel: "warn" as const } : {}),
   }));
 
   const freshness = checkFreshness(rules, todayEc());
   if (wantFreshness) findings.push(...freshness);
+  // Stale feeds another workflow fetches: still printed and still in the document, but not this
+  // run's to fail on.
+  const ungated = new Set(gate === null ? [] : freshnessOutsideGate(rules, freshness, gate));
 
   for (const finding of findings) {
     if (finding.level === "info") continue;
-    console.log(`${finding.level.toUpperCase()} [${finding.check}] ${finding.message}`);
+    const note = ungated.has(finding) ? ` — not gated by this run (--gate ${gate!.join(",")})` : "";
+    console.log(`${finding.level.toUpperCase()} [${finding.check}] ${finding.message}${note}`);
   }
   const failures = findings.filter((f) => f.level === "fail");
+  const gating = failures.filter((f) => !ungated.has(f));
   console.log(
-    `${findings.length} checks: ${failures.length} fail, ${findings.filter((f) => f.level === "warn").length} warn, ` +
+    `${findings.length} checks: ${failures.length} fail${ungated.size > 0 ? ` (${ungated.size} outside this run's gate)` : ""}, ` +
+      `${findings.filter((f) => f.level === "warn").length} warn, ` +
       `${findings.filter((f) => f.level === "info").length} info${wantFreshness ? "" : " (freshness not checked)"}`,
   );
 
@@ -319,7 +342,7 @@ function main(): void {
     );
   }
 
-  process.exitCode = failures.length > 0 ? 1 : 0;
+  process.exitCode = gating.length > 0 ? 1 : 0;
 }
 
 main();

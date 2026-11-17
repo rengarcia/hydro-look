@@ -24,6 +24,7 @@ case "$2" in
     for arg in "$@"; do if [ "$prev" = "--summary" ]; then echo "### summary" > "$arg"; fi; prev="$arg"; done
     ;;
   check)
+    if [ -n "\${CHECK_ARGS:-}" ]; then echo "$*" > "$CHECK_ARGS"; fi
     mkdir -p public/api
     printf '{\\n  "generated_at": "%s",\\n  "ok": true\\n}\\n' "$(date +%s%N)" > public/api/status.json
     ;;
@@ -91,6 +92,17 @@ describe("apply-and-push.sh", () => {
     const third = run("date,value\n2026-09-23,1\n2026-09-24,2");
     expect(third.stdout).toMatch(/Pushed on attempt 1/);
     expect(git(origin, "rev-list", "--count", "main")).toBe("3");
+  }, 30_000);
+
+  it("gates freshness on the caller's own feeds when told which they are, and on all of them otherwise", () => {
+    const { root, run } = setup();
+    const args = join(root, "check-args");
+
+    expect(run("date,value\n2026-09-23,1", { CHECK_ARGS: args }).status).toBe(0);
+    expect(readFileSync(args, "utf8").trim()).toBe("run check -- --freshness --out public/api/status.json");
+
+    expect(run("date,value\n2026-09-24,1", { CHECK_ARGS: args, FRESHNESS_GATE: "xm" }).status).toBe(0);
+    expect(readFileSync(args, "utf8").trim()).toBe("run check -- --freshness --gate xm --out public/api/status.json");
   }, 30_000);
 
   it("does nothing when the fetch job staged no batch", () => {

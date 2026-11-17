@@ -148,6 +148,8 @@ jobs:
           BATCH_DIR: ${{ runner.temp }}/batch
           SUMMARY: ${{ runner.temp }}/summary.md
           RUN_ID: ${{ github.run_id }}
+          # Every backfill source writes the daily ingest's tables; see daily.yml.
+          FRESHNESS_GATE: daily
         run: bash .github/scripts/apply-and-push.sh "Backfill $SOURCE from $FROM (run $RUN_ID)"
 
   # A backfill runs for hours with nobody watching, so every failure files an issue, whoever

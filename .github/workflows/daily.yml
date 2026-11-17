@@ -125,6 +125,10 @@ jobs:
           BATCH_DIR: ${{ runner.temp }}/batch
           SUMMARY: ${{ runner.temp }}/summary.md
           RUN_ID: ${{ github.run_id }}
+          # Fail on the feeds this batch carries going stale, not on covariates.yml's (ERA5, ONI,
+          # XM) or on the models the next step is about to regenerate. status.json still lists
+          # every stale feed and freshness.yml files the issue for it.
+          FRESHNESS_GATE: daily
         run: bash .github/scripts/apply-and-push.sh "Daily ingest $(date -u +%Y-%m-%d) (run $RUN_ID)"
 
       # Runs after the apply, so both models stand on the day that has just landed rather than
