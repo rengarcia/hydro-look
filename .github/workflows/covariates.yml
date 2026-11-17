@@ -140,6 +140,9 @@ jobs:
           BATCH_DIR: ${{ runner.temp }}/batch
           SUMMARY: ${{ runner.temp }}/summary-weather.md
           RUN_ID: ${{ github.run_id }}
+          # Each batch answers for its own feeds (see daily.yml): this step runs before the XM
+          # batch lands, so gating it on XM failed it on every first run after a gap.
+          FRESHNESS_GATE: weather
         run: bash .github/scripts/apply-and-push.sh "Weather and ENSO (run $RUN_ID)"
       - name: Apply and commit XM
         if: ${{ !cancelled() }}
@@ -148,6 +151,7 @@ jobs:
           BATCH_DIR: ${{ runner.temp }}/batch-xm
           SUMMARY: ${{ runner.temp }}/summary-xm.md
           RUN_ID: ${{ github.run_id }}
+          FRESHNESS_GATE: xm
         run: bash .github/scripts/apply-and-push.sh "XM Colombia (run $RUN_ID)"
 
   report:

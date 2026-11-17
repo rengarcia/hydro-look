@@ -357,9 +357,19 @@ export function checkNationalBalance(national: Rows): Finding[] {
   ];
 }
 
+/**
+ * Which write a feed arrives through, and so which apply step answers for it going stale:
+ * `daily` for what daily.yml (and a backfill) fetches, `weather` and `xm` for covariates.yml's two
+ * batches, `models` for what the model step regenerates after the daily apply.
+ */
+export const FRESHNESS_SCOPES = ["daily", "weather", "xm", "models"] as const;
+export type FreshnessScope = (typeof FRESHNESS_SCOPES)[number];
+
 export interface FreshnessRule {
   /** Label shown in the finding. */
   label: string;
+  /** The write this feed arrives through. A rule without one is every run's to answer for. */
+  scope?: FreshnessScope;
   /** Most recent date found for this feed, or null when it has never been ingested. */
   latest: string | null;
   /** Days after which the feed counts as stale. */
@@ -393,6 +403,38 @@ export function checkFreshness(rules: FreshnessRule[], today: string): Finding[]
       };
     }
     return { check: "freshness", level: "info", message: `${rule.label} is ${age} days old, latest ${rule.latest}` };
+  });
+}
+
+/** `--gate daily` or `--gate weather,xm`: the scopes a run answers for. An unknown name throws, so a typo is loud. */
+export function parseFreshnessGate(value: string): FreshnessScope[] {
+  const names = value
+    .split(",")
+    .map((name) => name.trim())
+    .filter((name) => name !== "");
+  const unknown = names.filter((name) => !(FRESHNESS_SCOPES as readonly string[]).includes(name));
+  if (names.length === 0 || unknown.length > 0) {
+    throw new Error(`--gate takes one or more of ${FRESHNESS_SCOPES.join(", ")}, comma-separated; got "${value}"`);
+  }
+  return names as FreshnessScope[];
+}
+
+/**
+ * The stale feeds a run gating on `gate` does not answer for.
+ *
+ * Every ingest workflow used to fail on every stale feed, which made each one red for a feed
+ * another workflow fetches: after ten days without runners (2026-11-06 → 16) the daily ingest
+ * failed on ERA5 and XM, which it never asks for, and covariates.yml failed its own weather apply
+ * because the XM batch it was about to apply had not landed yet. A run now fails only on the feeds
+ * its own batch carries. Nothing goes unreported for it: `status.json` and the run log still list
+ * every stale feed, and freshness.yml, which passes no gate, files the `stale-feed` issue.
+ *
+ * `findings` is `checkFreshness(rules, …)`, one finding per rule and in the same order.
+ */
+export function freshnessOutsideGate(rules: FreshnessRule[], findings: Finding[], gate: FreshnessScope[]): Finding[] {
+  return findings.filter((finding, index) => {
+    const scope = rules[index]?.scope;
+    return finding.level === "fail" && scope !== undefined && !gate.includes(scope);
   });
 }
 

@@ -16,7 +16,8 @@
 # "did this run find anything".
 #
 # Env: BRANCH, BATCH_DIR; optionally ATTEMPTS (default 5), SUMMARY (a file for the Markdown run
-# summary, appended to $GITHUB_STEP_SUMMARY when the script exits).
+# summary, appended to $GITHUB_STEP_SUMMARY when the script exits), FRESHNESS_GATE (the feeds
+# this batch carries, as `check --gate` takes them; unset, every stale feed fails the step).
 set -euo pipefail
 
 MESSAGE="${1:?commit message required}"
@@ -24,6 +25,7 @@ BRANCH="${BRANCH:?BRANCH required}"
 BATCH_DIR="${BATCH_DIR:?BATCH_DIR required}"
 ATTEMPTS="${ATTEMPTS:-5}"
 SUMMARY="${SUMMARY:-}"
+FRESHNESS_GATE="${FRESHNESS_GATE:-}"
 
 if [ ! -f "$BATCH_DIR/batch.json" ]; then
   echo "No staged batch at $BATCH_DIR; the ingest step produced nothing to commit."
@@ -71,7 +73,10 @@ for attempt in $(seq 1 "$ATTEMPTS"); do
   # when the gate does not, because the site's job is to show how old the data is. A failing
   # check does not abort the commit: the rows are already fetched and archived, and losing them
   # would help nobody -- the failure is recorded in the document and in the step's exit code.
-  npm run check -- --freshness --out public/api/status.json || CHECK_FAILED=1
+  # The exit code answers only for the feeds this batch carries (FRESHNESS_GATE): a feed another
+  # workflow fetches going stale is that workflow's failure and freshness.yml's issue, and the
+  # document lists it either way.
+  npm run check -- --freshness ${FRESHNESS_GATE:+--gate "$FRESHNESS_GATE"} --out public/api/status.json || CHECK_FAILED=1
 
   # And the current-state document the site's tiles read. Like the status document it is a pure
   # function of what was just written, so it belongs in this loop rather than in a later step:
