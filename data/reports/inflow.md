@@ -1,6 +1,6 @@
 # Inflow forecasts — the plants whose level is not the question
 
-Generated 2026-11-17T00:34:17Z by `npm run forecast` from the committed tables; no network. For the run-of-river and daily-storage plants the level is an operating decision taken within the day, so the target is the water arriving: the mean inflow over the next 7 and 14 days, in m³/s. Origins every 7 days from 2018-01-01, once a plant has 730 days of inflow; each rung sees only data up to its origin.
+Generated 2026-11-17T03:16:52Z by `npm run forecast` from the committed tables; no network. For the run-of-river and daily-storage plants the level is an operating decision taken within the day, so the target is the water arriving: the mean inflow over the next 7 and 14 days, in m³/s. Origins every 7 days from 2018-01-01, once a plant has 730 days of inflow; each rung sees only data up to its origin.
 
 - **persistence** holds the origin day's inflow.
 - **climatology** is the median of the same calendar window's mean over every earlier year.
@@ -87,8 +87,8 @@ The conditioner is the rain that had already fallen, read with ERA5's five-day l
 | manduriacu | 14 d | ensemble | 246 | 41.8 | 10.8 | 81% (234) | 14.3 |
 | minas_san_francisco | 7 d | persistence | 264 | 28.2 | -4.3 | 80% (252) | 11.9 |
 | minas_san_francisco | 7 d | climatology | 264 | 29.6 | 8.7 | 76% (252) | 11.2 |
-| minas_san_francisco | 7 d | analogue | 264 | 27.1 | 0.3 | 81% (252) | 10.4 |
-| minas_san_francisco | 7 d | ensemble | 264 | 23.5 | 6.8 | 79% (252) | 9.1 |
+| minas_san_francisco | 7 d | analogue | 264 | 27.1 | 0.2 | 81% (252) | 10.4 |
+| minas_san_francisco | 7 d | ensemble | 264 | 23.5 | 6.7 | 79% (252) | 9.1 |
 | minas_san_francisco | 14 d | persistence | 263 | 31.1 | -4.3 | 81% (251) | 13.0 |
 | minas_san_francisco | 14 d | climatology | 263 | 27.7 | 6.8 | 75% (251) | 10.2 |
 | minas_san_francisco | 14 d | analogue | 263 | 26.5 | -3.9 | 80% (251) | 10.4 |
