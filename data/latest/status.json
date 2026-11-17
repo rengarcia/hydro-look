@@ -1,10 +1,13 @@
 {
-  "generated_at": "2026-11-17T00:54:07Z",
-  "command": "xm",
+  "generated_at": "2026-11-17T03:16:41Z",
+  "command": "daily",
   "source": "all",
-  "requests": 22,
+  "requests": 53,
   "errors": [],
-  "notes": [],
+  "notes": [
+    "smec 2026-11-15: report is incomplete (missing generacion_hidraulica, total_generacion, demanda_distribucion); the running day fills in at D+1, but a stored-as-missing day has come back identical on every retry",
+    "TLS pin changed for www.cenace.gob.ec:443 (advisory): observed 4e4b23dc319d8217dd3e2ebbdccdea5c96fec12cf94de52dca10c42f6b8458f1, pinned 524c72c1b6ae5e3299e8cb4c15ee387da8544fbd2438d48ce59b69dc13c56956"
+  ],
   "tables": {
     "observations_daily": {
       "rows": 93113,
@@ -19,7 +22,7 @@
       "files": 11
     },
     "operativa_snapshots": {
-      "rows": 8496,
+      "rows": 8543,
       "first_date": "2026-09-22",
       "last_date": "2026-11-17",
       "files": 1
