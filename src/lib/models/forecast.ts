@@ -17,7 +17,7 @@ import type { IsoDate } from "../util/dates.ts";
 import type { DailySeries, SeriesSet } from "../features/series.ts";
 import { areaAt, balanceDays, storageHm3 } from "../features/hydrology.ts";
 import type { ForecastRunRow, ForecastValueRow } from "../contracts/tables.ts";
-import { truncate, type Calibration, type ModelScore } from "./backtest.ts";
+import { truncate, type Calibration, type ModelScore, type OriginCadence } from "./backtest.ts";
 import { quantile } from "../util/stats.ts";
 import { round6, roundOrNull, roundTo } from "../util/numbers.ts";
 import {
@@ -41,8 +41,10 @@ const LEVEL_DIGITS = 2;
  * 2: the 7-day row may come from `M4-gbm-m3-residual` rather than M3 (see `m4-live.ts`).
  * 3: the 7-day row's M4 design is `M4-gbm-direct` (2026-10-03).
  * 4: M3's analogue years start from today's river (`scaleToState`, 2026-10-13).
+ * 5: the ladder is scored at weekly origins, so every band is cut from about four times the
+ *    residuals; the 7-day row's M4 design may be the M3 + M4 blend (2026-11-17).
  */
-export const MODEL_VERSION = "4";
+export const MODEL_VERSION = "5";
 
 /** How far the days-to-threshold simulation runs before it gives up and says "not within". */
 export const THRESHOLD_HORIZON_DAYS = 365;
@@ -125,6 +127,8 @@ export interface ForecastInputs {
   modelId: string;
   modelLabel: string;
   backtestOrigins: number;
+  /** How the ladder's origins are spaced; stated in the document's `backtest` block. */
+  backtestCadence?: OriginCadence;
   options?: WaterBalanceOptions;
   /** Horizons published from another model; absent, every horizon is the run's own model. */
   horizonSwitch?: HorizonSwitch;
@@ -410,6 +414,8 @@ export function buildForecast(inputs: ForecastInputs): ForecastOutput | null {
     },
     backtest: {
       report: "data/reports/backtest.md",
+      origins: inputs.backtestOrigins,
+      cadence: inputs.backtestCadence ?? "monthly",
       // The skill of what is published at each horizon: a switched horizon carries its own
       // model's backtest, not M3's, so the site's skill column describes the number beside it.
       horizons:

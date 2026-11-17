@@ -16,7 +16,12 @@
  * 2. **One run per origin and version.** A rerun on revised data writes a second run for the same
  *    origin; scoring both would count that origin twice. The last one generated is the one the
  *    site showed, and it is the one scored.
- * 3. **Only what was observed.** A level row is scored when the target day has a level; an
+ * 3. **Beside doing nothing.** Each level row carries what holding the origin's level would have
+ *    said for the same day, so every line of the table has persistence's error over exactly the
+ *    rows it was scored on. A model's error means little without it: through October 2026 the
+ *    published seven-day rows were off by 3.8 m while the level itself had moved 2.2 m, and
+ *    nothing on the page said so.
+ * 4. **Only what was observed.** A level row is scored when the target day has a level; an
  *    adequacy row when every day of its window has a usable balance day and none of them was
  *    rationed — a rationed day's load is the load that was allowed, not the load that was wanted,
  *    exactly as the adequacy backtest treats it. Everything else is counted as pending or excluded
@@ -60,6 +65,12 @@ export interface ScoredRow {
   p50: number;
   p90: number | null;
   observed: number;
+  /**
+   * What doing nothing would have forecast for this row: for a level, the level on the origin
+   * day. Null where there is none to read (the requirement rows, whose baseline is a trailing
+   * mean the adequacy backtest owns).
+   */
+  baseline: number | null;
 }
 
 export interface ScoreGroup {
@@ -69,6 +80,10 @@ export interface ScoreGroup {
   n: number;
   mae: number | null;
   bias: number | null;
+  /** Persistence's mean absolute error over the same rows; null when no row carries a baseline. */
+  baselineMae: number | null;
+  /** 1 − MAE / persistence MAE over the rows that carry a baseline; above zero beats doing nothing. */
+  skillVsBaseline: number | null;
   nBand: number;
   coverageP10P90: number | null;
   pinballMean: number | null;
@@ -123,6 +138,11 @@ export function summarise(rows: readonly ScoredRow[]): ScoreGroup[] {
     .map((list) => {
       const banded = list.filter((r) => r.p10 !== null && r.p90 !== null);
       const origins = list.map((r) => r.originDate).sort();
+      // Skill is taken over the rows that have a baseline, on both sides, so it is never a ratio
+      // of two means over different rows.
+      const based = list.filter((r) => r.baseline !== null);
+      const baselineMae = mean(based.map((r) => Math.abs(r.observed - r.baseline!)));
+      const basedMae = mean(based.map((r) => Math.abs(r.observed - r.p50)));
       return {
         modelId: list[0]!.modelId,
         modelVersion: list[0]!.modelVersion,
@@ -130,6 +150,8 @@ export function summarise(rows: readonly ScoredRow[]): ScoreGroup[] {
         n: list.length,
         mae: mean(list.map((r) => Math.abs(r.observed - r.p50))),
         bias: mean(list.map((r) => r.observed - r.p50)),
+        baselineMae,
+        skillVsBaseline: baselineMae !== null && basedMae !== null && baselineMae > 0 ? 1 - basedMae / baselineMae : null,
         nBand: banded.length,
         coverageP10P90:
           banded.length === 0 ? null : banded.filter((r) => r.observed >= r.p10! && r.observed <= r.p90!).length / banded.length,
@@ -189,6 +211,9 @@ export function scoreLevelForecasts(runs: readonly Row[], values: readonly Row[]
       p50,
       p90: num(value["p90"]),
       observed,
+      // The level the run itself recorded at its origin, which is what a reader holding it
+      // would have held; the series only for runs written before the column existed.
+      baseline: num(run["origin_level_masl"]) ?? levels.get(run["origin_date"] ?? "") ?? null,
     });
   }
   return {
@@ -258,6 +283,7 @@ export function scoreAdequacyRuns(
       p50,
       p90: num(value["requirement_p90"]),
       observed: total / h,
+      baseline: null,
     });
   }
   return {
@@ -298,7 +324,8 @@ export function scorecardBlock(card: Scorecard, generatedAt: string, recent = 10
       "generated for each origin and version only. Pending rows have not reached their target date yet" +
       (card.kind === "requirement"
         ? "; excluded rows fall on a missing or rationed day."
-        : "; excluded rows have no observation on the target day."),
+        : "; excluded rows have no observation on the target day. persistence_mae is the error of holding the " +
+          "origin day's level over the same rows, and skill_vs_persistence is 1 − mae / persistence_mae."),
     by_horizon: card.groups.map((g) => ({
       model_id: g.modelId,
       model_version: g.modelVersion,
@@ -306,6 +333,8 @@ export function scorecardBlock(card: Scorecard, generatedAt: string, recent = 10
       n: g.n,
       mae: roundOrNull(g.mae, digits),
       bias: roundOrNull(g.bias, digits),
+      persistence_mae: roundOrNull(g.baselineMae, digits),
+      skill_vs_persistence: roundOrNull(g.skillVsBaseline, 4),
       n_band: g.nBand,
       coverage_p10_p90: roundOrNull(g.coverageP10P90, 4),
       pinball_mean: roundOrNull(g.pinballMean, digits),
@@ -341,7 +370,7 @@ export function renderScorecardReport(input: { generatedAt: string; level: Score
   lines.push("");
   lines.push(
     `Generated ${input.generatedAt} by \`npm run score\` from the committed tables; no network. The backtest ` +
-      "reports (`backtest.md`, `adequacy.md`) say how each method scores at monthly origins it never published " +
+      "reports (`backtest.md`, `adequacy.md`) say how each method scores at past origins it never published " +
       "from; this says how the numbers the site actually published did once their horizons passed.",
   );
   lines.push("");
@@ -375,16 +404,29 @@ export function renderScorecardReport(input: { generatedAt: string; level: Score
       lines.push("");
       continue;
     }
-    lines.push(`| model | version | horizon | n | MAE (${card.units}) | bias | coverage p10–p90 (n) | pinball | origins |`);
-    lines.push("|---|---|---:|---:|---:|---:|---:|---:|---|");
+    const baselined = card.groups.some((g) => g.baselineMae !== null);
+    lines.push(
+      `| model | version | horizon | n | MAE (${card.units}) | ${baselined ? "persistence MAE | skill | " : ""}bias | coverage p10–p90 (n) | pinball | origins |`,
+    );
+    lines.push(`|---|---|---:|---:|---:|${baselined ? "---:|---:|" : ""}---:|---:|---:|---|`);
     for (const g of card.groups) {
+      const beside = baselined
+        ? `${fmt(g.baselineMae)} | ${g.skillVsBaseline === null ? "—" : `${(g.skillVsBaseline * 100).toFixed(0)}%`} | `
+        : "";
       lines.push(
-        `| ${g.modelId} | ${g.modelVersion} | ${g.horizonDays} d | ${g.n} | ${fmt(g.mae)} | ${fmt(g.bias)} | ` +
+        `| ${g.modelId} | ${g.modelVersion} | ${g.horizonDays} d | ${g.n} | ${fmt(g.mae)} | ${beside}${fmt(g.bias)} | ` +
           `${g.coverageP10P90 === null ? "—" : `${(g.coverageP10P90 * 100).toFixed(0)}%`} (${g.nBand}) | ${fmt(g.pinballMean)} | ` +
           `${g.firstOrigin ?? "—"} → ${g.lastOrigin ?? "—"} |`,
       );
     }
     lines.push("");
+    if (baselined) {
+      lines.push(
+        "Persistence MAE is the error of holding the origin day's level, over the same rows; skill is 1 − MAE / persistence MAE, " +
+          "so a negative skill means the published number was further from what happened than no forecast at all.",
+      );
+      lines.push("");
+    }
     lines.push("A handful of rows is an anecdote, not a score: read `n` before reading the MAE, and the backtest before either.");
     lines.push("");
   }

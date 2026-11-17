@@ -179,8 +179,19 @@ export interface ForecastDocument {
   site: string;
   disclaimer: string;
   model: { id: string; label: string; version: string; backtest_origins: number };
-  /** Whether the 7-day row publishes M4 this run, and why not when it does not. */
-  horizon_switch?: { horizon_days: number; candidate_model: string; published_model: string; status: string; reason: string } | null;
+  /**
+   * Whether any candidate horizon publishes the M4 design this run (`status: "published"`), and
+   * why not when none does. `candidate_horizons` and `published_horizons` are absent before 2026-11-17.
+   */
+  horizon_switch?: {
+    horizon_days: number;
+    candidate_model: string;
+    published_model: string;
+    status: string;
+    reason: string;
+    candidate_horizons?: number[];
+    published_horizons?: number[];
+  } | null;
   current: {
     level_masl: number;
     observed_on: string;
@@ -191,7 +202,8 @@ export interface ForecastDocument {
   thresholds: ForecastThreshold[];
   forecast: ForecastHorizon[];
   days_to_threshold: { horizon_days: number; note: string; thresholds: CrossingThreshold[] };
-  backtest: { report: string; horizons: BacktestHorizon[] };
+  /** `cadence` (how the test origins are spaced) is absent before 2026-11-17, when it was monthly. */
+  backtest: { report: string; origins?: number; cadence?: "monthly" | "weekly"; horizons: BacktestHorizon[] };
   /** The fitted reservoir physics. The site reads the area-elevation curve; the narrative's cascade block reads both. */
   reservoir?: {
     area_elevation?: { form: string; coefficient: number; exponent: number; datum_m: number; fit_rmse_level_m: number; fit_days: number };
@@ -369,6 +381,10 @@ export interface ScorecardHorizon {
   n: number;
   mae: number | null;
   bias: number | null;
+  /** Error of holding the origin day's value over the same rows; absent before 2026-11-17. */
+  persistence_mae?: number | null;
+  /** 1 − mae / persistence_mae; above zero beats doing nothing. Absent before 2026-11-17. */
+  skill_vs_persistence?: number | null;
   n_band: number;
   coverage_p10_p90: number | null;
   pinball_mean: number | null;

@@ -7,11 +7,13 @@
  * leads with the comparison that decides it and states the rungs that lost by name.
  */
 
-import type { CrisisCall, ModelScore } from "./backtest.ts";
+import type { CrisisCall, ModelScore, OriginCadence } from "./backtest.ts";
 import type { OriginCrossing } from "./forecast.ts";
 import type { WaterBalanceFit } from "./water-balance.ts";
 import { storageHm3 } from "../features/hydrology.ts";
 import { m4Decisions, type M4Decision, type M4Snapshot } from "./m4-scoring.ts";
+import { M4_SNAPSHOT_MAX_LAG_DAYS, snapshotCoverage, type SnapshotCoverage } from "./m4-live.ts";
+import { M4_BLEND } from "./boosted.ts";
 
 const f = (value: number | null | undefined, digits = 3): string =>
   value === null || value === undefined || !Number.isFinite(value) ? "—" : value.toFixed(digits);
@@ -37,6 +39,8 @@ export interface ReportInputs {
   generatedAt: string;
   site: string;
   horizonDays: readonly number[];
+  /** How the ladder's origins are spaced; absent means monthly, as before 2026-11-17. */
+  cadence?: OriginCadence;
   ladder: readonly ModelScore[];
   shippedModelId: string;
   variant: { scores: readonly ModelScore[]; sharedOrigins: number } | null;
@@ -70,13 +74,14 @@ export interface ExperimentSection {
 }
 
 export interface PublishedSwitch {
-  /** True when the horizon publishes `modelId`; false when it fell back to the shipped model. */
-  published: boolean;
+  /** The design the daily run may publish in place of the shipped model. */
   modelId: string;
-  horizonDays: number;
-  /** Why it fell back; null when published. */
-  reason: string | null;
+  /** Each horizon at which it is a candidate: published there, or the reason this run did not. */
+  horizons: readonly { horizonDays: number; published: boolean; reason: string | null }[];
 }
+
+const publishedAt = (p: PublishedSwitch | null | undefined): number[] =>
+  (p?.horizons ?? []).filter((h) => h.published).map((h) => h.horizonDays);
 
 function table(headers: readonly string[], rows: readonly (readonly string[])[]): string {
   return [`| ${headers.join(" | ")} |`, `|${headers.map(() => "---").join("|")}|`, ...rows.map((row) => `| ${row.join(" | ")} |`)].join(
@@ -111,14 +116,15 @@ export function renderBacktestReport(inputs: ReportInputs): string {
   const nBand = shipped?.horizons[0]?.nBand ?? 0;
 
   // M4 is run by its own command and committed as a snapshot. Its rows sit in the ladder's
-  // tables only when it was scored on exactly the ladder's origins; otherwise a stale snapshot
-  // would be compared against a ladder that has since gained a month.
+  // tables only while it still stands for the ladder (`snapshotCoverage`): scored on the ladder's
+  // own origins, up to one no more than a month behind. A snapshot further behind, or scored on
+  // another origin set altogether, keeps to its own section.
   const m4 = inputs.m4?.snapshot ?? null;
-  const m4Aligned =
-    m4 !== null &&
-    m4.origins.length === inputs.m4!.ladderOrigins.length &&
-    m4.origins.every((origin, i) => origin === inputs.m4!.ladderOrigins[i]);
-  const m4Rows = m4Aligned ? m4.scores.filter((s) => s.modelId.startsWith("M4")) : [];
+  const coverage = m4 ? snapshotCoverage(m4.origins, inputs.m4!.ladderOrigins) : null;
+  const m4Aligned = coverage?.covers ?? false;
+  const m4Rows = m4Aligned ? m4!.scores.filter((s) => s.modelId.startsWith("M4")) : [];
+  const weekly = inputs.cadence === "weekly";
+  const warmUp = n - nBand;
   const tableScores = [...inputs.ladder, ...m4Rows];
   const decisions = m4 ? m4Decisions(m4) : [];
 
@@ -126,9 +132,10 @@ export function renderBacktestReport(inputs: ReportInputs): string {
   lines.push(`# Backtest — ${inputs.site} level forecast`);
   lines.push("");
   lines.push(
-    `Generated ${inputs.generatedAt} from the committed tables; no network. Origins are the first of ` +
-      `each month, each one refitting every model on the data before it. ${n} origins scored per horizon, ` +
-      `${nBand} of them with a calibrated band (the first twelve are the calibration's warm-up).`,
+    `Generated ${inputs.generatedAt} from the committed tables; no network. Origins are ` +
+      `${weekly ? "every Monday (weekly since 2026-11-17; the first of each month before that)" : "the first of each month"}, ` +
+      `each one refitting every model on the data before it. ${n} origins scored per horizon, ` +
+      `${nBand} of them with a calibrated band (the first ${warmUp} are the calibration's warm-up).`,
   );
   lines.push("");
   lines.push(`Level history: ${inputs.levelRange.days} days, ${inputs.levelRange.first} → ${inputs.levelRange.last}.`);
@@ -162,17 +169,31 @@ export function renderBacktestReport(inputs: ReportInputs): string {
   if (rivals.length === 0) {
     lines.push("No other rung beats persistence at any horizon.");
   } else {
+    // Where a rival that is not dominated is the closer one, said by name: "at least as good at
+    // every horizon" is only written when it is true of every rival.
+    const closer = rivals
+      .filter((rival) => !dominated.includes(rival))
+      .map((rival) => {
+        const at = H.filter((horizon) => {
+          const mine = shipped?.horizons.find((h) => h.horizonDays === horizon)?.maeM;
+          const theirs = rival.horizons.find((h) => h.horizonDays === horizon)?.maeM;
+          return mine !== undefined && theirs !== undefined && theirs < mine;
+        });
+        return `${rival.modelId} is closer at ${at.join(", ")} d`;
+      });
     lines.push(
       `It is not the only rung that beats persistence — ${rivals.map((r) => r.modelId).join(", ")} ` +
-        `${rivals.length === 1 ? "does" : "do"} too at the long horizons — but it is chosen because it ` +
-        `is at least as good as ${dominated.length === rivals.length ? "all of them" : "them"} at ` +
-        "*every* horizon, and because its state is interpretable: a storage curve, a release rule and " +
+        `${rivals.length === 1 ? "does" : "do"} too at the long horizons — but it is chosen because ` +
+        (closer.length === 0
+          ? "it is at least as good as all of them at *every* horizon, and because "
+          : `none of them is as good across the horizons (${closer.join("; ")}, and further off everywhere else), and because `) +
+        "its state is interpretable: a storage curve, a release rule and " +
         "a set of named analogue years, each of which can be inspected and argued with.",
     );
   }
   lines.push("");
   if (inputs.published) {
-    lines.push(publishedLine(inputs.published, m4, inputs.shippedModelId));
+    lines.push(publishedLine(inputs.published, m4, inputs.shippedModelId, decisions));
     lines.push("");
   }
   if (m4) {
@@ -191,9 +212,13 @@ export function renderBacktestReport(inputs: ReportInputs): string {
   lines.push("");
   if (m4Rows.length > 0) {
     lines.push(
-      `The M4 rows come from \`${m4!.command}\` (run ${m4!.generatedAt}), which refits them at the same ` +
-        `${m4!.origins.length} origins through the same harness; they are rendered from its committed ` +
-        "snapshot because refitting about 4,700 boosted models does not belong in the daily run. See " +
+      `The M4 rows come from \`${m4!.command}\` (run ${m4!.generatedAt}), which refits them at ` +
+        (coverage!.missing === 0
+          ? `the same ${m4!.origins.length} origins`
+          : `the first ${m4!.origins.length} of these origins (the newest ${coverage!.missing} are not in its rows yet; ` +
+            `it is rerun once it is more than ${M4_SNAPSHOT_MAX_LAG_DAYS} days behind)`) +
+        " through the same harness; they are rendered from its committed " +
+        `snapshot because refitting about ${fitCount(m4!)} boosted models does not belong in the daily run. See ` +
         "[M4](#m4--gradient-boosted-quantile-trees) below.",
     );
     lines.push("");
@@ -261,7 +286,7 @@ export function renderBacktestReport(inputs: ReportInputs): string {
   );
   lines.push("");
 
-  if (m4) lines.push(...renderM4Section(m4, decisions, m4Aligned, inputs.m4!.ladderOrigins.length, inputs.published ?? null));
+  if (m4) lines.push(...renderM4Section(m4, decisions, coverage!, inputs.m4!.ladderOrigins.length, inputs.published ?? null));
 
   if (inputs.variant) {
     lines.push("## Does conditioning the analogue years on ENSO phase help?");
@@ -461,35 +486,66 @@ function sentence(text: string): string {
   return text === "" || /[.!?]$/.test(text) ? text : `${text}.`;
 }
 
-function publishedLine(published: PublishedSwitch, snapshot: M4Snapshot | null, shippedId: string): string {
-  const h = published.horizonDays;
-  if (!published.published) {
+/** Boosted models behind a snapshot: every fitted design, at every origin, horizon and quantile. */
+function fitCount(snapshot: M4Snapshot): string {
+  const fitted = snapshot.scores.filter((s) => s.modelId.startsWith("M4-gbm")).length;
+  const fits = fitted * snapshot.origins.length * snapshot.horizonDays.length * snapshot.settings.quantiles.length;
+  return (Math.round(fits / 100) * 100).toLocaleString("en-US");
+}
+
+function publishedLine(
+  published: PublishedSwitch,
+  snapshot: M4Snapshot | null,
+  shippedId: string,
+  decisions: readonly M4Decision[],
+): string {
+  const made = published.horizons.filter((h) => h.published);
+  const refused = published.horizons.filter((h) => !h.published);
+  const candidates = published.horizons.map((h) => h.horizonDays).join(", ");
+  const sameReason = refused.length > 0 && refused.every((h) => h.reason === refused[0]!.reason);
+  const refusal = sameReason
+    ? sentence(refused[0]!.reason ?? "no reason recorded")
+    : refused.map((h) => `${h.horizonDays} d: ${sentence(h.reason ?? "no reason recorded")}`).join(" ");
+  if (made.length === 0) {
     return (
-      `**${h} days would publish ${published.modelId}, but this run falls back to ${shippedId}:** ` +
-      `${sentence(published.reason ?? "no reason recorded")} Every horizon of \`forecast.json\` is ${shippedId} until the ` +
-      "M4 backtest covers the ladder again, and the document says so in `horizon_switch`."
+      `**${candidates} days would publish ${published.modelId}, but this run falls back to ${shippedId}:** ` +
+      `${refusal} Every horizon of \`forecast.json\` is ${shippedId} until the ` +
+      "M4 backtest covers the ladder and shows the win again, and the document says so in `horizon_switch`."
     );
   }
-  const score = snapshot?.scores.find((s) => s.modelId === published.modelId)?.horizons.find((x) => x.horizonDays === h);
-  const reference = snapshot?.scores.find((s) => s.modelId === snapshot.referenceId)?.horizons.find((x) => x.horizonDays === h);
-  const paired = snapshot?.paired.find((p) => p.modelId === published.modelId)?.horizons.find((x) => x.horizonDays === h);
-  const numbers =
-    score && reference
-      ? ` (MAE ${f(score.maeM, 2)} m against ${f(reference.maeM, 2)} m, ${pct(score.skillVsPersistence)} better than ` +
-        `persistence; band coverage ${pct(score.coverageP10P90)} against ${pct(reference.coverageP10P90)}` +
+  const numbers = made
+    .map((h) => {
+      const score = snapshot?.scores.find((s) => s.modelId === published.modelId)?.horizons.find((x) => x.horizonDays === h.horizonDays);
+      const reference = snapshot?.scores
+        .find((s) => s.modelId === snapshot.referenceId)
+        ?.horizons.find((x) => x.horizonDays === h.horizonDays);
+      const paired = snapshot?.paired.find((p) => p.modelId === published.modelId)?.horizons.find((x) => x.horizonDays === h.horizonDays);
+      if (!score || !reference) return "";
+      return (
+        `at ${h.horizonDays} days, MAE ${f(score.maeM, 2)} m against ${f(reference.maeM, 2)} m, ${pct(score.skillVsPersistence)} better than ` +
+        `persistence, band coverage ${pct(score.coverageP10P90)} against ${pct(reference.coverageP10P90)}` +
         (paired
-          ? `; paired difference ${signed(paired.maeDifferenceM)} m, 90% interval [${signed(paired.low90)}, ${signed(paired.high90)}]`
-          : "") +
-        ")"
-      : "";
+          ? `, paired difference ${signed(paired.maeDifferenceM)} m with a 90% interval of [${signed(paired.low90)}, ${signed(paired.high90)}]`
+          : "")
+      );
+    })
+    .filter((text) => text !== "");
+  const madeDays = made.map((h) => h.horizonDays).join(" and ");
+  const unwired = decisions
+    .filter((d) => d.modelId === published.modelId && d.wins && !published.horizons.some((h) => h.horizonDays === d.horizonDays))
+    .map((d) => d.horizonDays);
   return (
-    `**${h} days publishes ${published.modelId}; every other horizon publishes ${shippedId}.** The ladder's rule ships ` +
-    "a rung where it beats the one before it — a lower MAE and a band no worse calibrated — and the M4 backtest " +
-    `below shows ${published.modelId} doing that at ${h} days and nowhere else${numbers}. So \`forecast.json\` ` +
-    `publishes its median at ${h} days, banded by its own out-of-sample residuals from that same run, and names the ` +
-    `model on the row; 14–90 days, the three named scenarios and days-to-threshold stay ${shippedId}, which alone ` +
-    "simulates a daily path. If the M4 snapshot stops covering the ladder's origins, the daily run falls back to " +
-    `${shippedId} at ${h} days and says so.`
+    `**${madeDays} days ${made.length === 1 ? "publishes" : "publish"} ${published.modelId}; every other horizon publishes ${shippedId}.** ` +
+    "The ladder's rule ships a rung where it beats the one before it — a lower MAE and a band no worse calibrated — and the M4 " +
+    `backtest below shows ${published.modelId} doing that there${numbers.length > 0 ? `: ${numbers.join("; ")}` : ""}. ` +
+    (refused.length > 0
+      ? `It is a candidate at ${refused.map((h) => h.horizonDays).join(" and ")} days too, and does not publish there: ${refusal} `
+      : "") +
+    (unwired.length > 0 ? `(It also meets the rule at ${unwired.join(", ")} d, which is not a candidate horizon.) ` : "") +
+    `So \`forecast.json\` publishes its median at ${madeDays} days, banded by its own out-of-sample residuals from that same run, ` +
+    `and names the model on the row; the other horizons, the three named scenarios and days-to-threshold stay ${shippedId}, which ` +
+    "alone simulates a daily path. If the M4 snapshot stops covering the ladder's origins, the daily run falls back to " +
+    `${shippedId} everywhere and says so.`
   );
 }
 
@@ -511,18 +567,19 @@ function m4VerdictLine(snapshot: M4Snapshot, decisions: readonly M4Decision[], p
   }
   if (anyWins.length > 0) {
     const cells = anyWins.map((d) => `${d.modelId} at ${d.horizonDays} d`).join(", ");
-    const tail = published?.published
-      ? `so M3 ships everywhere except ${published.horizonDays} days, where ${published.modelId} does (above).`
-      : "so M3 still ships.";
+    const tail =
+      publishedAt(published).length > 0
+        ? `so M3 ships everywhere except ${publishedAt(published).join(" and ")} days, where ${published!.modelId} does (above).`
+        : "so M3 still ships.";
     return `${lead} It beats ${snapshot.referenceId} only in places — ${cells} — and nowhere across all horizons, ${tail}`;
   }
-  return `${lead} It does not beat ${snapshot.referenceId} at any horizon in any of its three forms, and is recorded as a measured negative.`;
+  return `${lead} It does not beat ${snapshot.referenceId} at any horizon in any of its forms, and is recorded as a measured negative.`;
 }
 
 function renderM4Section(
   snapshot: M4Snapshot,
   decisions: readonly M4Decision[],
-  aligned: boolean,
+  coverage: SnapshotCoverage,
   ladderOrigins: number,
   published: PublishedSwitch | null,
 ): string[] {
@@ -541,18 +598,21 @@ function renderM4Section(
       "splits, depth-limited trees, shrinkage, row subsampling, and the pinball loss with each leaf " +
       "re-estimated as the quantile of its residuals; seeded, so a rerun reproduces every tree. One model " +
       `per horizon and per quantile (p10, p50, p90), refitted from scratch at each of the ${snapshot.origins.length} ` +
-      "origins on training days whose outcome had been observed by the origin — about 4,700 fits in all. " +
+      `origins on training days whose outcome had been observed by the origin — about ${fitCount(snapshot)} fits in all. ` +
       `Settings, fixed before the full run and not tuned against it: ${g.trees} trees, learning rate ` +
       `${g.learningRate}, depth ${g.maxDepth}, at least ${g.minLeaf} rows a leaf, ${Math.round(g.subsample * 100)}% ` +
       `of rows a tree, ${g.maxBins} bins, one training day in ${snapshot.settings.strideDays}.`,
   );
   out.push("");
-  if (!aligned) {
+  if (!coverage.covers) {
     out.push(
       `**This snapshot is from ${snapshot.generatedAt} and was scored on ${snapshot.origins.length} origins; ` +
-        `the ladder above now has ${ladderOrigins}.** The tables below are internally consistent — M0 and M3 ` +
-        `are rescored on the snapshot's own origins — but rerun \`${snapshot.command}\` to bring M4 back into ` +
-        "the ladder's tables.",
+        `the ladder above now has ${ladderOrigins}` +
+        (coverage.prefix
+          ? `, the newest ${coverage.lagDays} days past the snapshot's last — more than the ${M4_SNAPSHOT_MAX_LAG_DAYS} it may trail by.** `
+          : `, and the snapshot's (${snapshot.cadence ?? "monthly"}) are not the first of them.** `) +
+        `The tables below are internally consistent — M0 and M3 are rescored on the snapshot's own origins — but rerun ` +
+        `\`${snapshot.command}\` to bring M4 back into the ladder's tables.`,
     );
     out.push("");
   }
@@ -574,10 +634,24 @@ function renderM4Section(
       "operator's stance) among the features; `M4-gbm-m3-residual` predicts M3's error and adds it back, so " +
       "trees that learn nothing leave M3 as it was. M3 at a training day is M3 as it would have been made " +
       "that day — the fit from the first of the month, the stance over the thirty days before, earlier " +
-      "years' inflow — and at every scored origin it reproduces the shipped M3's median " +
-      (snapshot.m3AnchorMaxAbsDifferenceM === 0 ? "exactly." : `to within ${f(snapshot.m3AnchorMaxAbsDifferenceM, 6)} m.`),
+      "years' inflow — and at every scored origin that is the first of a month it reproduces the shipped M3's median " +
+      (snapshot.m3AnchorMaxAbsDifferenceM === null
+        ? "(none of this run's origins is one, so the check had nothing to compare)."
+        : snapshot.m3AnchorMaxAbsDifferenceM === 0
+          ? "exactly."
+          : `to within ${f(snapshot.m3AnchorMaxAbsDifferenceM, 6)} m.`),
   );
   out.push("");
+  if (snapshot.scores.some((sc) => sc.modelId === M4_BLEND.id)) {
+    out.push(
+      `A fourth row is not fitted at all: \`${M4_BLEND.id}\` is the mean of the shipped M3's median and \`${M4_BLEND.of}\`'s, ` +
+        "half each, at every origin both reached, banded like every other rung by its own out-of-sample residuals. The " +
+        "per-horizon switch picks a winner; where two forecasts' errors are only partly shared, the mean of the two can " +
+        "beat the better of them, and it cannot flip from one model to the other between one day's run and the next. The " +
+        "weight is a half because a half needs no fitting.",
+    );
+    out.push("");
+  }
 
   out.push("### Mean absolute error, metres, on the same origins");
   out.push("");
@@ -612,8 +686,8 @@ function renderM4Section(
   out.push("");
   out.push(
     "Negative means M4 was closer. The interval is a circular block bootstrap over origins in blocks of " +
-      "six, because monthly origins with horizons out to ninety days overlap and are not independent; the " +
-      "percentage is the share of origins at which M4 was the closer of the two.",
+      `${snapshot.bootstrapBlockOrigins ?? 6}, because ${snapshot.cadence ?? "monthly"} origins with horizons out to ninety days ` +
+      "overlap and are not independent; the percentage is the share of origins at which M4 was the closer of the two.",
   );
   out.push("");
   out.push(
@@ -713,22 +787,23 @@ function renderM4Section(
     );
   } else if (anyWins.length > 0) {
     const cells = anyWins.map((d) => `${d.modelId} at ${d.horizonDays} d${d.intervalExcludesZero ? " †" : ""}`).join(", ");
-    if (published?.published) {
+    if (publishedAt(published).length > 0) {
       out.push(
-        `**M4 wins only in places** (${cells}) and no variant wins everywhere, so \`forecast.json\` switches by ` +
-          `horizon rather than wholesale: **${published.horizonDays} days publishes ${published.modelId}**, and every other ` +
+        `**M4 wins only in places** (${cells}) and no design wins everywhere, so \`forecast.json\` switches by ` +
+          `horizon rather than wholesale: **${publishedAt(published).join(" and ")} days publish ${published!.modelId}**, and every other ` +
           "horizon, the scenarios and days-to-threshold publish M3.",
       );
     } else if (published) {
       out.push(
-        `**M4 wins only in places** (${cells}) and no variant wins everywhere. \`forecast.json\` would publish ` +
-          `${published.modelId} at ${published.horizonDays} days, but this run fell back to M3: ${sentence(published.reason ?? "")}`,
+        `**M4 wins only in places** (${cells}) and no design wins everywhere. \`forecast.json\` would publish ` +
+          `${published.modelId} at ${published.horizons.map((h) => h.horizonDays).join(", ")} days, but this run fell back to M3: ` +
+          sentence(published.horizons.find((h) => !h.published)?.reason ?? ""),
       );
     } else {
       out.push(`**M4 wins only in places** (${cells}) and no variant wins everywhere, so \`forecast.json\` keeps M3.`);
     }
   } else {
-    out.push("**M4 does not beat M3 at any horizon in any of its three designs.** Recorded as a measured negative.");
+    out.push("**M4 does not beat M3 at any horizon in any of its designs.** Recorded as a measured negative.");
   }
   out.push("");
 
@@ -791,7 +866,7 @@ function renderM4Section(
     out.push("");
   }
   out.push(
-    `Runtime: ${snapshot.runtimeSeconds} s, single-threaded, for the whole run on the machine that produced this snapshot, which ` +
+    `Runtime: ${snapshot.runtimeSeconds} s of wall clock, one process per fitted design, for the whole run on the machine that produced this snapshot, which ` +
       "is why it is its own command and not part of the CI dry-run or the daily forecast. To refresh it: " +
       `\`${snapshot.command}\`, then \`npm run forecast\` to render it here.`,
   );
@@ -803,46 +878,59 @@ function renderM4Section(
  * What the M4 run found, in words. Written once the numbers were in and kept beside the code that
  * renders them, so a rerun that changes the verdict above will visibly contradict this paragraph
  * rather than silently keep it — which is the signal to rewrite it.
+ *
+ * Rewritten 2026-11-17 for the first run on weekly origins (462 of them, snapshot of that date).
+ * The paragraphs it replaced were written on 107 first-of-month origins, where under a month
+ * every paired interval crossed zero; they are in this file's history.
  */
 const M4_FINDINGS: readonly string[] = [
-  "**Where it wins: one week out, and since 2026-10-13 not clearly.** Against the M3 of 2026-09-24 every design " +
-    "beat M3 at seven days by 0.26–0.36 m with the paired interval below zero — the first short-range skill on this " +
-    "ladder — because a week out the level is mostly what the operator is doing this week, and the last few days' " +
-    "level change and production say that more directly than a rule curve averaged over years. Much of that edge was " +
-    "M3 starting every analogue year from that year's river instead of today's. With M3's years started from today's " +
-    "river (2026-10-13), M3 itself is 6.7% better than persistence at seven days, the direct design's lead shrinks to " +
-    "0.21 m with an interval that crosses zero, and its band (78.7%) is no longer nearer 80% than M3's (79.8%). The " +
-    "residual design meets the rule at seven days by 0.05 m, and the two direct designs at fourteen days by 0.2 m, all " +
-    "with intervals across zero: wins by the letter of the rule, not measurements.",
-  "**Where it loses: past a month, clearly.** At sixty days every design is worse than M3 by about a metre, with the " +
-    "paired interval above zero, and at ninety by 0.9–1.2 m with the interval just reaching zero — a measured negative " +
+  "**One week out the trees are clearly closer, and the rule still says no.** On 462 weekly origins M3 is 3.5% *worse* " +
+    "than persistence at seven days (2.08 m against 2.01 m); the 6% edge it showed on first-of-month origins does not " +
+    "survive the denser sample. Every boosted design is closer than M3 there — 1.78 to 1.82 m, a paired gain of 0.26–0.30 m " +
+    "with the interval wholly below zero, 9–12% better than persistence — because a week out the level is mostly what the " +
+    "operator is doing this week, and the last few days' level change and production say that more directly than a rule " +
+    "curve averaged over years. Their bands are also the sharper ones (pinball loss 0.63–0.64 m against M3's 0.72 m, about " +
+    "a metre narrower). But the rule's second clause asks for coverage no further from 80% than M3's, M3's happens to sit " +
+    "at 79.8%, and the designs' sit at 76.8–79.5%: every one of them loses seven days on the band, by between a third of a " +
+    "point and three points of coverage on about 410 banded origins. That is the rule as written, applied as written; " +
+    "whether a band that scores better and covers two points less should lose is a question about the rule, and it is the " +
+    "owner's.",
+  "**The blend is the first rung to beat M3 beyond a week by more than noise.** `M4-blend-m3-direct` is half M3's median " +
+    "and half `M4-gbm-direct`'s. At fourteen days it is 0.29 m closer than M3 (3.08 m against 3.37 m; interval " +
+    "[−0.40, −0.19]) with a band at 80.0%, and at thirty days 0.25 m closer (5.14 m against 5.39 m; [−0.46, −0.04]) with " +
+    "a band at 75.9% against M3's 74.7%. At both it also beats the fitted design it is half of. The two models are wrong " +
+    "in different ways — the trees extrapolate the last fortnight, the water balance pulls back toward the rule curve — and " +
+    "where they disagree the outcome is more often between them than beyond either. No fitted design does this on its " +
+    "own: `M4-gbm-direct`'s fourteen-day gain is 0.16 m with an interval that reaches zero, and at thirty days all three " +
+    "are within a few centimetres of M3.",
+  "**Past a month the water balance still wins, and the blend only softens the loss.** At sixty days every fitted design " +
+    "is worse than M3 by 0.7–0.8 m and at ninety by 1.0–1.6 m, with the paired interval above zero — a measured negative " +
     "in the same sense as M1's. Two months out the level is decided by inflow that has not fallen yet and by how the " +
-    "operator responds to the level on the way; the water balance has both built in, and the trees have to learn them " +
-    "from at most a decade of overlapping windows that contains only a handful of drawdowns. Their own quantiles are " +
-    "badly overconfident there (36–51% inside a nominal 80% at 60–90 days); widening by residuals brings that to " +
-    "65–77%, still short of M3's 75–78%.",
-  "**M3 as a feature or as the target does not rescue the long horizons.** Predicting M3's residual was the " +
-    "design most likely to keep M3's long-range skill, since trees that learn nothing leave M3 untouched. It " +
-    "does not: the corrections learned on earlier years move the 60- and 90-day median the wrong way often " +
-    "enough to cost about a metre. Giving the trees M3's forecast as a feature is no better. At seven days the " +
-    "design that never sees M3 is the most accurate of the three, so the short-range gain comes from the " +
-    "recent-state features, not from M3.",
-  "**Crisis check.** On this five-horizon grid no design's P50 called either 2024 crossing, and neither did M3's " +
-    "(on its own daily path, M3's P50 has called October seven days out since its years start from today's river). " +
-    "The P10 of all three designs called April 2024 ten days out, from an origin at 2116.7 m — a crossing no quantile " +
-    "of M3 called — but `M4-gbm-direct` then missed October, which M3's dry tail and the two M3-informed designs called " +
-    "seven days out. A ten-day call from 1.7 m above the line is short-range extrapolation, not early warning.",
-  "**What `forecast.json` does with it (adopted 2026-09-22, design changed 2026-10-03, fallen back 2026-10-13).** " +
-    "It switches by horizon, not wholesale, when the snapshot earns it: one M4 design's median at seven days and M3 " +
-    "at 14–90 days, for the three named scenarios and for the days-to-threshold distribution, which need a daily " +
-    "simulated path M4 does not produce. From 2026-09-22 the design was `M4-gbm-m3-residual`, which won on the " +
-    "provisional rain point; on the verified centroid it no longer did, seven days fell back to M3 from 2026-09-24, " +
-    "and on 2026-10-03 the owner moved the seven-day point to `M4-gbm-direct`. Its live record was poor — from the " +
-    "2026-10-03 and -04 origins its median put Mazar above where it started, and the reservoir finished 4.7 and 6.9 m " +
-    "below it — and against the M3 of 2026-10-13 it no longer meets the ladder's rule, so seven days publishes M3 " +
-    "and `horizon_switch` says why. The switch is still wired: the daily run fits the named design at the live origin " +
-    "for seven days only, with the settings and features this snapshot was scored with, and bands it with the " +
-    "residual quantiles recorded here. A run never switches to another design by itself; moving seven days to " +
-    "`M4-gbm-m3-residual`, which meets the rule there by 0.05 m, would be the owner's call, and is not recommended on " +
-    "a margin that size.",
+    "operator responds to the level on the way; the water balance has both built in, and the trees have to learn them from " +
+    "a decade of overlapping windows that contains only a handful of drawdowns. Their own quantiles are badly " +
+    "overconfident there (35–44% inside a nominal 80%). The blend gives back half of that loss (+0.16 m at sixty days, " +
+    "+0.50 m at ninety, both intervals across zero), which is not a reason to publish it there.",
+  "**M3 as a feature or as the target is not what helps; averaging with M3 is.** Predicting M3's residual was the design " +
+    "most likely to keep M3's long-range skill, since trees that learn nothing leave M3 untouched. It does not, and giving " +
+    "the trees M3's forecast as a feature is no better: the three fitted designs are within ten centimetres of each " +
+    "other at every horizon to thirty days. What M3 knows reaches the forecast when it is averaged in after the fact, not " +
+    "when it is offered to the trees to use or ignore.",
+  "**Crisis check.** On this five-horizon grid, read weekly, no model's P50 called the April 2024 crossing; every " +
+    "boosted P10 called it ten days out, from 1.7 m above the line, and M3's ensemble P10 three days out. That is " +
+    "short-range extrapolation, not early warning. October 2024 was called by M3's P50 twenty-two days out and by its P10 " +
+    "twenty-nine; `M4-gbm-m3-residual` matched the P50, while the direct designs and the blend held their P50 above the " +
+    "line until the day before and called it on the P10 at twenty-two days. M3 pays for its earlier calls with four false " +
+    "alarms in 462 origins against one for each fitted design and two for the blend. Crossings are M3's to call, on its " +
+    "daily path, and the blend is not published as a crossing forecast.",
+  "**What `forecast.json` does with it (first adopted 2026-09-22; this design and these horizons, 2026-11-17).** It " +
+    "switches by horizon, not wholesale: the blend's median at each of seven, fourteen and thirty days where the snapshot " +
+    "says it meets the ladder's rule — fourteen and thirty today, not seven — and M3 at every other horizon, for the three " +
+    "named scenarios and for the days-to-threshold distribution, which need a daily simulated path nothing boosted " +
+    "produces. Earlier designs published at seven days only: `M4-gbm-m3-residual` from 2026-09-22 (it won on the " +
+    "provisional rain point), `M4-gbm-direct` from 2026-10-03 (the owner's choice on the verified centroid; from the " +
+    "2026-10-03 and -04 origins its median put Mazar above where it started and the reservoir finished 4.7 and 6.9 m " +
+    "below it), and M3 again from 2026-10-13. The daily run makes the blend at the live origin exactly as this snapshot " +
+    "scored it — the direct design fitted with these settings and features, averaged with that day's M3 — and bands it " +
+    "with the residual quantiles recorded here. A run never switches to another design by itself, and a horizon stops " +
+    "publishing the blend the first run after a rerun stops showing the win.",
 ];

@@ -6,20 +6,26 @@
  *   npm run backtest:m4 -- --dry-run       run it and print; write nothing
  *   npm run backtest:m4 -- --last-origin 2019-06-01   a short run, for trying things (never written)
  *   npm run backtest:m4 -- --site <id>     another reservoir (default mazar; never written over Mazar's snapshot)
+ *   npm run backtest:m4 -- --cadence monthly   the first-of-month origins every snapshot before 2026-11-17 used (never written)
+ *   npm run backtest:m4 -- --jobs 1        fit the three designs one after another in this process
  *
  * Then `npm run forecast` renders the snapshot into `data/reports/backtest.md`.
  *
- * It is a separate command because it is the slow rung: three variants, five horizons and
- * three quantiles, refitted from scratch at each of 105 origins, is about 4,700 boosted models.
- * The CI dry-run and the daily forecast do not run it; they read the committed snapshot, and
- * the report says which run the M4 rows come from. Rerun it when the method or the data
- * changes enough to matter — the snapshot records its own origin set, and the report only
- * splices M4 into the ladder's tables when the two origin sets are identical.
+ * It is a separate command because it is the slow rung: three fitted designs, five horizons and
+ * three quantiles, refitted from scratch at each weekly origin, is about 20,000 boosted models
+ * (it was 4,700 at monthly origins). Each design is therefore fitted in its own child process
+ * (`--jobs`, three by default), which the split of the harness into `collectPredictions` and
+ * `scorePredictions` allows: the children return unscored predictions and this process scores
+ * them together with persistence, M3 and the blend, which is not fitted at all. The CI dry-run
+ * and the daily forecast do not run it; they read the committed snapshot, and the report says
+ * which run the M4 rows come from. Rerun it when the method or the data changes enough to
+ * matter — the snapshot records its own origin set, and the report only splices M4 into the
+ * ladder's tables when the two origin sets are identical.
  *
- * The snapshot is also what `npm run forecast` stands on when it publishes
- * `M4-gbm-direct`'s median at seven days: the band comes from the residual quantiles
- * recorded here, and the switch falls back to M3 as soon as the ladder has an origin this
- * snapshot lacks — so rerun this at least monthly, after each new origin's week has passed.
+ * The snapshot is also what `npm run forecast` stands on when it publishes an M4 design's
+ * median at seven days: the band comes from the residual quantiles recorded here, and the
+ * switch falls back to M3 once the ladder has run more than `M4_SNAPSHOT_MAX_LAG_DAYS` past
+ * this snapshot's last origin — so the daily workflow reruns this about once a month.
  *
  * The precipitation features read whichever ERA5 point `selectPrecipBasin` chooses today — the
  * verified catchment centroid once its climatology is adequate, the provisional point until then
@@ -27,8 +33,11 @@
  * scored on another basin rather than publish a model nobody backtested on this one.
  */
 
-import { mkdirSync, writeFileSync } from "node:fs";
-import { dirname } from "node:path";
+import { spawn } from "node:child_process";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { availableParallelism, tmpdir } from "node:os";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { loadSeries } from "../src/lib/features/series.ts";
 import { readOni } from "../src/lib/features/enso.ts";
@@ -41,9 +50,19 @@ import {
 } from "../src/lib/features/weather.ts";
 import { persistence } from "../src/lib/models/baselines.ts";
 import { createFitCache, DEFAULT_WATER_BALANCE, waterBalanceModel } from "../src/lib/models/water-balance.ts";
-import { crisisEpisodes, crisisLeadTime, DEFAULT_BACKTEST, runBacktest } from "../src/lib/models/backtest.ts";
+import {
+  blendPredictions,
+  bootstrapBlockOrigins,
+  collectPredictions,
+  crisisEpisodes,
+  crisisLeadTime,
+  DEFAULT_BACKTEST,
+  MONTHLY_BACKTEST,
+  scorePredictions,
+  type Prediction,
+} from "../src/lib/models/backtest.ts";
 import { falseAlarms, type OriginCrossing } from "../src/lib/models/forecast.ts";
-import { baseFeatures, boostedModel, createM4Cache, DEFAULT_M4, M3_FEATURES, M4_VARIANTS } from "../src/lib/models/boosted.ts";
+import { baseFeatures, boostedModel, createM4Cache, DEFAULT_M4, M3_FEATURES, M4_BLEND, M4_VARIANTS } from "../src/lib/models/boosted.ts";
 import {
   gridCrossings,
   M4_SNAPSHOT_PATH,
@@ -60,7 +79,31 @@ import { nowUtc } from "../src/lib/util/dates.ts";
 
 const VARIABLE = "cota_masl";
 
-function main(): void {
+/** What a child process hands back: one design's unscored predictions and its M3 anchors. */
+interface WorkerOutput {
+  predictions: Prediction[];
+  /** `origin|horizon -> M3's median as the design's features read it`, at the origins. */
+  anchors: [string, number][];
+}
+
+/** One design in a child process: the same script, the same flags, `--worker <id>`. */
+function runWorker(variantId: string, passThrough: readonly string[], directory: string): Promise<WorkerOutput> {
+  const out = join(directory, `${variantId}.json`);
+  return new Promise((resolve, reject) => {
+    const child = spawn(
+      process.execPath,
+      [...process.execArgv, fileURLToPath(import.meta.url), ...passThrough, "--worker", variantId, "--raw-out", out],
+      { stdio: ["ignore", "inherit", "inherit"] },
+    );
+    child.on("error", reject);
+    child.on("exit", (code) => {
+      if (code !== 0) reject(new Error(`the ${variantId} worker exited with ${code}`));
+      else resolve(JSON.parse(readFileSync(out, "utf8")) as WorkerOutput);
+    });
+  });
+}
+
+async function main(): Promise<void> {
   const { values } = parseArgs({
     args: process.argv.slice(2),
     options: {
@@ -68,6 +111,10 @@ function main(): void {
       "last-origin": { type: "string" },
       out: { type: "string" },
       site: { type: "string" },
+      cadence: { type: "string" },
+      jobs: { type: "string" },
+      worker: { type: "string" },
+      "raw-out": { type: "string" },
     },
   });
   const SITE = values.site?.trim() || PUBLISHED_M4_SITE;
@@ -76,12 +123,21 @@ function main(): void {
     process.exitCode = 1;
     return;
   }
+  const cadence = values.cadence?.trim() || DEFAULT_BACKTEST.cadence;
+  if (cadence !== "weekly" && cadence !== "monthly") {
+    console.error(`unknown cadence "${cadence}"; weekly or monthly`);
+    process.exitCode = 1;
+    return;
+  }
   const started = performance.now();
-  const lastOrigin = values["last-origin"]?.trim() || DEFAULT_BACKTEST.lastOrigin;
-  // Mazar's snapshot is what the daily forecast stands on; another site's run is written only
-  // where it is explicitly asked to go.
+  const base = cadence === DEFAULT_BACKTEST.cadence ? DEFAULT_BACKTEST : MONTHLY_BACKTEST;
+  const lastOrigin = values["last-origin"]?.trim() || base.lastOrigin;
+  // Mazar's snapshot is what the daily forecast stands on; another site's run, or one on other
+  // origins than the ladder's, is written only where it is explicitly asked to go.
   const write =
-    !(values["dry-run"] ?? false) && values["last-origin"] === undefined && (SITE === PUBLISHED_M4_SITE || values.out !== undefined);
+    !(values["dry-run"] ?? false) &&
+    values["last-origin"] === undefined &&
+    ((SITE === PUBLISHED_M4_SITE && cadence === DEFAULT_BACKTEST.cadence) || values.out !== undefined);
   const outPath = values.out?.trim() || M4_SNAPSHOT_PATH;
   // The critical level (`thresholds.csv`: a project marker or the operational minimum), or the site's highest declared floor.
   const PLAN_CRITICAL_LEVEL = (criticalMarker(SITE) ?? thresholdsFor(SITE)[0])?.levelMasl ?? Number.NaN;
@@ -102,13 +158,71 @@ function main(): void {
   const shipped = waterBalanceModel(DEFAULT_WATER_BALANCE, undefined, fits);
   const cache = createM4Cache(fits);
   const variants = M4_VARIANTS.map((variant) => boostedModel(variant, covariates, cache));
-  const options = { ...DEFAULT_BACKTEST, lastOrigin, crestM };
+  const options = { ...base, lastOrigin, crestM };
+  const inputs = { levels, inflow, production };
+  const anchorsOf = (predictions: readonly Prediction[]): [string, number][] =>
+    predictions.flatMap((p) => {
+      const anchor = cache.m3.get(p.origin)?.byHorizon.get(p.horizonDays)?.p50;
+      return anchor === undefined ? [] : [[`${p.origin}|${p.horizonDays}`, anchor] as [string, number]];
+    });
 
+  // A child: one design's predictions, unscored, and nothing else.
+  if (values.worker !== undefined) {
+    const model = variants.find((v) => v.id === values.worker);
+    if (!model || values["raw-out"] === undefined) {
+      console.error(`--worker needs a design (${variants.map((v) => v.id).join(", ")}) and --raw-out`);
+      process.exitCode = 1;
+      return;
+    }
+    const predictions = collectPredictions(inputs, [model], options).raw.get(model.id) ?? [];
+    const output: WorkerOutput = { predictions, anchors: anchorsOf(predictions) };
+    writeFileSync(values["raw-out"], JSON.stringify(output));
+    console.log(`  ${model.id}: ${predictions.length} predictions in ${((performance.now() - started) / 1000).toFixed(1)} s`);
+    return;
+  }
+
+  const jobs = Math.max(1, Math.min(variants.length, Number(values.jobs ?? Math.min(variants.length, availableParallelism())) || 1));
   console.log(
-    `${SITE}: ${levels.size} level days; ERA5 precipitation at \`${precip.basin}\`: ${covariates.precip.size} days` +
-      (precip.fallbackReason ? ` (${precip.fallbackReason})` : ""),
+    `${SITE}: ${levels.size} level days, ${cadence} origins; ERA5 precipitation at \`${precip.basin}\`: ${covariates.precip.size} days` +
+      (precip.fallbackReason ? ` (${precip.fallbackReason})` : "") +
+      `; ${jobs} ${jobs === 1 ? "process" : "processes"}`,
   );
-  const run = runBacktest({ levels, inflow, production }, [persistence, shipped, ...variants], options);
+
+  // Persistence and M3 here; the fitted designs here too, or one child process each.
+  const collected = collectPredictions(inputs, [persistence, shipped], options);
+  const anchors = new Map<string, number>();
+  if (jobs === 1) {
+    for (const model of variants) {
+      const predictions = collectPredictions(inputs, [model], options).raw.get(model.id) ?? [];
+      collected.raw.set(model.id, predictions);
+      for (const [key, value] of anchorsOf(predictions)) anchors.set(key, value);
+    }
+  } else {
+    const passThrough = ["--cadence", cadence, "--site", SITE, ...(values["last-origin"] ? ["--last-origin", lastOrigin] : [])];
+    const directory = mkdtempSync(join(tmpdir(), "m4-backtest-"));
+    try {
+      const queue = [...variants];
+      const lane = async (): Promise<void> => {
+        for (let model = queue.shift(); model !== undefined; model = queue.shift()) {
+          const output = await runWorker(model.id, passThrough, directory);
+          collected.raw.set(model.id, output.predictions);
+          for (const [key, value] of output.anchors) anchors.set(key, value);
+        }
+      };
+      await Promise.all(Array.from({ length: jobs }, lane));
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  }
+
+  // The blend is a function of two rungs' predictions, so it costs nothing to add and is scored
+  // on the same origins, through the same out-of-sample band, as everything else.
+  collected.raw.set(
+    M4_BLEND.id,
+    blendPredictions(collected.raw.get(shipped.id) ?? [], collected.raw.get(M4_BLEND.of) ?? [], M4_BLEND.id, M4_BLEND.weight),
+  );
+  const candidates = [...variants.map((v) => ({ id: v.id, label: v.label })), { id: M4_BLEND.id, label: M4_BLEND.label }];
+  const run = scorePredictions(collected, [persistence, shipped, ...candidates], options);
   const runtimeSeconds = (performance.now() - started) / 1000;
   console.log(`M4 backtest: ${run.origins.length} origins in ${runtimeSeconds.toFixed(1)} s`);
 
@@ -125,20 +239,21 @@ function main(): void {
     );
   }
 
-  // The residual variant is anchored on M3's own median, recomputed inside M4 from the training
-  // cache; at the origins it has to be the shipped M3 to the last digit, or the feature is not M3.
+  // The designs that read M3 read it from a fit at the first of the training day's month, which
+  // is the shipped M3's own fit only at an origin that is itself the first of a month. There it
+  // has to be the shipped M3 to the last digit, or the feature is not M3; elsewhere the two
+  // differ by however much a few weeks of data move the storage curve and the release rule.
   let m3AnchorMaxAbsDifferenceM: number | null = null;
-  const m3ById = new Map(run.predictions.filter((p) => p.modelId === shipped.id).map((p) => [`${p.origin}|${p.horizonDays}`, p.p50]));
-  for (const [key, m3] of m3ById) {
-    const [origin, horizon] = key.split("|") as [string, string];
-    const anchor = cache.m3.get(origin)?.byHorizon.get(Number(horizon))?.p50;
+  for (const p of run.predictions) {
+    if (p.modelId !== shipped.id || !p.origin.endsWith("-01")) continue;
+    const anchor = anchors.get(`${p.origin}|${p.horizonDays}`);
     if (anchor === undefined) continue;
-    m3AnchorMaxAbsDifferenceM = Math.max(m3AnchorMaxAbsDifferenceM ?? 0, Math.abs(anchor - m3));
+    m3AnchorMaxAbsDifferenceM = Math.max(m3AnchorMaxAbsDifferenceM ?? 0, Math.abs(anchor - p.p50));
   }
-  console.log(`M3 feature vs shipped M3 at the origins: max |difference| ${m3AnchorMaxAbsDifferenceM ?? "n/a"} m`);
+  console.log(`M3 feature vs shipped M3 at first-of-month origins: max |difference| ${m3AnchorMaxAbsDifferenceM ?? "n/a"} m`);
 
   // The crisis check at M4's resolution: the first horizon whose quantile is at or below 2115.
-  const crisisModels = [shipped.id, ...variants.map((v) => v.id)];
+  const crisisModels = [shipped.id, ...candidates.map((v) => v.id)];
   const episodes = crisisEpisodes(levels, PLAN_CRITICAL_LEVEL).filter(
     (e) => e.crossedOn >= options.firstOrigin && run.origins.some((o) => o < e.crossedOn),
   );
@@ -201,14 +316,19 @@ function main(): void {
     runtimeSeconds: Math.round(runtimeSeconds),
     command: "npm run backtest:m4",
     origins: run.origins,
+    cadence,
+    bootstrapBlockOrigins: bootstrapBlockOrigins(cadence),
     horizonDays: [...H],
     settings: DEFAULT_M4,
     features: { base: baseFeatures(precip.basin), m3: [...M3_FEATURES] },
     precipBasin: precip.basin,
     referenceId: shipped.id,
     scores: run.scores,
-    native: [shipped.id, ...variants.map((v) => v.id)].map((id) => ({ modelId: id, horizons: nativeBandScores(run.predictions, id, H) })),
-    paired: variants.map((v) => ({ modelId: v.id, horizons: pairedAgainst(run.predictions, v.id, shipped.id, H) })),
+    native: [shipped.id, ...candidates.map((v) => v.id)].map((id) => ({ modelId: id, horizons: nativeBandScores(run.predictions, id, H) })),
+    paired: candidates.map((v) => ({
+      modelId: v.id,
+      horizons: pairedAgainst(run.predictions, v.id, shipped.id, H, bootstrapBlockOrigins(cadence)),
+    })),
     crisis: {
       thresholdM: PLAN_CRITICAL_LEVEL,
       episodes: crisisEpisodesOut,
@@ -235,7 +355,7 @@ function main(): void {
   }
 
   if (!write) {
-    console.log("not written (dry run or partial window)");
+    console.log("not written (dry run, partial window, or not the ladder's cadence)");
     return;
   }
   mkdirSync(dirname(outPath), { recursive: true });
@@ -243,4 +363,7 @@ function main(): void {
   console.log(`wrote ${outPath}; run \`npm run forecast\` to render it into the report`);
 }
 
-main();
+main().catch((error: unknown) => {
+  console.error(error);
+  process.exitCode = 1;
+});

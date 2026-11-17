@@ -32,6 +32,20 @@ import type { ForecastContext, Model } from "./types.ts";
 
 export const PUBLISHED_QUANTILES = [0.1, 0.5, 0.9] as const;
 
+/**
+ * How the origins are spaced. `monthly` is the first of each month, which is what section 7
+ * specified and what every number before 2026-11-17 was scored on; `weekly` is every Monday.
+ *
+ * The ladder moved to weekly origins on 2026-11-17 because a hundred-odd monthly origins could
+ * not tell the rungs apart under a month — nearly every paired interval crossed zero — and
+ * because the first of the month turned out not to be a neutral sample: on 461 weekly origins
+ * the water balance's seven-day edge over persistence (6% on the monthly set) is gone. Four
+ * times the origins is not four times the information, since neighbouring weeks share most of
+ * a ninety-day outcome; the block bootstrap (`bootstrapBlockOrigins`) is what keeps the
+ * intervals honest about that.
+ */
+export type OriginCadence = "monthly" | "weekly";
+
 export interface BacktestOptions {
   firstOrigin: IsoDate;
   lastOrigin: IsoDate;
@@ -41,16 +55,33 @@ export interface BacktestOptions {
   /** Earlier origins needed before a horizon's band can be calibrated from residuals. */
   minCalibrationOrigins: number;
   crestM: number;
+  /** Spacing of the origins; absent means monthly, as every caller before 2026-11-17 assumed. */
+  cadence?: OriginCadence;
 }
 
-export const DEFAULT_BACKTEST: Omit<BacktestOptions, "crestM"> = {
-  // Section 7: monthly origins from 2018-01, which puts the 2018, 2020, 2022, 2023 and 2024
-  // lows inside the evaluation window and leaves 2014-09 onward as training history.
+export const DEFAULT_BACKTEST: Omit<BacktestOptions, "crestM"> & { cadence: OriginCadence } = {
+  // Section 7: origins from 2018-01, which puts the 2018, 2020, 2022, 2023 and 2024 lows inside
+  // the evaluation window and leaves 2014-09 onward as training history. Weekly since
+  // 2026-11-17 (see `OriginCadence`); the warm-up stays a year of origins, as it was at twelve
+  // monthly ones.
   firstOrigin: "2018-01-01",
-  lastOrigin: "2099-12-01",
+  lastOrigin: "2099-12-31",
   horizonDays: [7, 14, 30, 60, 90],
   minTrainingDays: 730,
+  minCalibrationOrigins: 52,
+  cadence: "weekly",
+};
+
+/**
+ * The ladder as it was scored until 2026-11-17: the first of each month, twelve origins of
+ * warm-up. Kept so the report can show the old table beside the new one, and for the crisis
+ * check, whose run-up tables are read a month at a time.
+ */
+export const MONTHLY_BACKTEST: Omit<BacktestOptions, "crestM"> & { cadence: OriginCadence } = {
+  ...DEFAULT_BACKTEST,
+  lastOrigin: "2099-12-01",
   minCalibrationOrigins: 12,
+  cadence: "monthly",
 };
 
 export interface Prediction {
@@ -118,23 +149,67 @@ export function monthlyOrigins(levels: DailySeries, from: IsoDate, to: IsoDate):
   return [...levels.keys()].filter((date) => date.endsWith("-01") && date >= from && date <= to);
 }
 
+/** 1970-01-01 was a Thursday, so a day number that is 4 modulo 7 is a Monday. */
+const MONDAY = 4;
+
+/**
+ * Every Monday the level series covers. A fixed weekday rather than "every seventh reading", so
+ * the set only ever grows at its end: an origin scored last month is still an origin after a
+ * backfill adds days to the start of the record, and a committed snapshot stays a prefix of the
+ * ladder it was scored with.
+ */
+export function weeklyOrigins(levels: DailySeries, from: IsoDate, to: IsoDate): IsoDate[] {
+  return [...levels.keys()].filter(
+    (date) => date >= from && date <= to && Math.round(Date.parse(`${date}T00:00:00Z`) / 86_400_000) % 7 === MONDAY,
+  );
+}
+
+export function backtestOrigins(levels: DailySeries, from: IsoDate, to: IsoDate, cadence: OriginCadence = "monthly"): IsoDate[] {
+  return cadence === "weekly" ? weeklyOrigins(levels, from, to) : monthlyOrigins(levels, from, to);
+}
+
+/**
+ * Origins per bootstrap block: about half a year of them, which spans a ninety-day forecast's
+ * overlap twice over at either spacing.
+ */
+export function bootstrapBlockOrigins(cadence: OriginCadence = "monthly"): number {
+  return cadence === "weekly" ? 26 : 6;
+}
+
 interface Inputs {
   levels: DailySeries;
   inflow: DailySeries;
   production: DailySeries;
 }
 
+/** Pass one of a backtest: every model's points at every origin, unscored and unbanded. */
+export interface RawBacktest {
+  /** Origins at which at least one model forecast. */
+  origins: IsoDate[];
+  /** `modelId -> predictions`, with `p10`/`p90` still null. */
+  raw: Map<string, Prediction[]>;
+}
+
 export function runBacktest(inputs: Inputs, models: readonly Model[], options: BacktestOptions): BacktestResult {
+  return scorePredictions(collectPredictions(inputs, models, options), models, options);
+}
+
+/**
+ * Pass one, on its own. Split from the scoring so that a slow rung can be collected in another
+ * process and scored with the rest (`scripts/backtest-m4.ts`), and so a model that is a function
+ * of two others' predictions — a blend — can be added between the passes without being refitted.
+ */
+export function collectPredictions(inputs: Inputs, models: readonly Model[], options: BacktestOptions): RawBacktest {
   const allDates = [...inputs.levels.keys()];
   const first = allDates[0];
-  if (first === undefined) return { origins: [], predictions: [], scores: [], calibration: new Map() };
+  if (first === undefined) return { origins: [], raw: new Map() };
 
   const last = allDates[allDates.length - 1]!;
   // How many level days precede each date, walked once: doing it per candidate re-scans the
   // whole series for every origin and turns a linear pass into a quadratic one.
   const precedingDays = new Map<IsoDate, number>();
   allDates.forEach((date, index) => precedingDays.set(date, index));
-  const candidates = monthlyOrigins(inputs.levels, options.firstOrigin, options.lastOrigin).filter(
+  const candidates = backtestOrigins(inputs.levels, options.firstOrigin, options.lastOrigin, options.cadence).filter(
     (origin) => (precedingDays.get(origin) ?? 0) >= options.minTrainingDays,
   );
 
@@ -180,6 +255,16 @@ export function runBacktest(inputs: Inputs, models: readonly Model[], options: B
     }
     if (produced) usedOrigins.push(origin);
   }
+  return { origins: usedOrigins, raw };
+}
+
+/** Passes two and three: the shared origin set, the out-of-sample band, and the scores. */
+export function scorePredictions(
+  collected: RawBacktest,
+  models: readonly Pick<Model, "id" | "label">[],
+  options: Pick<BacktestOptions, "horizonDays" | "minCalibrationOrigins">,
+): BacktestResult {
+  const { raw, origins: usedOrigins } = collected;
 
   // Rule 3: score on the origins every model reached, at each horizon, so nobody wins by
   // sitting out the months that were hard to forecast.
@@ -206,8 +291,10 @@ export function runBacktest(inputs: Inputs, models: readonly Model[], options: B
     }
 
     const perHorizon = new Map<number, { q10: number; q50: number; q90: number; n: number }>();
-    for (const [horizon, list] of byHorizon) {
-      list.sort((a, b) => (a.origin < b.origin ? -1 : 1));
+    for (const [horizon, unsorted] of byHorizon) {
+      // Copies, so scoring the same collection twice (with and without a derived model) starts
+      // each time from unbanded predictions.
+      const list = unsorted.map((p): Prediction => ({ ...p, p10: null, p90: null })).sort((a, b) => (a.origin < b.origin ? -1 : 1));
       const residuals: number[] = [];
       for (const prediction of list) {
         if (residuals.length >= options.minCalibrationOrigins) {
@@ -238,7 +325,40 @@ export function runBacktest(inputs: Inputs, models: readonly Model[], options: B
 
 const PERSISTENCE_ID = "M0-persistence";
 
-export function scoreAll(predictions: readonly Prediction[], models: readonly Model[], horizonDays: readonly number[]): ModelScore[] {
+/**
+ * A model that is a weighted mean of two others, built from their predictions rather than
+ * refitted: `weightB` of `b` and the rest of `a`, at every origin and horizon both reached. Its
+ * own spread is the same mean of the two models' own quantiles, where both have them.
+ */
+export function blendPredictions(a: readonly Prediction[], b: readonly Prediction[], modelId: string, weightB = 0.5): Prediction[] {
+  const other = new Map(b.map((p) => [`${p.origin}|${p.horizonDays}`, p]));
+  const mix = (x: number, y: number) => (1 - weightB) * x + weightB * y;
+  const out: Prediction[] = [];
+  for (const p of a) {
+    const q = other.get(`${p.origin}|${p.horizonDays}`);
+    if (!q) continue;
+    const spread = p.ensembleP10 !== null && p.ensembleP90 !== null && q.ensembleP10 !== null && q.ensembleP90 !== null;
+    out.push({
+      modelId,
+      origin: p.origin,
+      horizonDays: p.horizonDays,
+      targetDate: p.targetDate,
+      actual: p.actual,
+      p50: mix(p.p50, q.p50),
+      ensembleP10: spread ? mix(p.ensembleP10!, q.ensembleP10!) : null,
+      ensembleP90: spread ? mix(p.ensembleP90!, q.ensembleP90!) : null,
+      p10: null,
+      p90: null,
+    });
+  }
+  return out;
+}
+
+export function scoreAll(
+  predictions: readonly Prediction[],
+  models: readonly Pick<Model, "id" | "label">[],
+  horizonDays: readonly number[],
+): ModelScore[] {
   const baseline = new Map<number, number>();
   for (const horizon of horizonDays) {
     const errors = predictions

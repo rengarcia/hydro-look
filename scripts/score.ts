@@ -63,6 +63,7 @@ function main(): void {
     for (const g of card.groups) {
       console.log(
         `  ${g.modelId} v${g.modelVersion} ${String(g.horizonDays).padStart(2)}d n=${g.n} MAE ${g.mae?.toFixed(3) ?? "—"} ${card.units}` +
+          (g.baselineMae === null ? "" : ` (persistence ${g.baselineMae.toFixed(3)})`) +
           ` coverage ${g.coverageP10P90 === null ? "—" : `${(g.coverageP10P90 * 100).toFixed(0)}%`}`,
       );
     }

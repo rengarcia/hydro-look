@@ -129,6 +129,24 @@ export const M4_VARIANTS: readonly M4Variant[] = [
   { id: "M4-gbm-m3-residual", label: "Boosted quantile trees on M3's residual", target: "m3-residual", m3Features: true },
 ];
 
+/**
+ * The fourth design, and the only one that is not fitted: the mean of the shipped M3's median
+ * and `M4-gbm-direct`'s (`blendPredictions` in `backtest.ts`), half each.
+ *
+ * It exists because the per-horizon switch picks a winner, and picking a winner between two
+ * forecasts whose errors are only partly shared throws away the part that is not: where the
+ * trees and the water balance disagree, the truth is more often between them than beyond
+ * either. The weight is a half because a half needs no fitting — a weight tuned on the backtest
+ * would be one more thing scored on the data it was chosen from.
+ */
+export const M4_BLEND = {
+  id: "M4-blend-m3-direct",
+  label: "Mean of M3's median and the boosted trees' (M4-gbm-direct), half each",
+  /** The fitted design it is half of. */
+  of: "M4-gbm-direct",
+  weight: 0.5,
+} as const;
+
 export interface M4Settings {
   gbm: Omit<GbmOptions, "loss">;
   /** Keep one training day in this many; neighbouring days share almost all of their target. */
