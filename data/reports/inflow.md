@@ -1,6 +1,6 @@
 # Inflow forecasts — the plants whose level is not the question
 
-Generated 2026-11-17T03:16:52Z by `npm run forecast` from the committed tables; no network. For the run-of-river and daily-storage plants the level is an operating decision taken within the day, so the target is the water arriving: the mean inflow over the next 7 and 14 days, in m³/s. Origins every 7 days from 2018-01-01, once a plant has 730 days of inflow; each rung sees only data up to its origin.
+Generated 2026-11-17T08:35:28Z by `npm run forecast` from the committed tables; no network. For the run-of-river and daily-storage plants the level is an operating decision taken within the day, so the target is the water arriving: the mean inflow over the next 7 and 14 days, in m³/s. Origins every 7 days from 2018-01-01, once a plant has 730 days of inflow; each rung sees only data up to its origin.
 
 - **persistence** holds the origin day's inflow.
 - **climatology** is the median of the same calendar window's mean over every earlier year.
@@ -13,14 +13,14 @@ A plant's forecast is published at a horizon only where the ensemble's MAE beats
 
 | plant | origins | horizon | ensemble MAE | analogue | persistence | climatology | ensemble coverage p10–p90 | published |
 |---|---:|---:|---:|---:|---:|---:|---:|---|
-| Amaluza | 462 | 7 d | 39.2 | 43.4 | 51.2 | 47.5 | 84% | **yes** |
-| Amaluza | 462 | 14 d | 36.7 | 43.8 | 52.7 | 42.1 | 84% | **yes** |
-| Coca Codo Sinclair | 350 | 7 d | 85.8 | 102.5 | 117.9 | 94.2 | 78% | **yes** |
-| Coca Codo Sinclair | 350 | 14 d | 77.7 | 100.8 | 120.1 | 80.9 | 78% | **yes** |
+| Amaluza | 463 | 7 d | 39.2 | 43.4 | 51.2 | 47.5 | 84% | **yes** |
+| Amaluza | 463 | 14 d | 36.7 | 43.8 | 52.7 | 42.0 | 84% | **yes** |
+| Coca Codo Sinclair | 351 | 7 d | 85.6 | 102.4 | 117.5 | 94.0 | 78% | **yes** |
+| Coca Codo Sinclair | 351 | 14 d | 77.5 | 100.5 | 120.0 | 80.6 | 78% | **yes** |
 | Agoyán | 363 | 7 d | 33.6 | 40.1 | 41.2 | 40.5 | 82% | **yes** |
 | Agoyán | 363 | 14 d | 32.7 | 41.2 | 43.0 | 37.5 | 80% | **yes** |
-| Manduriacu | 267 | 7 d | 42.8 | 50.1 | 44.1 | 58.1 | 83% | **yes** |
-| Manduriacu | 267 | 14 d | 41.8 | 49.0 | 49.1 | 53.8 | 81% | **yes** |
+| Manduriacu | 268 | 7 d | 42.7 | 50.1 | 44.0 | 58.1 | 83% | **yes** |
+| Manduriacu | 268 | 14 d | 41.7 | 48.8 | 48.9 | 54.0 | 81% | **yes** |
 | Minas San Francisco | 264 | 7 d | 23.5 | 27.1 | 28.2 | 29.6 | 79% | **yes** |
 | Minas San Francisco | 264 | 14 d | 22.7 | 26.5 | 31.1 | 27.7 | 80% | **yes** |
 | Delsitanisagua | 270 | 7 d | 13.3 | 15.1 | 16.7 | 15.9 | 77% | **yes** |
@@ -35,7 +35,7 @@ At the plants where GEOGLOWS' forecast earned a place (Agoyán, Manduriacu, Mina
 | plant | horizon | cases | MAE with | MAE without |
 |---|---:|---:|---:|---:|
 | agoyan | 7 d | 123 | 31.4 | 34.4 |
-| manduriacu | 7 d | 117 | 35.9 | 41.5 |
+| manduriacu | 7 d | 118 | 35.7 | 41.2 |
 | minas_san_francisco | 7 d | 123 | 23.8 | 25.0 |
 
 ## Rain conditioning
@@ -53,22 +53,22 @@ The conditioner is the rain that had already fallen, read with ERA5's five-day l
 
 | plant | horizon | rung | n | MAE m³/s | bias | coverage p10–p90 (n) | pinball |
 |---|---:|---|---:|---:|---:|---:|---:|
-| amaluza | 7 d | persistence | 462 | 51.2 | -3.5 | 80% (450) | 18.1 |
-| amaluza | 7 d | climatology | 462 | 47.5 | -7.7 | 84% (450) | 15.8 |
-| amaluza | 7 d | analogue | 462 | 43.4 | -3.1 | 84% (450) | 15.3 |
-| amaluza | 7 d | ensemble | 462 | 39.2 | -5.4 | 84% (450) | 13.3 |
-| amaluza | 14 d | persistence | 461 | 52.7 | -3.7 | 82% (449) | 18.5 |
-| amaluza | 14 d | climatology | 461 | 42.1 | -9.1 | 83% (449) | 13.7 |
-| amaluza | 14 d | analogue | 461 | 43.8 | -5.2 | 81% (449) | 15.6 |
-| amaluza | 14 d | ensemble | 461 | 36.7 | -7.2 | 84% (449) | 12.3 |
-| coca_codo_sinclair | 7 d | persistence | 350 | 117.9 | -7.1 | 82% (338) | 43.7 |
-| coca_codo_sinclair | 7 d | climatology | 350 | 94.2 | 30.5 | 78% (338) | 30.1 |
-| coca_codo_sinclair | 7 d | analogue | 350 | 102.5 | 0.1 | 82% (338) | 34.4 |
-| coca_codo_sinclair | 7 d | ensemble | 350 | 85.8 | 15.3 | 78% (338) | 28.0 |
-| coca_codo_sinclair | 14 d | persistence | 336 | 120.1 | -7.0 | 78% (324) | 44.0 |
-| coca_codo_sinclair | 14 d | climatology | 336 | 80.9 | 23.1 | 76% (324) | 25.2 |
-| coca_codo_sinclair | 14 d | analogue | 336 | 100.8 | -5.4 | 79% (324) | 34.4 |
-| coca_codo_sinclair | 14 d | ensemble | 336 | 77.7 | 8.8 | 78% (324) | 25.5 |
+| amaluza | 7 d | persistence | 463 | 51.2 | -3.6 | 80% (451) | 18.1 |
+| amaluza | 7 d | climatology | 463 | 47.5 | -7.6 | 84% (451) | 15.8 |
+| amaluza | 7 d | analogue | 463 | 43.4 | -3.0 | 84% (451) | 15.3 |
+| amaluza | 7 d | ensemble | 463 | 39.2 | -5.3 | 84% (451) | 13.3 |
+| amaluza | 14 d | persistence | 462 | 52.7 | -3.6 | 82% (450) | 18.4 |
+| amaluza | 14 d | climatology | 462 | 42.0 | -9.1 | 83% (450) | 13.6 |
+| amaluza | 14 d | analogue | 462 | 43.8 | -5.2 | 81% (450) | 15.6 |
+| amaluza | 14 d | ensemble | 462 | 36.7 | -7.1 | 84% (450) | 12.3 |
+| coca_codo_sinclair | 7 d | persistence | 351 | 117.5 | -7.1 | 82% (339) | 43.6 |
+| coca_codo_sinclair | 7 d | climatology | 351 | 94.0 | 30.4 | 78% (339) | 30.0 |
+| coca_codo_sinclair | 7 d | analogue | 351 | 102.4 | -0.1 | 82% (339) | 34.4 |
+| coca_codo_sinclair | 7 d | ensemble | 351 | 85.6 | 15.2 | 78% (339) | 27.9 |
+| coca_codo_sinclair | 14 d | persistence | 337 | 120.0 | -7.2 | 78% (325) | 43.9 |
+| coca_codo_sinclair | 14 d | climatology | 337 | 80.6 | 23.0 | 76% (325) | 25.2 |
+| coca_codo_sinclair | 14 d | analogue | 337 | 100.5 | -5.5 | 79% (325) | 34.3 |
+| coca_codo_sinclair | 14 d | ensemble | 337 | 77.5 | 8.8 | 78% (325) | 25.4 |
 | agoyan | 7 d | persistence | 363 | 41.2 | -1.3 | 83% (351) | 15.7 |
 | agoyan | 7 d | climatology | 363 | 40.5 | 4.2 | 76% (351) | 13.7 |
 | agoyan | 7 d | analogue | 363 | 40.1 | 0.6 | 82% (351) | 14.0 |
@@ -77,14 +77,14 @@ The conditioner is the rain that had already fallen, read with ERA5's five-day l
 | agoyan | 14 d | climatology | 353 | 37.5 | 0.9 | 74% (341) | 12.2 |
 | agoyan | 14 d | analogue | 353 | 41.2 | -3.9 | 80% (341) | 14.7 |
 | agoyan | 14 d | ensemble | 353 | 32.7 | -1.5 | 80% (341) | 11.3 |
-| manduriacu | 7 d | persistence | 267 | 44.1 | -3.7 | 78% (255) | 16.4 |
-| manduriacu | 7 d | climatology | 267 | 58.1 | 26.4 | 76% (255) | 19.9 |
-| manduriacu | 7 d | analogue | 267 | 50.1 | 0.7 | 83% (255) | 17.2 |
-| manduriacu | 7 d | ensemble | 267 | 42.8 | 17.6 | 83% (255) | 14.7 |
-| manduriacu | 14 d | persistence | 246 | 49.1 | -3.3 | 76% (234) | 18.4 |
-| manduriacu | 14 d | climatology | 246 | 53.8 | 22.5 | 76% (234) | 18.6 |
-| manduriacu | 14 d | analogue | 246 | 49.0 | -0.9 | 85% (234) | 17.1 |
-| manduriacu | 14 d | ensemble | 246 | 41.8 | 10.8 | 81% (234) | 14.3 |
+| manduriacu | 7 d | persistence | 268 | 44.0 | -3.7 | 78% (256) | 16.3 |
+| manduriacu | 7 d | climatology | 268 | 58.1 | 26.5 | 76% (256) | 19.9 |
+| manduriacu | 7 d | analogue | 268 | 50.1 | 0.5 | 83% (256) | 17.2 |
+| manduriacu | 7 d | ensemble | 268 | 42.7 | 17.6 | 83% (256) | 14.6 |
+| manduriacu | 14 d | persistence | 247 | 48.9 | -3.4 | 76% (235) | 18.4 |
+| manduriacu | 14 d | climatology | 247 | 54.0 | 22.7 | 77% (235) | 18.6 |
+| manduriacu | 14 d | analogue | 247 | 48.8 | -0.9 | 85% (235) | 17.1 |
+| manduriacu | 14 d | ensemble | 247 | 41.7 | 10.9 | 81% (235) | 14.3 |
 | minas_san_francisco | 7 d | persistence | 264 | 28.2 | -4.3 | 80% (252) | 11.9 |
 | minas_san_francisco | 7 d | climatology | 264 | 29.6 | 8.7 | 76% (252) | 11.2 |
 | minas_san_francisco | 7 d | analogue | 264 | 27.1 | 0.2 | 81% (252) | 10.4 |
