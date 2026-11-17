@@ -1,18 +1,19 @@
 {
-  "generated_at": "2026-11-17T03:16:41Z",
+  "generated_at": "2026-11-17T08:35:16Z",
   "command": "daily",
   "source": "all",
   "requests": 53,
   "errors": [],
   "notes": [
     "smec 2026-11-15: report is incomplete (missing generacion_hidraulica, total_generacion, demanda_distribucion); the running day fills in at D+1, but a stored-as-missing day has come back identical on every retry",
+    "smec 2026-11-16: report is incomplete (missing generacion_hidraulica, total_generacion, demanda_distribucion); the running day fills in at D+1, but a stored-as-missing day has come back identical on every retry",
     "TLS pin changed for www.cenace.gob.ec:443 (advisory): observed 4e4b23dc319d8217dd3e2ebbdccdea5c96fec12cf94de52dca10c42f6b8458f1, pinned 524c72c1b6ae5e3299e8cb4c15ee387da8544fbd2438d48ce59b69dc13c56956"
   ],
   "tables": {
     "observations_daily": {
-      "rows": 93113,
+      "rows": 93190,
       "first_date": "2009-01-01",
-      "last_date": "2026-11-16",
+      "last_date": "2026-11-17",
       "files": 18
     },
     "national_balance_daily": {
@@ -22,15 +23,15 @@
       "files": 11
     },
     "operativa_snapshots": {
-      "rows": 8543,
+      "rows": 8590,
       "first_date": "2026-09-22",
       "last_date": "2026-11-17",
       "files": 1
     },
     "operating_bands": {
       "rows": 7,
-      "first_date": "2026-11-15",
-      "last_date": "2026-11-16",
+      "first_date": "2026-11-16",
+      "last_date": "2026-11-17",
       "files": 1
     },
     "weather_daily": {
@@ -59,19 +60,19 @@
     }
   },
   "narrative": {
-    "calls": 65,
+    "calls": 66,
     "by_status": {
       "failed": 1,
-      "rejected": 14,
+      "rejected": 15,
       "ok": 50
     },
     "spend_usd": 2.8764,
-    "calls_without_cost": 13,
+    "calls_without_cost": 14,
     "by_month": {
       "2026-09": 0.4394,
       "2026-10": 1.9217,
       "2026-11": 0.5154
     },
-    "last_call_at": "2026-11-06T07:31:37Z"
+    "last_call_at": "2026-11-17T03:17:19Z"
   }
 }
