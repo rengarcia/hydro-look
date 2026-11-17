@@ -6,12 +6,20 @@
 
 import { describe, expect, it } from "vitest";
 import {
+  backtestOrigins,
+  blendPredictions,
+  bootstrapBlockOrigins,
+  collectPredictions,
   crisisEpisodes,
   crisisLeadTime,
+  DEFAULT_BACKTEST,
+  MONTHLY_BACKTEST,
   monthlyOrigins,
   runBacktest,
   scoreAll,
+  scorePredictions,
   truncate,
+  weeklyOrigins,
   type BacktestOptions,
   type Prediction,
 } from "../src/lib/models/backtest.ts";
@@ -51,6 +59,115 @@ describe("monthlyOrigins", () => {
 
   it("stops where the series does, not where the window does", () => {
     expect(monthlyOrigins(ramp(45), "2018-01-01", "2099-12-01")).toEqual(["2018-01-01", "2018-02-01"]);
+  });
+});
+
+describe("weeklyOrigins", () => {
+  it("returns the Mondays the series covers, inside the closed window", () => {
+    // 2018-01-01 was a Monday.
+    expect(weeklyOrigins(ramp(30), "2018-01-01", "2018-01-22")).toEqual(["2018-01-01", "2018-01-08", "2018-01-15", "2018-01-22"]);
+    expect(weeklyOrigins(ramp(30, "2018-01-03"), "2018-01-01", "2099-12-31")).toEqual([
+      "2018-01-08",
+      "2018-01-15",
+      "2018-01-22",
+      "2018-01-29",
+    ]);
+  });
+
+  it("only ever grows at its end, so an earlier set is a prefix of a later one", () => {
+    const short = weeklyOrigins(ramp(100), "2018-01-01", "2099-12-31");
+    const long = weeklyOrigins(ramp(300), "2018-01-01", "2099-12-31");
+    expect(long.slice(0, short.length)).toEqual(short);
+    // Days added before the window's start, as a backfill would add them, change nothing.
+    expect(weeklyOrigins(ramp(400, "2017-09-23"), "2018-01-01", "2099-12-31").slice(0, short.length)).toEqual(short);
+  });
+
+  it("skips a Monday the series has no reading for", () => {
+    const gappy = ramp(30);
+    gappy.delete("2018-01-08");
+    expect(weeklyOrigins(gappy, "2018-01-01", "2018-01-22")).toEqual(["2018-01-01", "2018-01-15", "2018-01-22"]);
+  });
+});
+
+describe("the ladder's cadence", () => {
+  it("is weekly by default, monthly when not said, and keeps a year of warm-up at either spacing", () => {
+    expect(DEFAULT_BACKTEST.cadence).toBe("weekly");
+    expect(DEFAULT_BACKTEST.minCalibrationOrigins).toBe(52);
+    expect(MONTHLY_BACKTEST.cadence).toBe("monthly");
+    expect(MONTHLY_BACKTEST.minCalibrationOrigins).toBe(12);
+    const levels = ramp(60);
+    expect(backtestOrigins(levels, "2018-01-01", "2099-12-31")).toEqual(monthlyOrigins(levels, "2018-01-01", "2099-12-31"));
+    expect(backtestOrigins(levels, "2018-01-01", "2099-12-31", "weekly")).toEqual(weeklyOrigins(levels, "2018-01-01", "2099-12-31"));
+  });
+
+  it("bootstraps in blocks of about half a year of origins", () => {
+    expect(bootstrapBlockOrigins("monthly")).toBe(6);
+    expect(bootstrapBlockOrigins("weekly")).toBe(26);
+    expect(bootstrapBlockOrigins()).toBe(6);
+  });
+
+  it("runs the harness on Mondays when asked to", () => {
+    const levels = ramp(120);
+    const result = runBacktest({ levels, inflow: new Map(), production: new Map() }, [persistence], { ...OPTIONS, cadence: "weekly" });
+    expect(result.origins).toEqual(weeklyOrigins(levels, "2018-01-01", "2099-12-01").filter((o) => levels.has(addDays(o, 7))));
+    expect(result.origins.length).toBeGreaterThan(12);
+  });
+});
+
+describe("the two passes", () => {
+  const levels = ramp(400);
+  const inputs = { levels, inflow: new Map(), production: new Map() };
+  const drifting: Model = {
+    id: "drifting",
+    label: "persistence plus a metre",
+    forecast: (context) => persistence.forecast(context).map((f) => ({ ...f, p50: f.p50 + 1, ensemble: [f.p50, f.p50 + 2] })),
+  };
+
+  it("score to the same result whether run together or collected apart and merged", () => {
+    const together = runBacktest(inputs, [persistence, drifting], OPTIONS);
+    const merged = collectPredictions(inputs, [persistence], OPTIONS);
+    merged.raw.set("drifting", collectPredictions(inputs, [drifting], OPTIONS).raw.get("drifting")!);
+    const apart = scorePredictions(merged, [persistence, drifting], OPTIONS);
+    expect(apart.scores).toEqual(together.scores);
+    expect(apart.predictions).toEqual(together.predictions);
+    expect([...apart.calibration]).toEqual([...together.calibration]);
+  });
+
+  it("leave the collection unbanded, so it can be scored again with a model added", () => {
+    const collected = collectPredictions(inputs, [persistence, drifting], OPTIONS);
+    const first = scorePredictions(collected, [persistence, drifting], OPTIONS);
+    expect(first.predictions.some((p) => p.p10 !== null)).toBe(true);
+    expect([...collected.raw.values()].flat().every((p) => p.p10 === null && p.p90 === null)).toBe(true);
+    expect(scorePredictions(collected, [persistence, drifting], OPTIONS).scores).toEqual(first.scores);
+  });
+
+  it("score a blend of two models from their predictions, on the origins both reached", () => {
+    const collected = collectPredictions(inputs, [persistence, drifting], OPTIONS);
+    const blend = blendPredictions(collected.raw.get("M0-persistence")!, collected.raw.get("drifting")!, "blend");
+    expect(blend.length).toBe(collected.raw.get("drifting")!.length);
+    // Half a metre above persistence everywhere: half of drifting's bias, and its own spread
+    // only where both halves have one (persistence has none).
+    const p = collected.raw.get("M0-persistence")![0]!;
+    expect(blend[0]!.p50).toBeCloseTo(p.p50 + 0.5, 9);
+    expect(blend[0]!.ensembleP10).toBeNull();
+    expect(blendPredictions(collected.raw.get("drifting")!, collected.raw.get("drifting")!, "same")[0]!.ensembleP90).toBeCloseTo(
+      collected.raw.get("drifting")![0]!.ensembleP90!,
+      9,
+    );
+    expect(blendPredictions(collected.raw.get("M0-persistence")!, collected.raw.get("drifting")!, "b", 1)[0]!.p50).toBeCloseTo(
+      p.p50 + 1,
+      9,
+    );
+
+    collected.raw.set("blend", blend);
+    const scored = scorePredictions(collected, [persistence, drifting, { id: "blend", label: "half each" }], OPTIONS);
+    const bias = (id: string) => scored.scores.find((sc) => sc.modelId === id)!.horizons[0]!.biasM;
+    expect(bias("blend")).toBeCloseTo((bias("M0-persistence") + bias("drifting")) / 2, 9);
+
+    // An origin only one half reached is not in the blend.
+    expect(blendPredictions(collected.raw.get("M0-persistence")!, collected.raw.get("drifting")!.slice(1), "b").length).toBe(
+      blend.length - 1,
+    );
   });
 });
 

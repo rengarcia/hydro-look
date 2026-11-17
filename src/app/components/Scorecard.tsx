@@ -71,6 +71,8 @@ export function ScorecardPanel({
   if (!card) return null;
   const summary = scorecardSummary(card, nextDue);
   const units = unitsEs(card.units);
+  // Persistence's error over the same cases, where the block carries it (the level's does).
+  const baselined = card.by_horizon.some((g) => g.persistence_mae !== null && g.persistence_mae !== undefined);
   return (
     <div className="panel tight scorecard" id={id}>
       <div className="panel-head">
@@ -89,6 +91,7 @@ export function ScorecardPanel({
               { label: "Modelo" },
               { label: "Casos", numeric: true },
               { label: "Error medio", numeric: true },
+              ...(baselined ? [{ label: "Sin pronóstico", numeric: true }] : []),
               { label: "Sesgo", numeric: true },
               { label: "Dentro del rango", numeric: true },
               { label: "Publicados", wideOnly: true },
@@ -100,6 +103,7 @@ export function ScorecardPanel({
               </abbr>,
               g.n,
               num(g.mae, digits),
+              ...(baselined ? [num(g.persistence_mae ?? null, digits)] : []),
               signed(g.bias, digits),
               g.coverage_p10_p90 === null ? "—" : `${pct(g.coverage_p10_p90 * 100, 0)} (${g.n_band})`,
               g.first_origin && g.last_origin
@@ -127,8 +131,11 @@ export function ScorecardPanel({
         {card.runs_superseded > 0
           ? ` (${card.runs_superseded} ${card.runs_superseded === 1 ? "cálculo reemplazado queda" : "cálculos reemplazados quedan"} fuera)`
           : ""}
-        . El sesgo dice si tiende a quedarse corto (−) o a pasarse (+). Con pocos casos, el resultado todavía es anecdótico: mira cuántos
-        casos hay antes de sacar conclusiones.
+        . El sesgo dice si tiende a quedarse corto (−) o a pasarse (+).
+        {baselined
+          ? " «Sin pronóstico» es el error que habría tenido suponer que el valor se quedaba como estaba el día de la publicación, en los mismos casos: si es menor que el error medio, en esos casos el pronóstico no ayudó."
+          : ""}{" "}
+        Con pocos casos, el resultado todavía es anecdótico: mira cuántos casos hay antes de sacar conclusiones.
       </p>
     </div>
   );

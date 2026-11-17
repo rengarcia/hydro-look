@@ -9,8 +9,9 @@ import { addDays } from "../src/lib/util/dates.ts";
 import { levelAt, volumeAt, type Hypsometry } from "../src/lib/features/hydrology.ts";
 import type { DailySeries } from "../src/lib/features/series.ts";
 import type { OniSeries } from "../src/lib/features/enso.ts";
-import type { ModelScore } from "../src/lib/models/backtest.ts";
-import { truncate } from "../src/lib/models/backtest.ts";
+import type { ModelScore, Prediction } from "../src/lib/models/backtest.ts";
+import { blendPredictions, truncate } from "../src/lib/models/backtest.ts";
+import { quantile } from "../src/lib/util/stats.ts";
 import {
   BASE_FEATURES,
   baseFeatures,
@@ -18,6 +19,7 @@ import {
   createM4Cache,
   DEFAULT_M4,
   M3_FEATURES,
+  M4_BLEND,
   M4_VARIANTS,
   type Covariates,
   type M4Settings,
@@ -28,8 +30,11 @@ import {
   fitM4Live,
   m4HorizonSwitch,
   m4SwitchCheck,
+  M4_SNAPSHOT_MAX_LAG_DAYS,
   PUBLISHED_M4_HORIZON,
+  PUBLISHED_M4_HORIZONS,
   PUBLISHED_M4_ID,
+  snapshotCoverage,
 } from "../src/lib/models/m4-live.ts";
 import { DEFAULT_WATER_BALANCE, waterBalanceModel } from "../src/lib/models/water-balance.ts";
 
@@ -88,13 +93,33 @@ describe("m4SwitchCheck", () => {
     expect(check.evidence.paired?.high90).toBeLessThan(0);
   });
 
-  it("falls back when the ladder has gained an origin the snapshot lacks", () => {
-    const check = m4SwitchCheck(snapshot(), [...ORIGINS, "2018-04-01"]);
+  it("still stands while the ladder is no more than the allowed lag ahead of it", () => {
+    // 2018-03-01 to 2018-04-01 is 31 days: a month of slack, as a monthly ladder always allowed.
+    expect(m4SwitchCheck(snapshot(), [...ORIGINS, "2018-04-01"]).ok).toBe(true);
+    const weekly = ["2018-01-01", "2018-01-08", "2018-01-15"];
+    const ahead = [...weekly, "2018-01-22", "2018-01-29", "2018-02-05", "2018-02-12", "2018-02-19"];
+    expect(snapshotCoverage(weekly, ahead)).toEqual({ prefix: true, missing: 5, lagDays: 35, covers: true });
+    expect(m4SwitchCheck(snapshot({ origins: weekly }), ahead).ok).toBe(true);
+  });
+
+  it("falls back once the ladder has run further ahead than that, in words the workflow reruns on", () => {
+    const check = m4SwitchCheck(snapshot(), [...ORIGINS, "2018-04-01", "2018-05-01"]);
     expect(check.ok).toBe(false);
     if (check.ok) return;
     expect(check.reason).toContain("scored on 3 origins");
-    expect(check.reason).toContain("the ladder now has 4");
+    expect(check.reason).toContain("the ladder now has 5");
     expect(check.reason).toContain("npm run backtest:m4");
+    expect(check.reason).toMatch(/no longer covers the ladder/);
+    expect(snapshotCoverage(ORIGINS, [...ORIGINS, "2018-04-01", "2018-05-01"])).toMatchObject({ prefix: true, lagDays: 61, covers: false });
+    expect(M4_SNAPSHOT_MAX_LAG_DAYS).toBe(35);
+  });
+
+  it("falls back when the snapshot was scored on other origins than the ladder's first ones", () => {
+    // A monthly snapshot against a weekly ladder: not a prefix, however recent.
+    const weekly = ["2018-01-01", "2018-01-08", "2018-01-15", "2018-01-22"];
+    expect(snapshotCoverage(ORIGINS, weekly)).toMatchObject({ prefix: false, covers: false });
+    expect(m4SwitchCheck(snapshot(), weekly).ok).toBe(false);
+    expect(snapshotCoverage([], weekly).covers).toBe(false);
   });
 
   it("falls back when the origins differ even at the same count", () => {
@@ -140,7 +165,11 @@ describe("m4SwitchCheck", () => {
     const worseBand = snapshot({
       scores: [score("M0-persistence", 10, 0.8), score("M3-water-balance", 2.3, 0.79), score(PUBLISHED_M4_ID, 2.0, 0.6)],
     });
-    expect(m4SwitchCheck(worseBand, ORIGINS).ok).toBe(false);
+    const refused = m4SwitchCheck(worseBand, ORIGINS);
+    expect(refused.ok).toBe(false);
+    if (refused.ok) return;
+    expect(refused.reason).toContain("does not beat M3-water-balance at 7 d under the ladder rule");
+    expect(refused.reason).toContain("its MAE is lower, 2.00 m against 2.30 m, but its band covers 60.0% against 79.0%");
   });
 
   it("has nothing to switch on without a snapshot", () => {
@@ -166,10 +195,10 @@ describe("bandFromResiduals", () => {
 describe("m4HorizonSwitch", () => {
   const live = { horizonDays: 7, p50: 2133.4, ownP10: 2132, ownP90: 2134.5, anchorP50: 2134.9 };
 
-  it("overrides seven days only, banded from the snapshot's residuals, and names the evidence", () => {
+  it("overrides the horizon that earned it, banded from the snapshot's residuals, and names the evidence", () => {
     const check = m4SwitchCheck(snapshot(), ORIGINS);
     if (!check.ok) throw new Error("expected the switch");
-    const out = m4HorizonSwitch(check.evidence, live, null, "M3-water-balance");
+    const out = m4HorizonSwitch([{ horizonDays: 7, evidence: check.evidence, live, fallback: null }], "M3-water-balance");
     expect(out.overrides).toHaveLength(1);
     const o = out.overrides[0]!;
     expect(o.horizonDays).toBe(PUBLISHED_M4_HORIZON);
@@ -183,14 +212,48 @@ describe("m4HorizonSwitch", () => {
     expect(o.backtest.mae_m).toBe(2.0);
     expect(out.summary["status"]).toBe("published");
     expect(out.summary["published_model"]).toBe(PUBLISHED_M4_ID);
+    expect(out.summary["published_horizons"]).toEqual([7]);
   });
 
-  it("makes no override and says why when it falls back", () => {
-    const out = m4HorizonSwitch(null, null, "the snapshot is stale", "M3-water-balance");
+  it("makes no override and says why when every candidate falls back", () => {
+    const stale = (horizonDays: number) => ({ horizonDays, evidence: null, live: null, fallback: "the snapshot is stale" });
+    const out = m4HorizonSwitch(PUBLISHED_M4_HORIZONS.map(stale), "M3-water-balance");
     expect(out.overrides).toEqual([]);
     expect(out.summary["status"]).toBe("fallback");
     expect(out.summary["published_model"]).toBe("M3-water-balance");
+    // One reason shared by every horizon is said once: the workflow greps it.
     expect(out.summary["reason"]).toBe("the snapshot is stale");
+    expect(out.summary["horizon_days"]).toBe(PUBLISHED_M4_HORIZON);
+    expect(out.summary["published_horizons"]).toEqual([]);
+  });
+
+  it("publishes where it won and names each horizon it did not, with its own reason", () => {
+    const check = m4SwitchCheck(snapshot(), ORIGINS);
+    if (!check.ok) throw new Error("expected the switch");
+    const out = m4HorizonSwitch(
+      [
+        { horizonDays: 7, evidence: null, live: null, fallback: "band further from 80%" },
+        { horizonDays: 14, evidence: check.evidence, live: { ...live, horizonDays: 14 }, fallback: null },
+        { horizonDays: 30, evidence: check.evidence, live: null, fallback: null },
+      ],
+      "M3-water-balance",
+    );
+    expect(out.overrides.map((o) => o.horizonDays)).toEqual([14]);
+    expect(out.summary["status"]).toBe("published");
+    expect(out.summary["candidate_horizons"]).toEqual([7, 14, 30]);
+    expect(out.summary["published_horizons"]).toEqual([14]);
+    expect(out.summary["horizons"]).toEqual([
+      { horizon_days: 7, published_model: "M3-water-balance", status: "fallback", reason: "band further from 80%" },
+      { horizon_days: 14, published_model: PUBLISHED_M4_ID, status: "published", reason: null },
+      {
+        horizon_days: 30,
+        published_model: "M3-water-balance",
+        status: "fallback",
+        reason: `${PUBLISHED_M4_ID} could not be fitted at the live origin`,
+      },
+    ]);
+    expect(String(out.summary["reason"])).toContain("at 14 d under the ladder's rule");
+    expect(String(out.summary["reason"])).toContain("7 d: band further from 80%");
   });
 });
 
@@ -238,12 +301,12 @@ const QUICK: M4Settings = { ...DEFAULT_M4, gbm: { ...DEFAULT_M4.gbm, trees: 15 }
 describe("fitM4Live", () => {
   it("is the backtest's model at that origin, fitted only on what was known there", { timeout: 60_000 }, () => {
     const origin = "2019-03-01";
-    const live = fitM4Live({ origin, ...DATA, crestM: CREST }, PUBLISHED_M4_HORIZON, QUICK);
+    const live = fitM4Live({ origin, ...DATA, crestM: CREST }, PUBLISHED_M4_HORIZON, QUICK, "M4-gbm-direct");
     expect(live).not.toBeNull();
     expect(live!.horizonDays).toBe(7);
 
     // The harness's way: every series cut at the origin before the model sees it.
-    const variant = M4_VARIANTS.find((v) => v.id === PUBLISHED_M4_ID)!;
+    const variant = M4_VARIANTS.find((v) => v.id === "M4-gbm-direct")!;
     const [harness] = boostedModel(variant, DATA.covariates, createM4Cache(), QUICK).forecast({
       origin,
       horizonDays: [7],
@@ -257,8 +320,7 @@ describe("fitM4Live", () => {
     expect(live!.ownP10).toBeLessThanOrEqual(live!.p50);
     expect(live!.p50).toBeLessThanOrEqual(live!.ownP90);
 
-    // The published design does not read M3, so it reports no anchor.
-    expect(PUBLISHED_M4_ID).toBe("M4-gbm-direct");
+    // The direct design does not read M3, so it reports no anchor.
     expect(live!.anchorP50).toBeNull();
 
     // At a first-of-month origin a design that reads M3 is anchored on the shipped M3's median.
@@ -272,5 +334,38 @@ describe("fitM4Live", () => {
       crestM: CREST,
     });
     expect(residual!.anchorP50).toBeCloseTo(m3[0]!.p50, 9);
+
+    // The published design is the blend: half the shipped M3's median, half the direct design's,
+    // and the same mean of their own spreads — what `blendPredictions` scores in the backtest.
+    expect(PUBLISHED_M4_ID).toBe(M4_BLEND.id);
+    expect(M4_BLEND.of).toBe("M4-gbm-direct");
+    const blend = fitM4Live({ origin, ...DATA, crestM: CREST }, PUBLISHED_M4_HORIZON, QUICK);
+    expect(blend!.p50).toBeCloseTo((m3[0]!.p50 + live!.p50) / 2, 9);
+    expect(blend!.anchorP50).toBeCloseTo(m3[0]!.p50, 9);
+    const scored = blendPredictions(
+      [asPrediction("M3-water-balance", m3[0]!.p50, quantile([...m3[0]!.ensemble], 0.1), quantile([...m3[0]!.ensemble], 0.9))],
+      [asPrediction("M4-gbm-direct", live!.p50, live!.ownP10, live!.ownP90)],
+      M4_BLEND.id,
+      M4_BLEND.weight,
+    )[0]!;
+    expect(blend!.p50).toBeCloseTo(scored.p50, 9);
+    expect(blend!.ownP10).toBeCloseTo(scored.ensembleP10!, 9);
+    expect(blend!.ownP90).toBeCloseTo(scored.ensembleP90!, 9);
+    expect(fitM4Live({ origin, ...DATA, crestM: CREST }, PUBLISHED_M4_HORIZON, QUICK, "M4-nonesuch")).toBeNull();
   });
 });
+
+function asPrediction(modelId: string, p50: number, p10: number | null, p90: number | null): Prediction {
+  return {
+    modelId,
+    origin: "2019-03-01",
+    horizonDays: 7,
+    targetDate: "2019-03-08",
+    actual: 0,
+    p50,
+    ensembleP10: p10,
+    ensembleP90: p90,
+    p10: null,
+    p90: null,
+  };
+}

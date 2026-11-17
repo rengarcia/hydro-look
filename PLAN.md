@@ -1302,6 +1302,39 @@ not present in the payload; monthly gateway spend visible from the snapshots tab
 
 **Phase 7 · Hardening and extensions (ongoing)**
 
+**Weekly origins, the M3 + M4 blend and a baseline on the scorecard — 2026-11-17.** Three changes
+made together, because each one is what makes the next one readable.
+
+- **The scorecard carries persistence.** Every scored level row now has what holding the origin's
+  level would have said (`persistence_mae`, `skill_vs_persistence` in `forecast.json`, two columns
+  in `scorecard.md`, one on the site). The reason is the version-4 record: 25 seven-day rows from
+  2026-10-12 to 2026-11-05 off by 3.81 m against 2.18 m for no forecast at all, and 21
+  fourteen-day rows off by 6.56 m against 2.92 m, while Mazar generated almost nothing for days at
+  a time and M3 kept drawing the reservoir down along its rule curve. One episode, and an anecdote
+  by the scorecard's own warning — but it was invisible, and now it is not.
+- **The ladder is scored every Monday** (`OriginCadence` in `backtest.ts`; 462 origins against
+  107). The first of the month is not a neutral sample: M3's seven-day skill is +6.2% on it and
+  −3.5% on the weekly set, with the weekly paired interval across zero; 60 and 90 days agree on
+  both. Bands are cut from the weekly residuals (model version 5), the bootstrap blocks are 26
+  origins, and `backtest.md` reruns the monthly ladder beside the weekly one every day. The
+  crisis check is still asked a month at a time. The M4 backtest is four times the fits, so each
+  fitted design runs in its own process, and its snapshot may trail the ladder by 35 days
+  (`snapshotCoverage` in `m4-live.ts`) rather than having to match it origin for origin.
+- **`M4-blend-m3-direct`** — half M3's median, half `M4-gbm-direct`'s, scored from the two rungs'
+  predictions without a fit of its own. It meets the ladder's rule at 14 days (−0.29 m,
+  [−0.40, −0.19]) and 30 days (−0.25 m, [−0.46, −0.04]) and is published there; 7, 14 and 30 days
+  are the candidate horizons, each decided by the committed snapshot on every run.
+- **Open, and the owner's:** at seven days every boosted design, the blend included, is 0.26–0.30 m
+  closer than M3 with the interval below zero and a lower pinball loss, and loses the rule's band
+  clause because M3's coverage sits at 79.8% and theirs at 76.8–79.5%. Replacing "coverage no
+  further from 80%" with "pinball loss no higher" would publish the blend at seven days too; that
+  is a change to the rule, not to a model, and was not made.
+- **Tried and not adopted:** a shorter stance window (7 days, decay 0.93 against 30 days, 0.97) is
+  better on weekly origins at every horizon (2.10 m against 2.20 m at seven days, on an earlier
+  every-seventh-reading sample) and mixed on first-of-month ones. It did not repair the October
+  miss, and it has not been run through the paired test on the Monday set; that is the next
+  experiment, not a result.
+
 **Colombia's side of the interconnection, via XM — ingested 2026-09-22.** Recon (run
 35768453442, `RECON_REPORT.md` §10a) confirmed the contract of XM's official client — POST
 `/hourly` and `/daily` on `servapibi.xm.com.co`, at most a calendar month per request, a

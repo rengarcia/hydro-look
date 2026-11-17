@@ -121,7 +121,10 @@ export interface PairedComparison {
   winShare: number;
 }
 
-/** Six monthly origins per block spans a ninety-day forecast's overlap twice over. */
+/**
+ * Six monthly origins per block spans a ninety-day forecast's overlap twice over. Weekly origins
+ * need twenty-six for the same half year: pass `bootstrapBlockOrigins(cadence)` from `backtest.ts`.
+ */
 export const BOOTSTRAP_BLOCK_ORIGINS = 6;
 
 export function pairedAgainst(
@@ -129,6 +132,7 @@ export function pairedAgainst(
   modelId: string,
   referenceId: string,
   horizons: readonly number[],
+  block: number = BOOTSTRAP_BLOCK_ORIGINS,
   seed = 7,
 ): PairedComparison[] {
   return horizons.flatMap((horizonDays) => {
@@ -139,7 +143,7 @@ export function pairedAgainst(
       .filter((p) => p.modelId === modelId && p.horizonDays === horizonDays && reference.has(p.origin))
       .sort((a, b) => (a.origin < b.origin ? -1 : 1))
       .map((p) => Math.abs(p.actual - p.p50) - Math.abs(p.actual - reference.get(p.origin)!.p50));
-    const interval = pairedBlockBootstrap(pairs, BOOTSTRAP_BLOCK_ORIGINS, 2000, seed);
+    const interval = pairedBlockBootstrap(pairs, block, 2000, seed);
     if (!interval) return [];
     return [
       {
@@ -192,6 +196,12 @@ export interface M4Snapshot {
   runtimeSeconds: number;
   command: string;
   origins: IsoDate[];
+  /**
+   * How the origins are spaced, and the block the paired intervals were bootstrapped in. Absent
+   * from snapshots written before 2026-11-17, all of which were monthly in blocks of six.
+   */
+  cadence?: "monthly" | "weekly";
+  bootstrapBlockOrigins?: number;
   horizonDays: number[];
   settings: M4Settings;
   features: { base: string[]; m3: string[] };

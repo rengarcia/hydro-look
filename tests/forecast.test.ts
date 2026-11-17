@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 import { buildForecast, MODEL_VERSION, type HorizonSwitch, type ThresholdRef } from "../src/lib/models/forecast.ts";
-import { m4HorizonSwitch, type M4Evidence } from "../src/lib/models/m4-live.ts";
+import { m4HorizonSwitch, PUBLISHED_M4_ID, type M4Evidence } from "../src/lib/models/m4-live.ts";
 import { buildSeries } from "../src/lib/features/series.ts";
 import { volumeAt, levelAt, type Hypsometry } from "../src/lib/features/hydrology.ts";
 import { FORECAST_RUNS, FORECAST_VALUES, validateRows } from "../src/lib/contracts/tables.ts";
@@ -241,7 +241,8 @@ describe("the seven-day switch in the published forecast", () => {
 
   function switched(p50: number, evidence: M4Evidence = EVIDENCE) {
     const live = { horizonDays: 7, p50, ownP10: p50 - 1, ownP90: p50 + 1, anchorP50: p50 + 0.5 };
-    return build(calibration(-6, -0.4, 4), m4HorizonSwitch(evidence, live, null, "M3-water-balance"), M3_SCORES)!;
+    const candidates = [{ horizonDays: 7, evidence, live, fallback: null }];
+    return build(calibration(-6, -0.4, 4), m4HorizonSwitch(candidates, "M3-water-balance", null, "M4-gbm-direct"), M3_SCORES)!;
   }
 
   it("publishes M4 at seven days and M3 everywhere else, and says so on every row", () => {
@@ -274,7 +275,53 @@ describe("the seven-day switch in the published forecast", () => {
       { horizon_days: 7, model_id: "M4-gbm-direct" },
       { horizon_days: 30, model_id: "M3-water-balance" },
     ]);
-    expect(doc.horizon_switch).toMatchObject({ status: "published", published_model: "M4-gbm-direct" });
+    expect(doc.horizon_switch).toMatchObject({
+      status: "published",
+      published_model: "M4-gbm-direct",
+      horizon_days: 7,
+      candidate_horizons: [7],
+      published_horizons: [7],
+    });
+    // The ladder's spacing is stated beside the skill it produced.
+    expect((doc.backtest as unknown as { cadence: string }).cadence).toBe("monthly");
+  });
+
+  it("publishes the candidate at each horizon that earned it, and M3 at one that did not", () => {
+    const plain = build(calibration(-6, -0.4, 4), undefined, M3_SCORES)!;
+    const live = (horizonDays: number) => ({ horizonDays, p50: 2127.5, ownP10: 2126, ownP90: 2129, anchorP50: 2128 });
+    const out = build(
+      calibration(-6, -0.4, 4),
+      m4HorizonSwitch(
+        [
+          { horizonDays: 7, evidence: null, live: null, fallback: "its band is further from 80%" },
+          { horizonDays: 30, evidence: EVIDENCE, live: live(30), fallback: null },
+        ],
+        "M3-water-balance",
+      ),
+      M3_SCORES,
+    )!;
+    const doc = out.document as Doc;
+    expect(doc.forecast.find((h) => h.horizon_days === 7)!.model).toBe("M3-water-balance");
+    const [seven, plainSeven] = [out, plain].map((o) => o.valueRows.find((r) => r.horizon_days === 7)!);
+    expect([seven!.p10, seven!.p50, seven!.p90, seven!.model_id]).toEqual([
+      plainSeven!.p10,
+      plainSeven!.p50,
+      plainSeven!.p90,
+      "M3-water-balance",
+    ]);
+    expect(doc.forecast.find((h) => h.horizon_days === 30)!.model).toBe(PUBLISHED_M4_ID);
+    expect(doc.forecast.find((h) => h.horizon_days === 30)!.p50).toBe(2127.5);
+    expect(doc.horizon_switch).toMatchObject({
+      status: "published",
+      published_model: PUBLISHED_M4_ID,
+      candidate_horizons: [7, 30],
+      published_horizons: [30],
+      horizons: [
+        { horizon_days: 7, status: "fallback", published_model: "M3-water-balance", reason: "its band is further from 80%" },
+        { horizon_days: 30, status: "published", published_model: PUBLISHED_M4_ID, reason: null },
+      ],
+    });
+    expect(String(doc.horizon_switch!["reason"])).toContain("Not at 7 d: its band is further from 80%");
   });
 
   it("writes rows that satisfy the contracts, each carrying its model", () => {
@@ -303,7 +350,15 @@ describe("the seven-day switch in the published forecast", () => {
     const plain = build(calibration(-6, -0.4, 4), undefined, M3_SCORES)!;
     const out = build(
       calibration(-6, -0.4, 4),
-      m4HorizonSwitch(null, null, "the M4 snapshot was scored on 105 origins; the ladder now has 106", "M3-water-balance"),
+      m4HorizonSwitch(
+        [7, 30].map((horizonDays) => ({
+          horizonDays,
+          evidence: null,
+          live: null,
+          fallback: "the M4 snapshot was scored on 105 origins; the ladder now has 106",
+        })),
+        "M3-water-balance",
+      ),
       M3_SCORES,
     )!;
     const doc = out.document as Doc;

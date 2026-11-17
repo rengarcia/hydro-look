@@ -74,6 +74,38 @@ describe("scoreLevelForecasts", () => {
     expect(fourteen.pinballMean).toBeGreaterThan(0);
   });
 
+  it("sets persistence beside every level row: the origin's level, held, over the same rows", () => {
+    // The level falls 0.1 m a day, so holding the origin's level is off by 0.7 m at 7 days and 1.4 m at 14.
+    const m4 = card.groups.find((g) => g.modelId === "M4-gbm-m3-residual")!;
+    expect(m4.baselineMae).toBeCloseTo(0.7, 9);
+    expect(m4.skillVsBaseline).toBeCloseTo(1 - m4.mae! / 0.7, 9);
+    const fourteen = card.groups.find((g) => g.horizonDays === 14)!;
+    expect(fourteen.baselineMae).toBeCloseTo(1.4, 9);
+    // 2125 against 2128.6 observed: further off than doing nothing, and the skill says so.
+    expect(fourteen.skillVsBaseline).toBeLessThan(0);
+    const block = scorecardBlock(card, "2026-10-01T00:00:00Z") as { by_horizon: Record<string, unknown>[]; method: string };
+    expect(block.by_horizon.find((g) => g["horizon_days"] === 14)).toMatchObject({ persistence_mae: 1.4 });
+    expect(block.by_horizon.every((g) => typeof g["skill_vs_persistence"] === "number")).toBe(true);
+    expect(block.method).toContain("persistence_mae");
+    const report = renderScorecardReport({
+      generatedAt: "2026-10-01T00:00:00Z",
+      level: card,
+      adequacy: scoreAdequacyRuns([], [], [], []),
+    });
+    expect(report).toContain("persistence MAE | skill |");
+    expect(report).toContain("| 1.400 |");
+  });
+
+  it("reads the baseline from the level the run recorded at its origin when it recorded one", () => {
+    const recorded = scoreLevelForecasts(
+      [{ ...run("c1", "2026-09-01", "1", "2026-09-02T00:00:00Z"), origin_level_masl: "2131" }],
+      [value("c1", "2026-09-01", 7, 2128, 2129, 2130)],
+      () => levels,
+    );
+    expect(recorded.scored[0]!.baseline).toBe(2131);
+    expect(card.scored[0]!.baseline).toBe(levels.get("2026-09-01"));
+  });
+
   it("counts a row whose target has not come yet as pending, not as scored", () => {
     expect(card.rowsPending).toBe(1);
     expect(card.rowsScored).toBe(3);

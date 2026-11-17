@@ -179,7 +179,8 @@ export function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
           </div>
           <HorizonsTable forecast={forecast} />
           <p className="fine spaced">
-            «Mejora» sale de probar el pronóstico con datos del pasado, a inicios de cada mes desde 2018 ({forecast.model.backtest_origins}{" "}
+            «Mejora» sale de probar el pronóstico con datos del pasado,{" "}
+            {forecast.backtest.cadence === "weekly" ? "cada lunes" : "a inicios de cada mes"} desde 2018 ({forecast.model.backtest_origins}{" "}
             veces).
             {ties.length > 0
               ? ` A ${joinDays(ties)} días no acierta más que suponer que el nivel no cambia; lo publicamos igual, y lo decimos.`
@@ -187,10 +188,12 @@ export function Mazar({ forecast }: { forecast: ForecastDocument | null }) {
             El rango probable acertó entre el {num(Math.min(...coverage), 0)} % y el {num(Math.max(...coverage), 0)} % de las veces; lo
             ideal sería un 80 %.
             {switched.length > 0
-              ? ` La fila de ${joinDays(switched.map((h) => h.horizon_days))} días viene de otro modelo (${modelOf(switched[0]!)}), que corrige los errores del primero y es el único que mejora a una semana.`
+              ? modelOf(switched[0]!).includes("blend")
+                ? ` A ${joinDays(switched.map((h) => h.horizon_days))} días publicamos el promedio del modelo principal con un segundo modelo, que aprende de lo que hizo el embalse en los últimos días (${modelOf(switched[0]!)}): en las pruebas, ese promedio se equivocó menos que el modelo principal solo.`
+                : ` La fila de ${joinDays(switched.map((h) => h.horizon_days))} días viene de otro modelo (${modelOf(switched[0]!)}), que corrige los errores del primero.`
               : ""}
             {fellBack
-              ? ` Hoy los ${fellBack.horizon_days} días vuelven al modelo principal: ${fellBack.candidate_model} no se publica cuando no se pudo probar en las mismas fechas.`
+              ? ` Hoy todos los plazos usan el modelo principal: ${fellBack.candidate_model} no se publica cuando no se pudo probar en las mismas fechas o cuando en las pruebas no lo superó.`
               : ""}
           </p>
         </div>

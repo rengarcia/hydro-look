@@ -49,9 +49,11 @@ import {
 import { climatologicalDrift, persistence, seasonalAnomalyDecay } from "../src/lib/models/baselines.ts";
 import { createFitCache, DEFAULT_WATER_BALANCE, waterBalanceModel, type WaterBalanceOptions } from "../src/lib/models/water-balance.ts";
 import {
+  bootstrapBlockOrigins,
   crisisEpisodes,
   crisisLeadTime,
   DEFAULT_BACKTEST,
+  MONTHLY_BACKTEST,
   monthlyOrigins,
   runBacktest,
   type ModelScore,
@@ -69,9 +71,11 @@ import {
   fitM4Live,
   m4HorizonSwitch,
   m4SwitchCheck,
-  PUBLISHED_M4_HORIZON,
+  PUBLISHED_M4_HORIZONS,
   PUBLISHED_M4_ID,
   PUBLISHED_M4_SITE,
+  snapshotCoverage,
+  type M4Candidate,
   type M4LiveForecast,
 } from "../src/lib/models/m4-live.ts";
 import { DEFAULT_M4 } from "../src/lib/models/boosted.ts";
@@ -170,8 +174,9 @@ function main(): void {
   // The ladder, on its own shared origin set. The ENSO variant is scored separately below
   // because it declines about half the origins, and folding it in here would shrink the set
   // every other rung is judged on.
-  const ladder = runBacktest(inputs, [persistence, climatologicalDrift, seasonalAnomalyDecay, shipped], options);
-  console.log(`ladder: ${ladder.origins.length} origins`);
+  const rungs = [persistence, climatologicalDrift, seasonalAnomalyDecay, shipped];
+  const ladder = runBacktest(inputs, rungs, options);
+  console.log(`ladder: ${ladder.origins.length} ${options.cadence} origins`);
   for (const score of ladder.scores) {
     console.log(`  ${score.modelId.padEnd(26)}` + score.horizons.map((h) => `${h.horizonDays}d ${h.maeM.toFixed(2)}m`).join("  "));
   }
@@ -197,6 +202,7 @@ function main(): void {
     variant = { scores: run.scores, sharedOrigins: run.scores[0]?.horizons[0]?.n ?? 0 };
     console.log(`enso variant: scored on ${variant.sharedOrigins} shared origins`);
 
+    if (options.cadence !== MONTHLY_BACKTEST.cadence) experiments.push(monthlyOriginsSection(inputs, options, rungs, ladder, shipped.id));
     experiments.push(rainExperiment(inputs, options, shipped, cache, precip));
     experiments.push(sharedMembersExperiment(inputs, options, shipped, cache));
     experiments.push(
@@ -209,41 +215,37 @@ function main(): void {
   // reads it; otherwise M3, and the reason. Only for the site M4 was backtested on.
   const m4 = site === PUBLISHED_M4_SITE ? readM4Snapshot() : null;
   if (m4) {
-    const aligned = m4.origins.length === ladder.origins.length && m4.origins.every((o, i) => o === ladder.origins[i]);
-    console.log(`M4 snapshot ${m4.generatedAt}: ${m4.origins.length} origins, ${aligned ? "aligned with" : "stale against"} the ladder`);
-  }
-  const check =
-    site === PUBLISHED_M4_SITE
-      ? m4SwitchCheck(m4, ladder.origins, DEFAULT_M4, PUBLISHED_M4_ID, PUBLISHED_M4_HORIZON, precip.basin)
-      : ({ ok: false, reason: `M4 was backtested on ${PUBLISHED_M4_SITE} only` } as const);
-  let live: M4LiveForecast | null = null;
-  let fallback: string | null = check.ok ? null : check.reason;
-  if (check.ok) {
-    const started = performance.now();
-    live = fitM4Live({
-      origin: dates.at(-1)!,
-      levels,
-      inflow,
-      production,
-      covariates: { oni: readOni(), precip: precip.series, precipBasin: precip.basin },
-      crestM,
-      fits: cache,
-    });
+    const coverage = snapshotCoverage(m4.origins, ladder.origins);
     console.log(
-      `${PUBLISHED_M4_ID} at ${PUBLISHED_M4_HORIZON} d fitted at the live origin in ${((performance.now() - started) / 1000).toFixed(1)} s`,
+      `M4 snapshot ${m4.generatedAt}: ${m4.origins.length} origins, ` +
+        (coverage.covers ? `covers the ladder (${coverage.missing} origins, ${coverage.lagDays} days behind)` : "stale against the ladder"),
     );
-    if (!live) fallback = `${PUBLISHED_M4_ID} could not be fitted at the origin ${dates.at(-1)} (too few training rows)`;
   }
-  if (fallback) console.log(`${PUBLISHED_M4_HORIZON} d falls back to ${shipped.id}: ${fallback}`);
-  const horizonSwitch = m4HorizonSwitch(check.ok ? check.evidence : null, live, fallback, shipped.id, {
-    basin: precip.basin,
-    fallbackReason: precip.fallbackReason,
+  const covariates = { oni: readOni(), precip: precip.series, precipBasin: precip.basin };
+  const candidates: M4Candidate[] = PUBLISHED_M4_HORIZONS.map((horizonDays) => {
+    const check =
+      site === PUBLISHED_M4_SITE
+        ? m4SwitchCheck(m4, ladder.origins, DEFAULT_M4, PUBLISHED_M4_ID, horizonDays, precip.basin)
+        : ({ ok: false, reason: `M4 was backtested on ${PUBLISHED_M4_SITE} only` } as const);
+    if (!check.ok) return { horizonDays, evidence: null, live: null, fallback: check.reason };
+    const started = performance.now();
+    const live: M4LiveForecast | null = fitM4Live(
+      { origin: dates.at(-1)!, levels, inflow, production, covariates, crestM, fits: cache },
+      horizonDays,
+    );
+    console.log(`${PUBLISHED_M4_ID} at ${horizonDays} d made at the live origin in ${((performance.now() - started) / 1000).toFixed(1)} s`);
+    return {
+      horizonDays,
+      evidence: check.evidence,
+      live,
+      fallback: live ? null : `${PUBLISHED_M4_ID} could not be fitted at the origin ${dates.at(-1)} (too few training rows)`,
+    };
   });
+  for (const c of candidates) if (c.fallback) console.log(`${c.horizonDays} d falls back to ${shipped.id}: ${c.fallback}`);
+  const horizonSwitch = m4HorizonSwitch(candidates, shipped.id, { basin: precip.basin, fallbackReason: precip.fallbackReason });
   const published: PublishedSwitch = {
-    published: fallback === null,
     modelId: PUBLISHED_M4_ID,
-    horizonDays: PUBLISHED_M4_HORIZON,
-    reason: fallback,
+    horizons: candidates.map((c) => ({ horizonDays: c.horizonDays, published: c.fallback === null, reason: c.fallback })),
   };
 
   const thresholds = thresholdsFor(site);
@@ -258,6 +260,7 @@ function main(): void {
     modelId: shipped.id,
     modelLabel: shipped.label,
     backtestOrigins: ladder.origins.length,
+    backtestCadence: options.cadence,
     horizonSwitch,
     cache,
   });
@@ -276,7 +279,9 @@ function main(): void {
     process.exitCode = 1;
     return;
   }
-  const origins = monthlyOrigins(levels, DEFAULT_BACKTEST.firstOrigin, DEFAULT_BACKTEST.lastOrigin);
+  // Asked a month at a time, whatever the ladder's spacing: a sustained call is "this origin and
+  // every later one", and the run-up tables are read as the months before a crossing.
+  const origins = monthlyOrigins(levels, MONTHLY_BACKTEST.firstOrigin, MONTHLY_BACKTEST.lastOrigin);
   const calls = crossingCallsByOrigin(levels, inflow, production, origins, critical.levelMasl, crestM, DEFAULT_WATER_BALANCE, cache);
   const crisis: CrisisReport = {
     thresholdM: critical.levelMasl,
@@ -309,6 +314,7 @@ function main(): void {
     generatedAt,
     site,
     horizonDays: DEFAULT_BACKTEST.horizonDays,
+    cadence: options.cadence,
     ladder: ladder.scores,
     shippedModelId: shipped.id,
     variant,
@@ -388,11 +394,10 @@ function main(): void {
         `p10 ${horizon.p10.toFixed(2)}  p50 ${horizon.p50.toFixed(2)}  p90 ${horizon.p90.toFixed(2)}  ${horizon.model_id ?? ""}`,
     );
   }
-  const switched = (forecast.document["forecast"] as Record<string, unknown>[]).find((h) => h["would_have_published"]);
-  if (switched) {
+  for (const switched of (forecast.document["forecast"] as Record<string, unknown>[]).filter((h) => h["would_have_published"])) {
     const m3 = switched["would_have_published"] as { p10: number; p50: number; p90: number };
     console.log(
-      `  (${shipped.id} would have published +${PUBLISHED_M4_HORIZON}d p10 ${m3.p10.toFixed(2)}  p50 ${m3.p50.toFixed(2)}  p90 ${m3.p90.toFixed(2)})`,
+      `  (${shipped.id} would have published +${String(switched["horizon_days"])}d p10 ${m3.p10.toFixed(2)}  p50 ${m3.p50.toFixed(2)}  p90 ${m3.p90.toFixed(2)})`,
     );
   }
 
@@ -430,6 +435,64 @@ function main(): void {
 
 type Inputs = Parameters<typeof runBacktest>[0];
 type Options = Parameters<typeof runBacktest>[2];
+
+/**
+ * The ladder as it was scored until 2026-11-17, beside the weekly one that replaced it, with the
+ * shipped model paired against persistence on both. Rerun daily so the old numbers stay
+ * readable next to the new ones, and so the reason for the move is a table and not a memory.
+ */
+function monthlyOriginsSection(
+  inputs: Inputs,
+  options: Options,
+  rungs: Parameters<typeof runBacktest>[1],
+  ladder: ReturnType<typeof runBacktest>,
+  shippedId: string,
+): ExperimentSection {
+  const monthly = runBacktest(inputs, rungs, { ...MONTHLY_BACKTEST, crestM: options.crestM });
+  const H = options.horizonDays;
+  const signed = (x: number) => `${x < 0 ? "−" : "+"}${Math.abs(x).toFixed(2)}`;
+  const pairedRow = (label: string, run: ReturnType<typeof runBacktest>, block: number) =>
+    `| ${label} | ${pairedAgainst(run.predictions, shippedId, persistence.id, H, block)
+      .map((p) => `${signed(p.maeDifferenceM)} [${signed(p.low90)}, ${signed(p.high90)}], ${(p.winShare * 100).toFixed(1)}%`)
+      .join(" | ")} |`;
+  const nWeekly = ladder.scores[0]?.horizons[0]?.n ?? 0;
+  const nMonthly = monthly.scores[0]?.horizons[0]?.n ?? 0;
+  const at = (run: ReturnType<typeof runBacktest>, h: number) =>
+    run.scores.find((sc) => sc.modelId === shippedId)?.horizons.find((x) => x.horizonDays === h)?.skillVsPersistence ?? null;
+  const shortest = Math.min(...H);
+  const pct = (x: number | null) => (x === null ? "—" : `${(x * 100).toFixed(1)}%`);
+  console.log(
+    `monthly origins (${nMonthly}): ${shippedId} ${shortest} d skill ${pct(at(monthly, shortest))} against ${pct(at(ladder, shortest))} weekly`,
+  );
+  return {
+    heading: "The same ladder on first-of-month origins (how it was scored until 2026-11-17)",
+    body: [
+      `Every table above is scored on ${nWeekly} weekly origins. Until 2026-11-17 the ladder was scored on the first of ` +
+        `each month — ${nMonthly} origins today — and every number published before that date came from that set. Mean ` +
+        "absolute error on it, metres:",
+      scoreTable(monthly.scores, H, (h) => h.maeM.toFixed(3)),
+      "Skill against persistence on it:",
+      scoreTable(monthly.scores, H, (h) => (h.skillVsPersistence === null ? "—" : `${(h.skillVsPersistence * 100).toFixed(1)}%`)),
+      `${shippedId} paired against persistence on each set: mean of |error| − |error of persistence|, metres (negative means ` +
+        "the model was closer), with a 90% block-bootstrap interval over about half a year of origins a block, and the share " +
+        "of origins where the model was the closer of the two:",
+      [
+        `| origins | ${H.map((h) => `h=${h}`).join(" | ")} |`,
+        `|---|${H.map(() => "---").join("|")}|`,
+        pairedRow(`weekly (${nWeekly})`, ladder, bootstrapBlockOrigins("weekly")),
+        pairedRow(`first of the month (${nMonthly})`, monthly, bootstrapBlockOrigins("monthly")),
+      ].join("\n"),
+      `**Why the ladder moved.** At ${shortest} days ${shippedId} scores ${pct(at(monthly, shortest))} against persistence on the ` +
+        `first-of-month origins and ${pct(at(ladder, shortest))} on the weekly ones. The first of the month is one day in thirty, ` +
+        "and a hundred of them is too few to tell two rungs apart under a month — which is where every close call on this ladder " +
+        "has been. The weekly set is about four times the origins, though not four times the information, since neighbouring " +
+        "weeks share most of a sixty- or ninety-day outcome; the block bootstrap is what keeps the intervals honest about that. " +
+        "The paired rows are the comparison to read: where both intervals lie below zero, the model's skill does not depend on " +
+        "which days it is tested on; where only the first-of-month one does, it did. The published band is cut from the weekly " +
+        "set's residuals from model version 5 on, and the crisis check below is still asked a month at a time.",
+    ],
+  };
+}
 
 /**
  * §5.4's upper bound: the analogue years nearest the rain that actually fell over the next
@@ -547,7 +610,7 @@ function inflowStateExperiment(
     : [];
   const run = runBacktest(inputs, [replayed, shipped, ...sensitivity], options);
   const verdict = comparison(run.scores, replayedId, shipped.id);
-  const paired = pairedAgainst(run.predictions, shipped.id, replayedId, options.horizonDays);
+  const paired = pairedAgainst(run.predictions, shipped.id, replayedId, options.horizonDays, bootstrapBlockOrigins(options.cadence));
   const signed = (x: number) => `${x < 0 ? "−" : "+"}${Math.abs(x).toFixed(2)}`;
   // Why each horizon in `worseAt` fails the rule: its MAE, its band, or both.
   const shortfalls = () =>
@@ -581,7 +644,7 @@ function inflowStateExperiment(
             inputs.levels,
             inputs.inflow,
             inputs.production,
-            monthlyOrigins(inputs.levels, DEFAULT_BACKTEST.firstOrigin, DEFAULT_BACKTEST.lastOrigin),
+            monthlyOrigins(inputs.levels, MONTHLY_BACKTEST.firstOrigin, MONTHLY_BACKTEST.lastOrigin),
             criticalM,
             options.crestM,
             i === 0 ? replayedOptions : DEFAULT_WATER_BALANCE,

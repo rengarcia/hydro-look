@@ -348,6 +348,19 @@
         "report": {
           "type": "string"
         },
+        "origins": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Origins the ladder was scored on. Additive; absent in documents written before 2026-11-17."
+        },
+        "cadence": {
+          "type": "string",
+          "enum": [
+            "monthly",
+            "weekly"
+          ],
+          "description": "How those origins are spaced: the first of each month until 2026-11-17, every Monday since. Additive; absent means monthly."
+        },
         "horizons": {
           "type": "array",
           "items": {
@@ -793,6 +806,20 @@
                   "null"
                 ],
                 "description": "Mean of observed minus p50, in units."
+              },
+              "persistence_mae": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "Mean absolute error of holding the origin day's value over the same rows, in units. Null where no baseline is defined. Additive; absent in documents written before 2026-11-17."
+              },
+              "skill_vs_persistence": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "1 − mae / persistence_mae over the rows that carry a baseline; above zero beats doing nothing. Additive; absent in documents written before 2026-11-17."
               },
               "n_band": {
                 "type": "integer",

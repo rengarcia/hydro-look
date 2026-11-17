@@ -7,7 +7,7 @@ import { REPO, SectionIntro } from "../Chrome.tsx";
 import type { AdequacyDocument, ForecastDocument } from "../../../lib/site/documents.ts";
 import { num, pct } from "../../../lib/site/format.ts";
 import { METHOD_NOTES, modelNotes, splitCode } from "../../../lib/site/method.ts";
-import { countWord } from "../../../lib/site/story.ts";
+import { countWord, joinDays, SKILL_TIE } from "../../../lib/site/story.ts";
 
 /** Text with its backticked parts set as code. */
 export function Rich({ text }: { text: string }) {
@@ -17,6 +17,10 @@ export function Rich({ text }: { text: string }) {
 export function Method({ forecast, adequacy }: { forecast: ForecastDocument | null; adequacy: AdequacyDocument | null }) {
   const sixty = forecast?.backtest.horizons.find((h) => h.horizon_days === 60);
   const ninety = forecast?.backtest.horizons.find((h) => h.horizon_days === 90);
+  // The horizons under two months where the published number does not beat "no change" in the tests.
+  const noBetter = (forecast?.backtest.horizons ?? [])
+    .filter((h) => h.horizon_days < 60 && h.skill_vs_persistence < SKILL_TIE)
+    .map((h) => h.horizon_days);
   const tiers = adequacy?.tier_history;
   const firstA = adequacy?.horizons[0];
   const ninetyA = adequacy?.horizons.find((h) => h.horizon_days === 90);
@@ -44,7 +48,8 @@ export function Method({ forecast, adequacy }: { forecast: ForecastDocument | nu
           <p>
             <strong>¿Qué tan bueno es el pronóstico de Mazar?</strong> Lo probamos con datos del pasado, {forecast.model.backtest_origins}{" "}
             veces. A 60 días acierta {pct(sixty.skill_vs_persistence * 100, 1)} más que suponer que el nivel no cambia, y a 90 días,{" "}
-            {pct(ninety.skill_vs_persistence * 100, 1)} más. A menos de un mes no mejora esa suposición. En 2024 Mazar bajó{" "}
+            {pct(ninety.skill_vs_persistence * 100, 1)} más.
+            {noBetter.length > 0 ? ` A ${joinDays(noBetter)} días no mejora esa suposición.` : ""} En 2024 Mazar bajó{" "}
             {countWord(forecast.crisis_check.episodes.length)} veces de {num(forecast.crisis_check.threshold_masl, 0)} m y el valor más
             probable no anticipó ninguna; dio {forecast.crisis_check.false_alarms_p50}{" "}
             {forecast.crisis_check.false_alarms_p50 === 1 ? "falsa alarma" : "falsas alarmas"}. Los resultados, también los malos, están en{" "}

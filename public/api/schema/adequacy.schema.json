@@ -885,6 +885,20 @@
                 ],
                 "description": "Mean of observed minus p50, in units."
               },
+              "persistence_mae": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "Null in this document: the requirement's baseline is a trailing mean the adequacy backtest owns, and is not recomputed here. Additive; absent in documents written before 2026-11-17."
+              },
+              "skill_vs_persistence": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "Null in this document; see persistence_mae. Additive; absent in documents written before 2026-11-17."
+              },
               "n_band": {
                 "type": "integer",
                 "minimum": 0,

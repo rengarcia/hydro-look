@@ -101,27 +101,64 @@ describe("the M4 section of the backtest report", () => {
     expect(report).toContain("does not beat M3-water-balance at any horizon");
   });
 
-  it("stays out of the ladder's tables, and says it is stale, when the origins differ", () => {
+  it("stays in the ladder's tables, saying how far behind it is, while it trails by no more than the allowed lag", () => {
+    // 2018-02-01 to 2018-03-01 is 28 days: inside the 35 the snapshot may trail the ladder by.
     const report = renderBacktestReport(inputs(snapshot(ORIGINS.slice(0, 2))));
+    expect(maeTable(report)).toContain("| M4-gbm-m3-residual | 7.500 | 7.500 |");
+    expect(report).toContain("the first 2 of these origins (the newest 1 are not in its rows yet");
+    expect(report).not.toContain("the ladder above now has");
+  });
+
+  it("stays out of the ladder's tables, and says it is stale, once it trails by more than that", () => {
+    // 2018-01-01 to 2018-03-01 is 59 days.
+    const report = renderBacktestReport(inputs(snapshot(ORIGINS.slice(0, 1))));
     expect(maeTable(report)).not.toContain("M4-gbm");
-    expect(report).toContain("was scored on 2 origins");
+    expect(report).toContain("was scored on 1 origins");
     expect(report).toContain("the ladder above now has 3");
+    expect(report).toContain("59 days past the snapshot's last");
+  });
+
+  it("stays out of the ladder's tables when its origins are not the ladder's first ones", () => {
+    const report = renderBacktestReport(inputs(snapshot(["2018-01-08", "2018-01-15", "2018-01-22"])));
+    expect(maeTable(report)).not.toContain("M4-gbm");
+    expect(report).toContain("are not the first of them");
+  });
+
+  it("says which origins the ladder is scored on", () => {
+    expect(renderBacktestReport(inputs(null))).toContain("Origins are the first of each month");
+    expect(renderBacktestReport({ ...inputs(null), cadence: "weekly" })).toContain("Origins are every Monday");
   });
 
   it("states plainly which horizon publishes M4, or why this run fell back to M3", () => {
     const published = renderBacktestReport({
       ...inputs(snapshot(ORIGINS)),
-      published: { published: true, modelId: "M4-gbm-m3-residual", horizonDays: 7, reason: null },
+      published: { modelId: "M4-gbm-m3-residual", horizons: [{ horizonDays: 7, published: true, reason: null }] },
     });
     expect(published).toContain("**7 days publishes M4-gbm-m3-residual; every other horizon publishes M3-water-balance.**");
 
     const fellBack = renderBacktestReport({
-      ...inputs(snapshot(ORIGINS.slice(0, 2))),
-      published: { published: false, modelId: "M4-gbm-m3-residual", horizonDays: 7, reason: "the snapshot is stale." },
+      ...inputs(snapshot(ORIGINS.slice(0, 1))),
+      published: { modelId: "M4-gbm-m3-residual", horizons: [{ horizonDays: 7, published: false, reason: "the snapshot is stale." }] },
     });
     expect(fellBack).toContain(
       "**7 days would publish M4-gbm-m3-residual, but this run falls back to M3-water-balance:** the snapshot is stale.",
     );
     expect(fellBack).not.toContain("7 days publishes M4");
+  });
+
+  it("names every candidate horizon: the ones that publish, and why the others do not", () => {
+    const report = renderBacktestReport({
+      ...inputs(snapshot(ORIGINS)),
+      published: {
+        modelId: "M4-gbm-m3-residual",
+        horizons: [
+          { horizonDays: 7, published: false, reason: "its band is further from 80%" },
+          { horizonDays: 14, published: true, reason: null },
+          { horizonDays: 30, published: true, reason: null },
+        ],
+      },
+    });
+    expect(report).toContain("**14 and 30 days publish M4-gbm-m3-residual; every other horizon publishes M3-water-balance.**");
+    expect(report).toContain("It is a candidate at 7 days too, and does not publish there: its band is further from 80%.");
   });
 });
