@@ -129,6 +129,21 @@ describe("withProvisionalBalance", () => {
     expect(merged.rows.some((r) => (r as { source?: string }).source === PROVISIONAL_BALANCE_SOURCE)).toBe(false);
   });
 
+  it("counts a filled day as covering only while it is newer than SMEC's newest usable day", () => {
+    // Past SMEC's front edge (it served 09-01 → 09-20): standing in for it.
+    const front = withProvisionalBalance(smec, withLate);
+    expect(front.coveringDates).toEqual([late]);
+
+    // A hole SMEC left behind it and never re-served: still filled, but covering nothing current.
+    const hole = "2026-09-10";
+    const behind = withProvisionalBalance(
+      smec.filter((r) => r.date !== hole),
+      operativa,
+    );
+    expect(behind.provisionalDates).toEqual([hole]);
+    expect(behind.coveringDates).toEqual([]);
+  });
+
   it("replaces a SMEC day it cannot use whole, never mixing the two on one date", () => {
     // SMEC served the date mid-render: generation without demand.
     const partial = smecDay(late, 4, 1).filter((r) => r.concepto !== "demanda_distribucion");
