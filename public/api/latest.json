@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-19T08:03:18Z",
+  "generated_at": "2026-11-19T21:03:20Z",
   "data_date": "2026-11-18",
   "as_of": "2026-11-19",
   "disclaimer": "No es una fuente oficial. Cada número es una copia de lo que publicaron CELEC o CENACE, con la respuesta que lo produjo archivada junto a él.",
@@ -10,7 +10,7 @@
       "label": "Mazar",
       "basin": "paute",
       "level": {
-        "masl": 2120.14,
+        "masl": 2120.13,
         "date": "2026-11-18",
         "first_reading": "2014-09-20",
         "days": 4443,
@@ -31,8 +31,8 @@
           "source": "celec sur via press",
           "observed_from": "2024-04-16",
           "observed_to": "2026-10-09",
-          "band_pct": 13.51,
-          "metres_above_min": 5.14
+          "band_pct": 13.5,
+          "metres_above_min": 5.13
         },
         {
           "min_masl": 2100,
@@ -42,8 +42,8 @@
           "source": "ords:repDiaHid12m",
           "observed_from": "2014-09-20",
           "observed_to": "2026-09-20",
-          "band_pct": 37.99,
-          "metres_above_min": 20.14
+          "band_pct": 37.98,
+          "metres_above_min": 20.13
         },
         {
           "min_masl": 2098,
@@ -53,8 +53,8 @@
           "source": "celec dashboard bundle",
           "observed_from": "2026-09-21",
           "observed_to": "2026-09-21",
-          "band_pct": 40.25,
-          "metres_above_min": 22.14
+          "band_pct": 40.24,
+          "metres_above_min": 22.13
         },
         {
           "min_masl": 2100,
@@ -64,17 +64,17 @@
           "source": "ords:repDiaVolAlm",
           "observed_from": "2026-09-21",
           "observed_to": "2026-09-21",
-          "band_pct": 37.99,
-          "metres_above_min": 20.14
+          "band_pct": 37.98,
+          "metres_above_min": 20.13
         }
       ],
       "slopes_m_per_day": {
-        "d7": -0.7921,
-        "d14": -0.5514,
-        "d30": -0.0455
+        "d7": -0.7926,
+        "d14": -0.5517,
+        "d30": -0.0456
       },
       "inflow": {
-        "m3s": 27.01,
+        "m3s": 25.6,
         "date": "2026-11-18",
         "first_reading": "2010-02-10",
         "days": 6120,
@@ -84,13 +84,13 @@
           "p90": 92.6,
           "years": 17,
           "n": 248,
-          "percentile_today": 31.9
+          "percentile_today": 29
         },
         "previous": {
           "m3s": 16.7,
           "date": "2026-11-17"
         },
-        "delta_1d_m3s": 10.31,
+        "delta_1d_m3s": 8.9,
         "return_periods": {
           "geoglows": {
             "river_id": 620988388,
@@ -1195,23 +1195,23 @@
       "label": "Coca Codo Sinclair",
       "basin": "coca",
       "level": {
-        "masl": 1216.6,
-        "date": "2026-11-17",
+        "masl": 1216.9,
+        "date": "2026-11-18",
         "first_reading": "2016-06-26",
-        "days": 3791,
+        "days": 3792,
         "observed_min_masl": 1198,
         "observed_max_masl": 1230.5,
         "previous": {
-          "masl": 1217.8,
-          "date": "2026-11-16"
+          "masl": 1216.6,
+          "date": "2026-11-17"
         },
-        "delta_1d_m": -1.2
+        "delta_1d_m": 0.3
       },
       "bands": [],
       "slopes_m_per_day": {
-        "d7": -0.3429,
-        "d14": -0.0643,
-        "d30": -0.03
+        "d7": -0.1,
+        "d14": -0.0857,
+        "d30": -0.0133
       },
       "inflow": {
         "m3s": 206,
@@ -1360,80 +1360,80 @@
     }
   ],
   "national": {
-    "date": "2026-11-17",
+    "date": "2026-11-18",
     "supply_gwh": [
       {
         "concept": "generacion_hidraulica",
-        "gwh": 82.373,
-        "pct": 75.96
+        "gwh": 82.783,
+        "pct": 76.42
       },
       {
         "concept": "generacion_motores_bunker",
-        "gwh": 10.351,
-        "pct": 9.55
+        "gwh": 10.482,
+        "pct": 9.68
       },
       {
         "concept": "generacion_vapor_bunker",
-        "gwh": 7.728,
-        "pct": 7.13
+        "gwh": 7.616,
+        "pct": 7.03
       },
       {
         "concept": "generacion_turbinas_diesel",
-        "gwh": 4.516,
-        "pct": 4.16
+        "gwh": 4.198,
+        "pct": 3.88
       },
       {
         "concept": "generacion_turbinas_gas",
-        "gwh": 2.997,
-        "pct": 2.76
-      },
-      {
-        "concept": "total_importacion",
-        "gwh": 0.275,
-        "pct": 0.25
+        "gwh": 2.966,
+        "pct": 2.74
       },
       {
         "concept": "generacion_otros_tipos",
-        "gwh": 0.198,
-        "pct": 0.18
+        "gwh": 0.153,
+        "pct": 0.14
+      },
+      {
+        "concept": "total_importacion",
+        "gwh": 0.126,
+        "pct": 0.12
       }
     ],
-    "total_generation_gwh": 108.162,
-    "total_import_gwh": 0.275,
-    "total_export_gwh": 0.115,
-    "distribution_demand_gwh": 96.115,
-    "transport_losses_gwh": 1.659,
+    "total_generation_gwh": 108.198,
+    "total_import_gwh": 0.126,
+    "total_export_gwh": 0.101,
+    "distribution_demand_gwh": 95.667,
+    "transport_losses_gwh": 1.922,
     "provisional": false,
-    "hydro_share_pct": 75.96,
-    "thermal_share_pct": 23.6,
-    "import_share_pct": 0.25,
+    "hydro_share_pct": 76.42,
+    "thermal_share_pct": 23.32,
+    "import_share_pct": 0.12,
     "previous": {
-      "date": "2026-11-16",
-      "total_generation_gwh": 105.409,
-      "total_import_gwh": 0.392,
-      "hydro_share_pct": 75.19,
-      "thermal_share_pct": 24.25,
-      "import_share_pct": 0.37
+      "date": "2026-11-17",
+      "total_generation_gwh": 108.162,
+      "total_import_gwh": 0.275,
+      "hydro_share_pct": 75.96,
+      "thermal_share_pct": 23.6,
+      "import_share_pct": 0.25
     },
     "delta_1d": {
-      "hydro_share_pct_points": 0.77,
-      "thermal_share_pct_points": -0.65,
-      "import_share_pct_points": -0.12,
-      "total_generation_gwh": 2.753
+      "hydro_share_pct_points": 0.46,
+      "thermal_share_pct_points": -0.28,
+      "import_share_pct_points": -0.13,
+      "total_generation_gwh": 0.036
     }
   },
   "live": {
     "date": "2026-11-19",
-    "fetched_at": "2026-11-19T08:01:26Z",
-    "total_production_gwh": 14.048,
-    "hydro_gwh": 9.934,
-    "thermal_gwh": 4.065,
-    "nonconventional_gwh": 0.014,
-    "import_gwh": 0.003,
-    "export_gwh": 0.008,
-    "hydro_share_pct": 70.7,
-    "thermal_share_pct": 28.93,
-    "import_share_pct": 0.02
+    "fetched_at": "2026-11-19T21:02:13Z",
+    "total_production_gwh": 71.595,
+    "hydro_gwh": 51.964,
+    "thermal_gwh": 19.216,
+    "nonconventional_gwh": 0.293,
+    "import_gwh": 0.039,
+    "export_gwh": 0.015,
+    "hydro_share_pct": 72.54,
+    "thermal_share_pct": 26.83,
+    "import_share_pct": 0.05
   },
   "adequacy": {
     "origin_date": "2026-11-17",
