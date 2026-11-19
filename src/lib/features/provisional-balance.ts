@@ -187,6 +187,14 @@ export interface MergedBalance<Row> {
   rows: (Row | (BalanceCsvRow & { source: string }))[];
   /** The dates filled from Información Operativa, oldest first. */
   provisionalDates: IsoDate[];
+  /**
+   * The filled dates newer than SMEC's newest usable day: the ones standing in for SMEC at its
+   * front edge, rather than holes SMEC left behind it and never went back to. This is what
+   * freshness reads. After the 2026-11-06 outage SMEC came back on 2026-11-11 without re-serving
+   * 2026-11-05 → 10, and those old fills kept "the provisional feed" aging until it failed every
+   * daily apply, although SMEC itself was current and nothing was standing in for it.
+   */
+  coveringDates: IsoDate[];
   calibration: BalanceCalibration | null;
 }
 
@@ -202,14 +210,17 @@ export function withProvisionalBalance<Row extends BalanceCsvRow>(
   const smec = readBalance(smecRows);
   const operativa = operativaDays(operativaRows);
   const calibration = calibrate(smec.days, operativa);
-  if (calibration === null) return { rows: [...smecRows], provisionalDates: [], calibration };
+  if (calibration === null) return { rows: [...smecRows], provisionalDates: [], coveringDates: [], calibration };
 
   const usable = new Set(smec.days.map((d) => d.date));
   const fill = operativa.filter((d) => !usable.has(d.date));
   const filled = new Set(fill.map((d) => d.date));
+  const smecLatest = smec.days.at(-1)?.date ?? null;
+  const provisionalDates = fill.map((d) => d.date);
   return {
     rows: [...smecRows.filter((row) => !filled.has(row.date)), ...fill.flatMap((d) => provisionalRowsFor(d, calibration))],
-    provisionalDates: fill.map((d) => d.date),
+    provisionalDates,
+    coveringDates: provisionalDates.filter((date) => smecLatest === null || date > smecLatest),
     calibration,
   };
 }

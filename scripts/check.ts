@@ -89,7 +89,7 @@ const FRESHNESS_LIMIT_DAYS: Record<string, number> = {
   "ORDS historian (pointValues)": 3,
   "CENACE SMEC national balance": 4,
   // Información Operativa shows a closed day two to four days late, and only the newest one; six
-  // days is that lag plus a missed run. Only the days SMEC has not served count, so this feed
+  // days is that lag plus a missed run. Only the days past SMEC's newest count, so this feed
   // has no rows at all while SMEC is healthy, and is reported, not failed, in that state.
   "National balance, provisional (Información Operativa)": 6,
   "CENACE Información Operativa": 3,
@@ -243,10 +243,12 @@ function main(): void {
   findings.push(...checkQuarantine(quarantineFiles()));
 
   const bySource = (source: string) => (row: Record<string, string>) => row["source"] === source;
-  // The days SMEC has not served that Información Operativa covers (features/provisional-balance.ts).
+  // The days past SMEC's newest that Información Operativa covers (features/provisional-balance.ts).
   // While the newest of them is within its own limit, a stale SMEC is a warning: the outage is
   // still on the status page, but the adequacy model and the site are standing on current data.
-  const provisional = withProvisionalBalance(national.rows as never, operativa.rows as never).provisionalDates;
+  // Older holes SMEC left behind it do not count: once SMEC is current again nothing is standing
+  // in for it, and the feed is reported as empty rather than aging into a failure.
+  const provisional = withProvisionalBalance(national.rows as never, operativa.rows as never).coveringDates;
   const provisionalLatest = provisional.at(-1) ?? null;
   const provisionalLabel = "National balance, provisional (Información Operativa)";
   const provisionalCovers = checkFreshness(
