@@ -1,12 +1,12 @@
 # Scorecard — how the published forecasts did
 
-Generated 2026-11-19T02:06:05Z by `npm run score` from the committed tables; no network. The backtest reports (`backtest.md`, `adequacy.md`) say how each method scores at past origins it never published from; this says how the numbers the site actually published did once their horizons passed.
+Generated 2026-11-19T08:03:15Z by `npm run score` from the committed tables; no network. The backtest reports (`backtest.md`, `adequacy.md`) say how each method scores at past origins it never published from; this says how the numbers the site actually published did once their horizons passed.
 
 Rows are grouped by the model that published them and the version of the run that made them, so a method change starts a new line rather than blending into the old one. Where an origin was published more than once (a rerun on revised data), only the last run generated is scored.
 
 ## Mazar level (forecast_values)
 
-Observed through 2026-11-17. 51 runs considered (8 superseded by a later run for the same origin and version); 124 rows scored, 131 pending, 0 excluded.
+Observed through 2026-11-18. 52 runs considered (8 superseded by a later run for the same origin and version); 126 rows scored, 134 pending, 0 excluded.
 
 | model | version | horizon | n | MAE (m) | persistence MAE | skill | bias | coverage p10–p90 (n) | pinball | origins |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
@@ -21,8 +21,8 @@ Observed through 2026-11-17. 51 runs considered (8 superseded by a later run for
 | M3-water-balance | 3 | 30 d | 10 | 1.822 | 2.761 | 34% | 1.777 | 100% (10) | 0.885 | 2026-10-02 → 2026-10-11 |
 | M4-gbm-direct | 3 | 7 d | 10 | 2.789 | 4.762 | 41% | -2.580 | 60% (10) | 0.952 | 2026-10-02 → 2026-10-11 |
 | M3-water-balance | 4 | 7 d | 25 | 3.805 | 2.183 | -74% | 2.922 | 36% (25) | 1.221 | 2026-10-12 → 2026-11-05 |
-| M3-water-balance | 4 | 14 d | 23 | 6.514 | 3.139 | -108% | 5.103 | 39% (23) | 2.461 | 2026-10-12 → 2026-11-03 |
-| M3-water-balance | 4 | 30 d | 7 | 6.816 | 0.559 | -1119% | 6.816 | 43% (7) | 1.970 | 2026-10-12 → 2026-10-18 |
+| M3-water-balance | 4 | 14 d | 24 | 6.612 | 3.330 | -99% | 4.521 | 38% (24) | 2.458 | 2026-10-12 → 2026-11-04 |
+| M3-water-balance | 4 | 30 d | 8 | 6.535 | 0.660 | -890% | 6.535 | 50% (8) | 1.896 | 2026-10-12 → 2026-10-19 |
 
 Persistence MAE is the error of holding the origin day's level, over the same rows; skill is 1 − MAE / persistence MAE, so a negative skill means the published number was further from what happened than no forecast at all.
 
