@@ -1,6 +1,6 @@
 # Backtest — mazar level forecast
 
-Generated 2026-11-18T23:12:58Z from the committed tables; no network. Origins are every Monday (weekly since 2026-11-17; the first of each month before that), each one refitting every model on the data before it. 463 origins scored per horizon, 411 of them with a calibrated band (the first 52 are the calibration's warm-up).
+Generated 2026-11-19T02:05:27Z from the committed tables; no network. Origins are every Monday (weekly since 2026-11-17; the first of each month before that), each one refitting every model on the data before it. 463 origins scored per horizon, 411 of them with a calibrated band (the first 52 are the calibration's warm-up).
 
 Level history: 4442 days, 2014-09-20 → 2026-11-17.
 
@@ -296,7 +296,7 @@ The upper bound first. At each origin the analogue pool is narrowed to the half 
 |---|---|---|---|---|---|
 | M0-persistence | 2.018 (0.0%) | 3.343 (0.0%) | 5.837 (0.0%) | 9.261 (0.0%) | 11.288 (0.0%) |
 | M3-water-balance | 2.091 (-3.6%) | 3.372 (-0.9%) | 5.282 (9.5%) | 7.090 (23.4%) | 7.607 (32.6%) |
-| M3-water-balance-rain-pf | 2.107 (-4.5%) | 3.359 (-0.5%) | 5.269 (9.7%) | 7.196 (22.3%) | 7.576 (32.9%) |
+| M3-water-balance-rain-pf | 2.109 (-4.5%) | 3.359 (-0.5%) | 5.269 (9.7%) | 7.196 (22.3%) | 7.576 (32.9%) |
 
 MAE in metres, skill against persistence in brackets. Coverage of the calibrated p10–p90 band:
 
