@@ -1,24 +1,10 @@
 {
-  "generated_at": "2026-11-19T23:43:35Z",
-  "command": "covariates",
+  "generated_at": "2026-11-19T23:43:45Z",
+  "command": "xm",
   "source": "all",
-  "requests": 30,
-  "errors": [
-    "forecast:paute:-2.6:-78.6:2026-11-19:2026-12-04: Error: forecast:paute:-2.6:-78.6:2026-11-19:2026-12-04: gave up after 4 attempts in 48776 ms: ConnectTimeoutError: Connect Timeout Error (attempted address: api.open-meteo.com:443, timeout: 10000ms)",
-    "forecast:paute_mazar:-2.8819:-78.9173:2026-11-19:2026-12-04: Error: forecast:paute_mazar:-2.8819:-78.9173:2026-11-19:2026-12-04: gave up after 4 attempts in 46028 ms: ConnectTimeoutError: Connect Timeout Error (attempted address: api.open-meteo.com:443, timeout: 10000ms)",
-    "forecast:coca_ccs:-0.3034:-77.9266:2026-11-19:2026-12-04: Error: forecast:coca_ccs:-0.3034:-77.9266:2026-11-19:2026-12-04: gave up after 4 attempts in 48664 ms: ConnectTimeoutError: Connect Timeout Error (attempted address: api.open-meteo.com:443, timeout: 10000ms)"
-  ],
-  "notes": [
-    "paute: provisional sampling point, not a verified basin centroid",
-    "era5:paute:-2.6:-78.6:2026-10-15:2026-11-13: 1 days have missing weather values",
-    "era5:paute_mazar:-2.8819:-78.9173:2026-10-15:2026-11-13: 1 days have missing weather values",
-    "era5:coca_ccs:-0.3034:-77.9266:2026-10-15:2026-11-13: 1 days have missing weather values",
-    "era5:pastaza_agoyan:-1.4018:-78.6128:2026-10-15:2026-11-13: 1 days have missing weather values",
-    "era5:guayllabamba_manduriacu:-0.0475:-78.4355:2026-10-15:2026-11-13: 1 days have missing weather values",
-    "era5:daule_marcel_laniado:-0.544:-79.6412:2026-10-15:2026-11-13: 1 days have missing weather values",
-    "era5:jubones_msf:-3.3653:-79.2546:2026-10-15:2026-11-13: 1 days have missing weather values",
-    "era5:zamora_delsitanisagua:-3.8792:-79.1596:2026-10-15:2026-11-13: 1 days have missing weather values"
-  ],
+  "requests": 22,
+  "errors": [],
+  "notes": [],
   "tables": {
     "observations_daily": {
       "rows": 93353,
@@ -57,15 +43,15 @@
       "files": 77
     },
     "xm_exchange_daily": {
-      "rows": 4059,
+      "rows": 4060,
       "first_date": "2016-05-01",
-      "last_date": "2026-11-15",
+      "last_date": "2026-11-16",
       "files": 11
     },
     "xm_system_daily": {
-      "rows": 33667,
+      "rows": 33676,
       "first_date": "2016-05-01",
-      "last_date": "2026-11-17",
+      "last_date": "2026-11-18",
       "files": 11
     }
   },
