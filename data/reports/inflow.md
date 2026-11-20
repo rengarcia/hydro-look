@@ -1,6 +1,6 @@
 # Inflow forecasts — the plants whose level is not the question
 
-Generated 2026-11-20T01:58:01Z by `npm run forecast` from the committed tables; no network. For the run-of-river and daily-storage plants the level is an operating decision taken within the day, so the target is the water arriving: the mean inflow over the next 7 and 14 days, in m³/s. Origins every 7 days from 2018-01-01, once a plant has 730 days of inflow; each rung sees only data up to its origin.
+Generated 2026-11-20T07:52:16Z by `npm run forecast` from the committed tables; no network. For the run-of-river and daily-storage plants the level is an operating decision taken within the day, so the target is the water arriving: the mean inflow over the next 7 and 14 days, in m³/s. Origins every 7 days from 2018-01-01, once a plant has 730 days of inflow; each rung sees only data up to its origin.
 
 - **persistence** holds the origin day's inflow.
 - **climatology** is the median of the same calendar window's mean over every earlier year.
@@ -21,8 +21,8 @@ A plant's forecast is published at a horizon only where the ensemble's MAE beats
 | Agoyán | 364 | 14 d | 32.7 | 41.1 | 42.9 | 37.3 | 80% | **yes** |
 | Manduriacu | 268 | 7 d | 42.7 | 50.1 | 44.0 | 58.1 | 83% | **yes** |
 | Manduriacu | 268 | 14 d | 41.7 | 48.8 | 48.9 | 54.0 | 81% | **yes** |
-| Minas San Francisco | 264 | 7 d | 23.5 | 27.1 | 28.2 | 29.6 | 79% | **yes** |
-| Minas San Francisco | 264 | 14 d | 22.7 | 26.5 | 31.1 | 27.7 | 80% | **yes** |
+| Minas San Francisco | 265 | 7 d | 23.4 | 27.0 | 28.1 | 29.5 | 79% | **yes** |
+| Minas San Francisco | 265 | 14 d | 22.7 | 26.5 | 31.0 | 27.6 | 80% | **yes** |
 | Delsitanisagua | 270 | 7 d | 13.3 | 15.1 | 16.7 | 15.9 | 77% | **yes** |
 | Delsitanisagua | 270 | 14 d | 11.9 | 14.1 | 16.1 | 14.2 | 79% | **yes** |
 
@@ -36,7 +36,7 @@ At the plants where GEOGLOWS' forecast earned a place (Agoyán, Manduriacu, Mina
 |---|---:|---:|---:|---:|
 | agoyan | 7 d | 124 | 31.2 | 34.2 |
 | manduriacu | 7 d | 118 | 35.7 | 41.2 |
-| minas_san_francisco | 7 d | 123 | 23.8 | 25.0 |
+| minas_san_francisco | 7 d | 124 | 23.7 | 24.8 |
 
 ## Rain conditioning
 
@@ -85,14 +85,14 @@ The conditioner is the rain that had already fallen, read with ERA5's five-day l
 | manduriacu | 14 d | climatology | 247 | 54.0 | 22.7 | 77% (235) | 18.6 |
 | manduriacu | 14 d | analogue | 247 | 48.8 | -0.9 | 85% (235) | 17.1 |
 | manduriacu | 14 d | ensemble | 247 | 41.7 | 10.9 | 81% (235) | 14.3 |
-| minas_san_francisco | 7 d | persistence | 264 | 28.2 | -4.3 | 80% (252) | 11.9 |
-| minas_san_francisco | 7 d | climatology | 264 | 29.6 | 8.7 | 76% (252) | 11.2 |
-| minas_san_francisco | 7 d | analogue | 264 | 27.1 | 0.2 | 81% (252) | 10.4 |
-| minas_san_francisco | 7 d | ensemble | 264 | 23.5 | 6.7 | 79% (252) | 9.1 |
-| minas_san_francisco | 14 d | persistence | 263 | 31.1 | -4.3 | 81% (251) | 13.0 |
-| minas_san_francisco | 14 d | climatology | 263 | 27.7 | 6.8 | 75% (251) | 10.2 |
-| minas_san_francisco | 14 d | analogue | 263 | 26.5 | -3.9 | 80% (251) | 10.4 |
-| minas_san_francisco | 14 d | ensemble | 263 | 22.7 | 1.4 | 80% (251) | 8.5 |
+| minas_san_francisco | 7 d | persistence | 265 | 28.1 | -4.3 | 80% (253) | 11.9 |
+| minas_san_francisco | 7 d | climatology | 265 | 29.5 | 8.6 | 76% (253) | 11.2 |
+| minas_san_francisco | 7 d | analogue | 265 | 27.0 | 0.2 | 81% (253) | 10.4 |
+| minas_san_francisco | 7 d | ensemble | 265 | 23.4 | 6.7 | 79% (253) | 9.1 |
+| minas_san_francisco | 14 d | persistence | 264 | 31.0 | -4.3 | 81% (252) | 12.9 |
+| minas_san_francisco | 14 d | climatology | 264 | 27.6 | 6.7 | 75% (252) | 10.2 |
+| minas_san_francisco | 14 d | analogue | 264 | 26.5 | -4.0 | 81% (252) | 10.4 |
+| minas_san_francisco | 14 d | ensemble | 264 | 22.7 | 1.4 | 80% (252) | 8.5 |
 | delsitanisagua | 7 d | persistence | 270 | 16.7 | 0.3 | 75% (258) | 6.5 |
 | delsitanisagua | 7 d | climatology | 270 | 15.9 | -2.2 | 78% (258) | 5.3 |
 | delsitanisagua | 7 d | analogue | 270 | 15.1 | 0.1 | 76% (258) | 5.7 |

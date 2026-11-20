@@ -1,8 +1,8 @@
 # Backtest — mazar level forecast
 
-Generated 2026-11-20T01:58:01Z from the committed tables; no network. Origins are every Monday (weekly since 2026-11-17; the first of each month before that), each one refitting every model on the data before it. 463 origins scored per horizon, 411 of them with a calibrated band (the first 52 are the calibration's warm-up).
+Generated 2026-11-20T07:52:16Z from the committed tables; no network. Origins are every Monday (weekly since 2026-11-17; the first of each month before that), each one refitting every model on the data before it. 463 origins scored per horizon, 411 of them with a calibrated band (the first 52 are the calibration's warm-up).
 
-Level history: 4443 days, 2014-09-20 → 2026-11-18.
+Level history: 4444 days, 2014-09-20 → 2026-11-19.
 
 ## Verdict
 
@@ -420,10 +420,10 @@ False alarms: across 107 origins, the P50 named a crossing within thirty days th
 |---|---|---|
 | area-elevation exponent | 2.50 | fitted |
 | area-elevation datum | 2036.7 m | fitted |
-| fit residual | 0.695 m/day over 2055 days | fitted |
+| fit residual | 0.695 m/day over 2056 days | fitted |
 | turbined flow per MW | 0.668 m³/s | fitted jointly with the curve |
 | storage, lowest declared minimum → crest | 228.5 hm³ | integral of the fitted curve |
-| release rule points | 19 | median implied release over 4354 days |
+| release rule points | 19 | median implied release over 4355 days |
 | operator's current stance | 1.0 m³/s vs the rule | trailing 30 days |
 | crest used as the spill cap | 2155.83 m | highest level in the record |
 
@@ -439,7 +439,7 @@ The bias table above shows this model forecasting high at the long horizons, so 
 | 2112.5 | 15.1 |
 | 2115.0 | 29.9 |
 | 2117.5 | 28.1 |
-| 2120.0 | 35.4 |
+| 2120.0 | 35.7 |
 | 2122.5 | 38.2 |
 | 2125.0 | 36.1 |
 | 2127.5 | 47.9 |
