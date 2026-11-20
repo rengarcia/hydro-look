@@ -1,11 +1,19 @@
 {
-  "generated_at": "2026-11-20T22:53:50Z",
-  "command": "daily",
+  "generated_at": "2026-11-20T23:13:23Z",
+  "command": "covariates",
   "source": "all",
-  "requests": 53,
+  "requests": 17,
   "errors": [],
   "notes": [
-    "TLS pin changed for www.cenace.gob.ec:443 (advisory): observed 4e4b23dc319d8217dd3e2ebbdccdea5c96fec12cf94de52dca10c42f6b8458f1, pinned 524c72c1b6ae5e3299e8cb4c15ee387da8544fbd2438d48ce59b69dc13c56956"
+    "paute: provisional sampling point, not a verified basin centroid",
+    "era5:paute:-2.6:-78.6:2026-10-16:2026-11-14: 1 days have missing weather values",
+    "era5:paute_mazar:-2.8819:-78.9173:2026-10-16:2026-11-14: 1 days have missing weather values",
+    "era5:coca_ccs:-0.3034:-77.9266:2026-10-16:2026-11-14: 1 days have missing weather values",
+    "era5:pastaza_agoyan:-1.4018:-78.6128:2026-10-16:2026-11-14: 1 days have missing weather values",
+    "era5:guayllabamba_manduriacu:-0.0475:-78.4355:2026-10-16:2026-11-14: 1 days have missing weather values",
+    "era5:daule_marcel_laniado:-0.544:-79.6412:2026-10-16:2026-11-14: 1 days have missing weather values",
+    "era5:jubones_msf:-3.3653:-79.2546:2026-10-16:2026-11-14: 1 days have missing weather values",
+    "era5:zamora_delsitanisagua:-3.8792:-79.1596:2026-10-16:2026-11-14: 1 days have missing weather values"
   ],
   "tables": {
     "observations_daily": {
@@ -33,9 +41,9 @@
       "files": 1
     },
     "weather_daily": {
-      "rows": 114224,
+      "rows": 114360,
       "first_date": "1990-01-01",
-      "last_date": "2026-12-04",
+      "last_date": "2026-12-05",
       "files": 37
     },
     "enso_monthly": {
