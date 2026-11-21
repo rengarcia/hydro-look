@@ -1,6 +1,6 @@
 # Energy adequacy — what the model is, and what it was measured at
 
-Generated 2026-11-21T19:54:09Z from 3782 usable national-balance days, 2016-05-01 → 2026-11-20. Origin 2026-11-20.
+Generated 2026-11-21T21:59:42Z from 3782 usable national-balance days, 2016-05-01 → 2026-11-20. Origin 2026-11-20.
 
 This is section 7's target 3: expected deficit in GWh per day over the horizon, and the risk
 tiers read off it. It is the number the site's adequacy tile shows, and the `risk_tier` the
@@ -246,8 +246,8 @@ Published in `adequacy.json` as `import_sensitivity`; the central case above is 
 | Imports | GWh/day | 7 d | 14 d | 30 d | 60 d | 90 d | Worst tier |
 |---|---:|---|---|---|---|---|---|
 | demonstrated ceiling | 10.78 | -7.74 `vigilancia` | -8.71 `vigilancia` | -10.76 `vigilancia` | -13.31 `holgado` | -14.82 `holgado` | `vigilancia` (7 d) |
-| stressed (2024) | 0.12 | +2.92 `ajustado` | +1.95 `ajustado` | -0.10 `vigilancia` | -2.65 `vigilancia` | -4.16 `vigilancia` | `ajustado` (7 d) |
-| current regime (trailing) | 0.66 | +2.37 `ajustado` | +1.41 `ajustado` | -0.64 `vigilancia` | -3.20 `vigilancia` | -4.70 `vigilancia` | `ajustado` (7 d) |
+| stressed (2024) | 0.12 | +2.91 `ajustado` | +1.95 `ajustado` | -0.10 `vigilancia` | -2.66 `vigilancia` | -4.16 `vigilancia` | `ajustado` (7 d) |
+| current regime (trailing) | 0.66 | +2.37 `ajustado` | +1.40 `ajustado` | -0.65 `vigilancia` | -3.20 `vigilancia` | -4.71 `vigilancia` | `ajustado` (7 d) |
 
 Deficit in GWh/day, positive meaning short. The spread between the rows is the part of the tier that rests on
 Colombia rather than on water.
