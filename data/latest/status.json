@@ -1,11 +1,10 @@
 {
-  "generated_at": "2026-11-24T10:31:24Z",
+  "generated_at": "2026-11-24T22:50:47Z",
   "command": "daily",
   "source": "all",
   "requests": 53,
   "errors": [],
   "notes": [
-    "smec 2026-11-23: report is incomplete (missing generacion_hidraulica, total_generacion, demanda_distribucion); the running day fills in at D+1, but a stored-as-missing day has come back identical on every retry",
     "TLS pin changed for www.cenace.gob.ec:443 (advisory): observed 4e4b23dc319d8217dd3e2ebbdccdea5c96fec12cf94de52dca10c42f6b8458f1, pinned 524c72c1b6ae5e3299e8cb4c15ee387da8544fbd2438d48ce59b69dc13c56956"
   ],
   "tables": {
@@ -16,13 +15,13 @@
       "files": 18
     },
     "national_balance_daily": {
-      "rows": 58954,
+      "rows": 58969,
       "first_date": "2016-05-01",
-      "last_date": "2026-11-22",
+      "last_date": "2026-11-23",
       "files": 11
     },
     "operativa_snapshots": {
-      "rows": 9906,
+      "rows": 9953,
       "first_date": "2026-09-22",
       "last_date": "2026-11-24",
       "files": 1
@@ -59,19 +58,19 @@
     }
   },
   "narrative": {
-    "calls": 72,
+    "calls": 73,
     "by_status": {
       "failed": 1,
       "rejected": 19,
-      "ok": 52
+      "ok": 53
     },
-    "spend_usd": 3.0623,
+    "spend_usd": 3.1558,
     "calls_without_cost": 18,
     "by_month": {
       "2026-09": 0.4394,
       "2026-10": 1.9217,
-      "2026-11": 0.7013
+      "2026-11": 0.7948
     },
-    "last_call_at": "2026-11-23T08:23:37Z"
+    "last_call_at": "2026-11-24T10:33:02Z"
   }
 }

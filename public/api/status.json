@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-24T10:31:32Z",
+  "generated_at": "2026-11-24T22:50:55Z",
   "data_date": "2026-11-23",
   "as_of": "2026-11-24",
   "ok": true,
@@ -34,7 +34,7 @@
       "id": "smec_balance",
       "label_es": "CENACE SMEC: balance nacional",
       "feed": "CENACE SMEC national balance",
-      "latest": "2026-11-22",
+      "latest": "2026-11-23",
       "limit_days": 4,
       "state": "current"
     },
@@ -90,7 +90,7 @@
       "id": "geoglows_forecast",
       "label_es": "GEOGLOWS: pronóstico de caudal",
       "feed": "GEOGLOWS river forecast",
-      "latest": "2026-11-23",
+      "latest": "2026-11-24",
       "limit_days": 3,
       "state": "current"
     },
@@ -98,7 +98,7 @@
       "id": "mazar_forecast",
       "label_es": "Pronóstico de cota de Mazar",
       "feed": "Mazar level forecast",
-      "latest": "2026-11-22",
+      "latest": "2026-11-23",
       "limit_days": 3,
       "state": "current"
     },
@@ -116,10 +116,10 @@
       "rows": 93753
     },
     "national_balance_daily": {
-      "rows": 58954
+      "rows": 58969
     },
     "operativa_snapshots": {
-      "rows": 9906
+      "rows": 9953
     },
     "operating_bands": {
       "rows": 7
@@ -131,7 +131,7 @@
       "rows": 921
     },
     "forecast_runs": {
-      "rows": 66
+      "rows": 67
     },
     "adequacy_runs": {
       "rows": 57
@@ -140,10 +140,10 @@
       "rows": 285
     },
     "forecast_values": {
-      "rows": 330
+      "rows": 335
     },
     "narrative_snapshots": {
-      "rows": 72
+      "rows": 73
     },
     "xm_exchange_daily": {
       "rows": 4064
@@ -152,7 +152,7 @@
       "rows": 33713
     },
     "geoglows_forecasts": {
-      "rows": 26280
+      "rows": 26310
     }
   },
   "findings": [
