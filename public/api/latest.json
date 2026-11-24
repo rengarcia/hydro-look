@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-24T03:25:00Z",
-  "data_date": "2026-11-22",
-  "as_of": "2026-11-23",
+  "generated_at": "2026-11-24T05:04:35Z",
+  "data_date": "2026-11-23",
+  "as_of": "2026-11-24",
   "disclaimer": "No es una fuente oficial. Cada número es una copia de lo que publicaron CELEC o CENACE, con la respuesta que lo produjo archivada junto a él.",
   "reservoirs": [
     {
@@ -679,17 +679,17 @@
       "label": "Delsitanisagua",
       "basin": "zamora",
       "level": {
-        "masl": 1487.72,
-        "date": "2026-11-22",
+        "masl": 1487.55,
+        "date": "2026-11-23",
         "first_reading": "2018-12-31",
-        "days": 2884,
+        "days": 2885,
         "observed_min_masl": 1469.08,
         "observed_max_masl": 1492.51,
         "previous": {
-          "masl": 1486.75,
-          "date": "2026-11-21"
+          "masl": 1487.72,
+          "date": "2026-11-22"
         },
-        "delta_1d_m": 0.97
+        "delta_1d_m": -0.17
       },
       "bands": [
         {
@@ -700,33 +700,33 @@
           "source": "ords:repDiaHid12m",
           "observed_from": "2018-08-31",
           "observed_to": "2026-09-20",
-          "band_pct": 85.09,
-          "metres_above_min": 18.72
+          "band_pct": 84.32,
+          "metres_above_min": 18.55
         }
       ],
       "slopes_m_per_day": {
-        "d7": 0.1571,
-        "d14": 0.0736,
-        "d30": -0.107
+        "d7": 0.1857,
+        "d14": -0.0264,
+        "d30": 0.0467
       },
       "inflow": {
-        "m3s": 23,
-        "date": "2026-11-22",
+        "m3s": 22,
+        "date": "2026-11-23",
         "first_reading": "2018-08-31",
-        "days": 3006,
+        "days": 3007,
         "climatology": {
-          "p10": 18,
-          "p50": 29,
-          "p90": 55,
+          "p10": 16.7,
+          "p50": 28.5,
+          "p90": 55.3,
           "years": 9,
           "n": 128,
-          "percentile_today": 30.5
+          "percentile_today": 26.6
         },
         "previous": {
           "m3s": 23,
-          "date": "2026-11-21"
+          "date": "2026-11-22"
         },
-        "delta_1d_m3s": 0,
+        "delta_1d_m3s": -1,
         "return_periods": {
           "geoglows": {
             "river_id": 620922413,
@@ -859,42 +859,42 @@
       "label": "Agoyán",
       "basin": "pastaza",
       "level": {
-        "masl": 1645.1,
-        "date": "2026-11-22",
+        "masl": 1645,
+        "date": "2026-11-23",
         "first_reading": "2016-07-05",
-        "days": 3788,
+        "days": 3789,
         "observed_min_masl": 1637,
         "observed_max_masl": 1651,
         "previous": {
-          "masl": 1645.18,
-          "date": "2026-11-21"
+          "masl": 1645.1,
+          "date": "2026-11-22"
         },
-        "delta_1d_m": -0.08
+        "delta_1d_m": -0.1
       },
       "bands": [],
       "slopes_m_per_day": {
-        "d7": -0.0257,
-        "d14": -0.0307,
-        "d30": -0.0207
+        "d7": -0.0486,
+        "d14": -0.0607,
+        "d30": -0.0143
       },
       "inflow": {
-        "m3s": 86,
-        "date": "2026-11-22",
+        "m3s": 78,
+        "date": "2026-11-23",
         "first_reading": "2016-07-06",
-        "days": 3778,
+        "days": 3779,
         "climatology": {
-          "p10": 47,
+          "p10": 47.7,
           "p50": 84,
           "p90": 150,
           "years": 11,
           "n": 158,
-          "percentile_today": 54.4
+          "percentile_today": 44.9
         },
         "previous": {
-          "m3s": 72,
-          "date": "2026-11-21"
+          "m3s": 86,
+          "date": "2026-11-22"
         },
-        "delta_1d_m3s": 14,
+        "delta_1d_m3s": -8,
         "return_periods": {
           "geoglows": {
             "river_id": 621014469,
@@ -1423,17 +1423,17 @@
     }
   },
   "live": {
-    "date": "2026-11-23",
-    "fetched_at": "2026-11-24T03:06:10Z",
-    "total_production_gwh": 98.054,
-    "hydro_gwh": 70.265,
-    "thermal_gwh": 27.093,
-    "nonconventional_gwh": 0.376,
-    "import_gwh": 0.184,
-    "export_gwh": 0.097,
-    "hydro_share_pct": 71.53,
-    "thermal_share_pct": 27.58,
-    "import_share_pct": 0.19
+    "date": "2026-11-24",
+    "fetched_at": "2026-11-24T05:03:04Z",
+    "total_production_gwh": 1.942,
+    "hydro_gwh": 1.345,
+    "thermal_gwh": 0.606,
+    "nonconventional_gwh": 0.003,
+    "import_gwh": 0,
+    "export_gwh": 0.023,
+    "hydro_share_pct": 69.26,
+    "thermal_share_pct": 31.2,
+    "import_share_pct": 0
   },
   "adequacy": {
     "origin_date": "2026-11-22",

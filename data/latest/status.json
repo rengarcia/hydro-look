@@ -1,15 +1,24 @@
 {
-  "generated_at": "2026-11-24T03:24:51Z",
-  "command": "xm",
+  "generated_at": "2026-11-24T05:04:25Z",
+  "command": "daily",
   "source": "all",
-  "requests": 22,
+  "requests": 53,
   "errors": [],
-  "notes": [],
+  "notes": [
+    "ords:mazEnerDia 2026-11-23: only 23/24 hours present, daily total not written",
+    "ords:molEnerDia 2026-11-23: only 23/24 hours present, daily total not written",
+    "ords:sopEnerDia 2026-11-23: only 23/24 hours present, daily total not written",
+    "ords:agoEnerDia 2026-11-23: only 23/24 hours present, daily total not written",
+    "ords:manEnerDia 2026-11-23: only 23/24 hours present, daily total not written",
+    "ords:ccsEnerDia 2026-11-23: only 23/24 hours present, daily total not written",
+    "smec 2026-11-23: report is incomplete (missing generacion_hidraulica, total_generacion, demanda_distribucion); the running day fills in at D+1, but a stored-as-missing day has come back identical on every retry",
+    "TLS pin changed for www.cenace.gob.ec:443 (advisory): observed 4e4b23dc319d8217dd3e2ebbdccdea5c96fec12cf94de52dca10c42f6b8458f1, pinned 524c72c1b6ae5e3299e8cb4c15ee387da8544fbd2438d48ce59b69dc13c56956"
+  ],
   "tables": {
     "observations_daily": {
-      "rows": 93673,
+      "rows": 93698,
       "first_date": "2009-01-01",
-      "last_date": "2026-11-23",
+      "last_date": "2026-11-24",
       "files": 18
     },
     "national_balance_daily": {
@@ -19,7 +28,7 @@
       "files": 11
     },
     "operativa_snapshots": {
-      "rows": 9812,
+      "rows": 9859,
       "first_date": "2026-09-22",
       "last_date": "2026-11-24",
       "files": 1
@@ -27,7 +36,7 @@
     "operating_bands": {
       "rows": 7,
       "first_date": "2026-11-22",
-      "last_date": "2026-11-23",
+      "last_date": "2026-11-24",
       "files": 1
     },
     "weather_daily": {
