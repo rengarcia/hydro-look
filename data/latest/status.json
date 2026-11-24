@@ -1,12 +1,10 @@
 {
-  "generated_at": "2026-11-24T03:24:38Z",
-  "command": "covariates",
+  "generated_at": "2026-11-24T03:24:51Z",
+  "command": "xm",
   "source": "all",
-  "requests": 17,
+  "requests": 22,
   "errors": [],
-  "notes": [
-    "paute: provisional sampling point, not a verified basin centroid"
-  ],
+  "notes": [],
   "tables": {
     "observations_daily": {
       "rows": 93673,
@@ -45,15 +43,15 @@
       "files": 77
     },
     "xm_exchange_daily": {
-      "rows": 4063,
+      "rows": 4064,
       "first_date": "2016-05-01",
-      "last_date": "2026-11-19",
+      "last_date": "2026-11-20",
       "files": 11
     },
     "xm_system_daily": {
-      "rows": 33703,
+      "rows": 33713,
       "first_date": "2016-05-01",
-      "last_date": "2026-11-21",
+      "last_date": "2026-11-22",
       "files": 11
     }
   },
