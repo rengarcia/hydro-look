@@ -1,6 +1,6 @@
 # Backtest — mazar level forecast
 
-Generated 2026-11-25T01:11:06Z from the committed tables; no network. Origins are every Monday (weekly since 2026-11-17; the first of each month before that), each one refitting every model on the data before it. 464 origins scored per horizon, 412 of them with a calibrated band (the first 52 are the calibration's warm-up).
+Generated 2026-11-25T03:50:43Z from the committed tables; no network. Origins are every Monday (weekly since 2026-11-17; the first of each month before that), each one refitting every model on the data before it. 464 origins scored per horizon, 412 of them with a calibrated band (the first 52 are the calibration's warm-up).
 
 Level history: 4448 days, 2014-09-20 → 2026-11-23.
 
@@ -296,7 +296,7 @@ The upper bound first. At each origin the analogue pool is narrowed to the half 
 |---|---|---|---|---|---|
 | M0-persistence | 2.022 (0.0%) | 3.353 (0.0%) | 5.827 (0.0%) | 9.281 (0.0%) | 11.328 (0.0%) |
 | M3-water-balance | 2.091 (-3.4%) | 3.381 (-0.8%) | 5.281 (9.4%) | 7.107 (23.4%) | 7.637 (32.6%) |
-| M3-water-balance-rain-pf | 2.109 (-4.3%) | 3.368 (-0.5%) | 5.272 (9.5%) | 7.219 (22.2%) | 7.604 (32.9%) |
+| M3-water-balance-rain-pf | 2.111 (-4.4%) | 3.367 (-0.4%) | 5.272 (9.5%) | 7.219 (22.2%) | 7.604 (32.9%) |
 
 MAE in metres, skill against persistence in brackets. Coverage of the calibrated p10–p90 band:
 
@@ -305,7 +305,7 @@ MAE in metres, skill against persistence in brackets. Coverage of the calibrated
 | M3-water-balance | 79.5% | 79.9% | 73.3% | 73.5% | 68.2% |
 | M3-water-balance-rain-pf | 79.3% | 79.2% | 75.3% | 73.2% | 71.8% |
 
-**Perfect foresight helps at 14 days** (3.368 m against 3.381 m). The next step is to replay Open-Meteo's previous-runs archive for the real forecast's skill before anything is published; nothing is wired until then.
+**Perfect foresight helps at 14 days** (3.367 m against 3.381 m). The next step is to replay Open-Meteo's previous-runs archive for the real forecast's skill before anything is published; nothing is wired until then.
 
 Scheduling note for when it does help: `covariates.yml` collects the forecast at 17:00 UTC, after both daily runs, so a model would read yesterday's vintage. The forecast fetch would have to move ahead of the 12:15 run, or into it.
 
