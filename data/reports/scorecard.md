@@ -1,6 +1,6 @@
 # Scorecard — how the published forecasts did
 
-Generated 2026-11-25T09:19:53Z by `npm run score` from the committed tables; no network. The backtest reports (`backtest.md`, `adequacy.md`) say how each method scores at past origins it never published from; this says how the numbers the site actually published did once their horizons passed.
+Generated 2026-11-25T22:03:27Z by `npm run score` from the committed tables; no network. The backtest reports (`backtest.md`, `adequacy.md`) say how each method scores at past origins it never published from; this says how the numbers the site actually published did once their horizons passed.
 
 Rows are grouped by the model that published them and the version of the run that made them, so a method change starts a new line rather than blending into the old one. Where an origin was published more than once (a rerun on revised data), only the last run generated is scored.
 
@@ -33,7 +33,7 @@ A handful of rows is an anecdote, not a score: read `n` before reading the MAE, 
 
 ## National net requirement (adequacy_values)
 
-Observed through 2026-11-23. 56 runs considered (2 superseded by a later run for the same origin and version); 0 rows scored, 142 pending, 138 excluded.
+Observed through 2026-11-24. 57 runs considered (2 superseded by a later run for the same origin and version); 0 rows scored, 144 pending, 141 excluded.
 
 A rationing episode has been open since 2026-09-22 (`rationing_episodes.csv`, no end date). Measured load on those days is suppressed load, so no row whose window reaches past that day can be scored until the episode is given an end date; until then the rows are counted as excluded, not dropped.
 
