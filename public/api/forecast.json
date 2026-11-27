@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-27T09:12:21Z",
+  "generated_at": "2026-11-27T21:44:32Z",
   "data_date": "2026-11-26",
   "run_id": "2026-11-26-mazar-5-ae2580ae",
   "origin_date": "2026-11-26",
@@ -765,7 +765,7 @@
       },
       {
         "site": "agoyan",
-        "origin_date": "2026-11-25",
+        "origin_date": "2026-11-26",
         "variable": "caudal_m3s",
         "target": "mean inflow over the horizon, m3/s",
         "precip_basin": "pastaza_agoyan",
@@ -784,12 +784,12 @@
               "climatology_mae_m3s": 40.31,
               "coverage_p10_p90": 0.8215
             },
-            "target_date": "2026-12-02",
-            "p10": 56.2,
-            "p50": 100,
-            "p90": 158.8,
-            "ensemble_years": 5,
-            "rain_conditioned": true,
+            "target_date": "2026-12-03",
+            "p10": 61,
+            "p50": 104.8,
+            "p90": 163.6,
+            "ensemble_years": 10,
+            "rain_conditioned": false,
             "with_river_forecast": true
           },
           {
@@ -805,12 +805,12 @@
               "climatology_mae_m3s": 37.27,
               "coverage_p10_p90": 0.7988
             },
-            "target_date": "2026-12-09",
-            "p10": 46.9,
-            "p50": 98.8,
-            "p90": 145.9,
-            "ensemble_years": 5,
-            "rain_conditioned": true,
+            "target_date": "2026-12-10",
+            "p10": 39.2,
+            "p50": 91,
+            "p90": 138.2,
+            "ensemble_years": 10,
+            "rain_conditioned": false,
             "with_river_forecast": false
           }
         ]
@@ -837,12 +837,12 @@
               "coverage_p10_p90": 0.8288
             },
             "target_date": "2026-12-03",
-            "p10": 143.1,
-            "p50": 185.4,
-            "p90": 282.1,
+            "p10": 155.5,
+            "p50": 197.8,
+            "p90": 294.5,
             "ensemble_years": 6,
             "rain_conditioned": false,
-            "with_river_forecast": false
+            "with_river_forecast": true
           },
           {
             "horizon_days": 14,
@@ -889,12 +889,12 @@
               "coverage_p10_p90": 0.7874
             },
             "target_date": "2026-12-03",
-            "p10": 0,
-            "p50": 24,
-            "p90": 72.8,
+            "p10": 2,
+            "p50": 29.9,
+            "p90": 78.8,
             "ensemble_years": 8,
             "rain_conditioned": false,
-            "with_river_forecast": false
+            "with_river_forecast": true
           },
           {
             "horizon_days": 14,
@@ -974,7 +974,7 @@
     ]
   },
   "scorecard": {
-    "generated_at": "2026-11-27T09:12:34Z",
+    "generated_at": "2026-11-27T21:44:45Z",
     "observed_through": "2026-11-26",
     "target": "level on the target day, m",
     "units": "m",
