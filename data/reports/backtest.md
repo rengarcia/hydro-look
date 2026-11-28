@@ -1,8 +1,8 @@
 # Backtest — mazar level forecast
 
-Generated 2026-11-28T03:01:34Z from the committed tables; no network. Origins are every Monday (weekly since 2026-11-17; the first of each month before that), each one refitting every model on the data before it. 464 origins scored per horizon, 412 of them with a calibrated band (the first 52 are the calibration's warm-up).
+Generated 2026-11-28T08:33:30Z from the committed tables; no network. Origins are every Monday (weekly since 2026-11-17; the first of each month before that), each one refitting every model on the data before it. 464 origins scored per horizon, 412 of them with a calibrated band (the first 52 are the calibration's warm-up).
 
-Level history: 4451 days, 2014-09-20 → 2026-11-26.
+Level history: 4452 days, 2014-09-20 → 2026-11-27.
 
 ## Verdict
 
@@ -18,10 +18,10 @@ It is not the only rung that beats persistence — M1-climatological-drift, M2-s
 
 | model | h=7 | h=14 | h=30 | h=60 | h=90 |
 |---|---|---|---|---|---|
-| M0-persistence | 2.017 | 3.360 | 5.810 | 9.277 | 11.332 |
-| M1-climatological-drift | 2.069 | 3.446 | 5.961 | 9.646 | 11.194 |
-| M2-seasonal-anomaly-decay | 2.402 | 3.945 | 6.309 | 7.677 | 7.650 |
-| M3-water-balance | 2.084 | 3.385 | 5.384 | 7.210 | 7.502 |
+| M0-persistence | 2.017 | 3.360 | 5.810 | 9.293 | 11.332 |
+| M1-climatological-drift | 2.069 | 3.446 | 5.961 | 9.653 | 11.194 |
+| M2-seasonal-anomaly-decay | 2.402 | 3.945 | 6.309 | 7.716 | 7.650 |
+| M3-water-balance | 2.084 | 3.385 | 5.384 | 7.213 | 7.502 |
 | M4-gbm-direct | 1.780 | 3.215 | 5.366 | 8.002 | 8.884 |
 | M4-gbm-direct-m3 | 1.776 | 3.265 | 5.402 | 7.963 | 9.062 |
 | M4-gbm-m3-residual | 1.811 | 3.307 | 5.324 | 7.865 | 8.498 |
@@ -34,9 +34,9 @@ The M4 rows come from `npm run backtest:m4` (run 2026-11-17T03:47:38Z), which re
 | model | h=7 | h=14 | h=30 | h=60 | h=90 |
 |---|---|---|---|---|---|
 | M0-persistence | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% |
-| M1-climatological-drift | -2.6% | -2.6% | -2.6% | -4.0% | 1.2% |
-| M2-seasonal-anomaly-decay | -19.1% | -17.4% | -8.6% | 17.3% | 32.5% |
-| M3-water-balance | -3.3% | -0.7% | 7.3% | 22.3% | 33.8% |
+| M1-climatological-drift | -2.6% | -2.6% | -2.6% | -3.9% | 1.2% |
+| M2-seasonal-anomaly-decay | -19.1% | -17.4% | -8.6% | 17.0% | 32.5% |
+| M3-water-balance | -3.3% | -0.7% | 7.3% | 22.4% | 33.8% |
 | M4-gbm-direct | 11.4% | 4.0% | 7.8% | 13.6% | 21.3% |
 | M4-gbm-direct-m3 | 11.6% | 2.5% | 7.2% | 14.0% | 19.8% |
 | M4-gbm-m3-residual | 9.8% | 1.2% | 8.5% | 15.0% | 24.8% |
@@ -49,9 +49,9 @@ Section 7 expected climatological drift to improve on persistence. It does not, 
 | model | h=7 | h=14 | h=30 | h=60 | h=90 |
 |---|---|---|---|---|---|
 | M0-persistence | 76.2% | 77.4% | 72.9% | 72.8% | 70.8% |
-| M1-climatological-drift | 77.4% | 77.9% | 76.3% | 73.5% | 73.5% |
-| M2-seasonal-anomaly-decay | 75.0% | 75.9% | 72.4% | 71.8% | 73.3% |
-| M3-water-balance | 79.6% | 80.0% | 74.8% | 76.2% | 70.8% |
+| M1-climatological-drift | 77.4% | 77.9% | 76.3% | 73.6% | 73.5% |
+| M2-seasonal-anomaly-decay | 75.0% | 75.9% | 72.4% | 71.6% | 73.3% |
+| M3-water-balance | 79.6% | 80.0% | 74.8% | 76.3% | 70.8% |
 | M4-gbm-direct | 77.1% | 80.4% | 76.9% | 73.4% | 70.9% |
 | M4-gbm-direct-m3 | 76.8% | 79.7% | 77.4% | 74.7% | 70.4% |
 | M4-gbm-m3-residual | 79.5% | 80.0% | 78.9% | 73.0% | 63.4% |
@@ -62,9 +62,9 @@ Against the model's own ensemble, uncalibrated:
 | model | h=7 | h=14 | h=30 | h=60 | h=90 |
 |---|---|---|---|---|---|
 | M0-persistence | — | — | — | — | — |
-| M1-climatological-drift | 69.8% | 67.0% | 62.7% | 61.6% | 58.8% |
+| M1-climatological-drift | 69.8% | 67.0% | 62.7% | 61.5% | 58.8% |
 | M2-seasonal-anomaly-decay | — | — | — | — | — |
-| M3-water-balance | 64.4% | 63.3% | 58.1% | 51.1% | 51.3% |
+| M3-water-balance | 64.4% | 63.3% | 58.1% | 51.2% | 51.3% |
 | M4-gbm-direct | 69.7% | 62.9% | 51.4% | 42.4% | 40.4% |
 | M4-gbm-direct-m3 | 66.7% | 64.0% | 53.8% | 42.4% | 38.8% |
 | M4-gbm-m3-residual | 68.2% | 63.8% | 55.3% | 42.2% | 35.5% |
@@ -76,9 +76,9 @@ The gap between the two tables is the reason the published band is not the ensem
 
 | model | h=7 | h=14 | h=30 | h=60 | h=90 |
 |---|---|---|---|---|---|
-| M0-persistence | 0.716 | 1.200 | 2.078 | 3.230 | 3.916 |
+| M0-persistence | 0.716 | 1.200 | 2.078 | 3.232 | 3.916 |
 | M1-climatological-drift | 0.721 | 1.205 | 2.072 | 3.260 | 3.742 |
-| M2-seasonal-anomaly-decay | 0.831 | 1.397 | 2.209 | 2.744 | 2.727 |
+| M2-seasonal-anomaly-decay | 0.831 | 1.397 | 2.209 | 2.754 | 2.727 |
 | M3-water-balance | 0.716 | 1.179 | 1.860 | 2.458 | 2.624 |
 | M4-gbm-direct | 0.630 | 1.129 | 1.861 | 2.661 | 3.092 |
 | M4-gbm-direct-m3 | 0.625 | 1.131 | 1.874 | 2.667 | 3.183 |
@@ -89,10 +89,10 @@ The gap between the two tables is the reason the published band is not the ensem
 
 | model | h=7 | h=14 | h=30 | h=60 | h=90 |
 |---|---|---|---|---|---|
-| M0-persistence | -0.054 | -0.096 | -0.304 | -0.443 | -0.040 |
-| M1-climatological-drift | 0.238 | 0.303 | 0.141 | 0.091 | 0.004 |
-| M2-seasonal-anomaly-decay | -0.365 | -0.871 | -1.942 | -3.425 | -3.173 |
-| M3-water-balance | 0.155 | -0.084 | -1.530 | -3.254 | -3.312 |
+| M0-persistence | -0.054 | -0.096 | -0.304 | -0.479 | -0.040 |
+| M1-climatological-drift | 0.238 | 0.303 | 0.141 | 0.063 | 0.004 |
+| M2-seasonal-anomaly-decay | -0.365 | -0.871 | -1.942 | -3.474 | -3.173 |
+| M3-water-balance | 0.155 | -0.084 | -1.530 | -3.266 | -3.312 |
 | M4-gbm-direct | 0.055 | -0.278 | -1.330 | -2.228 | -1.169 |
 | M4-gbm-direct-m3 | 0.055 | -0.377 | -1.476 | -2.408 | -1.356 |
 | M4-gbm-m3-residual | -0.010 | -0.391 | -1.353 | -3.048 | -2.545 |
@@ -283,7 +283,7 @@ M3-water-balance paired against persistence on each set: mean of |error| − |er
 
 | origins | h=7 | h=14 | h=30 | h=60 | h=90 |
 |---|---|---|---|---|---|
-| weekly (464) | +0.07 [−0.08, +0.22], 46.1% | +0.02 [−0.26, +0.27], 47.3% | −0.43 [−0.99, +0.14], 56.8% | −2.07 [−3.21, −0.96], 62.3% | −3.83 [−5.48, −2.14], 65.3% |
+| weekly (464) | +0.07 [−0.08, +0.22], 46.1% | +0.02 [−0.26, +0.27], 47.3% | −0.43 [−0.99, +0.14], 56.8% | −2.08 [−3.20, −0.97], 62.4% | −3.83 [−5.48, −2.14], 65.3% |
 | first of the month (107) | −0.14 [−0.44, +0.16], 56.1% | −0.12 [−0.61, +0.35], 57.0% | −0.93 [−1.65, −0.25], 58.5% | −2.69 [−3.97, −1.37], 62.9% | −3.84 [−5.66, −2.06], 67.3% |
 
 **Why the ladder moved.** At 7 days M3-water-balance scores 6.2% against persistence on the first-of-month origins and -3.3% on the weekly ones. The first of the month is one day in thirty, and a hundred of them is too few to tell two rungs apart under a month — which is where every close call on this ladder has been. The weekly set is about four times the origins, though not four times the information, since neighbouring weeks share most of a sixty- or ninety-day outcome; the block bootstrap is what keeps the intervals honest about that. The paired rows are the comparison to read: where both intervals lie below zero, the model's skill does not depend on which days it is tested on; where only the first-of-month one does, it did. The published band is cut from the weekly set's residuals from model version 5 on, and the crisis check below is still asked a month at a time.
@@ -294,16 +294,16 @@ The upper bound first. At each origin the analogue pool is narrowed to the half 
 
 | model | h=7 | h=14 | h=30 | h=60 | h=90 |
 |---|---|---|---|---|---|
-| M0-persistence | 2.022 (0.0%) | 3.353 (0.0%) | 5.828 (0.0%) | 9.281 (0.0%) | 11.328 (0.0%) |
-| M3-water-balance | 2.091 (-3.4%) | 3.381 (-0.8%) | 5.277 (9.4%) | 7.107 (23.4%) | 7.637 (32.6%) |
-| M3-water-balance-rain-pf | 2.111 (-4.4%) | 3.367 (-0.4%) | 5.268 (9.6%) | 7.219 (22.2%) | 7.604 (32.9%) |
+| M0-persistence | 2.022 (0.0%) | 3.353 (0.0%) | 5.828 (0.0%) | 9.298 (0.0%) | 11.328 (0.0%) |
+| M3-water-balance | 2.091 (-3.4%) | 3.381 (-0.8%) | 5.277 (9.4%) | 7.111 (23.5%) | 7.637 (32.6%) |
+| M3-water-balance-rain-pf | 2.111 (-4.4%) | 3.367 (-0.4%) | 5.268 (9.6%) | 7.222 (22.3%) | 7.604 (32.9%) |
 
 MAE in metres, skill against persistence in brackets. Coverage of the calibrated p10–p90 band:
 
 | model | h=7 | h=14 | h=30 | h=60 | h=90 |
 |---|---|---|---|---|---|
 | M3-water-balance | 79.5% | 79.9% | 73.3% | 73.5% | 68.2% |
-| M3-water-balance-rain-pf | 79.3% | 79.2% | 75.3% | 73.2% | 71.8% |
+| M3-water-balance-rain-pf | 79.3% | 79.2% | 75.3% | 73.3% | 71.8% |
 
 **Perfect foresight helps at 14 days** (3.367 m against 3.381 m). The next step is to replay Open-Meteo's previous-runs archive for the real forecast's skill before anything is published; nothing is wired until then.
 
@@ -315,14 +315,14 @@ Each analogue year is simulated once and read at every horizon it reaches, which
 
 | model | h=7 | h=14 | h=30 | h=60 | h=90 |
 |---|---|---|---|---|---|
-| M3-water-balance | 2.084 | 3.385 | 5.384 | 7.210 | 7.502 |
-| M3-water-balance-shared-members | 2.099 | 3.416 | 5.411 | 7.216 | 7.502 |
+| M3-water-balance | 2.084 | 3.385 | 5.384 | 7.213 | 7.502 |
+| M3-water-balance-shared-members | 2.098 | 3.416 | 5.409 | 7.220 | 7.502 |
 
 MAE in metres. Coverage of the calibrated band:
 
 | model | h=7 | h=14 | h=30 | h=60 | h=90 |
 |---|---|---|---|---|---|
-| M3-water-balance | 79.6% | 80.0% | 74.8% | 76.2% | 70.8% |
+| M3-water-balance | 79.6% | 80.0% | 74.8% | 76.3% | 70.8% |
 | M3-water-balance-shared-members | 78.6% | 80.5% | 75.6% | 76.0% | 70.8% |
 
 **Negative: not better at 7, 14, 30, 60, 90 d**, and the ladder's rule asks for every horizon. The shipped model keeps every year a horizon can use; dropping the years whose record stops short of ninety days takes members from the short horizons, and whatever it gains elsewhere is not enough to pay for that everywhere.
@@ -333,37 +333,37 @@ Replayed as it was, an analogue year brings its own starting flow as well as its
 
 | model | h=7 | h=14 | h=30 | h=60 | h=90 |
 |---|---|---|---|---|---|
-| M3-water-balance-replayed | 2.322 | 3.525 | 5.713 | 7.229 | 7.478 |
-| M3-water-balance | 2.084 | 3.385 | 5.384 | 7.210 | 7.502 |
-| M3-water-balance-half-life-10 | 2.068 | 3.323 | 5.405 | 7.197 | 7.500 |
-| M3-water-balance-half-life-20 | 2.103 | 3.428 | 5.347 | 7.188 | 7.438 |
-| M3-water-balance-half-life-30 | 2.126 | 3.468 | 5.323 | 7.210 | 7.436 |
+| M3-water-balance-replayed | 2.322 | 3.525 | 5.713 | 7.233 | 7.478 |
+| M3-water-balance | 2.084 | 3.385 | 5.384 | 7.213 | 7.502 |
+| M3-water-balance-half-life-10 | 2.068 | 3.323 | 5.405 | 7.200 | 7.500 |
+| M3-water-balance-half-life-20 | 2.103 | 3.428 | 5.347 | 7.192 | 7.438 |
+| M3-water-balance-half-life-30 | 2.126 | 3.468 | 5.323 | 7.208 | 7.436 |
 
 MAE in metres. Bias (actual − forecast; negative means the forecast was too high):
 
 | model | h=7 | h=14 | h=30 | h=60 | h=90 |
 |---|---|---|---|---|---|
-| M3-water-balance-replayed | -0.40 | -1.01 | -2.68 | -3.74 | -3.63 |
-| M3-water-balance | 0.16 | -0.08 | -1.53 | -3.25 | -3.31 |
-| M3-water-balance-half-life-10 | 0.13 | -0.21 | -1.79 | -3.47 | -3.43 |
-| M3-water-balance-half-life-20 | 0.17 | -0.01 | -1.28 | -3.05 | -3.16 |
-| M3-water-balance-half-life-30 | 0.18 | 0.08 | -0.93 | -2.64 | -2.91 |
+| M3-water-balance-replayed | -0.40 | -1.01 | -2.68 | -3.75 | -3.63 |
+| M3-water-balance | 0.16 | -0.08 | -1.53 | -3.27 | -3.31 |
+| M3-water-balance-half-life-10 | 0.13 | -0.21 | -1.79 | -3.49 | -3.43 |
+| M3-water-balance-half-life-20 | 0.17 | -0.01 | -1.28 | -3.06 | -3.16 |
+| M3-water-balance-half-life-30 | 0.18 | 0.08 | -0.93 | -2.65 | -2.91 |
 
 Coverage of the calibrated band:
 
 | model | h=7 | h=14 | h=30 | h=60 | h=90 |
 |---|---|---|---|---|---|
 | M3-water-balance-replayed | 79.1% | 78.3% | 78.5% | 72.3% | 68.8% |
-| M3-water-balance | 79.6% | 80.0% | 74.8% | 76.2% | 70.8% |
-| M3-water-balance-half-life-10 | 79.4% | 80.0% | 77.3% | 75.5% | 69.8% |
-| M3-water-balance-half-life-20 | 79.4% | 80.5% | 75.6% | 77.2% | 70.5% |
+| M3-water-balance | 79.6% | 80.0% | 74.8% | 76.3% | 70.8% |
+| M3-water-balance-half-life-10 | 79.4% | 80.0% | 77.3% | 75.6% | 69.8% |
+| M3-water-balance-half-life-20 | 79.4% | 80.5% | 75.6% | 77.3% | 70.5% |
 | M3-water-balance-half-life-30 | 79.4% | 80.0% | 74.1% | 76.5% | 72.0% |
 
 Paired, M3-water-balance against M3-water-balance-replayed: mean of |error| − |error of the replayed years|, metres, with a 90% block-bootstrap interval and the share of origins where the shipped model was closer:
 
 | | h=7 | h=14 | h=30 | h=60 | h=90 |
 |---|---|---|---|---|---|
-| M3-water-balance | −0.24 [−0.46, −0.04], 55.6% | −0.14 [−0.45, +0.13], 54.2% | −0.33 [−0.84, +0.15], 55.7% | −0.02 [−0.35, +0.31], 56.8% | +0.02 [−0.16, +0.20], 53.5% |
+| M3-water-balance | −0.24 [−0.46, −0.04], 55.6% | −0.14 [−0.45, +0.13], 54.2% | −0.33 [−0.84, +0.15], 55.7% | −0.02 [−0.35, +0.31], 56.9% | +0.02 [−0.16, +0.20], 53.5% |
 
 The crisis check against 2115 m, on the daily 365-day simulation, for both:
 
@@ -420,11 +420,11 @@ False alarms: across 107 origins, the P50 named a crossing within thirty days th
 |---|---|---|
 | area-elevation exponent | 2.50 | fitted |
 | area-elevation datum | 2036.7 m | fitted |
-| fit residual | 0.696 m/day over 2063 days | fitted |
+| fit residual | 0.696 m/day over 2064 days | fitted |
 | turbined flow per MW | 0.668 m³/s | fitted jointly with the curve |
 | storage, lowest declared minimum → crest | 228.2 hm³ | integral of the fitted curve |
-| release rule points | 19 | median implied release over 4362 days |
-| operator's current stance | 4.8 m³/s vs the rule | trailing 30 days |
+| release rule points | 19 | median implied release over 4363 days |
+| operator's current stance | 5.3 m³/s vs the rule | trailing 30 days |
 | crest used as the spill cap | 2155.83 m | highest level in the record |
 
 The 410 hm³ in `plants.csv` is marked `unverified` and came from press; the storage above is the integral of a curve fitted to this repository's own readings, and the two disagree by about a factor of two. That gap cannot be closed by preferring the bigger number: the area curve and the turbine's flow-per-MW are fitted *together*, and doubling the area drives the flow-per-MW down through zero — a turbine that consumes no water. The balance closes at one scale. The check that does pass is `repDiaPotQTurb`'s 113 days of turbined flow, whose maximum is about 129 m³/s, against the fitted 114 m³/s at Mazar's rated 170 MW.
@@ -438,7 +438,7 @@ The bias table above shows this model forecasting high at the long horizons, so 
 | 2110.0 | 10.5 |
 | 2112.5 | 15.1 |
 | 2115.0 | 29.9 |
-| 2117.5 | 30.0 |
+| 2117.5 | 29.4 |
 | 2120.0 | 36.5 |
 | 2122.5 | 38.2 |
 | 2125.0 | 36.1 |
