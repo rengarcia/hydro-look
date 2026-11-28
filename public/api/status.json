@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-28T00:41:14Z",
+  "generated_at": "2026-11-28T00:41:24Z",
   "data_date": "2026-11-26",
   "as_of": "2026-11-27",
   "ok": true,
@@ -74,7 +74,7 @@
       "id": "xm_exchanges",
       "label_es": "XM: intercambios con Colombia",
       "feed": "XM exchanges with Colombia",
-      "latest": "2026-11-23",
+      "latest": "2026-11-24",
       "limit_days": 7,
       "state": "current"
     },
@@ -82,7 +82,7 @@
       "id": "xm_storage",
       "label_es": "XM: embalses de Colombia",
       "feed": "XM Colombian storage",
-      "latest": "2026-11-25",
+      "latest": "2026-11-26",
       "limit_days": 4,
       "state": "current"
     },
@@ -146,10 +146,10 @@
       "rows": 76
     },
     "xm_exchange_daily": {
-      "rows": 4067
+      "rows": 4068
     },
     "xm_system_daily": {
-      "rows": 33740
+      "rows": 33748
     },
     "geoglows_forecasts": {
       "rows": 26400
