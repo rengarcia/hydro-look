@@ -1,11 +1,16 @@
 {
-  "generated_at": "2026-11-28T00:19:50Z",
-  "command": "daily",
+  "generated_at": "2026-11-28T00:41:08Z",
+  "command": "covariates",
   "source": "all",
-  "requests": 53,
-  "errors": [],
+  "requests": 33,
+  "errors": [
+    "forecast:paute:-2.6:-78.6:2026-11-27:2026-12-12: Error: forecast:paute:-2.6:-78.6:2026-11-27:2026-12-12: gave up after 4 attempts in 47217 ms: ConnectTimeoutError: Connect Timeout Error (attempted address: api.open-meteo.com:443, timeout: 10000ms)",
+    "forecast:paute_mazar:-2.8819:-78.9173:2026-11-27:2026-12-12: Error: forecast:paute_mazar:-2.8819:-78.9173:2026-11-27:2026-12-12: gave up after 4 attempts in 49887 ms: ConnectTimeoutError: Connect Timeout Error (attempted address: api.open-meteo.com:443, timeout: 10000ms)",
+    "forecast:coca_ccs:-0.3034:-77.9266:2026-11-27:2026-12-12: Error: forecast:coca_ccs:-0.3034:-77.9266:2026-11-27:2026-12-12: gave up after 4 attempts in 48348 ms: ConnectTimeoutError: Connect Timeout Error (attempted address: api.open-meteo.com:443, timeout: 10000ms)",
+    "forecast:pastaza_agoyan:-1.4018:-78.6128:2026-11-27:2026-12-12: Error: forecast:pastaza_agoyan:-1.4018:-78.6128:2026-11-27:2026-12-12: gave up after 4 attempts in 50239 ms: ConnectTimeoutError: Connect Timeout Error (attempted address: api.open-meteo.com:443, timeout: 10000ms)"
+  ],
   "notes": [
-    "TLS pin changed for www.cenace.gob.ec:443 (advisory): observed 4e4b23dc319d8217dd3e2ebbdccdea5c96fec12cf94de52dca10c42f6b8458f1, pinned 524c72c1b6ae5e3299e8cb4c15ee387da8544fbd2438d48ce59b69dc13c56956"
+    "paute: provisional sampling point, not a verified basin centroid"
   ],
   "tables": {
     "observations_daily": {
@@ -33,9 +38,9 @@
       "files": 1
     },
     "weather_daily": {
-      "rows": 115176,
+      "rows": 115248,
       "first_date": "1990-01-01",
-      "last_date": "2026-12-11",
+      "last_date": "2026-12-12",
       "files": 37
     },
     "enso_monthly": {
